@@ -2,9 +2,10 @@ package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
@@ -50,14 +51,18 @@ public class SessionAgentHandlerService {
         // create stepPropertyUpdateRequest with all stepPropertyUpdateRequestEvent received
         // create the list of sources impacted by these events and create snapshot processes if not existing
         for (StepPropertyUpdateRequestEvent e : events) {
-            String source = e.getSource();
-            StepPropertyEventInfo stepInfo = e.getStepPropertyEventInfo();
+            StepProperty step = e.getStepProperty();
+            String source = step.getSource();
+            StepPropertyInfo stepInfo = e.getStepProperty().getStepPropertyInfo();
             stepPropertiesToSave
-                    .add(new StepPropertyUpdateRequest(e.getStepId(), source, e.getSession(), e.getDate(), e.getType(),
-                                                       new StepPropertyInfo(stepInfo.getStepType(), stepInfo.getState(),
-                                                                            stepInfo.getProperty(), stepInfo.getValue(),
-                                                                            stepInfo.isInputRelated(),
-                                                                            stepInfo.isOutputRelated())));
+                    .add(new StepPropertyUpdateRequest(step.getStepId(), source, step.getSession(), e.getDate(),
+                                                       e.getType(),
+                                                       new StepPropertyUpdateRequestInfo(stepInfo.getStepType(),
+                                                                                         stepInfo.getState(),
+                                                                                         stepInfo.getProperty(),
+                                                                                         stepInfo.getValue(),
+                                                                                         stepInfo.isInputRelated(),
+                                                                                         stepInfo.isOutputRelated())));
             sourcesToBeUpdated.add(source);
         }
 

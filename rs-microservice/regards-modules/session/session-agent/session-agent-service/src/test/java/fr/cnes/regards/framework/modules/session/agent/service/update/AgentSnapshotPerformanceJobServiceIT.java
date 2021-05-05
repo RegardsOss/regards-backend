@@ -1,7 +1,8 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
@@ -56,14 +57,15 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
         // Schedule jobs
         long start = System.currentTimeMillis();
         long timeout = 20000L;
-        LOGGER.info("Launching performance test to create SessionSteps from {} step requests from {} different "
-                            + "source", nbStepRequests, nbSources);
+        LOGGER.info(
+                "Launching performance test to create SessionSteps from {} step requests from {} different " + "source",
+                nbStepRequests, nbSources);
         agentJobSnapshotService.scheduleJob();
 
         // wait for job to be in success state
         boolean isJobSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), nbSources, timeout);
         LOGGER.info("Performance test handled in {}ms to create SessionSteps from {} step requests from {} different "
-                            + "source", System.currentTimeMillis() - start , nbStepRequests, nbSources);
+                            + "source", System.currentTimeMillis() - start, nbStepRequests, nbSources);
         if (!isJobSuccess) {
             Assert.fail(String.format("The number of jobs in success state is not expected. Check if all jobs were "
                                               + "created in the required amount of time (max. %d ms)", timeout));
@@ -88,11 +90,13 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
             String source = sources.get(i % nbSources);
 
             // ACQUISITION - scan event SOURCE 1 OWNER 1
-            stepRequests.add(new StepPropertyUpdateRequestEvent("scan", source, OWNER_1, StepPropertyEventTypeEnum.INC,
-                                                                new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                          StepPropertyEventStateEnum.SUCCESS,
-                                                                                          "gen.products", "1", true,
-                                                                                          false)));
+            stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("scan", source, OWNER_1,
+                                                                                 new StepPropertyInfo(
+                                                                                         StepTypeEnum.ACQUISITION,
+                                                                                         StepPropertyStateEnum.SUCCESS,
+                                                                                         "gen.products", "1", true,
+                                                                                         false)),
+                                                                StepPropertyEventTypeEnum.INC));
         }
         // Publish events
         this.publisher.publish(stepRequests);

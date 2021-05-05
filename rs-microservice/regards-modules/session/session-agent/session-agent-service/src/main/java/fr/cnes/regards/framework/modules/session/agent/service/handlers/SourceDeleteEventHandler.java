@@ -35,9 +35,10 @@ public class SourceDeleteEventHandler
         String source = message.getSource();
         long start = System.currentTimeMillis();
 
-        LOGGER.debug("Handling deleting of source {} for tenant {}", source, tenant);
+        LOGGER.trace("Handling deleting of source {} for tenant {}", source, tenant);
         sourceDeleteService.deleteSource(source);
-        LOGGER.debug("Deleting of source {} for tenant {} handled in {}ms", source, tenant, start - System.currentTimeMillis());
+        LOGGER.trace("Deleting of source {} for tenant {} handled in {}ms", source, tenant,
+                 start - System.currentTimeMillis());
 
     }
 }

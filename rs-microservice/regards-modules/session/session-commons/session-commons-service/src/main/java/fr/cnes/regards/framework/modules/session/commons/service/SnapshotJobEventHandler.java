@@ -39,11 +39,11 @@ public class SnapshotJobEventHandler implements ApplicationListener<ApplicationR
     public void handleBatch(String tenant, List<JobEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            LOGGER.info("[AGENT SNAPSHOT JOB EVENT HANDLER] Handling {} JobEvents...", messages.size());
+            LOGGER.trace("[AGENT SNAPSHOT JOB EVENT HANDLER] Handling {} JobEvents...", messages.size());
             long start = System.currentTimeMillis();
             // sort job
             snapshotJobEventService.updateSnapshotProcess(messages);
-            LOGGER.info("[AGENT SNAPSHOT JOB EVENT HANDLER] {} JobEvents handled in {} ms", messages.size(),
+            LOGGER.trace("[AGENT SNAPSHOT JOB EVENT HANDLER] {} JobEvents handled in {} ms", messages.size(),
                         System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();

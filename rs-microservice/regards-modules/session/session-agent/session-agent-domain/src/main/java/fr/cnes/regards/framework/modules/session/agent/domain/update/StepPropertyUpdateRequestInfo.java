@@ -1,6 +1,6 @@
-package fr.cnes.regards.framework.modules.session.agent.domain;
+package fr.cnes.regards.framework.modules.session.agent.domain.update;
 
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
  * @author Iliana Ghazali
  **/
 @Embeddable
-public class StepPropertyInfo {
+public class StepPropertyUpdateRequestInfo {
 
     @Column(name = "step_type")
     @NotNull
@@ -24,7 +24,7 @@ public class StepPropertyInfo {
     @Column(name = "state")
     @NotNull
     @Enumerated(value = EnumType.STRING)
-    private StepPropertyEventStateEnum state;
+    private StepPropertyStateEnum state;
 
     @Column(name = "property")
     @NotNull
@@ -42,7 +42,7 @@ public class StepPropertyInfo {
     @NotNull
     private boolean outputRelated;
 
-    public StepPropertyInfo(@NotNull StepTypeEnum stepType, @NotNull StepPropertyEventStateEnum state,
+    public StepPropertyUpdateRequestInfo(@NotNull StepTypeEnum stepType, @NotNull StepPropertyStateEnum state,
             @NotNull String property, @NotNull String value, @NotNull boolean inputRelated,
             @NotNull boolean outputRelated) {
         this.stepType = stepType;
@@ -53,7 +53,7 @@ public class StepPropertyInfo {
         this.outputRelated = outputRelated;
     }
 
-    public StepPropertyInfo() {
+    public StepPropertyUpdateRequestInfo() {
     }
 
     public StepTypeEnum getStepType() {
@@ -64,11 +64,11 @@ public class StepPropertyInfo {
         this.stepType = stepType;
     }
 
-    public StepPropertyEventStateEnum getState() {
+    public StepPropertyStateEnum getState() {
         return state;
     }
 
-    public void setState(StepPropertyEventStateEnum state) {
+    public void setState(StepPropertyStateEnum state) {
         this.state = state;
     }
 

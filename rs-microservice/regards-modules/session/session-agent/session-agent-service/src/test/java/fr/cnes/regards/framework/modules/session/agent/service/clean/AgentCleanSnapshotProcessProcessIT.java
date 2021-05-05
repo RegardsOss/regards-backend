@@ -1,9 +1,9 @@
 package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
@@ -116,24 +116,24 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
         stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, "OWNER_1", OffsetDateTime.now(),
                                                        StepPropertyEventTypeEnum.INC,
 
-                                                       new StepPropertyInfo(StepTypeEnum.ACQUISITION,
-                                                                            StepPropertyEventStateEnum.SUCCESS,
-                                                                            "gen.products", "1", true, false)));
+                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                         StepPropertyStateEnum.SUCCESS,
+                                                                                         "gen.products", "1", true, false)));
 
         // REFERENCING
         stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE_2, "OWNER_2", OffsetDateTime.now(),
                                                        StepPropertyEventTypeEnum.INC,
 
-                                                       new StepPropertyInfo(StepTypeEnum.REFERENCING,
-                                                                            StepPropertyEventStateEnum.SUCCESS,
-                                                                            "gen.products", "1", true, false)));
+                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
+                                                                                         StepPropertyStateEnum.SUCCESS,
+                                                                                         "gen.products", "1", true, false)));
 
         // STORAGE
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_3, "OWNER_3", OffsetDateTime.now(),
                                                        StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyInfo(StepTypeEnum.STORAGE,
-                                                                            StepPropertyEventStateEnum.SUCCESS,
-                                                                            "gen.products", "1", true, false)));
+                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
+                                                                                         StepPropertyStateEnum.SUCCESS,
+                                                                                         "gen.products", "1", true, false)));
         // SAVE
         this.stepPropertyUpdateRequestRepo.saveAll(stepRequests);
     }

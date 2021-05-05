@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.domain;
+package fr.cnes.regards.framework.modules.session.agent.domain.update;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
@@ -65,7 +65,7 @@ public class StepPropertyUpdateRequest {
 
     @Embedded
     @NotNull
-    private StepPropertyInfo stepPropertyInfo;
+    private StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "session_step_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_session_step_id"))
@@ -73,13 +73,13 @@ public class StepPropertyUpdateRequest {
 
     public StepPropertyUpdateRequest(@NotNull String stepId, @NotNull String source, @NotNull String session,
             @NotNull OffsetDateTime date, @NotNull StepPropertyEventTypeEnum type,
-            @NotNull StepPropertyInfo stepPropertyInfo) {
+            @NotNull StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo) {
         this.stepId = stepId;
         this.source = source;
         this.session = session;
         this.date = date;
         this.type = type;
-        this.stepPropertyInfo = stepPropertyInfo;
+        this.stepPropertyUpdateRequestInfo = stepPropertyUpdateRequestInfo;
     }
     public StepPropertyUpdateRequest(){
     }
@@ -128,12 +128,12 @@ public class StepPropertyUpdateRequest {
         this.type = type;
     }
 
-    public StepPropertyInfo getStepPropertyInfo() {
-        return stepPropertyInfo;
+    public StepPropertyUpdateRequestInfo getStepPropertyInfo() {
+        return stepPropertyUpdateRequestInfo;
     }
 
-    public void setStepPropertyInfo(StepPropertyInfo stepPropertyInfo) {
-        this.stepPropertyInfo = stepPropertyInfo;
+    public void setStepPropertyInfo(StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo) {
+        this.stepPropertyUpdateRequestInfo = stepPropertyUpdateRequestInfo;
     }
 
     public SessionStep getSessionStep() {

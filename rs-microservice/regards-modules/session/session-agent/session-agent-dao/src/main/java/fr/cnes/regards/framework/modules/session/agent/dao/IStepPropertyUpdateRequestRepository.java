@@ -4,7 +4,7 @@ package fr.cnes.regards.framework.modules.session.agent.dao;
  * @author Iliana Ghazali
  **/
 
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
 import java.util.List;

@@ -1,5 +1,6 @@
-package fr.cnes.regards.framework.modules.session.agent.domain.events;
+package fr.cnes.regards.framework.modules.session.agent.domain.step;
 
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 
 /**
@@ -7,7 +8,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
  *
  * @author Iliana Ghazali
  **/
-public class StepPropertyEventInfo {
+public class StepPropertyInfo {
 
     /**
      * Type of the step
@@ -17,7 +18,7 @@ public class StepPropertyEventInfo {
     /**
      * State of the step
      */
-    private StepPropertyEventStateEnum state;
+    private StepPropertyStateEnum state;
 
     /**
      * Name of the property to be modified
@@ -39,7 +40,7 @@ public class StepPropertyEventInfo {
      */
     private boolean outputRelated;
 
-    public StepPropertyEventInfo(StepTypeEnum stepType, StepPropertyEventStateEnum state, String property, String value,
+    public StepPropertyInfo(StepTypeEnum stepType, StepPropertyStateEnum state, String property, String value,
             boolean inputRelated, boolean outputRelated) {
         this.stepType = stepType;
         this.state = state;
@@ -57,11 +58,11 @@ public class StepPropertyEventInfo {
         this.stepType = stepType;
     }
 
-    public StepPropertyEventStateEnum getState() {
+    public StepPropertyStateEnum getState() {
         return state;
     }
 
-    public void setState(StepPropertyEventStateEnum state) {
+    public void setState(StepPropertyStateEnum state) {
         this.state = state;
     }
 

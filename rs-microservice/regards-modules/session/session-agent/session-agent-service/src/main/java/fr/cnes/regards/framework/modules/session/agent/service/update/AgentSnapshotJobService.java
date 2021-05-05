@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import java.time.OffsetDateTime;
@@ -18,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * If new {@link fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest}s were added in the
+ * If new {@link StepPropertyUpdateRequest}s were added in the
  * database, launch {@link AgentSnapshotJob}s to update
  * {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}s
  * by source.
@@ -42,7 +43,7 @@ public class AgentSnapshotJobService {
 
     public void scheduleJob() {
         long start = System.currentTimeMillis();
-        LOGGER.info("[AGENT SNAPSHOT SCHEDULER] Scheduling job at date {}...", OffsetDateTime.now());
+        LOGGER.trace("[AGENT SNAPSHOT SCHEDULER] Scheduling job at date {}...", OffsetDateTime.now());
 
         // Freeze start date to select stepEvents
         OffsetDateTime schedulerStartDate = OffsetDateTime.now();
@@ -75,11 +76,11 @@ public class AgentSnapshotJobService {
                 snapshotProcessToUpdate.setJobId(jobInfo.getId());
                 this.snapshotProcessRepo.save(snapshotProcessToUpdate);
 
-                LOGGER.info("[AGENT SNAPSHOT SCHEDULER] AgentSnapshotJob scheduled in {} ms for source {}",
+                LOGGER.trace("[AGENT SNAPSHOT SCHEDULER] AgentSnapshotJob scheduled in {} ms for source {}",
                             System.currentTimeMillis() - start, snapshotProcessToUpdate.getSource());
             }
         } else {
-            LOGGER.info("[AGENT SNAPSHOT SCHEDULER] No sessionSteps found to be updated. Handled in {} ms",
+            LOGGER.trace("[AGENT SNAPSHOT SCHEDULER] No sessionSteps found to be updated. Handled in {} ms",
                         System.currentTimeMillis() - start);
         }
     }

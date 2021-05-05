@@ -61,10 +61,10 @@ public class SessionManagerHandler implements ApplicationListener<ApplicationRea
     public void handleBatch(String tenant, List<SessionStepEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            LOGGER.info("[SESSION STEP EVENT HANDLER] Handling {} SessionStepEvents...", messages.size());
+            LOGGER.trace("[SESSION STEP EVENT HANDLER] Handling {} SessionStepEvents...", messages.size());
             long start = System.currentTimeMillis();
             sessionManagerHandlerService.createSessionSteps(messages);
-            LOGGER.info("[SESSION STEP EVENT HANDLER] {} SessionStepEvents handled in {} ms", messages.size(),
+            LOGGER.trace("[SESSION STEP EVENT HANDLER] {} SessionStepEvents handled in {} ms", messages.size(),
                         System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();

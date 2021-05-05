@@ -55,7 +55,7 @@ public class ManagerSnapshotJobService {
 
     public void scheduleJob() {
         long start = System.currentTimeMillis();
-        LOGGER.info("[MANAGER SNAPSHOT SCHEDULER] Scheduling job at date {}...", OffsetDateTime.now());
+        LOGGER.trace("[MANAGER SNAPSHOT SCHEDULER] Scheduling job at date {}...", OffsetDateTime.now());
 
         // Freeze start date to select stepEvents
         OffsetDateTime schedulerStartDate = OffsetDateTime.now();
@@ -88,11 +88,11 @@ public class ManagerSnapshotJobService {
                 snapshotProcessToUpdate.setJobId(jobInfo.getId());
                 this.snapshotProcessRepo.save(snapshotProcessToUpdate);
 
-                LOGGER.info("[MANAGER SNAPSHOT SCHEDULER] ManagerSnapshotJob scheduled in {} ms for source {}",
+                LOGGER.trace("[MANAGER SNAPSHOT SCHEDULER] ManagerSnapshotJob scheduled in {} ms for source {}",
                             System.currentTimeMillis() - start, snapshotProcessToUpdate.getSource());
             }
         } else {
-            LOGGER.info("[MANAGER SNAPSHOT SCHEDULER] No sessionSteps found to be updated. Handled in {} ms",
+            LOGGER.trace("[MANAGER SNAPSHOT SCHEDULER] No sessionSteps found to be updated. Handled in {} ms",
                         System.currentTimeMillis() - start);
         }
     }

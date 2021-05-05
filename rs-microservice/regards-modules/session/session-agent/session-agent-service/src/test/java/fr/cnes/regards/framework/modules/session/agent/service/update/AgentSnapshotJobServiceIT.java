@@ -1,7 +1,8 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
@@ -70,47 +71,57 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
         List<StepPropertyUpdateRequestEvent> stepRequests = new ArrayList<>();
 
         // ACQUISITION - scan event SOURCE 1 OWNER 1
-        stepRequests.add(new StepPropertyUpdateRequestEvent("scan", SOURCE_1, OWNER_1, StepPropertyEventTypeEnum.INC,
-                                                            new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                      StepPropertyEventStateEnum.SUCCESS,
-                                                                                      "gen.products", "10", true,
-                                                                                      false)));
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("scan", SOURCE_1, OWNER_1,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.ACQUISITION,
+                                                                                     StepPropertyStateEnum.SUCCESS,
+                                                                                     "gen.products", "10", true,
+                                                                                     false)),
+                                                            StepPropertyEventTypeEnum.INC));
 
-        stepRequests.add(new StepPropertyUpdateRequestEvent("scan", SOURCE_1, OWNER_1, StepPropertyEventTypeEnum.INC,
-                                                            new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                      StepPropertyEventStateEnum.SUCCESS,
-                                                                                      "gen.products", "5", true,
-                                                                                      false)));
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("scan", SOURCE_1, OWNER_1,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.ACQUISITION,
+                                                                                     StepPropertyStateEnum.SUCCESS,
+                                                                                     "gen.products", "5", true, false)),
+                                                            StepPropertyEventTypeEnum.INC));
         // ACQUISITION - scan event SOURCE 1 OWNER 2
-        stepRequests.add(new StepPropertyUpdateRequestEvent("scan", SOURCE_1, OWNER_2, StepPropertyEventTypeEnum.INC,
-                                                            new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                      StepPropertyEventStateEnum.SUCCESS,
-                                                                                      "gen.products", "8", true,
-                                                                                      false)));
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("scan", SOURCE_1, OWNER_2,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.ACQUISITION,
+                                                                                     StepPropertyStateEnum.SUCCESS,
+                                                                                     "gen.products", "8", true, false)),
+                                                            StepPropertyEventTypeEnum.INC));
 
-        stepRequests.add(new StepPropertyUpdateRequestEvent("scan", SOURCE_1, OWNER_2, StepPropertyEventTypeEnum.INC,
-                                                            new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                      StepPropertyEventStateEnum.RUNNING,
-                                                                                      "gen.products", "4", true,
-                                                                                      false)));
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("scan", SOURCE_1, OWNER_2,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.ACQUISITION,
+                                                                                     StepPropertyStateEnum.RUNNING,
+                                                                                     "gen.products", "4", true, false)),
+                                                            StepPropertyEventTypeEnum.INC));
 
         // REFERENCING - oais event SOURCE 2 OWNER 1
-        stepRequests.add(new StepPropertyUpdateRequestEvent("oais", SOURCE_2, OWNER_1, StepPropertyEventTypeEnum.INC,
-                                                            new StepPropertyEventInfo(StepTypeEnum.REFERENCING,
-                                                                                      StepPropertyEventStateEnum.ERROR,
-                                                                                      "ref.products.errors", "6", false,
-                                                                                      false)));
-        stepRequests.add(new StepPropertyUpdateRequestEvent("oais", SOURCE_2, OWNER_1, StepPropertyEventTypeEnum.VALUE,
-                                                            new StepPropertyEventInfo(StepTypeEnum.REFERENCING,
-                                                                                      StepPropertyEventStateEnum.ERROR,
-                                                                                      "ref.products.state", "ERROR",
-                                                                                      false, false)));
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("oais", SOURCE_2, OWNER_1,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.REFERENCING,
+                                                                                     StepPropertyStateEnum.ERROR,
+                                                                                     "ref.products.errors", "6", false,
+                                                                                     false)),
+                                                            StepPropertyEventTypeEnum.INC));
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("oais", SOURCE_2, OWNER_1,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.REFERENCING,
+                                                                                     StepPropertyStateEnum.ERROR,
+                                                                                     "ref.products.state", "ERROR",
+                                                                                     false, false)),
+                                                            StepPropertyEventTypeEnum.VALUE));
         // REFERENCING - oais event SOURCE 3 OWNER 1
-        stepRequests.add(new StepPropertyUpdateRequestEvent("oais", SOURCE_3, OWNER_1, StepPropertyEventTypeEnum.INC,
-                                                            new StepPropertyEventInfo(StepTypeEnum.REFERENCING,
-                                                                                      StepPropertyEventStateEnum.WAITING,
-                                                                                      "ref.products", "3", false,
-                                                                                      true)));
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("oais", SOURCE_3, OWNER_1,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.REFERENCING,
+                                                                                     StepPropertyStateEnum.WAITING,
+                                                                                     "ref.products", "3", false, true)),
+                                                            StepPropertyEventTypeEnum.INC));
 
         // Publish events
         this.publisher.publish(stepRequests);

@@ -4,6 +4,7 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
 
@@ -16,21 +17,6 @@ import java.time.OffsetDateTime;
 public class StepPropertyUpdateRequestEvent implements ISubscribable {
 
     /**
-     * Unique step identifier
-     */
-    private String stepId;
-
-    /**
-     * Name of the source
-     */
-    private String source;
-
-    /**
-     * Name of the session
-     */
-    private String session;
-
-    /**
      * Creation date
      */
     private OffsetDateTime date;
@@ -41,42 +27,15 @@ public class StepPropertyUpdateRequestEvent implements ISubscribable {
     private StepPropertyEventTypeEnum type;
 
     /**
-     * Event information
+     * Step Property
      */
-    private StepPropertyEventInfo stepPropertyEventInfo;
+    private StepProperty stepProperty;
 
-    public StepPropertyUpdateRequestEvent(String stepId, String source, String session, StepPropertyEventTypeEnum type,
-            StepPropertyEventInfo stepPropertyEventInfo) {
-        this.stepId = stepId;
-        this.source = source;
-        this.session = session;
-        this.date = OffsetDateTime.now();
+
+    public StepPropertyUpdateRequestEvent(StepProperty stepProperty, StepPropertyEventTypeEnum type) {
+        this.stepProperty = stepProperty;
         this.type = type;
-        this.stepPropertyEventInfo = stepPropertyEventInfo;
-    }
-
-    public String getStepId() {
-        return stepId;
-    }
-
-    public void setStepId(String stepId) {
-        this.stepId = stepId;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public String getSession() {
-        return session;
-    }
-
-    public void setSession(String session) {
-        this.session = session;
+        this.date = OffsetDateTime.now();
     }
 
     public OffsetDateTime getDate() {
@@ -95,11 +54,11 @@ public class StepPropertyUpdateRequestEvent implements ISubscribable {
         this.type = type;
     }
 
-    public StepPropertyEventInfo getStepPropertyEventInfo() {
-        return stepPropertyEventInfo;
+    public StepProperty getStepProperty() {
+        return stepProperty;
     }
 
-    public void setStepPropertyEventInfo(StepPropertyEventInfo stepPropertyEventInfo) {
-        this.stepPropertyEventInfo = stepPropertyEventInfo;
+    public void setStepProperty(StepProperty stepProperty) {
+        this.stepProperty = stepProperty;
     }
 }

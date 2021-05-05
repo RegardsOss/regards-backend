@@ -3,9 +3,9 @@ package fr.cnes.regards.framework.modules.session.agent.service.update;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
@@ -161,11 +161,11 @@ public class AgentSnapshotService {
      * @param stepPropertyUpdateRequest to update sessionStep
      */
     private void updateSessionStepInfo(SessionStep sessionStep, StepPropertyUpdateRequest stepPropertyUpdateRequest) {
-        StepPropertyInfo stepPropertyInfo = stepPropertyUpdateRequest.getStepPropertyInfo();
+        StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo = stepPropertyUpdateRequest.getStepPropertyInfo();
 
         // UPDATE PROPERTIES
-        String property = stepPropertyInfo.getProperty();
-        String value = stepPropertyInfo.getValue();
+        String property = stepPropertyUpdateRequestInfo.getProperty();
+        String value = stepPropertyUpdateRequestInfo.getValue();
         StepPropertyEventTypeEnum type = stepPropertyUpdateRequest.getType();
 
         // if eventType is increment, increment the value of the property only if the value is a number
@@ -180,13 +180,13 @@ public class AgentSnapshotService {
         if (type.equals(StepPropertyEventTypeEnum.INC) && (NumberUtils.isCreatable(previousValue) && NumberUtils
                 .isCreatable(value))) {
             // increment parameters (in/out, state, property)
-            calculateDifferences(sessionStep, stepPropertyInfo, property, NumberUtils.toLong(previousValue),
+            calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property, NumberUtils.toLong(previousValue),
                                  NumberUtils.toLong(value));
 
         } else if (type.equals(StepPropertyEventTypeEnum.DEC) && (NumberUtils.isCreatable(previousValue) && NumberUtils
                 .isCreatable(value))) {
             // decrement parameters (in/out, state, property)
-            calculateDifferences(sessionStep, stepPropertyInfo, property, NumberUtils.toLong(previousValue),
+            calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property, NumberUtils.toLong(previousValue),
                                  -NumberUtils.toLong(value));
 
         } else {
@@ -205,28 +205,28 @@ public class AgentSnapshotService {
      * Update properties and input/output related attributes of SessionStep
      *
      * @param sessionStep      sessionStep to be updated
-     * @param stepPropertyInfo information of the step
+     * @param stepPropertyUpdateRequestInfo information of the step
      * @param property         property to modify
      * @param previousValue    previous value of the corresponding property
      * @param valueNum         new value to update the corresponding property
      */
-    private void calculateDifferences(SessionStep sessionStep, StepPropertyInfo stepPropertyInfo, String property,
+    private void calculateDifferences(SessionStep sessionStep, StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo, String property,
             long previousValue, long valueNum) {
 
         // set in/out
-        if (stepPropertyInfo.isInputRelated()) {
+        if (stepPropertyUpdateRequestInfo.isInputRelated()) {
             sessionStep.setInputRelated(sessionStep.getInputRelated() + valueNum);
         }
-        if (stepPropertyInfo.isOutputRelated()) {
+        if (stepPropertyUpdateRequestInfo.isOutputRelated()) {
             sessionStep.setOutputRelated(sessionStep.getOutputRelated() + valueNum);
         }
         // Set state
         StepState stepState = sessionStep.getState();
-        if (stepPropertyInfo.getState().equals(StepPropertyEventStateEnum.WAITING)) {
+        if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.WAITING)) {
             stepState.setWaiting(stepState.getWaiting() + valueNum);
-        } else if (stepPropertyInfo.getState().equals(StepPropertyEventStateEnum.ERROR)) {
+        } else if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.ERROR)) {
             stepState.setErrors(stepState.getErrors() + valueNum);
-        } else if (stepPropertyInfo.getState().equals(StepPropertyEventStateEnum.RUNNING)) {
+        } else if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.RUNNING)) {
             stepState.setRunning(stepState.getRunning() + valueNum);
         }
         sessionStep.getProperties().put(property, String.valueOf(previousValue + valueNum));

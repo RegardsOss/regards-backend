@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.modules.session.agent.service.clean.sessionste
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -39,7 +40,7 @@ import java.time.Instant;
 
 /**
  * Scheduler to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
- * and {@link fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest }
+ * and {@link StepPropertyUpdateRequest }
  *
  * @author Iliana Ghazali
  */

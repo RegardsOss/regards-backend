@@ -44,10 +44,10 @@ public class SessionAgentHandler
     public void handleBatch(String tenant, List<StepPropertyUpdateRequestEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            LOGGER.info("[STEP EVENT HANDLER] Handling {} StepEvents...", messages.size());
+            LOGGER.trace("[STEP EVENT HANDLER] Handling {} StepEvents...", messages.size());
             long start = System.currentTimeMillis();
             sessionAgentHandlerService.createStepRequests(messages);
-            LOGGER.info("[STEP EVENT HANDLER] {} StepEvents handled in {} ms", messages.size(),
+            LOGGER.trace("[STEP EVENT HANDLER] {} StepEvents handled in {} ms", messages.size(),
                         System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();

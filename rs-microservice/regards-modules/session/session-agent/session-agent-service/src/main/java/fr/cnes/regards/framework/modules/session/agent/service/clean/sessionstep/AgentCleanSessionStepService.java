@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.modules.session.agent.service.clean.sessionste
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
- * and {@link fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest }
+ * and {@link StepPropertyUpdateRequest }
  *
  * @author Iliana Ghazali
  **/

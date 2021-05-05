@@ -36,9 +36,9 @@ public class SessionDeleteEventHandler
         String session = message.getSession();
         long start = System.currentTimeMillis();
 
-        LOGGER.debug("Handling deleting of session {} from source {} for tenant {}", source, session, tenant);
+        LOGGER.trace("Handling deleting of session {} from source {} for tenant {}", source, session, tenant);
         sessionDeleteService.deleteSession(message.getSource(), message.getSession());
-        LOGGER.debug("Deleting of session {} from source {} for tenant {} handled in {}ms", source, session, tenant,
+        LOGGER.trace("Deleting of session {} from source {} for tenant {} handled in {}ms", source, session, tenant,
                      start - System.currentTimeMillis());
 
     }
