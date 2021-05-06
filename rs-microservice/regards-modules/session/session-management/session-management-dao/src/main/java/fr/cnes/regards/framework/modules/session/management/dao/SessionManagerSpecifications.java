@@ -20,35 +20,40 @@ package fr.cnes.regards.framework.modules.session.management.dao;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.session.management.domain.ManagerState;
-import fr.cnes.regards.framework.modules.session.management.domain.Source;
+import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import java.util.Set;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
- * Specifications to filter DAO search on {@link Source}
+ * Specifications for {@link Session}
+ *
  * @author Iliana Ghazali
  **/
-public class SourceSpecifications {
+public class SessionManagerSpecifications {
 
     private static final String LIKE_CHAR = "%";
 
-    private SourceSpecifications(){
+    private SessionManagerSpecifications() {
     }
 
-    public static Specification<Source> search(String name, String state) {
+    public static Specification<Session> search(String name, String state, String source) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if(name != null) {
+            if (name != null) {
                 predicates.add(cb.like(root.get("name"), LIKE_CHAR + name + LIKE_CHAR));
             }
 
-            if(state !=null) {
+            if (source != null) {
+                predicates.add(cb.like(root.get("source"), LIKE_CHAR + source + LIKE_CHAR));
+            }
+
+            if (state != null) {
                 Path<ManagerState> managerState = root.get("managerState");
-                if(state.equals("errors") || state.equals("waiting") || state.equals("running")) {
+                if (state.equals("errors") || state.equals("waiting") || state.equals("running")) {
                     predicates.add(cb.isTrue(managerState.get(state)));
-                } else if(state.equals("ok")) {
+                } else if (state.equals("ok")) {
                     predicates.add(cb.isFalse(managerState.get("errors")));
                     predicates.add(cb.isFalse(managerState.get("waiting")));
                     predicates.add(cb.isFalse(managerState.get("running")));

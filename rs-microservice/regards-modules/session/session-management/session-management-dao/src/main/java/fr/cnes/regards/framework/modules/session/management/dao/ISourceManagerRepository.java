@@ -18,28 +18,20 @@
  */
 package fr.cnes.regards.framework.modules.session.management.dao;
 
-import fr.cnes.regards.framework.modules.session.management.domain.Session;
-import java.time.OffsetDateTime;
+import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import java.util.Optional;
-import java.util.Set;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 /**
- * Repository for {@link Session}
+ * Repository for {@link Source}
  * @author Iliana Ghazali
  */
 @Repository
-public interface ISessionRepository extends JpaRepository<Session, Long>, JpaSpecificationExecutor<Session> {
+public interface ISourceManagerRepository extends JpaRepository<Source, Long>, JpaSpecificationExecutor<Source> {
 
-    Optional<Session> findBySourceAndName(String source, String sessionName);
+    Optional<Source> findByName(String name);
 
-    long countBySourceAndNameIn(String name, Set<String> collect);
-
-    long countBySource(String sourceName);
-
-    Page<Session> findByLastUpdateDateBefore(OffsetDateTime startClean, Pageable pageable);
+    void deleteByNbSessions(int noSession);
 }

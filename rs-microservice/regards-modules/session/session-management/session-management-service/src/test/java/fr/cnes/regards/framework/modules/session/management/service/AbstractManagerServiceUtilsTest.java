@@ -15,8 +15,8 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepReposit
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
-import fr.cnes.regards.framework.modules.session.management.dao.ISessionRepository;
-import fr.cnes.regards.framework.modules.session.management.dao.ISourceRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.management.service.handlers.SessionManagerHandler;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import java.util.List;
@@ -52,10 +52,10 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
     protected ISessionStepRepository sessionStepRepo;
 
     @Autowired
-    protected ISessionRepository sessionRepo;
+    protected ISessionManagerRepository sessionRepo;
 
     @Autowired
-    protected ISourceRepository sourceRepo;
+    protected ISourceManagerRepository sourceRepo;
 
     @Autowired
     protected ISnapshotProcessRepository snapshotProcessRepo;

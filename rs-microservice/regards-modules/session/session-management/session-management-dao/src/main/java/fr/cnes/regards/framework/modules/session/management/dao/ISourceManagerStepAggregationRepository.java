@@ -27,6 +27,6 @@ import org.springframework.stereotype.Repository;
  * @author Iliana Ghazali
  */
 @Repository
-public interface ISourceStepAggregationRepository extends JpaRepository<SourceStepAggregation, Long> {
+public interface ISourceManagerStepAggregationRepository extends JpaRepository<SourceStepAggregation, Long> {
 
 }

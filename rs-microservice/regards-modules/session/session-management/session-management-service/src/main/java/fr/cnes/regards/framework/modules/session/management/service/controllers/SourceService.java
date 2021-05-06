@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
-import fr.cnes.regards.framework.modules.session.management.dao.ISourceRepository;
-import fr.cnes.regards.framework.modules.session.management.dao.SourceSpecifications;
+import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.SourceManagerSpecifications;
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +41,13 @@ import org.springframework.stereotype.Service;
 public class SourceService {
 
     @Autowired
-    private ISourceRepository sourceRepo;
+    private ISourceManagerRepository sourceRepo;
 
     @Autowired
     private IPublisher publisher;
 
     public Page<Source> loadSources(String name, String state, Pageable pageable) {
-        return this.sourceRepo.findAll(SourceSpecifications.search(name, state), pageable);
+        return this.sourceRepo.findAll(SourceManagerSpecifications.search(name, state), pageable);
     }
 
     public void orderDeleteSource(String name) throws EntityNotFoundException {

@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
-import fr.cnes.regards.framework.modules.session.management.dao.ISessionRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -55,7 +55,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private ISessionRepository sessionRepo;
+    private ISessionManagerRepository sessionRepo;
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;

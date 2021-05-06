@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
-import fr.cnes.regards.framework.modules.session.management.dao.ISessionRepository;
-import fr.cnes.regards.framework.modules.session.management.dao.SessionSpecifications;
+import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.SessionManagerSpecifications;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,13 +42,13 @@ public class SessionService {
 
 
     @Autowired
-    private ISessionRepository sessionRepo;
+    private ISessionManagerRepository sessionRepo;
 
     @Autowired
     private IPublisher publisher;
 
     public Page<Session> loadSessions(String name, String state, String source, Pageable pageable) {
-        return this.sessionRepo.findAll(SessionSpecifications.search(name, state, source), pageable);
+        return this.sessionRepo.findAll(SessionManagerSpecifications.search(name, state, source), pageable);
     }
 
     public void orderDeleteSession(long id) throws EntityNotFoundException {

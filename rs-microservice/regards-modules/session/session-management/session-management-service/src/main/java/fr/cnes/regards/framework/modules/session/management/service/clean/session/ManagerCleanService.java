@@ -4,8 +4,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.modules.session.management.dao.ISessionRepository;
-import fr.cnes.regards.framework.modules.session.management.dao.ISourceRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.management.domain.DeltaSessionStep;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
@@ -41,10 +41,10 @@ public class ManagerCleanService {
     private ISessionStepRepository sessionStepRepo;
 
     @Autowired
-    private ISessionRepository sessionRepo;
+    private ISessionManagerRepository sessionRepo;
 
     @Autowired
-    private ISourceRepository sourceRepo;
+    private ISourceManagerRepository sourceRepo;
 
     @Value("${regards.session.manager.clean.session.limit.store.session:30}")
     private int limitStoreSessionSteps;

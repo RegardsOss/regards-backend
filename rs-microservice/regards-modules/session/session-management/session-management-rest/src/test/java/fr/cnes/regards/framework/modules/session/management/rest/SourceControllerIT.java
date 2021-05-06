@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.modules.session.management.rest;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
-import fr.cnes.regards.framework.modules.session.management.dao.ISourceRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -49,7 +49,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private ISourceRepository sourceRepo;
+    private ISourceManagerRepository sourceRepo;
 
     @Autowired
     private SourceService sourceService;

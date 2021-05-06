@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepReposit
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.modules.session.management.dao.ISessionRepository;
-import fr.cnes.regards.framework.modules.session.management.dao.ISourceRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.management.domain.AggregationState;
 import fr.cnes.regards.framework.modules.session.management.domain.DeltaSessionStep;
 import fr.cnes.regards.framework.modules.session.management.domain.ManagerState;
@@ -58,10 +58,10 @@ public class ManagerSnapshotService {
     private ISessionStepRepository sessionStepRepo;
 
     @Autowired
-    private ISessionRepository sessionRepo;
+    private ISessionManagerRepository sessionRepo;
 
     @Autowired
-    private ISourceRepository sourceRepo;
+    private ISourceManagerRepository sourceRepo;
 
     @Value("${regards.session.management.session.step.page.size:1000}")
     private int sessionStepPageSize;
