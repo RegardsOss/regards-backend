@@ -1,5 +1,5 @@
 -- Session
-CREATE TABLE t_session (
+CREATE TABLE t_session_manager (
     id                  int8            NOT NULL              ,
     name                varchar(255)    NOT NULL              ,
     source              varchar(255)    NOT NULL              ,
@@ -16,7 +16,7 @@ CREATE sequence seq_session start 1 increment 50;
 
 -- Source
 
-CREATE TABLE t_source (
+CREATE TABLE t_source_manager (
     name                varchar(255)    NOT NULL              ,
     nb_sessions         int8            NOT NULL DEFAULT 0    ,
     last_update_date    timestamp                             ,
@@ -39,7 +39,7 @@ CREATE TABLE t_source_step_aggregation (
 );
 
 ALTER TABLE t_source_step_aggregation ADD CONSTRAINT fk_source_step_aggregation FOREIGN KEY (source_name) REFERENCES
-t_source;
+t_source_manager;
 
 CREATE sequence seq_agg start 1 increment 50;
 

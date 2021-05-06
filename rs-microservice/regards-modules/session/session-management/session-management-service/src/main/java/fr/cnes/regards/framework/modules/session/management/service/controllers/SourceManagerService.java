@@ -21,10 +21,10 @@ package fr.cnes.regards.framework.modules.session.management.service.controllers
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
-import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
-import fr.cnes.regards.framework.modules.session.management.dao.SessionManagerSpecifications;
-import fr.cnes.regards.framework.modules.session.management.domain.Session;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
+import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
+import fr.cnes.regards.framework.modules.session.management.dao.SourceManagerSpecifications;
+import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,32 +32,30 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
- * Service for session controller
+ * Service for source controller
  *
  * @author Iliana Ghazali
  **/
 @Service
 @MultitenantTransactional
-public class SessionService {
-
+public class SourceManagerService {
 
     @Autowired
-    private ISessionManagerRepository sessionRepo;
+    private ISourceManagerRepository sourceRepo;
 
     @Autowired
     private IPublisher publisher;
 
-    public Page<Session> loadSessions(String name, String state, String source, Pageable pageable) {
-        return this.sessionRepo.findAll(SessionManagerSpecifications.search(name, state, source), pageable);
+    public Page<Source> loadSources(String name, String state, Pageable pageable) {
+        return this.sourceRepo.findAll(SourceManagerSpecifications.search(name, state), pageable);
     }
 
-    public void orderDeleteSession(long id) throws EntityNotFoundException {
-        Optional<Session> sessionOpt = this.sessionRepo.findById(id);
-        if (sessionOpt.isPresent()) {
-            Session session = sessionOpt.get();
-            this.publisher.publish(new SessionDeleteEvent(session.getSource(), session.getName()));
+    public void orderDeleteSource(String name) throws EntityNotFoundException {
+        Optional<Source> sourceOpt = this.sourceRepo.findByName(name);
+        if (sourceOpt.isPresent()) {
+            publisher.publish(new SourceDeleteEvent(name));
         } else {
-            throw new EntityNotFoundException(id, Session.class);
+            throw new EntityNotFoundException(name, Source.class);
         }
     }
 }

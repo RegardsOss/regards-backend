@@ -47,7 +47,7 @@ import org.hibernate.annotations.TypeDefs;
  * @author Iliana Ghazali
  */
 @Entity
-@Table(name = "t_session")
+@Table(name = "t_session_manager")
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 public class Session {
 

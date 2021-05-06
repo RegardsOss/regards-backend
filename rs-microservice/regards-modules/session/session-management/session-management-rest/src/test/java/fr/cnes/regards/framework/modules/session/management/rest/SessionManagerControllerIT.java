@@ -44,12 +44,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Test for {@link SessionController}
+ * Test for {@link SessionManagerController}
  *
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=session_controller_it" })
-public class SessionControllerIT extends AbstractRegardsTransactionalIT {
+public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -76,7 +76,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         List<Session> sessionList = createSessions();
 
         // return all sessions
-        performDefaultGet(SessionController.ROOT_MAPPING,
+        performDefaultGet(SessionManagerController.ROOT_MAPPING,
                           customizer().expectStatusOk().expectValue("$.metadata" + ".totalElements", 7),
                           "Wrong number of sessions returned");
 
@@ -85,7 +85,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         customizer1.addParameter("name", "SESSION_1");
         customizer1.expectStatusOk();
         customizer1.expectValue("$.metadata.totalElements", 6);
-        performDefaultGet(SessionController.ROOT_MAPPING, customizer1, "The session expected was not returned");
+        performDefaultGet(SessionManagerController.ROOT_MAPPING, customizer1, "The session expected was not returned");
 
         // search for state = errors
         RequestBuilderCustomizer customizer2 = customizer();
@@ -93,7 +93,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         customizer2.expectStatusOk();
         customizer2.expectValue("$.metadata.totalElements", 1);
         customizer2.expectValue("$.content.[0].content.id", sessionList.get(0).getId());
-        performDefaultGet(SessionController.ROOT_MAPPING, customizer2, "The session expected was not returned");
+        performDefaultGet(SessionManagerController.ROOT_MAPPING, customizer2, "The session expected was not returned");
 
         // search for state = waiting
         RequestBuilderCustomizer customizer3 = customizer();
@@ -101,7 +101,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         customizer3.expectStatusOk();
         customizer3.expectValue("$.metadata.totalElements", 1);
         customizer3.expectValue("$.content.[0].content.id", sessionList.get(1).getId());
-        performDefaultGet(SessionController.ROOT_MAPPING, customizer3, "The session expected was not returned");
+        performDefaultGet(SessionManagerController.ROOT_MAPPING, customizer3, "The session expected was not returned");
 
         // search for state = waiting
         RequestBuilderCustomizer customizer4 = customizer();
@@ -109,7 +109,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         customizer4.expectStatusOk();
         customizer4.expectValue("$.metadata.totalElements", 1);
         customizer4.expectValue("$.content.[0].content.id", sessionList.get(2).getId());
-        performDefaultGet(SessionController.ROOT_MAPPING, customizer4, "The session expected was not returned");
+        performDefaultGet(SessionManagerController.ROOT_MAPPING, customizer4, "The session expected was not returned");
 
         // search for state = ok
         RequestBuilderCustomizer customizer5 = customizer();
@@ -120,7 +120,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         customizer5.expectValue("$.content.[1].content.id", sessionList.get(4).getId());
         customizer5.expectValue("$.content.[2].content.id", sessionList.get(5).getId());
         customizer5.expectValue("$.content.[3].content.id", sessionList.get(6).getId());
-        performDefaultGet(SessionController.ROOT_MAPPING, customizer5, "The session expected was not returned");
+        performDefaultGet(SessionManagerController.ROOT_MAPPING, customizer5, "The session expected was not returned");
 
         // search for source = SOURCE_5
         RequestBuilderCustomizer customizer6 = customizer();
@@ -129,7 +129,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         customizer6.expectValue("$.metadata.totalElements", 2);
         customizer6.expectValue("$.content.[0].content.id", sessionList.get(5).getId());
         customizer6.expectValue("$.content.[1].content.id", sessionList.get(6).getId());
-        performDefaultGet(SessionController.ROOT_MAPPING, customizer6, "The session expected was not returned");
+        performDefaultGet(SessionManagerController.ROOT_MAPPING, customizer6, "The session expected was not returned");
 
         // search with combined filters
         RequestBuilderCustomizer customizer7 = customizer();
@@ -138,14 +138,14 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         customizer7.expectStatusOk();
         customizer7.expectValue("$.metadata.totalElements", 1);
         customizer7.expectValue("$.content.[0].content.id", sessionList.get(6).getId());
-        performDefaultGet(SessionController.ROOT_MAPPING, customizer7, "The session expected was not returned");
+        performDefaultGet(SessionManagerController.ROOT_MAPPING, customizer7, "The session expected was not returned");
     }
 
     @Test
     @Purpose("Test the deletion of a session")
     public void deleteSession() {
         List<Session> sessionList = createSessions();
-        performDefaultDelete(SessionController.ROOT_MAPPING + SessionController.DELETE_SESSION_MAPPING,
+        performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.DELETE_SESSION_MAPPING,
                              customizer().expectStatusOk(), "The order to delete a session was not published",
                              sessionList.get(0).getId());
 
@@ -155,7 +155,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Test the deletion of a not existing session")
     public void deleteNotExistingSource() {
-        performDefaultDelete(SessionController.ROOT_MAPPING + SessionController.DELETE_SESSION_MAPPING,
+        performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.DELETE_SESSION_MAPPING,
                              customizer().expectStatus(HttpStatus.NOT_FOUND),
                              "The order to delete a session was published but the session does not exist",
                              156464635132L);

@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
-import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceService;
+import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceManagerService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +51,8 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Iliana Ghazali
  **/
 @RestController
-@RequestMapping(SourceController.ROOT_MAPPING)
-public class SourceController implements IResourceController<Source> {
+@RequestMapping(SourceManagerController.ROOT_MAPPING)
+public class SourceManagerController implements IResourceController<Source> {
 
     /**
      * Hypermedia resource service
@@ -64,7 +64,7 @@ public class SourceController implements IResourceController<Source> {
      * Source Repository
      */
     @Autowired
-    private SourceService sourceService;
+    private SourceManagerService sourceManagerService;
 
 
     /**
@@ -84,7 +84,7 @@ public class SourceController implements IResourceController<Source> {
             @RequestParam(required = false) String state,
             @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
             final PagedResourcesAssembler<Source> assembler) {
-        Page<Source> sources = this.sourceService.loadSources(name, state, pageable);
+        Page<Source> sources = this.sourceManagerService.loadSources(name, state, pageable);
         return ResponseEntity.ok(toPagedResources(sources, assembler));
     }
 
@@ -92,7 +92,7 @@ public class SourceController implements IResourceController<Source> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a source", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Void> deleteSource(@PathVariable("name") final String name) throws EntityNotFoundException {
-        this.sourceService.orderDeleteSource(name);
+        this.sourceManagerService.orderDeleteSource(name);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
-import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceService;
+import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceManagerService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -38,12 +38,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Test for {@link SourceController}
+ * Test for {@link SourceManagerController}
  *
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=source_controller_it" })
-public class SourceControllerIT extends AbstractRegardsTransactionalIT {
+public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -52,7 +52,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
     private ISourceManagerRepository sourceRepo;
 
     @Autowired
-    private SourceService sourceService;
+    private SourceManagerService sourceManagerService;
 
     @SpyBean
     protected IPublisher publisher;
@@ -79,7 +79,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check if sources are correctly retrieved according to the filters")
     public void getSourcesTest() {
         // return all sources
-        performDefaultGet(SourceController.ROOT_MAPPING,
+        performDefaultGet(SourceManagerController.ROOT_MAPPING,
                           customizer().expectStatusOk().expectValue("$.metadata.totalElements", 5),
                           "Wrong number of sources returned");
 
@@ -89,7 +89,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
         customizer1.expectStatusOk();
         customizer1.expectValue("$.metadata.totalElements", 1);
         customizer1.expectValue("$.content.[0].content.name", SOURCE_1);
-        performDefaultGet(SourceController.ROOT_MAPPING, customizer1, "The source expected was not returned");
+        performDefaultGet(SourceManagerController.ROOT_MAPPING, customizer1, "The source expected was not returned");
 
         // Search source by state = running
         RequestBuilderCustomizer customizer2 = customizer();
@@ -97,7 +97,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
         customizer2.expectStatusOk();
         customizer2.expectValue("$.metadata.totalElements", 1);
         customizer2.expectValue("$.content.[0].content.name", SOURCE_3);
-        performDefaultGet(SourceController.ROOT_MAPPING, customizer2, "The source expected was not returned");
+        performDefaultGet(SourceManagerController.ROOT_MAPPING, customizer2, "The source expected was not returned");
 
         // Search source by state = error
         RequestBuilderCustomizer customizer3 = customizer();
@@ -105,7 +105,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
         customizer3.expectStatusOk();
         customizer3.expectValue("$.metadata.totalElements", 1);
         customizer3.expectValue("$.content.[0].content.name", SOURCE_1);
-        performDefaultGet(SourceController.ROOT_MAPPING, customizer3, "The source expected was not returned");
+        performDefaultGet(SourceManagerController.ROOT_MAPPING, customizer3, "The source expected was not returned");
 
         // Search source by state = waiting
         RequestBuilderCustomizer customizer4 = customizer();
@@ -113,20 +113,20 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
         customizer4.expectStatusOk();
         customizer4.expectValue("$.metadata.totalElements", 1);
         customizer4.expectValue("$.content.[0].content.name", SOURCE_2);
-        performDefaultGet(SourceController.ROOT_MAPPING, customizer4, "The source expected was not returned");
+        performDefaultGet(SourceManagerController.ROOT_MAPPING, customizer4, "The source expected was not returned");
 
         // Search source by state = ok
         RequestBuilderCustomizer customizer5 = customizer();
         customizer5.addParameter("state", "ok");
         customizer5.expectStatusOk();
         customizer5.expectValue("$.metadata.totalElements", 2);
-        performDefaultGet(SourceController.ROOT_MAPPING, customizer5, "The sources expected were not returned");
+        performDefaultGet(SourceManagerController.ROOT_MAPPING, customizer5, "The sources expected were not returned");
     }
 
     @Test
     @Purpose("Test the deletion of a source")
     public void deleteSource() {
-        performDefaultDelete(SourceController.ROOT_MAPPING + SourceController.DELETE_SOURCE_MAPPING,
+        performDefaultDelete(SourceManagerController.ROOT_MAPPING + SourceManagerController.DELETE_SOURCE_MAPPING,
                              customizer().expectStatusOk(), "The order to delete a source was not published", SOURCE_1);
 
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(SourceDeleteEvent.class));
@@ -135,7 +135,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Test the deletion of a not existing source")
     public void deleteNotExistingSource() {
-        performDefaultDelete(SourceController.ROOT_MAPPING + SourceController.DELETE_SOURCE_MAPPING,
+        performDefaultDelete(SourceManagerController.ROOT_MAPPING + SourceManagerController.DELETE_SOURCE_MAPPING,
                              customizer().expectStatus(HttpStatus.NOT_FOUND),
                              "The order to delete a" + "source was published but the source does not exist",
                              "NOT_EXISTING");

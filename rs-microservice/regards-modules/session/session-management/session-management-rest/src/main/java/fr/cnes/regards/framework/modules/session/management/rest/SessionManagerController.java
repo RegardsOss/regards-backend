@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
-import fr.cnes.regards.framework.modules.session.management.service.controllers.SessionService;
+import fr.cnes.regards.framework.modules.session.management.service.controllers.SessionManagerService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +52,8 @@ import org.springframework.web.bind.annotation.RestController;
  **/
 
 @RestController
-@RequestMapping(SessionController.ROOT_MAPPING)
-public class SessionController implements IResourceController<Session> {
+@RequestMapping(SessionManagerController.ROOT_MAPPING)
+public class SessionManagerController implements IResourceController<Session> {
 
     /**
      * Hypermedia resource service
@@ -65,7 +65,7 @@ public class SessionController implements IResourceController<Session> {
      * Source Repository
      */
     @Autowired
-    private SessionService sessionService;
+    private SessionManagerService sessionManagerService;
 
     /**
      * Rest root path
@@ -84,7 +84,7 @@ public class SessionController implements IResourceController<Session> {
             @RequestParam(required = false) String state, @RequestParam(required = false) String source,
             @PageableDefault(sort = "lastUpdateDate" , direction = Sort.Direction.DESC, size = 20) Pageable pageable,
             PagedResourcesAssembler<Session> assembler) {
-        Page<Session> sessions = this.sessionService.loadSessions(name, state, source, pageable);
+        Page<Session> sessions = this.sessionManagerService.loadSessions(name, state, source, pageable);
         return ResponseEntity.ok(toPagedResources(sessions, assembler));
     }
 
@@ -93,7 +93,7 @@ public class SessionController implements IResourceController<Session> {
     @ResourceAccess(description = "Endpoint to delete a session", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Void> deleteSession(@PathVariable("id") final long id) {
         try {
-            this.sessionService.orderDeleteSession(id);
+            this.sessionManagerService.orderDeleteSession(id);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

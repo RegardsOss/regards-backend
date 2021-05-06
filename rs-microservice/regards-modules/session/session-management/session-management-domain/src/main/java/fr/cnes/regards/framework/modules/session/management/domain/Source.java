@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
  * @author Iliana Ghazali
  **/
 @Entity
-@Table(name = "t_source")
+@Table(name = "t_source_manager")
 public class Source {
 
     /**

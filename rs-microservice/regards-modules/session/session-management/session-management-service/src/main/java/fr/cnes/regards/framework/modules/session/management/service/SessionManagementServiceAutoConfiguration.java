@@ -6,8 +6,8 @@ import fr.cnes.regards.framework.modules.session.management.service.clean.sessio
 import fr.cnes.regards.framework.modules.session.management.service.clean.snapshotprocess.ManagerCleanSnapshotProcessJobService;
 import fr.cnes.regards.framework.modules.session.management.service.clean.snapshotprocess.ManagerCleanSnapshotProcessScheduler;
 import fr.cnes.regards.framework.modules.session.management.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
-import fr.cnes.regards.framework.modules.session.management.service.controllers.SessionService;
-import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceService;
+import fr.cnes.regards.framework.modules.session.management.service.controllers.SessionManagerService;
+import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceManagerService;
 import fr.cnes.regards.framework.modules.session.management.service.handlers.SessionManagerHandler;
 import fr.cnes.regards.framework.modules.session.management.service.handlers.SessionManagerHandlerService;
 import fr.cnes.regards.framework.modules.session.management.service.update.ManagerSnapshotJobService;
@@ -94,12 +94,12 @@ public class SessionManagementServiceAutoConfiguration {
      * Controller services
      */
     @Bean
-    public SourceService sourceService() {
-        return new SourceService();
+    public SourceManagerService sourceService() {
+        return new SourceManagerService();
     }
 
     @Bean
-    public SessionService sessionService() {
-        return new SessionService();
+    public SessionManagerService sessionService() {
+        return new SessionManagerService();
     }
 }
