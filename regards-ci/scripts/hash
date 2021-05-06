@@ -114,7 +114,8 @@ function relativePath {
                 moduleDir="$1"
             ;;
         esac
-        echo $(find . -maxdepth 4 -type d -name "${moduleDir}" ! -path '*.git*' -print | grep -v "rs-doc.*/" | head -n 1)
+        echo $(find . -maxdepth 5 -type d -name "${moduleDir}" ! -path '*.git*' -print | grep -v "rs-doc.*/" | head
+        -n 1)
     fi
 }
 
@@ -204,7 +205,7 @@ function calculateHash {
             treated=1
         else
             echo ERROR "Failed to compute hash for module ${module}. Did not find a **directory** named:
-            \"${module}\" to hash, module path : ${modulePath}."
+            \"${module}\" to hash, module path : \"${modulePath}\"."
             exit 1
         fi
     fi
