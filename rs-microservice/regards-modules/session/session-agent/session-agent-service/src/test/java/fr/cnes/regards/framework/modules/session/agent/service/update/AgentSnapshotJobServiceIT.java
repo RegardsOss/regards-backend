@@ -50,7 +50,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
         // wait for job to be in success state
         agentJobSnapshotService.scheduleJob();
 
-        boolean isJobAgentSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), 3, 10000L);
+        boolean isJobAgentSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), 3, 20000L);
         if (!isJobAgentSuccess) {
             Assert.fail("AgentSnapshotJob was not launched or was not in success state");
         }

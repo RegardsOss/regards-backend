@@ -45,7 +45,7 @@ import org.springframework.test.context.TestPropertySource;
  **/
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_snapshot_job_service_it" })
-public class ManagerSnapshotJobIT extends AbstractManagerServiceUtilsTest {
+public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest {
 
     @Autowired
     private ManagerSnapshotJobService managerSnapshotJobService;

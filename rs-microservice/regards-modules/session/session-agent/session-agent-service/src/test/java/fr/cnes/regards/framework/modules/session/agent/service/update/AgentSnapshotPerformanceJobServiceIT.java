@@ -1,13 +1,12 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
@@ -30,26 +29,31 @@ import org.springframework.test.context.TestPropertySource;
 public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUtilsTest {
 
     /**
+     * Tested service
+     */
+    @Autowired
+    private AgentSnapshotJobService agentJobSnapshotService;
+
+    /**
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotPerformanceJobServiceIT.class);
 
-    @Autowired
-    private AgentSnapshotJobService agentJobSnapshotService;
-
+    /**
+     * Reference date for tests
+     */
     private static final OffsetDateTime CREATION_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30);
 
     @Test
-    @Purpose("Test the performance while generation session steps from step update requests")
+    @Purpose("Test the performance while generating session steps from step update requests")
     public void performanceGenerateSessionStepTest() throws InterruptedException {
         // launch the generation of sessionSteps from StepPropertyUpdateRequest
-        SnapshotProcess snapshotProcess = new SnapshotProcess(SOURCE_1, CREATION_DATE, null);
         int nbSources = 10;
         int nbStepRequests = 5000;
-        int nbEvents = createRunStepEvents(nbStepRequests, nbSources);
+        createRunStepEvents(nbStepRequests, nbSources);
 
         // wait for stepPropertyUpdateRequestEvent to be stored in database
-        boolean isEventRegistered = waitForStepPropertyEventsStored(nbEvents);
+        boolean isEventRegistered = waitForStepPropertyEventsStored(nbStepRequests);
         if (!isEventRegistered) {
             Assert.fail("Events were not stored in database");
         }
@@ -79,17 +83,20 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
         Assert.assertEquals("Wrong number of session steps created", nbSessionStepExpected, sessionSteps.size());
     }
 
-    private int createRunStepEvents(int nbStepRequests, int nbSources) {
+    private void createRunStepEvents(int nbStepRequests, int nbSources) {
         List<StepPropertyUpdateRequestEvent> stepRequests = new ArrayList<>();
 
+        // create list of sources
         List<String> sources = new ArrayList<>();
         for (int i = 0; i < nbSources; i++) {
             sources.add("SOURCE_" + i);
         }
+
+        // create list of step request events
         for (int i = 0; i < nbStepRequests; i++) {
             String source = sources.get(i % nbSources);
 
-            // ACQUISITION - scan event SOURCE 1 OWNER 1
+            // ACQUISITION - scan event SOURCE 0-nbSources / OWNER 1
             stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("scan", source, OWNER_1,
                                                                                  new StepPropertyInfo(
                                                                                          StepTypeEnum.ACQUISITION,
@@ -100,6 +107,5 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
         }
         // Publish events
         this.publisher.publish(stepRequests);
-        return stepRequests.size();
     }
 }

@@ -87,9 +87,9 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         customizer1.expectValue("$.metadata.totalElements", 6);
         performDefaultGet(SessionController.ROOT_MAPPING, customizer1, "The session expected was not returned");
 
-        // search for state = error
+        // search for state = errors
         RequestBuilderCustomizer customizer2 = customizer();
-        customizer2.addParameter("state", "error");
+        customizer2.addParameter("state", "errors");
         customizer2.expectStatusOk();
         customizer2.expectValue("$.metadata.totalElements", 1);
         customizer2.expectValue("$.content.[0].content.id", sessionList.get(0).getId());

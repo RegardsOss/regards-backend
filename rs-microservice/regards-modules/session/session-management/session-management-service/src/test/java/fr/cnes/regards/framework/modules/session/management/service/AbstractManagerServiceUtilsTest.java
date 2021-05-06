@@ -141,7 +141,7 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
 
     protected boolean waitForSessionStepEventsStored(int nbEvents) throws InterruptedException {
         long count, now = System.currentTimeMillis(), end = now + 200000L;
-        LOGGER.debug("Waiting for step property requests to be saved ...");
+        LOGGER.info("Waiting for session steps to be saved ...");
         do {
             count = this.sessionStepRepo.count();
             now = System.currentTimeMillis();

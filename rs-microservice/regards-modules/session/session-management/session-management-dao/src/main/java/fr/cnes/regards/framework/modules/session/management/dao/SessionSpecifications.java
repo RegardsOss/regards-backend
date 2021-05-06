@@ -19,8 +19,10 @@
 package fr.cnes.regards.framework.modules.session.management.dao;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.modules.session.management.domain.ManagerState;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import java.util.Set;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -33,7 +35,7 @@ public class SessionSpecifications {
 
     private static final String LIKE_CHAR = "%";
 
-    private SessionSpecifications(){
+    private SessionSpecifications() {
     }
 
     public static Specification<Session> search(String name, String state, String source) {
@@ -48,12 +50,13 @@ public class SessionSpecifications {
             }
 
             if (state != null) {
-                if (state.equals("error") || state.equals("waiting") || state.equals("running")) {
-                    predicates.add(cb.isTrue(root.get(state)));
+                Path<ManagerState> managerState = root.get("managerState");
+                if (state.equals("errors") || state.equals("waiting") || state.equals("running")) {
+                    predicates.add(cb.isTrue(managerState.get(state)));
                 } else if (state.equals("ok")) {
-                    predicates.add(cb.isFalse(root.get("running")));
-                    predicates.add(cb.isFalse(root.get("error")));
-                    predicates.add(cb.isFalse(root.get("waiting")));
+                    predicates.add(cb.isFalse(managerState.get("errors")));
+                    predicates.add(cb.isFalse(managerState.get("waiting")));
+                    predicates.add(cb.isFalse(managerState.get("running")));
                 }
             }
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

@@ -101,7 +101,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
 
         // Search source by state = error
         RequestBuilderCustomizer customizer3 = customizer();
-        customizer3.addParameter("state", "error");
+        customizer3.addParameter("state", "errors");
         customizer3.expectStatusOk();
         customizer3.expectValue("$.metadata.totalElements", 1);
         customizer3.expectValue("$.content.[0].content.name", SOURCE_1);
