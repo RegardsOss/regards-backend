@@ -58,6 +58,7 @@ public class StorageLocationDTO {
         this.deletionRunning = deletionRunning;
         this.copyRunning = copyRunning;
         this.configuration = configuration;
+        this.allowsPhysicalDeletion = allowPhysicalDeletion;
     }
 
     public String getName() {
