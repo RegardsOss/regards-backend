@@ -203,7 +203,8 @@ function calculateHash {
             echo ${moduleHash} > ${modulePath}/.hash
             treated=1
         else
-            echo ERRROR "Failed to compute hash for module ${module}. Did not find a **directory** named: \"${module}\" to hash."
+            echo ERROR "Failed to compute hash for module ${module}. Did not find a **directory** named:
+            \"${module}\" to hash, module path : ${modulePath}."
             exit 1
         fi
     fi
