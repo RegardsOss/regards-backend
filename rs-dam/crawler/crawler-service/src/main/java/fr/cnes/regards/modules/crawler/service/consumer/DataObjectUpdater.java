@@ -41,14 +41,15 @@ public class DataObjectUpdater extends AbstractDataObjectBulkSaver implements Co
         // Computation of group access with plugins are done in an other step.
         // This step only associate group to dataobjets of dataset with no filter. All objets of the dataset have the same groups.
         for (DataObjectGroup group : groupsMap.values()) {
-            if ((group.getMetaDataObjectAccessFilterPluginId() == null)) {
+            // Ignore any accessGroup not giving the access to the dataset
+            if ((group.getMetaDataObjectAccessFilterPluginId() == null) && (group.getDatasetAccess())) {
                 object.getMetadata().addGroup(group.getGroupName(), datasetIpId, group.getDataObjectAccess());
             }
         }
         // set current modelNames on metadata for this datasetIpId
         object.getMetadata().addModelName(datasetModelName, datasetIpId);
         // update groupsMap from metadata
-        object.setGroups(object.getMetadata().getGroupsWithMetadataAccess());
+        object.setGroups(object.getMetadata().getGroups());
         // update modelNames from metadata
         object.setDatasetModelNames(object.getMetadata().getModelNames());
         object.setLastUpdate(updateDate);
