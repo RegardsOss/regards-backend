@@ -313,11 +313,11 @@ public class CatalogSearchService implements ICatalogSearchService {
         final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
         // If accessGroups is null, user is admin
         if (accessGroups != null) {
-            // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one groups with
-            // data access right)
+            // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one of
+            // the user access rights group)
             // page size to max value because datasets count isn't too large...
             ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream()
-                    .map(group -> ICriterion.eq("metadata.dataObjectsGroups." + group + ".dataObjectAccess", true))
+                    .map(group -> ICriterion.contains("groups", group))
                     .collect(Collectors.toSet()));
             Page<Dataset> page = searchService.search(Searches.onSingleEntity(EntityType.DATASET),
                                                       ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
