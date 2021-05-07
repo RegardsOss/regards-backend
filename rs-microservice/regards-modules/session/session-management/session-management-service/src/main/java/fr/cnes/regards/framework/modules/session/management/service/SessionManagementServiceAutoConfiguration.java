@@ -94,12 +94,12 @@ public class SessionManagementServiceAutoConfiguration {
      * Controller services
      */
     @Bean
-    public SourceManagerService sourceService() {
+    public SourceManagerService sourceManagerService() {
         return new SourceManagerService();
     }
 
     @Bean
-    public SessionManagerService sessionService() {
+    public SessionManagerService sessionManagerService() {
         return new SessionManagerService();
     }
 }
