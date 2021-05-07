@@ -64,7 +64,7 @@ public class SessionController implements IResourceController<SessionAdmin> {
     /**
      * Base mapping
      */
-    public static final String BASE_MAPPING = "/sessions";
+    public static final String BASE_MAPPING = "/sesssions";
 
     /**
      * Endpoint to retrieve the list of session sources
