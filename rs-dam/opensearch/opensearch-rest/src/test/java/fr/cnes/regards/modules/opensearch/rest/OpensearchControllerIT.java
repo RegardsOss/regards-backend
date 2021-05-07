@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  */
 @MultitenantTransactional
 @TestPropertySource("classpath:test.properties")
+@Ignore("TODO: simulate a web server that serves opensearch descriptor instead of unsable peps server")
 public class OpensearchControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpensearchControllerIT.class);
@@ -43,8 +44,7 @@ public class OpensearchControllerIT extends AbstractRegardsTransactionalIT {
     public void testRetrieveAccessGroupsListOfUser() {
         performDefaultGet(OpensearchController.TYPE_MAPPING + "/descriptor",
                           customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
-                                  .addParameter("url",
-                                                "https://peps.cnes.fr/resto/api/collections/S1/describe.xml"),
+                                  .addParameter("url", "https://peps.cnes.fr/resto/api/collections/S1/describe.xml"),
                           "error");
     }
 
