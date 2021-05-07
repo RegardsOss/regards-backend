@@ -17,7 +17,7 @@ import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionA
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
-import fr.cnes.regards.framework.modules.session.commons.service.SnapshotJobEventHandler;
+import fr.cnes.regards.framework.modules.session.commons.service.jobs.SnapshotJobEventHandler;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import java.util.List;
 import org.junit.After;

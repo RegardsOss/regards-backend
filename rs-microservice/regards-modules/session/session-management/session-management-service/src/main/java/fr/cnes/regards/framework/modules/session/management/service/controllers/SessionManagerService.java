@@ -41,7 +41,6 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class SessionManagerService {
 
-
     @Autowired
     private ISessionManagerRepository sessionRepo;
 
@@ -50,6 +49,10 @@ public class SessionManagerService {
 
     public Page<Session> loadSessions(String name, String state, String source, Pageable pageable) {
         return this.sessionRepo.findAll(SessionManagerSpecifications.search(name, state, source), pageable);
+    }
+
+    public Session getSessionById(long id) throws EntityNotFoundException {
+        return this.sessionRepo.findById(id).orElseThrow(() -> new EntityNotFoundException(id, Session.class));
     }
 
     public void orderDeleteSession(long id) throws EntityNotFoundException {

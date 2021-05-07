@@ -14,12 +14,19 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.SessionDeleteEventHandler;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.SourceDeleteEventHandler;
 import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
+import fr.cnes.regards.framework.modules.session.management.domain.Session;
+import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import fr.cnes.regards.framework.modules.session.management.service.handlers.SessionManagerHandler;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import java.util.List;
+import java.util.Optional;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -100,7 +107,11 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
     public void after() throws Exception {
         subscriber.unsubscribeFrom(SessionStepEvent.class);
         subscriber.unsubscribeFrom(JobEvent.class);
+        subscriber.unsubscribeFrom(SourceDeleteEvent.class);
+        subscriber.unsubscribeFrom(SessionDeleteEvent.class);
         cleanAMQPQueues(SessionManagerHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(SourceDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(SessionDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         doAfter();
     }
 
@@ -184,5 +195,35 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
             }
         } while (count != nbJobs && now <= end);
         return count == nbJobs;
+    }
+
+
+    protected boolean waitForSourceDeleted(String sourceName) throws InterruptedException {
+        long now = System.currentTimeMillis(), end = now + 200000L;
+        Optional<Source> source;
+        LOGGER.info("Waiting for source deletion ...");
+        do {
+            source = this.sourceRepo.findByName(sourceName);
+            if(source.isPresent()) {
+                Thread.sleep(10000L);
+            }
+            now = System.currentTimeMillis();
+
+        } while (source.isPresent() && now <= end);
+        return source.isPresent();
+    }
+
+    protected boolean waitForSessionDeleted(String sourceName, String sessionName) throws InterruptedException {
+        long now = System.currentTimeMillis(), end = now + 200000L;
+        Optional<Session> session;
+        LOGGER.info("Waiting for session deletion ...");
+        do {
+            session = this.sessionRepo.findBySourceAndName(sourceName, sessionName);
+            if(session.isPresent()) {
+                Thread.sleep(10000L);
+            }
+            now = System.currentTimeMillis();
+        } while (session.isPresent() && now <= end);
+        return session.isPresent();
     }
 }

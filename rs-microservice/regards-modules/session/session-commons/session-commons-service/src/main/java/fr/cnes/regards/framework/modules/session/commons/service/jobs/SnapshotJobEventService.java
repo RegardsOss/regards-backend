@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.commons.service;
+package fr.cnes.regards.framework.modules.session.commons.service.jobs;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;

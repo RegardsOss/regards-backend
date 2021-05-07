@@ -13,6 +13,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -30,19 +31,13 @@ import org.hibernate.annotations.TypeDefs;
 @Entity
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Table(name = "t_session_step")
+@IdClass(SessionStepId.class)
 public class SessionStep {
-
-    /**
-     * Id of the SessionStep
-     */
-    @Id
-    @SequenceGenerator(name = "sessionStepSequence", initialValue = 1, sequenceName = "seq_session_step")
-    @GeneratedValue(generator = "sessionStepSequence", strategy = GenerationType.SEQUENCE)
-    private long id;
 
     /**
      * Step identifier
      */
+    @Id
     @Column(name = "step_id")
     @NotNull
     private String stepId;
@@ -50,6 +45,7 @@ public class SessionStep {
     /**
      * Name of the source
      */
+    @Id
     @Column(name = "source")
     @NotNull
     private String source;
@@ -57,6 +53,7 @@ public class SessionStep {
     /**
      * Name of the session
      */
+    @Id
     @Column(name = "session")
     @NotNull
     private String session;
@@ -115,10 +112,6 @@ public class SessionStep {
     }
 
     public SessionStep() {
-    }
-
-    public long getId() {
-        return id;
     }
 
     public String getStepId() {
@@ -200,12 +193,11 @@ public class SessionStep {
         if (o == null || getClass() != o.getClass())
             return false;
         SessionStep that = (SessionStep) o;
-        return id == that.id;
+        return stepId.equals(that.stepId) && source.equals(that.source) && session.equals(that.session);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(stepId, source, session);
     }
-
 }

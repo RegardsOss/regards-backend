@@ -81,7 +81,7 @@ public class SessionManagerController implements IResourceController<Session> {
     /**
      * Delete session path
      */
-    public static final String DELETE_SESSION_MAPPING = "/{id}";
+    public static final String ID_MAPPING = "/{id}";
 
     @GetMapping
     @ResponseBody
@@ -100,7 +100,19 @@ public class SessionManagerController implements IResourceController<Session> {
         return ResponseEntity.ok(this.sessionManagerService.retrieveSessionsNames(name));
     }
 
-    @RequestMapping(value = DELETE_SESSION_MAPPING, method = RequestMethod.DELETE)
+    @RequestMapping(value = ID_MAPPING, method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "Endpoint to retrieve a session by id", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Void> getSessionById(@PathVariable("id") final long id) {
+        try {
+            this.sessionManagerService.getSessionById(id);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @RequestMapping(value = ID_MAPPING, method = RequestMethod.DELETE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a session", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteSession(@PathVariable("id") final long id) {

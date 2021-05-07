@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.commons.service;
+package fr.cnes.regards.framework.modules.session.commons.service.jobs;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;

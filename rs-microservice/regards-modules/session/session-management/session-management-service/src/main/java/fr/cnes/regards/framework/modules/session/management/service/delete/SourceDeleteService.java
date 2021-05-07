@@ -16,39 +16,34 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.session;
+package fr.cnes.regards.framework.modules.session.management.service.delete;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.ISessionDeleteService;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.ISourceDeleteService;
+import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Implementation of {@link ISessionDeleteService} to delete a session irrevocably
+ * Implementation of {@link ISourceDeleteService} to delete a source irrevocably
  *
  * @author Iliana Ghazali
  **/
 @Service
 @MultitenantTransactional
-public class SessionDeleteService implements ISessionDeleteService {
+public class SourceDeleteService implements ISourceDeleteService {
 
     @Autowired
-    private OAISDeletionService deletionService;
+    private ISourceManagerRepository sourceManagerRepo;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionDeleteService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SourceDeleteService.class);
 
     @Override
-    public void deleteSession(String source, String session) {
-        LOGGER.info("Event receive to program the deletion of all SIP from session {} of source {}", session,
-                    source);
-        // Run a SessionDeletionJob
-        deletionService.registerOAISDeletionCreator(
-                OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY).withSessionOwner(source)
-                        .withSession(session));
+    public void deleteSource(String source) {
+        LOGGER.info("Event receive to program the deletion of source {}", source);
+        // Run a SourceDeletionJob
+        this.sourceManagerRepo.deleteByName(source);
     }
 }

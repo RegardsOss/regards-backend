@@ -13,11 +13,11 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -68,7 +68,17 @@ public class StepPropertyUpdateRequest {
     private StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "session_step_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_session_step_id"))
+    @JoinColumns({
+            @JoinColumn(
+                    name = "gen_step_id",
+                    referencedColumnName = "step_id"),
+            @JoinColumn(
+                    name = "gen_source",
+                    referencedColumnName = "source"),
+            @JoinColumn(
+                    name = "gen_session",
+                    referencedColumnName = "session")
+    })
     private SessionStep sessionStep;
 
     public StepPropertyUpdateRequest(@NotNull String stepId, @NotNull String source, @NotNull String session,

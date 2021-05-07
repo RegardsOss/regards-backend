@@ -6,18 +6,11 @@ import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessScheduler;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessService;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.DefaultSessionDeleteService;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.DefaultSourceDeleteService;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.ISessionDeleteService;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.ISourceDeleteService;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandler;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandlerService;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionDeleteEventHandler;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SourceDeleteEventHandler;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -68,28 +61,6 @@ public class SessionAgentServiceAutoConfiguration {
     @Bean
     public SessionAgentHandler sessionAgentHandler() {
         return new SessionAgentHandler();
-    }
-
-    @Bean
-    public SessionDeleteEventHandler sessionDeleteEventHandler() {
-        return new SessionDeleteEventHandler();
-    }
-
-    @Bean
-    public SourceDeleteEventHandler sourceDeleteEventHandler() {
-        return new SourceDeleteEventHandler();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ISessionDeleteService.class)
-    public ISessionDeleteService sessionDeleteService() {
-        return new DefaultSessionDeleteService();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ISourceDeleteService.class)
-    public ISourceDeleteService sourceDeleteService() {
-        return new DefaultSourceDeleteService();
     }
 
     @Bean

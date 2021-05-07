@@ -11,12 +11,14 @@ CREATE TABLE t_step_property_update_request (
     type                varchar(100)    NOT NULL,
     input_related       boolean         NOT NULL,
     output_related      boolean         NOT NULL,
-    session_step_id     int8                    ,
+    gen_step_id         varchar(255)            ,
+    gen_source          varchar(255)            ,
+    gen_session         varchar(255)            ,
     primary key (id)
 );
 
 CREATE sequence seq_step_property start 1 increment 50;
 
-ALTER TABLE t_step_property_update_request ADD CONSTRAINT fk_session_step_id FOREIGN KEY (session_step_id) REFERENCES
-t_session_step;
+ALTER TABLE t_step_property_update_request ADD CONSTRAINT fk_session_step_id FOREIGN KEY (gen_step_id, gen_source,
+gen_session) REFERENCES t_session_step(step_id, source, session);
 

@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.service.handlers;
+package fr.cnes.regards.framework.modules.session.commons.service.delete;
 
 /**
  * Interface to delete a source

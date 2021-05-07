@@ -16,13 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.session;
+package fr.cnes.regards.framework.modules.session.management.service.delete;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.commons.service.delete.ISessionDeleteService;
-import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
-import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
+import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,17 +36,13 @@ import org.springframework.stereotype.Service;
 public class SessionDeleteService implements ISessionDeleteService {
 
     @Autowired
-    private OAISDeletionService deletionService;
+    private ISessionManagerRepository sessionManagerRepo;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionDeleteService.class);
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.info("Event receive to program the deletion of all SIP from session {} of source {}", session,
-                    source);
-        // Run a SessionDeletionJob
-        deletionService.registerOAISDeletionCreator(
-                OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY).withSessionOwner(source)
-                        .withSession(session));
+        LOGGER.info("Event receive to delete session {} of source {}", session, source);
+        sessionManagerRepo.deleteBySourceAndName(source, session);
     }
 }

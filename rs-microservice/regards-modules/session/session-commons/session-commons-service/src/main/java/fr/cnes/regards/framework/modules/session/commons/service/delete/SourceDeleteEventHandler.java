@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.service.handlers;
+package fr.cnes.regards.framework.modules.session.commons.service.delete;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;

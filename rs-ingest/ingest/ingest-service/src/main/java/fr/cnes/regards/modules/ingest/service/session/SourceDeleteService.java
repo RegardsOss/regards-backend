@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.session;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.ISourceDeleteService;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.ISourceDeleteService;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
@@ -45,7 +45,7 @@ public class SourceDeleteService implements ISourceDeleteService {
     @Override
     public void deleteSource(String source) {
         LOGGER.info("Event receive to program the deletion of source {}", source);
-        // Run a SessionDeletionJob
+        // Run a SourceDeletionJob
         deletionService.registerOAISDeletionCreator(
                 OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY).withSessionOwner(source));
     }

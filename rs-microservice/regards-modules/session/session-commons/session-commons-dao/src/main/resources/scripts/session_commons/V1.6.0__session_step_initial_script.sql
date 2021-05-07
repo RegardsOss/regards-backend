@@ -6,7 +6,6 @@ CREATE TABLE t_snapshot_process (
 );
 
 CREATE TABLE t_session_step (
-    id                  int8            NOT NULL              ,
     step_id             varchar(255)    NOT NULL              ,
     source              varchar(255)    NOT NULL              ,
     session             varchar(255)    NOT NULL              ,
@@ -18,7 +17,5 @@ CREATE TABLE t_session_step (
     running             int8            NOT NULL DEFAULT 0    ,
     properties          jsonb                                 ,
     last_update_date    timestamp                             ,
-    primary key (id)
+    primary key (step_id, source, session)
 );
-
-create sequence seq_session_step start 1 increment 50;

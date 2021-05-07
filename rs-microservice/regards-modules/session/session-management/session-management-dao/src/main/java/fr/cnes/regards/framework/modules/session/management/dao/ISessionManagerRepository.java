@@ -47,6 +47,8 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
 
     Page<Session> findByLastUpdateDateBefore(OffsetDateTime startClean, Pageable pageable);
 
+    void deleteBySourceAndName(String source, String session);
+
     @Query(value = "select distinct name from t_session_manager where lower(name) like lower(?1) ORDER BY name LIMIT "
             + "?2",
             nativeQuery = true)
@@ -68,5 +70,4 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
             return internalFindAllSessionsNames(MAX_SESSION_NAMES_RESULTS);
         }
     }
-
 }

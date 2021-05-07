@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.service.handlers;
+package fr.cnes.regards.framework.modules.session.commons.service.delete;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

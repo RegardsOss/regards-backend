@@ -112,7 +112,7 @@ public class ManagerSnapshotService {
 
         // CREATE SESSIONS
         boolean interrupted;
-        Pageable pageToRequest = PageRequest.of(0, sessionStepPageSize, Sort.by(Sort.Order.asc("id")));
+        Pageable pageToRequest = PageRequest.of(0, sessionStepPageSize, Sort.by(Sort.Order.asc("lastUpdateDate")));
         // iterate on all pages of sessionSteps to create Sessions
         do {
             interrupted = Thread.currentThread().isInterrupted();
@@ -248,8 +248,7 @@ public class ManagerSnapshotService {
 
     private void calculateDelta(Set<SessionStep> steps, SessionStep sessionStep, DeltaSessionStep delta) {
         // check if the session is already in the set of session step
-        SessionStep oldSessionStep = steps.stream().filter(s -> s.getId() == sessionStep.getId()).findFirst()
-                .orElse(null);
+        SessionStep oldSessionStep = steps.stream().filter(s -> s.equals(sessionStep)).findFirst().orElse(null);
         // if present calculate the difference between the previous sessionStep and its update
         if (oldSessionStep != null) {
             // update in/out

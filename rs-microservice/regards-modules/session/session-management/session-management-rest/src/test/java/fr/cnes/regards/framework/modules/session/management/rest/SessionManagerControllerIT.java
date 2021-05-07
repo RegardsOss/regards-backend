@@ -145,7 +145,7 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Test the deletion of a session")
     public void deleteSession() {
         List<Session> sessionList = createSessions();
-        performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.DELETE_SESSION_MAPPING,
+        performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.ID_MAPPING,
                              customizer().expectStatusOk(), "The order to delete a session was not published",
                              sessionList.get(0).getId());
 
@@ -155,7 +155,7 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Test the deletion of a not existing session")
     public void deleteNotExistingSource() {
-        performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.DELETE_SESSION_MAPPING,
+        performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.ID_MAPPING,
                              customizer().expectStatus(HttpStatus.NOT_FOUND),
                              "The order to delete a session was published but the session does not exist",
                              156464635132L);
@@ -193,6 +193,15 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING, customizer2,
                           "The wrong session name was retrieved");
+    }
+
+    @Test
+    @Purpose("Test retrieve a session by id")
+    public void getSessionById() {
+        List<Session> sessionList = createSessions();
+        performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.ID_MAPPING,
+                             customizer().expectStatusOk(), "The session was not retrieved",
+                             sessionList.get(0).getId());
     }
 
     /**

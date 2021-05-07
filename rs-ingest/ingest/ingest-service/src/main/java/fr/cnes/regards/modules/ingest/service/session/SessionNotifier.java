@@ -45,27 +45,27 @@ public class SessionNotifier {
 
     // Parameters to determine step properties
 
-    public static final String TOTAL_REQUESTS = "total_requests";
+    public static final String TOTAL_REQUESTS = "totalRequests";
 
-    public static final String REQUESTS_ERRORS = "requests_errors";
+    public static final String REQUESTS_ERRORS = "requestsErrors";
 
-    public static final String REQUESTS_RUNNING = "requests_running";
+    public static final String REQUESTS_RUNNING = "requestsRunning";
 
-    public static final String GENERATED_PRODUCTS = "generated_products";
+    public static final String GENERATED_PRODUCTS = "generatedProducts";
 
-    public static final String NEW_PRODUCT_VERSIONS = "new_product_versions";
+    public static final String NEW_PRODUCT_VERSIONS = "newProductVersions";
 
-    public static final String REPLACED_PRODUCTS = "replaced_products";
+    public static final String REPLACED_PRODUCTS = "replacedProducts";
 
-    public static final String IGNORED_PRODUCTS = "ignored_products";
+    public static final String IGNORED_PRODUCTS = "ignoredProducts";
 
-    public static final String PRODUCT_WAIT_VERSION_MODE = "product_wait_version_mode";
+    public static final String PRODUCT_WAIT_VERSION_MODE = "productWaitVersionMode";
 
-    public static final String POST_PROCESS_PENDING = "post_process_pending";
+    public static final String POST_PROCESS_PENDING = "postProcessPending";
 
-    public static final String POST_PROCESS_SUCCESS = "post_process_success";
+    public static final String POST_PROCESS_SUCCESS = "postProcessSuccess";
 
-    public static final String POST_PROCESS_ERROR = "post_process_error";
+    public static final String POST_PROCESS_ERROR = "postProcessError";
 
     // Request count - corresponds to the number of referencing requests
 
