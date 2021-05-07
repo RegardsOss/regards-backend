@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceManagerService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,11 +67,15 @@ public class SourceManagerController implements IResourceController<Source> {
     @Autowired
     private SourceManagerService sourceManagerService;
 
-
     /**
      * Rest root path
      */
     public static final String ROOT_MAPPING = "/sources";
+
+    /**
+     * Endpoint to retrieve the list of sources names
+     */
+    public static final String NAME_MAPPING = "/names";
 
     /**
      * Delete source path
@@ -88,6 +93,13 @@ public class SourceManagerController implements IResourceController<Source> {
         return ResponseEntity.ok(toPagedResources(sources, assembler));
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = NAME_MAPPING)
+    @ResourceAccess(description = "Retrieve a subset of sources names", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Set<String>> getSourcesNames(@RequestParam(value = "name", required = false) String name) {
+        return ResponseEntity.ok(this.sourceManagerService.retrieveSourcesNames(name));
+    }
+
+
     @RequestMapping(value = DELETE_SOURCE_MAPPING, method = RequestMethod.DELETE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a source", role = DefaultRole.REGISTERED_USER)
@@ -99,13 +111,13 @@ public class SourceManagerController implements IResourceController<Source> {
     @Override
     public EntityModel<Source> toResource(Source source, Object... extras) {
         EntityModel<Source> resource = resourceService.toResource(source);
-       /* resourceService.addLink(resource, this.getClass(), "getSources", LinkRels.LIST,
+        resourceService.addLink(resource, this.getClass(), "getSources", LinkRels.LIST,
                                 MethodParamFactory.build(String.class, source.getName()),
                                 MethodParamFactory.build(String.class),
                                 MethodParamFactory.build(Pageable.class),
-                                MethodParamFactory.build(PagedResourcesAssembler.class));*/
+                                MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "deleteSource", LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, source.getName()));
-        return resourceService.toResource(source);
+        return resource;
     }
 }

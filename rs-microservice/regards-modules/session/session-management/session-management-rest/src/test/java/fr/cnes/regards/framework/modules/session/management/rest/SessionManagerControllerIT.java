@@ -163,6 +163,38 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
         Mockito.verify(publisher, Mockito.times(0)).publish(Mockito.any(SourceDeleteEvent.class));
     }
 
+    @Test
+    @Purpose("Test retrieve session names")
+    public void getSessionsNames() {
+        int nbSessions = 11;
+        List<Session> sessionList = createSessionName(nbSessions);
+
+        // retrieve all sessions, should be limited
+        RequestBuilderCustomizer customizer0 = customizer();
+        customizer0.expectStatusOk();
+        customizer0.expectToHaveSize("$", ISessionManagerRepository.MAX_SESSION_NAMES_RESULTS);
+        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING, customizer0,
+                          "All sessions were not retrieved with limited parameter");
+
+        // retrieve unique session
+        RequestBuilderCustomizer customizer1 = customizer();
+        customizer1.addParameter("name", sessionList.get(0).getName());
+        customizer1.expectStatusOk();
+        customizer1.expectValue("$.[0]", sessionList.get(0).getName());
+
+        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING, customizer1,
+                          "The wrong session name was retrieved");
+
+        // retrieve session duplicated, only one name should be present
+        RequestBuilderCustomizer customizer2 = customizer();
+        customizer2.addParameter("name", sessionList.get(nbSessions).getName());
+        customizer2.expectStatusOk();
+        customizer2.expectValue("$.[0]", sessionList.get(nbSessions).getName());
+
+        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING, customizer2,
+                          "The wrong session name was retrieved");
+    }
+
     /**
      * init sessions
      */
@@ -191,6 +223,20 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
         sessionList.get(1).getManagerState().setWaiting(true);
         sessionList.get(2).getManagerState().setRunning(true);
 
+        return this.sessionRepo.saveAll(sessionList);
+    }
+
+    /**
+     * Init sessions for names
+     */
+    private List<Session> createSessionName(int nbSessions) {
+        List<Session> sessionList = new ArrayList<>();
+
+        for(int i = 0; i < nbSessions; i++) {
+            sessionList.add(new Session("SOURCE_"+i, "SESSION_"+i));
+        }
+        // create session with duplicated name
+        sessionList.add(new Session("SOURCE_"+nbSessions, "SESSION_" + (nbSessions -1)));
         return this.sessionRepo.saveAll(sessionList);
     }
 }

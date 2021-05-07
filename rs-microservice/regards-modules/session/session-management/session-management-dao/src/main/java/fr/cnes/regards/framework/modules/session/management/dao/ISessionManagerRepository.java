@@ -26,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -35,6 +36,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ISessionManagerRepository extends JpaRepository<Session, Long>, JpaSpecificationExecutor<Session> {
 
+    int MAX_SESSION_NAMES_RESULTS = 10;
+
+
     Optional<Session> findBySourceAndName(String source, String sessionName);
 
     long countBySourceAndNameIn(String name, Set<String> collect);
@@ -42,4 +46,27 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
     long countBySource(String sourceName);
 
     Page<Session> findByLastUpdateDateBefore(OffsetDateTime startClean, Pageable pageable);
+
+    @Query(value = "select distinct name from t_session_manager where lower(name) like lower(?1) ORDER BY name LIMIT "
+            + "?2",
+            nativeQuery = true)
+    Set<String> internalFindAllSessionsNames(String name, int nbResults);
+
+    @Query(value = "select distinct name from t_session_manager ORDER BY name LIMIT ?1", nativeQuery = true)
+    Set<String> internalFindAllSessionsNames(int nbResults);
+
+    /**
+     * Used to discover session names using an ilike filter
+     * @author lmieulet
+     * @param name the session name, can be empty
+     * @return a subset of all session names matching
+     */
+    default Set<String> findAllSessionsNames(String name) {
+        if ((name != null) && !name.isEmpty()) {
+            return internalFindAllSessionsNames(name + "%", MAX_SESSION_NAMES_RESULTS);
+        } else {
+            return internalFindAllSessionsNames(MAX_SESSION_NAMES_RESULTS);
+        }
+    }
+
 }

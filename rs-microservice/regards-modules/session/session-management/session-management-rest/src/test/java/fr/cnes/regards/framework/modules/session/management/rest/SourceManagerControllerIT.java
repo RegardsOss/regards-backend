@@ -20,14 +20,18 @@ package fr.cnes.regards.framework.modules.session.management.rest;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
+import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRepository;
+import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceManagerService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
@@ -143,6 +147,38 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
         Mockito.verify(publisher, Mockito.times(0)).publish(Mockito.any(SourceDeleteEvent.class));
     }
 
+    @Test
+    @Purpose("Test retrieve source names")
+    public void getSourcesNames() {
+        int nbSources = 11;
+        List<Source> sourceList = createSourcesNames(nbSources);
+
+        // retrieve all sessions, should be limited
+        RequestBuilderCustomizer customizer0 = customizer();
+        customizer0.expectStatusOk();
+        customizer0.expectToHaveSize("$", ISourceManagerRepository.MAX_SOURCES_NAMES_RESULTS);
+        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING, customizer0,
+                          "All sources were not retrieved with limited parameter");
+
+        // retrieve unique session
+        RequestBuilderCustomizer customizer1 = customizer();
+        customizer1.addParameter("name", sourceList.get(0).getName());
+        customizer1.expectStatusOk();
+        customizer1.expectValue("$.[0]", sourceList.get(0).getName());
+
+        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING, customizer1,
+                          "The wrong source name was retrieved");
+
+        // retrieve session duplicated, only one name should be present
+        RequestBuilderCustomizer customizer2 = customizer();
+        customizer2.addParameter("name", sourceList.get(nbSources).getName());
+        customizer2.expectStatusOk();
+        customizer2.expectValue("$.[0]", sourceList.get(nbSources).getName());
+
+        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING, customizer2,
+                          "The wrong source name was retrieved");
+    }
+
     /**
      * Init sources
      */
@@ -169,5 +205,16 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
         sourceSet.add(source5);
 
         this.sourceRepo.saveAll(sourceSet);
+    }
+
+    private List<Source> createSourcesNames(int nbSources) {
+        List<Source> sourceList = new ArrayList<>();
+
+        for (int i = 0; i < nbSources; i++) {
+            sourceList.add(new Source("SOURCE_" + i));
+        }
+        // create session with duplicated name
+        sourceList.add(new Source("SOURCE_" + nbSources));
+        return this.sourceRepo.saveAll(sourceList);
     }
 }

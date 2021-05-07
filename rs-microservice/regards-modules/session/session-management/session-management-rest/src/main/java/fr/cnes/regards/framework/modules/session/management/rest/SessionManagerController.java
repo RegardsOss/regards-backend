@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import fr.cnes.regards.framework.modules.session.management.service.controllers.SessionManagerService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,13 +74,18 @@ public class SessionManagerController implements IResourceController<Session> {
     public static final String ROOT_MAPPING = "/sessions";
 
     /**
+     * Endpoint to retrieve the list of session names
+     */
+    public static final String NAME_MAPPING = "/names";
+
+    /**
      * Delete session path
      */
     public static final String DELETE_SESSION_MAPPING = "/{id}";
 
     @GetMapping
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to get sessions", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Endpoint to get sessions", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(@RequestParam(required = false) String name,
             @RequestParam(required = false) String state, @RequestParam(required = false) String source,
             @PageableDefault(sort = "lastUpdateDate" , direction = Sort.Direction.DESC, size = 20) Pageable pageable,
@@ -88,9 +94,15 @@ public class SessionManagerController implements IResourceController<Session> {
         return ResponseEntity.ok(toPagedResources(sessions, assembler));
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = NAME_MAPPING)
+    @ResourceAccess(description = "Retrieve a subset of session names", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Set<String>> getSessionNames(@RequestParam(value = "name", required = false) String name) {
+        return ResponseEntity.ok(this.sessionManagerService.retrieveSessionsNames(name));
+    }
+
     @RequestMapping(value = DELETE_SESSION_MAPPING, method = RequestMethod.DELETE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to delete a session", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to delete a session", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteSession(@PathVariable("id") final long id) {
         try {
             this.sessionManagerService.orderDeleteSession(id);
@@ -103,14 +115,14 @@ public class SessionManagerController implements IResourceController<Session> {
     @Override
     public EntityModel<Session> toResource(Session session, Object... extras) {
         EntityModel<Session> resource = resourceService.toResource(session);
-       /* resourceService.addLink(resource, this.getClass(), "getSessions", LinkRels.LIST,
+        resourceService.addLink(resource, this.getClass(), "getSessions", LinkRels.LIST,
                                 MethodParamFactory.build(String.class, session.getName()),
                                 MethodParamFactory.build(String.class),
                                 MethodParamFactory.build(String.class, session.getSource()),
                                 MethodParamFactory.build(Pageable.class),
-                                MethodParamFactory.build(PagedResourcesAssembler.class));*/
+                                MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "deleteSession", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.TYPE, session.getId()));
-        return resourceService.toResource(session);
+        return resource;
     }
 }

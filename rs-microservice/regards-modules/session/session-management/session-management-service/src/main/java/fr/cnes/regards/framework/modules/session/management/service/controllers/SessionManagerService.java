@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.modules.session.management.dao.ISessionManagerR
 import fr.cnes.regards.framework.modules.session.management.dao.SessionManagerSpecifications;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -59,5 +60,9 @@ public class SessionManagerService {
         } else {
             throw new EntityNotFoundException(id, Session.class);
         }
+    }
+
+    public Set<String> retrieveSessionsNames(String name) {
+        return this.sessionRepo.findAllSessionsNames(name);
     }
 }

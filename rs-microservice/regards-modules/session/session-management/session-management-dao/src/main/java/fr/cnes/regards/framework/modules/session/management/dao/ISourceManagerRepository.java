@@ -20,18 +20,45 @@ package fr.cnes.regards.framework.modules.session.management.dao;
 
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
  * Repository for {@link Source}
+ *
  * @author Iliana Ghazali
  */
 @Repository
 public interface ISourceManagerRepository extends JpaRepository<Source, Long>, JpaSpecificationExecutor<Source> {
 
+    int MAX_SOURCES_NAMES_RESULTS = 10;
+
     Optional<Source> findByName(String name);
 
     void deleteByNbSessions(int noSession);
+
+    @Query(value = "select distinct name from t_source_manager where lower(name) like lower(?1) ORDER BY name LIMIT "
+            + "?2", nativeQuery = true)
+    Set<String> internalFindAllSourcesNames(String name, int nbResults);
+
+    @Query(value = "select distinct name from t_source_manager ORDER BY name LIMIT ?1", nativeQuery = true)
+    Set<String> internalFindAllSourcesNames(int nbResults);
+
+    /**
+     * Used to discover sources names using an ilike filter
+     *
+     * @param name the source name, can be empty
+     * @return a subset of all sources names matching
+     * @author lmieulet
+     */
+    default Set<String> findAllSourcesNames(String name) {
+        if ((name != null) && !name.isEmpty()) {
+            return internalFindAllSourcesNames(name + "%", MAX_SOURCES_NAMES_RESULTS);
+        } else {
+            return internalFindAllSourcesNames(MAX_SOURCES_NAMES_RESULTS);
+        }
+    }
 }
