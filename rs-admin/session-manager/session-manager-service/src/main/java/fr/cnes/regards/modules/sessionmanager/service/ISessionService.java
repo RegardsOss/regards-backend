@@ -26,7 +26,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionAdmin;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 
@@ -40,9 +40,9 @@ public interface ISessionService {
      * @param to              The max session creation date
      * @param onlyLastSession Return the lastest session from a source. This parameter is agnostic from others search filters
      * @param state           Return only session matching this state
-     * @return A {@link List} of {@link Session}
+     * @return A {@link List} of {@link SessionAdmin}
      */
-    Page<Session> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to,
+    Page<SessionAdmin> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to,
             SessionState state, boolean onlyLastSession, Pageable page);
 
     /**
@@ -60,13 +60,13 @@ public interface ISessionService {
     List<String> retrieveSessionSources(String source);
 
     /**
-     * Update the {@link Session#state}
+     * Update the {@link SessionAdmin#state}
      * @param id    The session <code>id</code>
      * @param state The new state value
-     * @return The {@link Session}
+     * @return The {@link SessionAdmin}
      * @throws ModuleException Thrown when the state cannot be changed
      */
-    Session updateSessionState(Long id, SessionState state) throws ModuleException;
+    SessionAdmin updateSessionState(Long id, SessionState state) throws ModuleException;
 
     /**
      * Delete a session
@@ -80,8 +80,8 @@ public interface ISessionService {
     /**
      * Update session properties
      * @param sessionMonitoringEvents The notifications with everything to update the sessions
-     * @return updated {@link Session}
+     * @return updated {@link SessionAdmin}
      */
-    List<Session> updateSessionProperties(List<SessionMonitoringEvent> list);
+    List<SessionAdmin> updateSessionProperties(List<SessionMonitoringEvent> list);
 
 }

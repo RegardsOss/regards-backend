@@ -44,7 +44,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.sessionmanager.dao.ISessionRepository;
 import fr.cnes.regards.modules.sessionmanager.dao.SessionSpecifications;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionAdmin;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import fr.cnes.regards.modules.sessionmanager.domain.event.DeleteSessionEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
@@ -74,7 +74,7 @@ public class SessionService implements ISessionService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Session> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to,
+    public Page<SessionAdmin> retrieveSessions(String source, String name, OffsetDateTime from, OffsetDateTime to,
             SessionState state, boolean onlyLastSession, Pageable page) {
         return sessionRepository.findAll(SessionSpecifications.search(source, name, from, to, state, onlyLastSession),
                                          page);
@@ -93,8 +93,8 @@ public class SessionService implements ISessionService {
     }
 
     @Override
-    public Session updateSessionState(Long id, SessionState state) throws ModuleException {
-        Session s = getSession(id);
+    public SessionAdmin updateSessionState(Long id, SessionState state) throws ModuleException {
+        SessionAdmin s = getSession(id);
         // Allow user to mark as acknowledged a session previously in error
         if ((s.getState() == SessionState.ERROR) && (state == SessionState.ACKNOWLEDGED)) {
             s.setState(state);
@@ -102,12 +102,12 @@ public class SessionService implements ISessionService {
         }
         String errorMessage = String.format("Changing session state from %s to %s isn't allowed", s.getState(), state);
         LOG.debug(errorMessage);
-        throw new EntityOperationForbiddenException(String.valueOf(s.getId()), Session.class, errorMessage);
+        throw new EntityOperationForbiddenException(String.valueOf(s.getId()), SessionAdmin.class, errorMessage);
     }
 
     @Override
     public void deleteSession(Long id, boolean force) throws ModuleException {
-        Session s = getSession(id);
+        SessionAdmin s = getSession(id);
         this.sendDeleteNotification(s);
         String source = s.getSource();
         if (force) {
@@ -129,29 +129,29 @@ public class SessionService implements ISessionService {
      */
     private void updateSourceLastSession(String source) {
         sessionRepository.updateSourceSessionsIsLatest(source, false);
-        Page<Session> pageResponse = sessionRepository.findAllBySourceOrderByLastUpdateDateDesc(source,
-                                                                                                PageRequest.of(0, 1));
+        Page<SessionAdmin> pageResponse = sessionRepository.findAllBySourceOrderByLastUpdateDateDesc(source,
+                                                                                                     PageRequest.of(0, 1));
         if (pageResponse.hasContent()) {
-            Session latestSession = pageResponse.getContent().get(0);
+            SessionAdmin latestSession = pageResponse.getContent().get(0);
             latestSession.setLatest(true);
             sessionRepository.save(latestSession);
         }
     }
 
     @Override
-    public List<Session> updateSessionProperties(List<SessionMonitoringEvent> events) {
+    public List<SessionAdmin> updateSessionProperties(List<SessionMonitoringEvent> events) {
         return sessionRepository.saveAll(mergeEvents(events));
     }
 
-    private Collection<Session> mergeEvents(Collection<SessionMonitoringEvent> events) {
-        Map<String, Session> sessionsToUpdate = new HashMap<>();
+    private Collection<SessionAdmin> mergeEvents(Collection<SessionMonitoringEvent> events) {
+        Map<String, SessionAdmin> sessionsToUpdate = new HashMap<>();
         // events have to be dismantle to be used by handleEventMerge so code is the same in both cases
         for (SessionMonitoringEvent sessionMonitoringEvent : events) {
             if (sessionMonitoringEvent.isGlobal()) {
                 // alreadyCreated = session in DB + session already handled by mergeEvents
-                Set<Session> alreadyCreatedSessions = Sets.newHashSet(sessionRepository.findAll());
+                Set<SessionAdmin> alreadyCreatedSessions = Sets.newHashSet(sessionRepository.findAll());
                 alreadyCreatedSessions.addAll(sessionsToUpdate.values());
-                for (Session session : alreadyCreatedSessions) {
+                for (SessionAdmin session : alreadyCreatedSessions) {
                     handleEventMerge(sessionsToUpdate, session.getSource(), session.getName(),
                                      sessionMonitoringEvent.getStep(), sessionMonitoringEvent.getProperty(),
                                      sessionMonitoringEvent.getOperator(), sessionMonitoringEvent.getValue(),
@@ -167,12 +167,12 @@ public class SessionService implements ISessionService {
         return sessionsToUpdate.values();
     }
 
-    private void handleEventMerge(Map<String, Session> sessionsToUpdate, String source, String name, String step,
+    private void handleEventMerge(Map<String, SessionAdmin> sessionsToUpdate, String source, String name, String step,
             String property, SessionNotificationOperator operator, Object value, SessionNotificationState state) {
         String sessionKey = source + "__" + name;
-        Session sessionToUpdate = sessionsToUpdate.get(sessionKey);
+        SessionAdmin sessionToUpdate = sessionsToUpdate.get(sessionKey);
         if (sessionToUpdate == null) {
-            Optional<Session> sessionOpt = sessionRepository.findOneBySourceAndName(source, name);
+            Optional<SessionAdmin> sessionOpt = sessionRepository.findOneBySourceAndName(source, name);
             if (!sessionOpt.isPresent()) {
                 sessionToUpdate = createSession(name, source);
             } else {
@@ -184,7 +184,7 @@ public class SessionService implements ISessionService {
                              updateSessionProperty(sessionToUpdate, step, property, operator, value, state));
     }
 
-    private Session updateSessionProperty(Session sessionToUpdate, String step, String property,
+    private SessionAdmin updateSessionProperty(SessionAdmin sessionToUpdate, String step, String property,
             SessionNotificationOperator operator, Object value, SessionNotificationState state) {
         // Set the new value inside the map
         boolean isKeyExisting = sessionToUpdate.isStepPropertyExisting(step, property);
@@ -237,24 +237,24 @@ public class SessionService implements ISessionService {
      * @param name   The session name
      * @param source The session source
      */
-    private Session createSession(String name, String source) {
+    private SessionAdmin createSession(String name, String source) {
 
         // Does a session exists for the same source ?
-        Optional<Session> oldLatestSessionOpt = sessionRepository.findOneBySourceAndIsLatestTrue(source);
-        Session newSession = sessionRepository.save(new Session(source, name));
+        Optional<SessionAdmin> oldLatestSessionOpt = sessionRepository.findOneBySourceAndIsLatestTrue(source);
+        SessionAdmin newSession = sessionRepository.save(new SessionAdmin(source, name));
         // Remove the flag isLatest to the previous one session sharing the same source
         if (oldLatestSessionOpt.isPresent()) {
-            Session oldLatestSession = oldLatestSessionOpt.get();
+            SessionAdmin oldLatestSession = oldLatestSessionOpt.get();
             oldLatestSession.setLatest(false);
             sessionRepository.save(oldLatestSession);
         }
         return newSession;
     }
 
-    private Session getSession(Long id) throws EntityNotFoundException {
-        Optional<Session> sessionOpt = sessionRepository.findById(id);
+    private SessionAdmin getSession(Long id) throws EntityNotFoundException {
+        Optional<SessionAdmin> sessionOpt = sessionRepository.findById(id);
         if (!sessionOpt.isPresent()) {
-            throw new EntityNotFoundException(sessionOpt.toString(), Session.class);
+            throw new EntityNotFoundException(sessionOpt.toString(), SessionAdmin.class);
         }
         return sessionOpt.get();
     }
@@ -264,7 +264,7 @@ public class SessionService implements ISessionService {
      * @param session
      * @return
      */
-    private Session updateSession(Session session) {
+    private SessionAdmin updateSession(SessionAdmin session) {
         session.setLastUpdateDate(OffsetDateTime.now());
         return sessionRepository.save(session);
     }
@@ -273,7 +273,7 @@ public class SessionService implements ISessionService {
      * Send a notification this session have been deleted
      * @param session
      */
-    private void sendDeleteNotification(Session session) {
+    private void sendDeleteNotification(SessionAdmin session) {
         DeleteSessionEvent notif = DeleteSessionEvent.build(session.getSource(), session.getName());
         publisher.publish(notif);
     }

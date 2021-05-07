@@ -48,7 +48,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.sessionmanager.dao.ISessionRepository;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionAdmin;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionLifeCycle;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import fr.cnes.regards.modules.sessionmanager.domain.dto.UpdateSession;
@@ -79,7 +79,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
 
     public static List<FieldDescriptor> documentBody() {
         String prefixPath = "content[].content.";
-        ConstrainedFields constrainedFields = new ConstrainedFields(Session.class);
+        ConstrainedFields constrainedFields = new ConstrainedFields(SessionAdmin.class);
         List<FieldDescriptor> descriptors = new ArrayList<>();
         descriptors.add(constrainedFields.withPath(prefixPath + "id", "id", "Session identifier", "Must be positive"));
         descriptors.add(constrainedFields.withPath(prefixPath + "source", "source", "Session source")
@@ -225,7 +225,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         SessionMonitoringEvent sessionMonitoringEvent = SessionMonitoringEvent
                 .build("session source", "session name", SessionNotificationState.ERROR, "key",
                        SessionNotificationOperator.REPLACE, "property", 1);
-        Session sessionToUpdate = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent))
+        SessionAdmin sessionToUpdate = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent))
                 .get(0);
 
         // Update the session status
@@ -261,7 +261,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         SessionMonitoringEvent sessionMonitoringEvent = SessionMonitoringEvent
                 .build("session source", "session name", SessionNotificationState.OK, "key",
                        SessionNotificationOperator.REPLACE, "property", 1);
-        Session sessionToDelete = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent))
+        SessionAdmin sessionToDelete = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent))
                 .get(0);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();

@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.sessionmanager.dao;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionAdmin;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import java.time.OffsetDateTime;
 import java.util.Set;
@@ -27,7 +27,7 @@ import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
- * Specification class to filter DAO searches on {@link Session} entities
+ * Specification class to filter DAO searches on {@link SessionAdmin} entities
  * @author Léo Mieulet
  */
 public class SessionSpecifications {
@@ -36,9 +36,9 @@ public class SessionSpecifications {
 
     /**
      * Filter on given attributes and return result
-     * @return {@link Specification}<{@link Session}>
+     * @return {@link Specification}<{@link SessionAdmin}>
      */
-    public static Specification<Session> search(String source, String name, OffsetDateTime from, OffsetDateTime to, SessionState state, boolean onlyLastSession) {
+    public static Specification<SessionAdmin> search(String source, String name, OffsetDateTime from, OffsetDateTime to, SessionState state, boolean onlyLastSession) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (name != null) {

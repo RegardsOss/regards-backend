@@ -48,7 +48,7 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionAdmin;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import fr.cnes.regards.modules.sessionmanager.domain.dto.UpdateSession;
 import fr.cnes.regards.modules.sessionmanager.service.ISessionService;
@@ -59,7 +59,7 @@ import fr.cnes.regards.modules.sessionmanager.service.ISessionService;
  */
 @RestController
 @RequestMapping(SessionController.BASE_MAPPING)
-public class SessionController implements IResourceController<Session> {
+public class SessionController implements IResourceController<SessionAdmin> {
 
     /**
      * Base mapping
@@ -89,7 +89,7 @@ public class SessionController implements IResourceController<Session> {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all sessions", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(
+    public ResponseEntity<PagedModel<EntityModel<SessionAdmin>>> getSessions(
             @RequestParam(value = "source", required = false) String source,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "from",
@@ -99,10 +99,10 @@ public class SessionController implements IResourceController<Session> {
             @RequestParam(value = "state", required = false) SessionState state,
             @RequestParam(value = "onlyLastSession", required = false) boolean onlyLastSession,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<Session> assembler) {
-        Page<Session> sessions = sessionService.retrieveSessions(source, name, from, to, state, onlyLastSession,
-                                                                 pageable);
-        PagedModel<EntityModel<Session>> resources = toPagedResources(sessions, assembler);
+            PagedResourcesAssembler<SessionAdmin> assembler) {
+        Page<SessionAdmin> sessions = sessionService.retrieveSessions(source, name, from, to, state, onlyLastSession,
+                                                                      pageable);
+        PagedModel<EntityModel<SessionAdmin>> resources = toPagedResources(sessions, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
@@ -121,9 +121,9 @@ public class SessionController implements IResourceController<Session> {
 
     @RequestMapping(method = RequestMethod.PATCH, value = SESSION_MAPPING)
     @ResourceAccess(description = "Update specific field of the session", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<Session>> updateSession(@PathVariable("session_id") Long id,
+    public ResponseEntity<EntityModel<SessionAdmin>> updateSession(@PathVariable("session_id") Long id,
             @Valid @RequestBody UpdateSession session) throws ModuleException {
-        Session updateSession = sessionService.updateSessionState(id, session.getState());
+        SessionAdmin updateSession = sessionService.updateSessionState(id, session.getState());
         return new ResponseEntity<>(toResource(updateSession), HttpStatus.OK);
     }
 
@@ -137,8 +137,8 @@ public class SessionController implements IResourceController<Session> {
     }
 
     @Override
-    public EntityModel<Session> toResource(Session element, Object... pExtras) {
-        final EntityModel<Session> resource = resourceService.toResource(element);
+    public EntityModel<SessionAdmin> toResource(SessionAdmin element, Object... pExtras) {
+        final EntityModel<SessionAdmin> resource = resourceService.toResource(element);
         if (element.getState() == SessionState.ERROR) {
             resourceService.addLink(resource, this.getClass(), "updateSession", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, element.getId()),

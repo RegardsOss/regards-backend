@@ -29,13 +29,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionAdmin;
 
 /**
- * Repository to access {@link Session} entities .
+ * Repository to access {@link SessionAdmin} entities .
  * @author Léo Mieulet
  */
-public interface ISessionRepository extends JpaRepository<Session, Long>, JpaSpecificationExecutor<Session> {
+public interface ISessionRepository extends JpaRepository<SessionAdmin, Long>, JpaSpecificationExecutor<SessionAdmin> {
 
     int MAX_SESSION_RESULTS = 10;
 
@@ -46,11 +46,11 @@ public interface ISessionRepository extends JpaRepository<Session, Long>, JpaSpe
      * @param source the exact session source name
      * @return
      */
-    Optional<Session> findOneBySourceAndIsLatestTrue(String source);
+    Optional<SessionAdmin> findOneBySourceAndIsLatestTrue(String source);
 
-    Optional<Session> findOneBySourceAndName(String source, String name);
+    Optional<SessionAdmin> findOneBySourceAndName(String source, String name);
 
-    Page<Session> findAllBySourceOrderByLastUpdateDateDesc(String source, Pageable page);
+    Page<SessionAdmin> findAllBySourceOrderByLastUpdateDateDesc(String source, Pageable page);
 
     @Modifying
     @Query(value = "update {h-schema}t_session set is_latest=(:isLatest) where source=(:source)", nativeQuery = true)

@@ -35,7 +35,7 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.sessionmanager.dao.ISessionRepository;
-import fr.cnes.regards.modules.sessionmanager.domain.Session;
+import fr.cnes.regards.modules.sessionmanager.domain.SessionAdmin;
 import fr.cnes.regards.modules.sessionmanager.domain.SessionState;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
@@ -57,30 +57,30 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testUpdateState() throws ModuleException {
-        Session session = generateErrorSession("session1");
-        Session sessionUpdated = sessionService.updateSessionState(session.getId(), SessionState.ACKNOWLEDGED);
+        SessionAdmin session = generateErrorSession("session1");
+        SessionAdmin sessionUpdated = sessionService.updateSessionState(session.getId(), SessionState.ACKNOWLEDGED);
         Assert.assertEquals("Should state be updated to Acknowledged", sessionUpdated.getState(),
                             SessionState.ACKNOWLEDGED);
     }
 
     @Test(expected = ModuleException.class)
     public void testInvalidUpdateState() throws ModuleException {
-        Session session = generateErrorSession("session1");
+        SessionAdmin session = generateErrorSession("session1");
         // Set the session state from ERROR to OK
         sessionService.updateSessionState(session.getId(), SessionState.OK);
     }
 
     @Test
     public void testDelete() throws ModuleException, InterruptedException {
-        Session session = generateErrorSession("session1");
+        SessionAdmin session = generateErrorSession("session1");
         Assert.assertTrue(session.isLatest());
         Thread.sleep(1_000);
-        Session session2 = generateErrorSession("session2");
+        SessionAdmin session2 = generateErrorSession("session2");
         Assert.assertTrue(session2.isLatest());
         Assert.assertFalse(sessionRepository.findById(session.getId()).get().isLatest());
 
         sessionService.deleteSession(session.getId(), false);
-        Optional<Session> sessionOpt = sessionRepository.findById(session.getId());
+        Optional<SessionAdmin> sessionOpt = sessionRepository.findById(session.getId());
         Assert.assertTrue("Session should still exists", sessionOpt.isPresent());
         Assert.assertEquals("When deleted with force=false, the session state is DELETED", SessionState.DELETED,
                             sessionOpt.get().getState());
@@ -91,15 +91,15 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testForceDelete() throws ModuleException, InterruptedException {
-        Session session = generateErrorSession("session1");
+        SessionAdmin session = generateErrorSession("session1");
         Assert.assertTrue(session.isLatest());
         Thread.sleep(1_000);
-        Session session2 = generateErrorSession("session2");
+        SessionAdmin session2 = generateErrorSession("session2");
         Assert.assertTrue(session2.isLatest());
         Assert.assertFalse(sessionRepository.findById(session.getId()).get().isLatest());
 
         sessionService.deleteSession(session.getId(), true);
-        Optional<Session> sessionOpt = sessionRepository.findById(session.getId());
+        Optional<SessionAdmin> sessionOpt = sessionRepository.findById(session.getId());
         Assert.assertFalse("When deleted with force=true, the session should not exist anymore",
                            sessionOpt.isPresent());
         Assert.assertTrue("is latest flag should be set for remaining session",
@@ -113,10 +113,10 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         String name = "name";
         String step = "step";
         String property = "property";
-        Page<Session> latests = sessionService.retrieveSessions(source, null, null, null, null, true,
-                                                                PageRequest.of(0, 10));
-        Page<Session> olds = sessionService.retrieveSessions(source, null, null, null, null, false,
-                                                             PageRequest.of(0, 10));
+        Page<SessionAdmin> latests = sessionService.retrieveSessions(source, null, null, null, null, true,
+                                                                     PageRequest.of(0, 10));
+        Page<SessionAdmin> olds = sessionService.retrieveSessions(source, null, null, null, null, false,
+                                                                  PageRequest.of(0, 10));
         Assert.assertEquals(0, latests.getTotalElements());
         Assert.assertEquals(0, olds.getTotalElements());
         // Init session
@@ -187,7 +187,7 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
                                                 SessionNotificationOperator.INC, "PROPERTY1", 1));
         sessionService.updateSessionProperties(events);
 
-        Optional<Session> session = sessionRepository.findOneBySourceAndName("source1", "name1");
+        Optional<SessionAdmin> session = sessionRepository.findOneBySourceAndName("source1", "name1");
         Assert.assertTrue(session.isPresent());
         Assert.assertEquals(2L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
         Assert.assertEquals(10L, session.get().getStepPropertyValue("STEP1", "PROPERTY2"));
@@ -238,7 +238,7 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
                                                 SessionNotificationOperator.INC, "PROPERTY1", 1));
         sessionService.updateSessionProperties(events);
 
-        Optional<Session> session = sessionRepository.findOneBySourceAndName("source1", "name1");
+        Optional<SessionAdmin> session = sessionRepository.findOneBySourceAndName("source1", "name1");
         Assert.assertTrue(session.isPresent());
         Assert.assertEquals(9L, session.get().getStepPropertyValue("STEP1", "PROPERTY1"));
         Assert.assertEquals(10L, session.get().getStepPropertyValue("STEP1", "PROPERTY2"));
@@ -266,7 +266,7 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
         SessionMonitoringEvent sessionMonitoringEvent = SessionMonitoringEvent
                 .build(source, name, SessionNotificationState.OK, step, SessionNotificationOperator.INC, property,
                        value);
-        Session updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent))
+        SessionAdmin updateSession = sessionService.updateSessionProperties(Lists.newArrayList(sessionMonitoringEvent))
                 .get(0);
         Assert.assertEquals("The session state is OK", SessionState.OK, updateSession.getState());
         Assert.assertEquals("The value is correctly saved in the session", value,
@@ -320,7 +320,7 @@ public class SessionServiceTest extends AbstractMultitenantServiceTest {
                             updateSession.getStepPropertyValue(step, property));
     }
 
-    private Session generateErrorSession(String session) {
+    private SessionAdmin generateErrorSession(String session) {
         List<SessionMonitoringEvent> events = new ArrayList<>();
         events.add(SessionMonitoringEvent.build("Source 1", session, SessionNotificationState.ERROR, "STEP",
                                                 SessionNotificationOperator.INC, "PROPERTY", "1"));

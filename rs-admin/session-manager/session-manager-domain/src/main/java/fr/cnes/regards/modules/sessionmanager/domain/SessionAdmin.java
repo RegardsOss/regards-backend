@@ -53,7 +53,7 @@ import org.hibernate.annotations.TypeDefs;
                 @Index(name = "idx_session_is_latest", columnList = "is_latest"),
                 @Index(name = "idx_last_update_date", columnList = "last_update_date")},
         uniqueConstraints = {@UniqueConstraint(name = "uk_session_source_name", columnNames = {"name", "source"})})
-public class Session {
+public class SessionAdmin {
 
     /**
      * Default length of string fields
@@ -122,7 +122,7 @@ public class Session {
     /**
      * Default constructor
      */
-    public Session() {
+    public SessionAdmin() {
     }
 
     /**
@@ -130,7 +130,7 @@ public class Session {
      * @param source
      * @param name
      */
-    public Session(String source, String name) {
+    public SessionAdmin(String source, String name) {
         this.name = name;
         this.source = source;
         this.creationDate = OffsetDateTime.now();
@@ -235,7 +235,7 @@ public class Session {
             return false;
         }
 
-        Session session = (Session) o;
+        SessionAdmin session = (SessionAdmin) o;
 
         if (name != null ? !name.equals(session.name) : session.name != null) {
             return false;
