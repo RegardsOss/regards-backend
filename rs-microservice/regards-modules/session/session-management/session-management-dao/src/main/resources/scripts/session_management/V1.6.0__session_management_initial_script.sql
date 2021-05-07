@@ -12,7 +12,7 @@ CREATE TABLE t_session_manager (
     primary key (id)
 );
 
-CREATE sequence seq_session start 1 increment 50;
+CREATE sequence seq_session_manager start 1 increment 50;
 
 -- Source
 
@@ -41,7 +41,7 @@ CREATE TABLE t_source_step_aggregation (
 ALTER TABLE t_source_step_aggregation ADD CONSTRAINT fk_source_step_aggregation FOREIGN KEY (source_name) REFERENCES
 t_source_manager;
 
-CREATE sequence seq_agg start 1 increment 50;
+CREATE sequence seq_source_agg start 1 increment 50;
 
 
 

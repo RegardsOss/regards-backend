@@ -25,8 +25,8 @@ public class SourceStepAggregation {
      * Id of the SourceStepAggregation
      */
     @Id
-    @SequenceGenerator(name = "aggSequence", initialValue = 1, sequenceName = "seq_agg")
-    @GeneratedValue(generator = "aggSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "sourceAggSequence", initialValue = 1, sequenceName = "seq_source_agg")
+    @GeneratedValue(generator = "sourceAggSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
 

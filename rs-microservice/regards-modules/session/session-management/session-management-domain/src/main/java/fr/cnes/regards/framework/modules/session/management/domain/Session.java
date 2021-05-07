@@ -55,8 +55,8 @@ public class Session {
      * Id of the SessionStep
      */
     @Id
-    @SequenceGenerator(name = "sessionSequence", initialValue = 1, sequenceName = "seq_session")
-    @GeneratedValue(generator = "sessionSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "sessionManagerSequence", initialValue = 1, sequenceName = "seq_session_manager")
+    @GeneratedValue(generator = "sessionManagerSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
     /**
