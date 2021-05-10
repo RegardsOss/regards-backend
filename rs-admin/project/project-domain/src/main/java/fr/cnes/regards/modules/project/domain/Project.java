@@ -119,6 +119,7 @@ public class Project implements IIdentifiable<Long> {
     private String host;
 
     @Column(name = "crs", length = 32)
+    @NotBlank
     private String crs = "WGS_84";
 
     @Column(name = "pole_managed")

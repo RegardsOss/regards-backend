@@ -2169,7 +2169,7 @@
 						<pomElements>
 						    <pluginManagement>keep</pluginManagement>
 						    <dependencyManagement>resolve</dependencyManagement>
-						    <build>expand</build>
+						    <build>keep</build>
 						    <profiles>expand</profiles>
 						    <!--
 						    <parent>keep</parent>
