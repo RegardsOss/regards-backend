@@ -114,8 +114,7 @@ function relativePath {
                 moduleDir="$1"
             ;;
         esac
-        echo $(find . -maxdepth 5 -type d -name "${moduleDir}" ! -path '*.git*' -print | grep -v "rs-doc.*/" | head
-        -n 1)
+        echo $(find . -maxdepth 5 -type d -name "${moduleDir}" ! -path '*.git*' -print | grep -v "rs-doc.*/" | head -n 1)
     fi
 }
 
