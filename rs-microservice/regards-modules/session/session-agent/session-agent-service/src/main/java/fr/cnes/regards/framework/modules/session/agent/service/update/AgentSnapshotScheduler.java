@@ -67,7 +67,7 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
 
     public static final String DEFAULT_INITIAL_DELAY = "10000";
 
-    public static final String DEFAULT_SCHEDULING_DELAY = "1000";
+    public static final String DEFAULT_SCHEDULING_DELAY = "30000"; // every 30 seconds
 
     public static final String SNAPSHOT_PROCESS = "Session Step Snapshot";
 

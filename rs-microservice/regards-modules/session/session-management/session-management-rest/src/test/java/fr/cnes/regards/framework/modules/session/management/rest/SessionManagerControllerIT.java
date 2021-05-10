@@ -199,9 +199,10 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Test retrieve a session by id")
     public void getSessionById() {
         List<Session> sessionList = createSessions();
-        performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.ID_MAPPING,
-                             customizer().expectStatusOk(), "The session was not retrieved",
-                             sessionList.get(0).getId());
+        long testedId = sessionList.get(0).getId();
+        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.ID_MAPPING,
+                          customizer().expectStatusOk().expectValue("$.content.id", testedId),
+                          "The session was not retrieved", testedId);
     }
 
     /**

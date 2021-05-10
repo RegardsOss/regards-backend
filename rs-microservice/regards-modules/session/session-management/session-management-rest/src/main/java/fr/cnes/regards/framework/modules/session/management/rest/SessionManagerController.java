@@ -103,12 +103,12 @@ public class SessionManagerController implements IResourceController<Session> {
     @RequestMapping(value = ID_MAPPING, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve a session by id", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> getSessionById(@PathVariable("id") final long id) {
+    public ResponseEntity<EntityModel<Session>> getSessionById(@PathVariable("id") final long id) {
         try {
-            this.sessionManagerService.getSessionById(id);
-            return new ResponseEntity<>(HttpStatus.OK);
+           Session session = this.sessionManagerService.getSessionById(id);
+            return ResponseEntity.ok(toResource(session));
         } catch (EntityNotFoundException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 
@@ -133,6 +133,8 @@ public class SessionManagerController implements IResourceController<Session> {
                                 MethodParamFactory.build(String.class, session.getSource()),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource, this.getClass(), "getSessionById", LinkRels.SELF,
+                                MethodParamFactory.build(Long.TYPE, session.getId()));
         resourceService.addLink(resource, this.getClass(), "deleteSession", LinkRels.DELETE,
                                 MethodParamFactory.build(Long.TYPE, session.getId()));
         return resource;

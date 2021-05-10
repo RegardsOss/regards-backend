@@ -281,13 +281,9 @@ public class SessionNotifier {
             decrementCount(sessionOwner, session, REQUESTS_RUNNING, nbStorePending, StepPropertyStateEnum.RUNNING,
                            false, false);
         }
-        if (nbStored > 0) {
-            // -x product_stored
-            decrementCount(sessionOwner, session, GENERATED_PRODUCTS, nbStored, StepPropertyStateEnum.SUCCESS, false,
-                           true);
-        }
+
         decrementCount(sessionOwner, session, GENERATED_PRODUCTS, nbGenerated + nbStored, StepPropertyStateEnum.SUCCESS,
-                       true, false);
+                       true, true);
     }
 
     // ----------- UTILS -----------

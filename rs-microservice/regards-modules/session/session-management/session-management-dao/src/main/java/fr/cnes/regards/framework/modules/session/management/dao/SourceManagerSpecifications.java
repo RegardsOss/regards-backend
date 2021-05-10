@@ -41,7 +41,7 @@ public class SourceManagerSpecifications {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if(name != null) {
-                predicates.add(cb.like(root.get("name"), LIKE_CHAR + name + LIKE_CHAR));
+                predicates.add(cb.equal(root.get("name"), name));
             }
 
             if(state !=null) {

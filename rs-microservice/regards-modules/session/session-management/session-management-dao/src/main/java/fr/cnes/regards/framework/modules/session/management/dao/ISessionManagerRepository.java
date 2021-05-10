@@ -38,12 +38,7 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
 
     int MAX_SESSION_NAMES_RESULTS = 10;
 
-
     Optional<Session> findBySourceAndName(String source, String sessionName);
-
-    long countBySourceAndNameIn(String name, Set<String> collect);
-
-    long countBySource(String sourceName);
 
     Page<Session> findByLastUpdateDateBefore(OffsetDateTime startClean, Pageable pageable);
 
