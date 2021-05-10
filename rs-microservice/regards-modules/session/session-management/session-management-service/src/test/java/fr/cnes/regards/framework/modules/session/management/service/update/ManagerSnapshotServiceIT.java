@@ -138,35 +138,35 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
 
         // SESSION 1
         SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
-                                                   new StepState(0, 0, 2), null);
+                                                   new StepState(0, 0, 2));
         sessionStep0.setInputRelated(2);
         sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(10));
 
         SessionStep sessionStep1 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
-                                                   new StepState(2, 0, 0), null);
+                                                   new StepState(2, 0, 0));
         sessionStep1.setOutputRelated(2);
         sessionStep1.setLastUpdateDate(LAST_UPDATED.minusMinutes(9));
 
         // SESSION 2
         SessionStep sessionStep2 = new SessionStep("storage", SOURCE_1, SESSION_2, StepTypeEnum.STORAGE,
-                                                   new StepState(0, 4, 0), null);
+                                                   new StepState(0, 4, 0));
         sessionStep2.setOutputRelated(4);
         sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(8));
 
         // SESSION 3
         // create future event - should not be taken into account until run2
         SessionStep sessionStep3 = new SessionStep("storage", SOURCE_1, SESSION_3, StepTypeEnum.STORAGE,
-                                                   new StepState(0, 0, 0), null);
+                                                   new StepState(0, 0, 0));
         sessionStep3.setOutputRelated(10);
         sessionStep3.setLastUpdateDate(LAST_UPDATED.plusMinutes(2));
         SessionStep sessionStep4 = new SessionStep("metacatalog", SOURCE_1, SESSION_3, StepTypeEnum.DISSEMINATION,
-                                                   new StepState(0, 0, 4), null);
+                                                   new StepState(0, 0, 4));
         sessionStep4.setOutputRelated(10);
         sessionStep4.setLastUpdateDate(LAST_UPDATED.plusMinutes(7));
 
         // create future event - should not be taken into account until run3
         SessionStep sessionStep5 = new SessionStep("scan", SOURCE_1, SESSION_4, StepTypeEnum.ACQUISITION,
-                                                   new StepState(0, 0, 3), null);
+                                                   new StepState(0, 0, 3));
         sessionStep5.setInputRelated(5);
         sessionStep5.setLastUpdateDate(LAST_UPDATED.plusMinutes(52));
 

@@ -109,10 +109,11 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
         doAfter();
     }
 
-    private void clearQueues() {
+    private void clearQueues() throws InterruptedException {
         cleanAMQPQueues(SessionManagerHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(SourceDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(SessionDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        Thread.sleep(10000L);
     }
 
     /**

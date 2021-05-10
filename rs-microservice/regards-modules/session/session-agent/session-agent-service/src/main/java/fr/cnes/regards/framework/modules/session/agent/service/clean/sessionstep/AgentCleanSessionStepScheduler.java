@@ -74,8 +74,6 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
 
     public static final String CLEAN_SESSION_STEPS = "Clean session steps";
 
-    public static final String CLEAN_SESSION_STEPS_LOCK = microserviceName + "_clean-session-steps";
-
     public static final String CLEAN_SESSION_STEPS_TITLE = "Clean session steps scheduling";
 
     /**
@@ -99,7 +97,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CLEAN_SESSION_STEPS);
                 lockingTaskExecutors.executeWithLock(snapshotProcessTask,
-                                                     new LockConfiguration(CLEAN_SESSION_STEPS_LOCK,
+                                                     new LockConfiguration(microserviceName + "_clean-session-steps",
                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(CLEAN_SESSION_STEPS, CLEAN_SESSION_STEPS_TITLE, e);

@@ -110,8 +110,7 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
             String source = "SOURCE_" + i;
 
             // ACQUISITION - scan event SOURCE 0-nbSources / SESSION 1
-            SessionStep sessionStep = new SessionStep("scan", source, SESSION_1, StepTypeEnum.ACQUISITION, new StepState(0, 0, 1),
-                                                      null);
+            SessionStep sessionStep = new SessionStep("scan", source, SESSION_1, StepTypeEnum.ACQUISITION, new StepState(0, 0, 1));
             sessionStep.setLastUpdateDate(UPDATE_DATE);
             stepEvents.add(new SessionStepEvent(sessionStep));
         }

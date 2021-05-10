@@ -132,17 +132,17 @@ public class ManagerDeleteServiceIT extends AbstractManagerServiceUtilsTest {
     private int createSessionStepEvents() {
         List<SessionStepEvent> stepEvents = new ArrayList<>();
         SessionStep sessionStep = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
-                                                  new StepState(0, 0, 1), null);
+                                                  new StepState(0, 0, 1));
         sessionStep.setLastUpdateDate(UPDATE_DATE);
         stepEvents.add(new SessionStepEvent(sessionStep));
 
         SessionStep sessionStep2 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.ACQUISITION,
-                                                   new StepState(0, 0, 1), null);
+                                                   new StepState(0, 0, 1));
         sessionStep2.setLastUpdateDate(UPDATE_DATE);
         stepEvents.add(new SessionStepEvent(sessionStep2));
 
         SessionStep sessionStep3 = new SessionStep("oais", SOURCE_2, SESSION_2, StepTypeEnum.REFERENCING,
-                                                   new StepState(0, 0, 1), null);
+                                                   new StepState(0, 0, 1));
         sessionStep3.setLastUpdateDate(UPDATE_DATE);
         stepEvents.add(new SessionStepEvent(sessionStep3));
 

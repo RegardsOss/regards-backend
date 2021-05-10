@@ -239,8 +239,7 @@ public class ManagerSnapshotService {
 
         // UPDATE SESSION LAST UPDATE DATE
         OffsetDateTime sessionStepLastUpdate = sessionStep.getLastUpdateDate();
-        if (sessionStepLastUpdate != null && (session.getLastUpdateDate() == null || session.getLastUpdateDate()
-                .isBefore(sessionStepLastUpdate))) {
+        if (session.getLastUpdateDate() == null || session.getLastUpdateDate().isBefore(sessionStepLastUpdate)) {
             session.setLastUpdateDate(sessionStepLastUpdate);
             delta.setLastUpdateDate(sessionStepLastUpdate);
         }

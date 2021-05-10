@@ -77,8 +77,6 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
 
     public static final String CLEAN_SESSION = "Clean session, session steps and unused sources";
 
-    public static final String CLEAN_SESSION_LOCK = microserviceName + "_clean-session";
-
     public static final String CLEAN_SESSION_TITLE = "Clean session scheduling";
 
     /**
@@ -100,10 +98,10 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                 traceScheduling(tenant, CLEAN_SESSION);
                 boolean isSnapshotJobsFinished = waitUntilManagerSnapshotJobEnd();
                 if (isSnapshotJobsFinished) {
-                    lockingTaskExecutors.executeWithLock(snapshotProcessTask, new LockConfiguration(CLEAN_SESSION_LOCK,
-                                                                                                    Instant.now()
-                                                                                                            .plusSeconds(
-                                                                                                                    MAX_TASK_DELAY)));
+                    lockingTaskExecutors.executeWithLock(snapshotProcessTask,
+                                                         new LockConfiguration(microserviceName + "_clean-session",
+                                                                               Instant.now()
+                                                                                       .plusSeconds(MAX_TASK_DELAY)));
                 } else {
                     LOGGER.warn("{} could not be executed because AgentSnapshotJobs did not finished on time",
                                 CLEAN_SESSION_TITLE);

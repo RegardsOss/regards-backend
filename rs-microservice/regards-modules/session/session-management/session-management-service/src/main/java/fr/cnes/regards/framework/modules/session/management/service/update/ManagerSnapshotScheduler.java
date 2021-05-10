@@ -77,8 +77,6 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
 
     public static final String MANAGER_SNAPSHOT_PROCESS = "Session manager snapshot";
 
-    public static final String MANAGER_SNAPSHOT_PROCESS_LOCK = microserviceName + "_session-management-snapshot";
-
     public static final String MANAGER_SNAPSHOT_PROCESS_TITLE = "Session manager snapshot scheduling";
 
     /**
@@ -105,10 +103,9 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
                 if (this.jobInfoService
                         .retrieveJobsCount(ManagerCleanJob.class.getName(), JobStatus.QUEUED, JobStatus.PENDING,
                                            JobStatus.RUNNING) == 0) {
-                    lockingTaskExecutors.executeWithLock(snapshotProcessTask,
-                                                         new LockConfiguration(MANAGER_SNAPSHOT_PROCESS_LOCK,
-                                                                               Instant.now()
-                                                                                       .plusSeconds(MAX_TASK_DELAY)));
+                    lockingTaskExecutors.executeWithLock(snapshotProcessTask, new LockConfiguration(
+                            microserviceName + "_session-management-snapshot",
+                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
                 } else {
                     LOGGER.warn("{} could not be executed because a ManagerCleanJob is currently running",
                                 MANAGER_SNAPSHOT_PROCESS_TITLE);

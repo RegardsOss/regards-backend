@@ -181,27 +181,27 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
 
         // SOURCE 1 -  SESSION 1
         SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
-                                                   new StepState(0, 0, 2), null);
+                                                   new StepState(0, 0, 2));
         sessionStep0.setInputRelated(2);
         sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(2));
         sessionStepList.add(sessionStep0);
 
         SessionStep sessionStep1 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
-                                                   new StepState(0, 0, 3), null);
+                                                   new StepState(0, 0, 3));
         sessionStep1.setOutputRelated(2);
         sessionStep1.setLastUpdateDate(LAST_UPDATED.minusMinutes(1));
         sessionStepList.add(sessionStep1);
 
         // SOURCE 1 -  SESSION 2
         SessionStep sessionStep2 = new SessionStep("scan", SOURCE_1, SESSION_2, StepTypeEnum.ACQUISITION,
-                                                   new StepState(5, 0, 0), null);
+                                                   new StepState(5, 0, 0));
         sessionStep2.setInputRelated(5);
         sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(5));
         sessionStepList.add(sessionStep2);
 
         // SOURCE 2 - SESSION 1
         SessionStep sessionStep3 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.DISSEMINATION,
-                                                   new StepState(0, 10, 0), null);
+                                                   new StepState(0, 10, 0));
         sessionStep3.setOutputRelated(10);
         sessionStep3.setLastUpdateDate(LAST_UPDATED.minusMinutes(12));
         sessionStepList.add(sessionStep3);

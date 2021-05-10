@@ -92,7 +92,7 @@ public class Session {
      * Set of session steps associated to this session
      */
     @Valid
-    @NotNull(message = "At least on session step is required")
+    @NotNull
     @Column(name = "steps", columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
             value = "fr.cnes.regards.framework.modules.session.commons.domain.SessionStep") })

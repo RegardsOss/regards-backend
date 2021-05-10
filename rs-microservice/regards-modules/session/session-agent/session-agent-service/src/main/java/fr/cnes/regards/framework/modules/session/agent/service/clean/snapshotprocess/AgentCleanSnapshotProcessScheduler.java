@@ -71,8 +71,6 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
 
     public static final String CLEAN_SNAPSHOT_PROCESS = "Clean snapshot process";
 
-    public static final String CLEAN_SNAPSHOT_PROCESS_LOCK = microserviceName + "_clean-snapshot-process";
-
     public static final String CLEAN_SNAPSHOT_PROCESS_TITLE = "Clean snapshot process scheduling";
 
     /**
@@ -96,7 +94,7 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CLEAN_SNAPSHOT_PROCESS);
                 lockingTaskExecutors.executeWithLock(snapshotProcessTask,
-                                                     new LockConfiguration(CLEAN_SNAPSHOT_PROCESS_LOCK,
+                                                     new LockConfiguration(microserviceName + "_clean-snapshot-process",
                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(CLEAN_SNAPSHOT_PROCESS, CLEAN_SNAPSHOT_PROCESS_TITLE, e);

@@ -15,7 +15,7 @@ CREATE TABLE t_session_step (
     errors              int8            NOT NULL DEFAULT 0    ,
     waiting             int8            NOT NULL DEFAULT 0    ,
     running             int8            NOT NULL DEFAULT 0    ,
-    properties          jsonb                                 ,
-    last_update_date    timestamp                             ,
+    properties          jsonb           NOT NULL              ,
+    last_update_date    timestamp       NOT NULL              ,
     primary key (step_id, source, session)
 );

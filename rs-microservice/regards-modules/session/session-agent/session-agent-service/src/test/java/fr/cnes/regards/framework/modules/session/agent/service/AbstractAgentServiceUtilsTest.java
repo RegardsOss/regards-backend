@@ -92,6 +92,7 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
         subscriber.unsubscribeFrom(JobEvent.class);
         cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(SnapshotJobEventHandler.class, Target.MICROSERVICE);
+        Thread.sleep(10000L);
         doAfter();
     }
 

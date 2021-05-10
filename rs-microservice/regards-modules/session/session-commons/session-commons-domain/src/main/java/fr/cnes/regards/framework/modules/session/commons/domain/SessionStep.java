@@ -10,11 +10,8 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
@@ -92,23 +89,24 @@ public class SessionStep {
      */
     @Column(name = "properties", columnDefinition = "jsonb")
     @Type(type = "jsonb")
-    private SessionStepProperties properties;
+    @NotNull
+    private SessionStepProperties properties = new SessionStepProperties();
 
     /**
      * Most recent StepPropertyUpdateEventRequest
      */
     @Column(name = "last_update_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    @NotNull
     private OffsetDateTime lastUpdateDate;
 
     public SessionStep(@NotNull String stepId, @NotNull String source, @NotNull String session,
-            @NotNull StepTypeEnum type, @NotNull StepState state, SessionStepProperties properties) {
+            @NotNull StepTypeEnum type, @NotNull StepState state) {
         this.stepId = stepId;
         this.source = source;
         this.session = session;
         this.type = type;
         this.state = state;
-        this.properties = properties;
     }
 
     public SessionStep() {

@@ -32,9 +32,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -213,18 +213,22 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
         for (int i = 0; i < 6; i++) {
             String sourceName = "SOURCE_" + i;
             String sessionName = "SESSION_1";
-            Set<SessionStep> sessionStepSet = Sets.newHashSet(
-                    new SessionStep("oais", sourceName, sessionName, StepTypeEnum.REFERENCING, new StepState(), null));
+            // create sessionStep
+            SessionStep sessionStep = new SessionStep("oais", sourceName, sessionName, StepTypeEnum.REFERENCING,
+                                                      new StepState());
+            sessionStep.setLastUpdateDate(OffsetDateTime.now());
+            // create session
             Session session = new Session(sourceName, sessionName);
-            session.setSteps(sessionStepSet);
+            session.setSteps(Sets.newHashSet(sessionStep));
             sessionList.add(session);
         }
 
         // copy last element of list to add session linked to same source
-        Set<SessionStep> sessionStepSet6 = Sets.newHashSet(
-                new SessionStep("oais", "SOURCE_5", "SESSION_2", StepTypeEnum.REFERENCING, new StepState(), null));
+        SessionStep sessionStep = new SessionStep("oais", "SOURCE_5", "SESSION_2", StepTypeEnum.REFERENCING,
+                                                  new StepState());
+        sessionStep.setLastUpdateDate(OffsetDateTime.now());
         Session session6 = new Session("SOURCE_5", "SESSION_2");
-        session6.setSteps(sessionStepSet6);
+        session6.setSteps(Sets.newHashSet(sessionStep));
         sessionList.add(session6);
 
         // modify parameters to test filters
@@ -241,11 +245,11 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
     private List<Session> createSessionName(int nbSessions) {
         List<Session> sessionList = new ArrayList<>();
 
-        for(int i = 0; i < nbSessions; i++) {
-            sessionList.add(new Session("SOURCE_"+i, "SESSION_"+i));
+        for (int i = 0; i < nbSessions; i++) {
+            sessionList.add(new Session("SOURCE_" + i, "SESSION_" + i));
         }
         // create session with duplicated name
-        sessionList.add(new Session("SOURCE_"+nbSessions, "SESSION_" + (nbSessions -1)));
+        sessionList.add(new Session("SOURCE_" + nbSessions, "SESSION_" + (nbSessions - 1)));
         return this.sessionRepo.saveAll(sessionList);
     }
 }

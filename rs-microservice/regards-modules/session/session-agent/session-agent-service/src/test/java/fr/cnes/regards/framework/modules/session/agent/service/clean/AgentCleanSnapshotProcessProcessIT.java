@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -30,6 +31,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_process_it",
         "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678",
         "regards" + ".session.agent.limit.store.snapshot.process=30" })
+@ActiveProfiles(value = { "noscheduler" })
 public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired

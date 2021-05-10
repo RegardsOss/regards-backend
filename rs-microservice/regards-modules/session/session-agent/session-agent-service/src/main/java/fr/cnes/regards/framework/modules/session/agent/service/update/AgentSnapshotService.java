@@ -9,7 +9,6 @@ import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyS
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
@@ -136,7 +135,7 @@ public class AgentSnapshotService {
                 sessionStep = this.sessionStepRepo.findBySourceAndSessionAndStepId(source, session, stepId)
                         .orElse(new SessionStep(stepId, stepPropertyUpdateRequest.getSource(), session,
                                                 stepPropertyUpdateRequest.getStepPropertyInfo().getStepType(),
-                                                new StepState(), new SessionStepProperties()));
+                                                new StepState()));
             }
 
             // UPDATE SESSION STEP WITH STEP EVENT INFO
