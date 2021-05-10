@@ -44,7 +44,7 @@ public class SessionDeleteService implements ISessionDeleteService {
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.info("Event receive to program the deletion of all SIP from session {} of source {}", session,
+        LOGGER.info("Event received to program the deletion of all SIP from session {} of source {}", session,
                     source);
         // Run a SessionDeletionJob
         deletionService.registerOAISDeletionCreator(

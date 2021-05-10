@@ -21,7 +21,9 @@ package fr.cnes.regards.framework.modules.session.management.service.delete;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import fr.cnes.regards.framework.modules.session.management.service.AbstractManagerServiceUtilsTest;
@@ -33,21 +35,17 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Performance test for {@link ManagerSnapshotJobService}
+ * Test the deletion of {@link Source} or {@link Session} following a {@link SourceDeleteEvent} or a {@link SessionDeleteEvent}
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=source_delete_service_it" })
-@Ignore
-public class SourceDeleteServiceIT extends AbstractManagerServiceUtilsTest {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_delete_service_it" })
+public class ManagerDeleteServiceIT extends AbstractManagerServiceUtilsTest {
 
     /**
      * Service to create source and session
@@ -59,29 +57,44 @@ public class SourceDeleteServiceIT extends AbstractManagerServiceUtilsTest {
     private SourceDeleteService sourceDeleteService;
 
     /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SourceDeleteServiceIT.class);
-
-    /**
      * Reference date for tests
      */
     private static final OffsetDateTime UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30);
 
-
     @Test
     @Purpose("Test the deletion of a source")
     public void testSourceDeletion() throws InterruptedException {
-        sourceDeleteService.deleteSource(SOURCE_1);
-
-     /*   createSourcesAndSession();
+        // create source delete event on SOURCE_1
+        createSourcesAndSession();
         this.publisher.publish(new SourceDeleteEvent(SOURCE_1));
-*/
-        boolean isSourceDeleted = waitForSourceDeleted(SOURCE_1);
+
+        // wait for the deletion of the source
+        boolean isSourceDeleted = waitForSourceDeleted(SOURCE_1, 200000L);
         if (!isSourceDeleted) {
             Assert.fail("Source was not deleted");
         }
 
+        // assert other source was not deleted
+        Assert.assertTrue("Source should have been present", this.sourceRepo.findByName(SOURCE_2).isPresent());
+    }
+
+    @Test
+    @Purpose("Test the deletion of a session")
+    public void testSessionDeletion() throws InterruptedException {
+        // create source delete event on SESSION_1 SOURCE 2
+        createSourcesAndSession();
+        this.publisher.publish(new SessionDeleteEvent(SOURCE_2, SESSION_1));
+
+        // wait for the deletion of the session
+        boolean isSessionDeleted = waitForSessionDeleted(SOURCE_2, SESSION_1);
+        if (!isSessionDeleted) {
+            Assert.fail("Session was not deleted");
+        }
+        // assert other sessions were not deleted
+        Assert.assertTrue("Session should have been present", this.sessionRepo.findBySourceAndName(SOURCE_1,
+                                                                                                   SESSION_1).isPresent());
+        Assert.assertTrue("Session should have been present", this.sessionRepo.findBySourceAndName(SOURCE_2,
+                                                                                                   SESSION_2).isPresent());
     }
 
     // ----- UTILS -----
@@ -100,20 +113,20 @@ public class SourceDeleteServiceIT extends AbstractManagerServiceUtilsTest {
 
         // wait for job to be in success state
         long timeout = 20000L;
-        boolean isJobSuccess = waitForJobSuccesses(ManagerSnapshotJob.class.getName(), nbSessionSteps, timeout);
+        boolean isJobSuccess = waitForJobSuccesses(ManagerSnapshotJob.class.getName(), 2, timeout);
         if (!isJobSuccess) {
             Assert.fail(String.format("The number of jobs in success state is not expected. Check if all jobs were "
                                               + "created in the required amount of time (max. %d ms)", timeout));
         }
-        checkResult(nbSessionSteps);
+        checkResult();
     }
 
-    private void checkResult(int nbSourcesExpected) {
+    private void checkResult() {
         List<Session> sessions = this.sessionRepo.findAll();
-        Assert.assertEquals("Wrong number of sessions created", nbSourcesExpected, sessions.size());
+        Assert.assertEquals("Wrong number of sessions created", 3, sessions.size());
 
         List<Source> sources = this.sourceRepo.findAll();
-        Assert.assertEquals("Wrong number of sources created", nbSourcesExpected, sources.size());
+        Assert.assertEquals("Wrong number of sources created", 2, sources.size());
     }
 
     private int createSessionStepEvents() {
@@ -128,10 +141,14 @@ public class SourceDeleteServiceIT extends AbstractManagerServiceUtilsTest {
         sessionStep2.setLastUpdateDate(UPDATE_DATE);
         stepEvents.add(new SessionStepEvent(sessionStep2));
 
+        SessionStep sessionStep3 = new SessionStep("oais", SOURCE_2, SESSION_2, StepTypeEnum.REFERENCING,
+                                                   new StepState(0, 0, 1), null);
+        sessionStep3.setLastUpdateDate(UPDATE_DATE);
+        stepEvents.add(new SessionStepEvent(sessionStep3));
+
         // Publish events
         this.publisher.publish(stepEvents);
 
         return stepEvents.size();
     }
 }
-

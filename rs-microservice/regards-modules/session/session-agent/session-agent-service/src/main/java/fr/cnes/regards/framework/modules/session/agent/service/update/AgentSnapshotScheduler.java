@@ -61,7 +61,7 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
     private LockingTaskExecutors lockingTaskExecutors;
 
     @Value("${spring.application.name}")
-    private static String microserviceName;
+    private String microserviceName;
 
     public static final Long MAX_TASK_DELAY = 60L; // In second
 
@@ -70,8 +70,6 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
     public static final String DEFAULT_SCHEDULING_DELAY = "1000";
 
     public static final String SNAPSHOT_PROCESS = "Session Step Snapshot";
-
-    public static final String SNAPSHOT_PROCESS_LOCK = microserviceName + "_session-agent-snapshot";
 
     public static final String SNAPSHOT_PROCESS_TITLE = "Snapshot process scheduling";
 
@@ -95,10 +93,9 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, SNAPSHOT_PROCESS);
-                lockingTaskExecutors.executeWithLock(snapshotProcessTask, new LockConfiguration(SNAPSHOT_PROCESS_LOCK,
-                                                                                                Instant.now()
-                                                                                                        .plusSeconds(
-                                                                                                                MAX_TASK_DELAY)));
+                lockingTaskExecutors.executeWithLock(snapshotProcessTask,
+                                                     new LockConfiguration(microserviceName + "_session-agent-snapshot",
+                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(SNAPSHOT_PROCESS, SNAPSHOT_PROCESS_TITLE, e);
             } finally {

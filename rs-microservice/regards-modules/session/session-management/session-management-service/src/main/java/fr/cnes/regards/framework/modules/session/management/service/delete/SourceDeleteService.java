@@ -42,7 +42,7 @@ public class SourceDeleteService implements ISourceDeleteService {
 
     @Override
     public void deleteSource(String source) {
-        LOGGER.info("Event receive to program the deletion of source {}", source);
+        LOGGER.info("Event received to program the deletion of source {}", source);
         // Run a SourceDeletionJob
         this.sourceManagerRepo.deleteByName(source);
     }

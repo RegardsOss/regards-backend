@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Service for {@link SessionAgentHandler}. It handles new amqp events received and saves new
+ * Service for {@link SessionAgentEventHandler}. It handles new amqp events received and saves new
  * {@link StepPropertyUpdateRequest}s in the database. It creates {@link SnapshotProcess}es related to the
  * source if they do not exist
  *
@@ -39,7 +39,7 @@ public class SessionAgentHandlerService {
     private ISnapshotProcessRepository snapshotRepo;
 
     /**
-     * Events handled by {@link SessionAgentHandler}
+     * Events handled by {@link SessionAgentEventHandler}
      * Save new {@link StepPropertyUpdateRequest} from {@link StepPropertyUpdateRequestEvent}
      * Initialize new {@link SnapshotProcess}es to process step properties later.
      *

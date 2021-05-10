@@ -73,7 +73,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
         properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test", "regards.amqp.enabled=true",
                 "eureka.client.enabled=false", "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class RequestServiceTest extends AbstractIngestRequestTest {
 
     @Autowired

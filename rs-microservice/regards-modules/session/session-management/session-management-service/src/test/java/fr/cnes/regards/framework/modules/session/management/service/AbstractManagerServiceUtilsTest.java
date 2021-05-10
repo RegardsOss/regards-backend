@@ -88,10 +88,6 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
 
     protected static final String SESSION_3 = "SESSION 3";
 
-    protected static final String OWNER_1 = "OWNER 1";
-
-    protected static final String OWNER_2 = "OWNER 2";
-
     @Before
     public void init() throws Exception {
         this.sessionStepRepo.deleteAll();
@@ -109,10 +105,14 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
         subscriber.unsubscribeFrom(JobEvent.class);
         subscriber.unsubscribeFrom(SourceDeleteEvent.class);
         subscriber.unsubscribeFrom(SessionDeleteEvent.class);
+        clearQueues();
+        doAfter();
+    }
+
+    private void clearQueues() {
         cleanAMQPQueues(SessionManagerHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(SourceDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(SessionDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        doAfter();
     }
 
     /**
@@ -197,20 +197,19 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
         return count == nbJobs;
     }
 
-
-    protected boolean waitForSourceDeleted(String sourceName) throws InterruptedException {
-        long now = System.currentTimeMillis(), end = now + 200000L;
+    protected boolean waitForSourceDeleted(String sourceName, long timeout) throws InterruptedException {
+        long now = System.currentTimeMillis(), end = now + timeout;
         Optional<Source> source;
         LOGGER.info("Waiting for source deletion ...");
         do {
             source = this.sourceRepo.findByName(sourceName);
-            if(source.isPresent()) {
+            if (source.isPresent()) {
                 Thread.sleep(10000L);
             }
             now = System.currentTimeMillis();
-
         } while (source.isPresent() && now <= end);
-        return source.isPresent();
+
+        return !source.isPresent();
     }
 
     protected boolean waitForSessionDeleted(String sourceName, String sessionName) throws InterruptedException {
@@ -219,11 +218,11 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
         LOGGER.info("Waiting for session deletion ...");
         do {
             session = this.sessionRepo.findBySourceAndName(sourceName, sessionName);
-            if(session.isPresent()) {
+            if (session.isPresent()) {
                 Thread.sleep(10000L);
             }
             now = System.currentTimeMillis();
         } while (session.isPresent() && now <= end);
-        return session.isPresent();
+        return !session.isPresent();
     }
 }

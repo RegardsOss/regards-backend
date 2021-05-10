@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.modules.session.management.service;
 
+import fr.cnes.regards.framework.modules.session.commons.service.SessionCommonsServiceAutoConfiguration;
 import fr.cnes.regards.framework.modules.session.management.service.clean.session.ManagerCleanJobService;
 import fr.cnes.regards.framework.modules.session.management.service.clean.session.ManagerCleanScheduler;
 import fr.cnes.regards.framework.modules.session.management.service.clean.session.ManagerCleanService;
@@ -15,6 +16,7 @@ import fr.cnes.regards.framework.modules.session.management.service.handlers.Ses
 import fr.cnes.regards.framework.modules.session.management.service.update.ManagerSnapshotJobService;
 import fr.cnes.regards.framework.modules.session.management.service.update.ManagerSnapshotScheduler;
 import fr.cnes.regards.framework.modules.session.management.service.update.ManagerSnapshotService;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
  **/
 
 @Configuration
+@AutoConfigureBefore({ SessionCommonsServiceAutoConfiguration.class })
 public class SessionManagementServiceAutoConfiguration {
 
     /**

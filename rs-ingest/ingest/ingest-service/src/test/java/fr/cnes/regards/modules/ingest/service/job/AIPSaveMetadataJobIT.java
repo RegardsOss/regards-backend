@@ -61,7 +61,7 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_savemetadata_job_it",
         "regards.amqp.enabled=true" }, locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());

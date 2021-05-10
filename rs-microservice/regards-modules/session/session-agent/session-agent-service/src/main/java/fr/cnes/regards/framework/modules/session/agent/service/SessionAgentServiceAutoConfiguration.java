@@ -6,7 +6,7 @@ import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessScheduler;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessService;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandler;
+import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandlerService;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler;
@@ -59,8 +59,8 @@ public class SessionAgentServiceAutoConfiguration {
      */
 
     @Bean
-    public SessionAgentHandler sessionAgentHandler() {
-        return new SessionAgentHandler();
+    public SessionAgentEventHandler sessionAgentHandler() {
+        return new SessionAgentEventHandler();
     }
 
     @Bean

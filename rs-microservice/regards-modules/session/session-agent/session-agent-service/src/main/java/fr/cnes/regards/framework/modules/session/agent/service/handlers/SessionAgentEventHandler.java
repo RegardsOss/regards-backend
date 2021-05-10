@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
  **/
 @Component
 @Profile("!nohandler")
-public class SessionAgentHandler
+public class SessionAgentEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StepPropertyUpdateRequestEvent> {
 
     @Autowired

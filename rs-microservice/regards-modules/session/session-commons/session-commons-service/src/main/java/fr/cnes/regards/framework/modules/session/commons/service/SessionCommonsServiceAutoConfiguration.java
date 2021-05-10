@@ -34,13 +34,13 @@ public class SessionCommonsServiceAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ISessionDeleteService.class)
+    @ConditionalOnMissingBean
     public ISessionDeleteService sessionDeleteService() {
         return new DefaultSessionDeleteService();
     }
 
     @Bean
-    @ConditionalOnMissingBean(ISourceDeleteService.class)
+    @ConditionalOnMissingBean
     public ISourceDeleteService sourceDeleteService() {
         return new DefaultSourceDeleteService();
     }

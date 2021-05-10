@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_metadata_service_it",
         "regards.amqp.enabled=true", "regards.aip.dump.zip-limit = 3" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));

@@ -65,7 +65,7 @@ public class SessionNotifier {
 
     public static final String POST_PROCESS_SUCCESS = "postProcessSuccess";
 
-    public static final String POST_PROCESS_ERROR = "postProcessError";
+    public static final String POST_PROCESS_ERROR = "postProcessErrors";
 
     // Request count - corresponds to the number of referencing requests
 

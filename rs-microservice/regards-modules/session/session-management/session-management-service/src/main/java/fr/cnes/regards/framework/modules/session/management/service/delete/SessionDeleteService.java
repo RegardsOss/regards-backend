@@ -42,7 +42,7 @@ public class SessionDeleteService implements ISessionDeleteService {
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.info("Event receive to delete session {} of source {}", session, source);
+        LOGGER.info("Event received to delete session {} of source {}", session, source);
         sessionManagerRepo.deleteBySourceAndName(source, session);
     }
 }

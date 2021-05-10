@@ -13,7 +13,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandler;
+import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
@@ -90,7 +90,7 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
     public void after() throws Exception {
         subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
         subscriber.unsubscribeFrom(JobEvent.class);
-        cleanAMQPQueues(SessionAgentHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(SnapshotJobEventHandler.class, Target.MICROSERVICE);
         doAfter();
     }
