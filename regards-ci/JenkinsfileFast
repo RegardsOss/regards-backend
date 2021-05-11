@@ -42,7 +42,6 @@ pipeline {
                 MODE="fast"
             }
             steps {
-                sh 'printenv'
                 sh 'cd ' + CI_DIR + ' \
                      && docker-compose \
                             -f docker/docker-compose-fast.yml \
