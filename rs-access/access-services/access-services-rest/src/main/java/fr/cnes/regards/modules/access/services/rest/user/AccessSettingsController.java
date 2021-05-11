@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.rest.user;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -36,13 +37,11 @@ import io.vavr.control.Validation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.StringJoiner;
+import org.springframework.hateoas.EntityModel;
 
 import static fr.cnes.regards.modules.access.services.rest.user.utils.Try.handleClientFailure;
 
@@ -84,7 +83,12 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @Autowired
     private IResourceService resourceService;
 
-    //FIXME: to be decided with front dev
+    @Autowired
+    private IAuthenticationResolver authentivationResolver;
+
+    @Value("${spring.application.name}")
+    private String appName;
+
 //    /**
 //     * Retrieve the {@link AccessSettingsDto}.
 //     * @return The {@link AccessSettingsDto}
@@ -96,15 +100,19 @@ public class AccessSettingsController implements IResourceController<AccessSetti
 //        return toResponse(
 //            Validation
 //                .combine(
-//                    Try.of(() -> accessSettingsClient.retrieveAccessSettings())
-//                        .transform(handleClientFailure("accessrights-client"))
-//                        .map(EntityModel::getContent),
-//                    Try.of(() -> storageClient.getDefaultDownloadQuotaLimits())
-//                        .map(ResponseEntity::getBody)
-//                        // special value for frontend if any error on storage or storage not deploy
-//                        .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
-//                        .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
-//                        .toValidation(ComposableClientException::make)
+//                    Try.run(() -> FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName)))
+//                       .map(unused -> accessSettingsClient.retrieveAccessSettings())
+//                       .andFinally(FeignSecurityManager::reset)
+//                       .transform(handleClientFailure("accessrights-client"))
+//                       .map(EntityModel::getContent),
+//                    Try.run(() -> FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName)))
+//                       .map(unused -> storageClient.getDefaultDownloadQuotaLimits())
+//                       .andFinally(FeignSecurityManager::reset)
+//                       .map(ResponseEntity::getBody)
+//                       // special value for frontend if any error on storage or storage not deploy
+//                       .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
+//                       .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
+//                       .toValidation(ComposableClientException::make)
 //                )
 //                .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
 //                    accessSettings.getId(),
@@ -140,11 +148,19 @@ public class AccessSettingsController implements IResourceController<AccessSetti
 //                        accessSettings.setDefaultGroups(accessSettingsDto.getGroups());
 //                        return accessSettings;
 //                    })
-//                        .map(accessSettingsClient::updateAccessSettings)
+//                        .map(setting->{
+//                                    FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName));
+//                                    return accessSettingsClient.updateAccessSettings(setting);
+//                            })
+//                        .andFinally(FeignSecurityManager::reset)
 //                        .transform(handleClientFailure("accessrights-client"))
 //                        .map(EntityModel::getContent),
 //                    Try.of(() -> new DefaultDownloadQuotaLimits(accessSettingsDto.getMaxQuota(), accessSettingsDto.getRateLimit()))
-//                        .map(storageClient::changeDefaultDownloadQuotaLimits)
+//                        .map(defaultQuota->{
+//                                    FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName));
+//                                    return storageClient.changeDefaultDownloadQuotaLimits(defaultQuota);
+//                            })
+//                        .andFinally(FeignSecurityManager::reset)
 //                        .map(ResponseEntity::getBody)
 //                        // special value for frontend if any error on storage or storage not deploy
 //                        .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))

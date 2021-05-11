@@ -36,7 +36,7 @@ public class StorageRestClientMock implements IStorageRestClient {
         pluginMetaData.setInterfaceNames(Sets.newHashSet(IOnlineStorageLocation.class.getName()));
         PluginConfiguration pluginConfiguration = new PluginConfiguration();
         pluginConfiguration.setMetaData(pluginMetaData);
-        StorageLocationDTO storageLocationDTO = StorageLocationDTO.build(
+        StorageLocationDTO storageLocationDTO = new StorageLocationDTO(
                 "Local",
                 0L,
                 0L,
@@ -45,7 +45,8 @@ public class StorageRestClientMock implements IStorageRestClient {
                 true,
                 true,
                 true,
-                new StorageLocationConfiguration("name", pluginConfiguration, 0L)
+                new StorageLocationConfiguration("name", pluginConfiguration, 0L),
+                true
         );
         List<EntityModel<StorageLocationDTO>> list = new ArrayList<>();
         list.add(new EntityModel<>(storageLocationDTO));

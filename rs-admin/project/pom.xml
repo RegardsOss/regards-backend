@@ -23,9 +23,9 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>project</artifactId>
+	<version>${modules.project.version}</version>
 	<packaging>pom</packaging>
 
-	<name>Project</name>
 	<description>Module for managing the different projects/tenants of the system</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -50,9 +50,9 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath></relativePath>
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<modules>
@@ -69,27 +69,27 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-rest</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-client</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.project.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -23,6 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>dataprovider</artifactId>
+	<version>${regards.dataprovider.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Microservice crawling directoreis in order to find data to ingest</description>
@@ -50,8 +51,8 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath />
+		<version>${regards.aggregator.parent.version}</version>
+		<relativePath>../rs-bom/regards-aggregator-parent</relativePath>
 	</parent>
 
 	<modules>

@@ -24,7 +24,6 @@
 	<artifactId>access-services-domain</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Access Services Domain</name>
 	<description>Model layer of the Access Services module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -50,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>access-services</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+        <version>${modules.access-services.version}</version>
 	</parent>
 
 	<dependencies>

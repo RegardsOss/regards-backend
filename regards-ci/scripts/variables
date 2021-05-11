@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+NEXUS_DEPLOY_USER="admin"
+NEXUS_DEPLOY_PASSWORD="password"
+NEXUS_BASE="https://172.26.46.158:8443"
+NEXUS_RAW="${NEXUS_BASE}/repository/regards-raw"
+MAVEN_REPOSITORY="maven-snapshot-regards"
+SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+SERVICES=${SERVICES:-$(realpath ${SCRIPTS}/../..)}
+DATADIR=${SCRIPTS}/data
+REGARDS_VERSION=${REGARDS_VERSION:=local}
+JOB_ID=${JOB_ID:=local}

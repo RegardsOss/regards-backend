@@ -27,7 +27,7 @@
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
         <artifactId>authentication</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>${modules.authentication.version}</version>
     </parent>
 
     <dependencies>
@@ -44,14 +44,6 @@
             <artifactId>authentication-plugins</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.model</groupId>
-            <artifactId>model-gson-helper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.model</groupId>
-            <artifactId>model-client</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-regards</artifactId>
         </dependency>
@@ -66,10 +58,6 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.accessrights</groupId>
             <artifactId>accessrights-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.dam</groupId>
-            <artifactId>dam-client</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.project</groupId>

@@ -6,14 +6,15 @@
 
     <groupId>fr.cnes.regards.framework.modules</groupId>
     <artifactId>dump</artifactId>
+    <version>${framework.modules.dump.version}</version>
     <description>Dump module to save metadata</description>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -53,12 +54,12 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.dump</groupId>
                 <artifactId>dump-service</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.dump.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.dump</groupId>
                 <artifactId>dump-rest</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.dump.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

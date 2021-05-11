@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>indexer</artifactId>
-	<version>1.4.1-SNAPSHOT</version>
+	<version>${modules.indexer.version}</version>
 	<packaging>pom</packaging>
 	
 	<description>Module managing the indexation of data</description>
@@ -50,9 +50,9 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath />
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	
 	<modules>
@@ -67,17 +67,17 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.indexer</groupId>
 				<artifactId>indexer-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.indexer.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.indexer</groupId>
 				<artifactId>indexer-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.indexer.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.indexer</groupId>
 				<artifactId>indexer-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.indexer.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

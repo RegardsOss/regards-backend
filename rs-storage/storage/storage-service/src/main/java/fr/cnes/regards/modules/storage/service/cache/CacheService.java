@@ -119,6 +119,7 @@ public class CacheService {
 
     /**
      * Search for a file in cache with the given checksum.
+     * @param checksum
      * @return {@link CacheFile}
      */
     public Optional<CacheFile> search(String checksum) {
@@ -127,6 +128,7 @@ public class CacheService {
 
     /**
      * Check coherence between database and physical files in cache location.
+     * @throws IOException
      */
     public void checkDiskDBCoherence() {
         Page<CacheFile> shouldBeAvailableSet;
@@ -165,6 +167,7 @@ public class CacheService {
 
     /**
      * Initialize the cache file system for the given tenant
+     * @param tenant
      */
     public void initCacheFileSystem(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
@@ -362,8 +365,16 @@ public class CacheService {
     public StorageLocationDTO toStorageLocation() {
         StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, getMaxCacheSizeKo());
         conf.setStorageType(StorageType.CACHE);
-        return StorageLocationDTO
-                .build(CACHE_NAME, getTotalCachedFiles(), getCacheSizeUsedKB(), 0L, 0L, false, false, false, conf);
+        return new StorageLocationDTO(CACHE_NAME,
+                                      getTotalCachedFiles(),
+                                      getCacheSizeUsedKB(),
+                                      0L,
+                                      0L,
+                                      false,
+                                      false,
+                                      false,
+                                      conf,
+                                      true);
     }
 
     public boolean isCacheEmpty() {

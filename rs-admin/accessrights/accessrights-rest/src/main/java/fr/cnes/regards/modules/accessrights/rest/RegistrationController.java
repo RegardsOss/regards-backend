@@ -123,7 +123,8 @@ public class RegistrationController {
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> requestAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto)
             throws EntityException {
-        registrationService.requestAccess(accessRequestDto, false);
+        ProjectUser user = registrationService.requestAccess(accessRequestDto, false);
+        projectUserService.configureAccessGroups(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -138,7 +139,8 @@ public class RegistrationController {
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> requestExternalAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto)
             throws EntityException {
-        registrationService.requestAccess(accessRequestDto, true);
+        ProjectUser projectUser = registrationService.requestAccess(accessRequestDto, true);
+        projectUserService.configureAccessGroups(projectUser);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

@@ -1,0 +1,89 @@
+#!/usr/bin/env groovy
+
+/*
+ * LICENSE_PLACEHOLDER
+ */
+
+/**
+ * Declaratve Jenkinsfile. The language is Groovy.
+ * Contains the definition of a Jenkins Pipeline, is checked into source control
+ * and is expected to be the reference.
+ * To fully support multibranch builds without issues, we are using docker-compose to setup cots for each build.
+ *
+ * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
+ */
+
+pipeline {
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '2'))
+        disableConcurrentBuilds()
+    }
+    environment {
+        PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
+        REGARDS_HOME="${WORKSPACE}"
+    }
+    agent { label 'fast-build' }
+    stages {
+        // Refresh docker images
+        stage('Pull docker images') {
+            steps {
+                sh 'cd ' + CI_DIR + ' \
+                     && docker-compose -f docker/docker-compose.yml pull'
+            }
+        }
+        stage("(Docker) Tag git feature branch (fast build)") {
+            when {
+                not {
+                    branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
+                }
+            }
+            environment {
+                REGARDS_VERSION="fast-${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}"
+                MODE="fast"
+            }
+            steps {
+                sh 'printenv'
+                sh 'cd ' + CI_DIR + ' \
+                     && docker-compose \
+                            -f docker/docker-compose-fast.yml \
+                            -p ' + PROJECT_NAME + ' \
+                            up \
+                            --exit-code-from rs-build \
+                            --abort-on-container-exit \
+                            rs-build'
+            }
+        }
+        stage("(Docker) Tag git special branch (fast build)") {
+            when {
+                branch pattern: /(develop.*|release.*)/, comparator: "REGEXP"
+            }
+            environment {
+                REGARDS_VERSION="fast-${BRANCH_NAME.replaceAll('/', '-')}"
+                MODE="fast"
+            }
+            steps {
+                sh 'printenv'
+                sh 'cd ' + CI_DIR + ' \
+                     && docker-compose \
+                            -f docker/docker-compose-fast.yml \
+                            -p ' + PROJECT_NAME + ' \
+                            up \
+                            --exit-code-from rs-build \
+                            --abort-on-container-exit \
+                            rs-build'
+            }
+        }
+    }
+    post {
+        failure {
+            echo 'The build FAILED'
+        }
+        cleanup {
+            echo 'lets clean up the mess!'
+            sh 'cd ' + CI_DIR + ' \
+                 && docker-compose -f docker/docker-compose-fast.yml -p ' + PROJECT_NAME + ' down'
+            echo 'In case any test played with access rights, lets add read/write to owner'
+            sh 'chmod -R +rw .'
+        }
+    }
+}

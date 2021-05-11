@@ -18,6 +18,16 @@
  */
 package fr.cnes.regards.modules.dam.service.entities.plugins;
 
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -49,6 +59,8 @@ import java.util.stream.Collectors;
         version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class StoragePlugin implements IStorageService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StoragePlugin.class);
 
     private final static String URI_TEMPLATE = "%s?scope=%s";
 
@@ -115,6 +127,8 @@ public class StoragePlugin implements IStorageService {
             if (!filesToDelete.isEmpty()) {
                 this.storageClient.delete(filesToDelete);
             }
+        } else {
+            LOGGER.info("[FILES UPDATE] Service not configured to store files with storage microservice.");
         }
 
         return toUpdate;
@@ -127,7 +141,11 @@ public class StoragePlugin implements IStorageService {
             Collection<FileDeletionRequestDTO> files = toDelete.getFiles().values().stream()
                     .map(entry -> initDeletionRequest(entry, toDelete.getIpId().toString()))
                     .collect(Collectors.toList());
-            this.storageClient.delete(files);
+            if (!files.isEmpty()) {
+                this.storageClient.delete(files);
+            }
+        } else {
+            LOGGER.info("[FILES DELETION] Service not configured to store files with storage microservice.");
         }
     }
 

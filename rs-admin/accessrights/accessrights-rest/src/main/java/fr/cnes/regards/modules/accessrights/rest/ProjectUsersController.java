@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -280,6 +279,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody AccessRequestDto dto)
             throws EntityException {
         final ProjectUser userCreated = projectUserService.createProjectUser(dto);
+        projectUserService.configureAccessGroups(userCreated);
         return new ResponseEntity<>(toResource(userCreated), HttpStatus.CREATED);
     }
 
@@ -297,7 +297,11 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResourceAccess(description = "remove the project user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId) throws EntityException {
         ProjectUser projectUser = projectUserService.retrieveUser(userId);
-        projectUserWorkflowManager.removeAccess(projectUser);
+        if(canDelete(projectUser)) {
+            projectUserWorkflowManager.removeAccess(projectUser);
+        } else {
+            throw new EntityOperationForbiddenException(String.format("You cannot delete %s because he has more privilege than you", projectUser.getEmail()));
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -355,8 +359,13 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             resourceService.addLink(resource, this.getClass(), "updateProjectUser", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, element.getId()),
                                     MethodParamFactory.build(ProjectUser.class, element));
-            resourceService.addLink(resource, this.getClass(), "removeProjectUser", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, element.getId()));
+            if(canDelete(element)) {
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "removeProjectUser",
+                                        LinkRels.DELETE,
+                                        MethodParamFactory.build(Long.class, element.getId()));
+            }
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUserList", LinkRels.LIST,
                                     MethodParamFactory.build(String.class, element.getStatus().toString()),
                                     MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
@@ -396,7 +405,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * project admins.
      * @param projectUser {@link ProjectUser} to transform to HATEOAS resources.
      * @return HATEOAS resources for {@link ProjectUser}
-    
+
      */
     public EntityModel<ProjectUser> toResourceRegisteredUser(ProjectUser projectUser) {
         EntityModel<ProjectUser> resource = resourceService.toResource(projectUser);
@@ -407,6 +416,17 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     MethodParamFactory.build(ProjectUser.class, projectUser));
         }
         return resource;
+    }
+
+    /**
+     * Determine whether current user has sufficient privilege to delete a user
+     */
+    private boolean canDelete(ProjectUser projectUser) {
+        try {
+            return roleService.isCurrentRoleSuperiorTo(projectUser.getRole().getName());
+        } catch (EntityNotFoundException e) {
+            return false;
+        }
     }
 
 }

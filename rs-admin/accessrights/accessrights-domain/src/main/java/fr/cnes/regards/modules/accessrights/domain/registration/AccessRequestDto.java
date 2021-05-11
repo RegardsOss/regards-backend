@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.accessrights.domain.registration;
 import java.util.List;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 import org.hibernate.validator.constraints.Length;
@@ -22,6 +23,7 @@ public class AccessRequestDto {
     @Valid
     @NotBlank
     @Length(max = 128)
+    @Email
     private String email;
 
     /**

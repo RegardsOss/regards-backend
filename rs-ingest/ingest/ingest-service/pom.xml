@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>ingest</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>${modules.ingest.version}</version>
 	</parent>
 
 	<dependencies>
@@ -62,10 +62,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-			<artifactId>locks-service</artifactId>
 		</dependency>
 		<dependency>
   			<groupId>fr.cnes.regards.framework</groupId>

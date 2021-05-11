@@ -23,13 +23,14 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>processing</artifactId>
+    <version>${modules.processing.version}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -81,79 +82,84 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-commons</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-client</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-storage</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-dao</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-domain</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-domain-data</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-rest</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-service</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-engine-core</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-engine-jobs</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-spring-config</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-order-commons</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-order-processes</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-test</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.processing.version}</version>
                 <scope>test</scope>
             </dependency>
 
             <!-- Libraries -->
+            <dependency>
+	        	<groupId>io.netty</groupId>
+	        	<artifactId>netty-all</artifactId>
+	        	<version>4.1.51.Final</version>
+	    	</dependency>
             <dependency>
                 <groupId>io.github.openfeign</groupId>
                 <artifactId>feign-core</artifactId>

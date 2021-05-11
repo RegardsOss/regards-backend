@@ -56,7 +56,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.modules.locks.dao.ILockRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -187,9 +186,6 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected IDownloadTokenRepository downloadTokenRepo;
 
     @Autowired
-    private ILockRepository lockRepo;
-
-    @Autowired
     protected RequestStatusService reqStatusService;
 
     protected String originUrl = "file://in/this/directory/file.test";
@@ -215,7 +211,6 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
         downloadTokenRepo.deleteAll();
-        lockRepo.deleteAll();
 
         storageLocationService.getAllLocations().forEach(f -> {
             try {

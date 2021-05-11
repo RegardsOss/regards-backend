@@ -23,6 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices.fem</groupId>
 	<artifactId>bootstrap-fem</artifactId>
+	<version>${fem.bootstrap.version}</version>
 
 	<description>Boots the FEM microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -49,8 +50,8 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath/>
+		<version>${regards.boot.parent.version}</version>
+		<relativePath>../../rs-bom/regards-boot-parent</relativePath>
 	</parent>
 
 	<properties>

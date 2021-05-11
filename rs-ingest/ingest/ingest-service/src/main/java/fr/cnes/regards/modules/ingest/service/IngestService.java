@@ -39,6 +39,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
@@ -51,6 +52,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
@@ -138,8 +140,6 @@ public class IngestService implements IIngestService {
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
-        // Check for each feature if storage locations are valide for feature files
-        checkSipStorageLocations(sip, ingestMetadata, errors);
 
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
@@ -156,6 +156,9 @@ public class IngestService implements IIngestService {
 
             return null;
         }
+
+        // Check for each feature if storage locations are valide for feature files
+        checkSipStorageLocations(sip, ingestMetadata, errors);
 
         // Save granted ingest request, versioning mode is being handled later
         IngestRequest request = IngestRequest.build(requestId, ingestMetadata, InternalRequestState.CREATED,
@@ -268,13 +271,27 @@ public class IngestService implements IIngestService {
                 }
             });
             for (ContentInformation ci : sip.getProperties().getContentInformations()) {
+                Double height = ci.getRepresentationInformation().getSyntax().getHeight();
+                Double width = ci.getRepresentationInformation().getSyntax().getWidth();
                 OAISDataObject dobj = ci.getDataObject();
+                DataType regardsDataType = dobj.getRegardsDataType();
                 // If file needed to be stored check that the data type is well configured
                 if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null)
-                        && !handleTypes.contains(dobj.getRegardsDataType())) {
+                        && !handleTypes.contains(regardsDataType)) {
                     errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE", String
                             .format("Data type %s to store is not associated to a configured storage location",
-                                    dobj.getRegardsDataType().toString()));
+                                    regardsDataType.toString()));
+                }
+                // add check on quicklook or thumbnail to assert that if they are to be referenced, height and width have been set
+                if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD)
+                        || (regardsDataType == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
+                    for (OAISDataObjectLocation location : dobj.getLocations()) {
+                        if (!Strings.isNullOrEmpty(location.getStorage()) && ((height == null) || (width == null))) {
+                            errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION", String
+                                    .format("Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
+                                            dobj.getFilename(), sip.getId()));
+                        }
+                    }
                 }
             }
         }

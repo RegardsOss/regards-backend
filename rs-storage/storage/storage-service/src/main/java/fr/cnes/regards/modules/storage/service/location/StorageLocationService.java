@@ -40,7 +40,6 @@ import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -132,7 +131,7 @@ public class StorageLocationService {
      * @param storageId
      * @throws EntityNotFoundException
      */
-    public StorageLocationDTO getById(String storageId) throws EntityNotFoundException {
+    public StorageLocationDTO getById(String storageId) throws ModuleException {
         Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageId);
         Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageId);
         Long nbStorageError = storageService.count(storageId, FileRequestStatus.ERROR);
@@ -159,15 +158,16 @@ public class StorageLocationService {
         } else {
             throw new EntityNotFoundException(storageId, StorageLocation.class);
         }
-        return StorageLocationDTO.build(storageId, nbReferencedFiles, totalSizeOfReferencedFiles, nbStorageError,
-                                        nbDeletionError, storageRunning, deletionRunning, copyRunning, conf);
+        return new StorageLocationDTO(storageId, nbReferencedFiles, totalSizeOfReferencedFiles, nbStorageError,
+                                      nbDeletionError, storageRunning, deletionRunning, copyRunning, conf,
+                                      pLocationConfService.allowPhysicalDeletion(conf));
     }
 
     /**
      * Retrieve all known storage locations with there monitoring informations.
      * @return {@link StorageLocationDTO}s
      */
-    public Set<StorageLocationDTO> getAllLocations() {
+    public Set<StorageLocationDTO> getAllLocations() throws ModuleException {
         Set<StorageLocationDTO> locationsDto = Sets.newHashSet();
         // Get all monitored locations
         Map<String, StorageLocation> monitoredLocations = storageLocationRepo.findAll().stream()
@@ -183,24 +183,25 @@ public class StorageLocationService {
             boolean storageRunning = storageService.isStorageRunning(conf.getName());
             StorageLocation monitored = monitoredLocations.get(conf.getName());
             if (monitored != null) {
-                locationsDto.add(StorageLocationDTO.build(conf.getName(), monitored.getNumberOfReferencedFiles(),
-                                                          monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError,
-                                                          nbDeletionError, storageRunning, deletionRunning, copyRunning,
-                                                          conf));
+                locationsDto.add(new StorageLocationDTO(conf.getName(), monitored.getNumberOfReferencedFiles(),
+                                                        monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError,
+                                                        nbDeletionError, storageRunning, deletionRunning, copyRunning,
+                                                        conf, pLocationConfService.allowPhysicalDeletion(conf)));
                 monitoredLocations.remove(monitored.getName());
             } else {
-                locationsDto.add(StorageLocationDTO.build(conf.getName(), 0L, 0L, nbStorageError, nbDeletionError,
-                                                          storageRunning, deletionRunning, copyRunning, conf));
+                locationsDto.add(new StorageLocationDTO(conf.getName(), 0L, 0L, nbStorageError, nbDeletionError,
+                                                        storageRunning, deletionRunning, copyRunning, conf,
+                                                        pLocationConfService.allowPhysicalDeletion(conf)));
             }
         }
         // Handle not configured storage as OFFLINE ones
         for (StorageLocation monitored : monitoredLocations.values()) {
             Long nbStorageError = 0L;
             Long nbDeletionError = 0L;
-            locationsDto.add(StorageLocationDTO
-                    .build(monitored.getName(), monitored.getNumberOfReferencedFiles(),
-                           monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError, nbDeletionError, false, false,
-                           false, new StorageLocationConfiguration(monitored.getName(), null, null)));
+            locationsDto.add(new StorageLocationDTO
+                    (monitored.getName(), monitored.getNumberOfReferencedFiles(),
+                     monitored.getTotalSizeOfReferencedFilesInKo(), nbStorageError, nbDeletionError, false, false,
+                     false, new StorageLocationConfiguration(monitored.getName(), null, null), false));
         }
         return locationsDto;
     }
@@ -384,7 +385,8 @@ public class StorageLocationService {
         StorageLocationConfiguration newConf = pLocationConfService
                 .create(storageLocation.getName(), storageLocation.getConfiguration().getPluginConfiguration(),
                         storageLocation.getConfiguration().getAllocatedSizeInKo());
-        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, false, false, false, newConf);
+        return new StorageLocationDTO(storageLocation.getName(), 0L, 0L, 0L, 0L, false, false, false, newConf,
+                                      pLocationConfService.allowPhysicalDeletion(newConf));
     }
 
     /**
@@ -399,7 +401,8 @@ public class StorageLocationService {
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
         StorageLocationConfiguration newConf = pLocationConfService.update(storageId,
                                                                            storageLocation.getConfiguration());
-        return StorageLocationDTO.build(storageLocation.getName(), 0L, 0L, 0L, 0L, false, false, false, newConf);
+        return new StorageLocationDTO(storageLocation.getName(), 0L, 0L, 0L, 0L, false, false, false, newConf,
+                                      pLocationConfService.allowPhysicalDeletion(newConf));
     }
 
     /**

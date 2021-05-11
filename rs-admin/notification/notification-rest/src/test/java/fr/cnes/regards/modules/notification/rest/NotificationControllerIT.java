@@ -5,7 +5,6 @@ import java.util.HashSet;
 
 import javax.mail.internet.MimeMessage;
 
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -31,6 +30,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.service.INotificationService;
 import fr.cnes.regards.modules.notification.service.SendingScheduler;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -70,6 +71,12 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         public IProjectsClient projectsClient() {
             return Mockito.mock(IProjectsClient.class);
         }
+
+        @Bean
+        IUserClient userClient() {
+            return Mockito.mock(IUserClient.class);
+        }
+
     }
 
     @Autowired
@@ -136,12 +143,14 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", roleName);
 
         performGet(NotificationController.NOTIFICATION_PATH, token,
-                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4).expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
+                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4)
+                           .expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
                            .addParameter("state", NotificationStatus.UNREAD.toString()),
                    "Could not retrieve notifications");
 
         performGet(NotificationController.NOTIFICATION_PATH, token,
-                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2).expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
+                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2)
+                           .expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
                            .addParameter("state", NotificationStatus.UNREAD.toString()).addParameter("page", "0")
                            .addParameter("size", "2"),
                    "Could not retrieve notifications");
@@ -149,7 +158,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void testNotifSummary() {
-        String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", DefaultRole.PROJECT_ADMIN.toString());
+        String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr",
+                                                DefaultRole.PROJECT_ADMIN.toString());
         performGet(NotificationController.NOTIFICATION_PATH + NotificationController.SUMMARY_PATH, token,
                    customizer().expectStatusOk(), "Could not retrieve notification summary");
     }

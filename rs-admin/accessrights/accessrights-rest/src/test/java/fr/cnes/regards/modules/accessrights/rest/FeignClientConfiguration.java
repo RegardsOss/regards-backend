@@ -56,5 +56,4 @@ public class FeignClientConfiguration {
     public IProjectsClient projectsClient() {
         return Mockito.mock(IProjectsClient.class);
     }
-
 }
