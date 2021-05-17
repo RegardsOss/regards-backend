@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 
 /**
  * This is the base of the feign client of a module that is being used in multiple microservices. As so, we cannot entirely create the feign client. It has to be create in each microservice using it.
@@ -45,19 +46,19 @@ public interface IDynamicTenantSettingClient {
     String UPDATE_PATH = "/{name}";
 
     @PutMapping(path = ROOT_PATH + UPDATE_PATH)
-    ResponseEntity<EntityModel<DynamicTenantSetting>> update(@PathVariable(name = "name") String name,
-            @RequestBody DynamicTenantSetting setting);
+    ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(@PathVariable(name = "name") String name,
+            @RequestBody DynamicTenantSettingDto setting);
 
     @GetMapping(path = ROOT_PATH)
-    ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(
+    ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll(
             @RequestParam(name = "names") Set<String> names);
 
-    default ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll() {
+    default ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll() {
         return retrieveAll(null);
     }
 
-    static Map<String, DynamicTenantSetting> transformToMap(List<EntityModel<DynamicTenantSetting>> responseBoby) {
-        return HateoasUtils.unwrapCollection(responseBoby).stream().collect(Collectors.toMap(DynamicTenantSetting::getName, Function
+    static Map<String, DynamicTenantSettingDto> transformToMap(List<EntityModel<DynamicTenantSettingDto>> responseBoby) {
+        return HateoasUtils.unwrapCollection(responseBoby).stream().collect(Collectors.toMap(DynamicTenantSettingDto::getName, Function
                 .identity()));
     }
 }

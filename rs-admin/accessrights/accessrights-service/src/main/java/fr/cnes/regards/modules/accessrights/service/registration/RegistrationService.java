@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.service.registration;
 
+import java.util.ArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
@@ -30,13 +32,16 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
@@ -65,7 +70,12 @@ public class RegistrationService implements IRegistrationService {
     /**
      * CRUD repository handling {@link ProjectUser}s. Autowired by Spring.
      */
-    private final IProjectUserService projectUserService;
+    private final IProjectUserRepository projectUserRepository;
+
+    /**
+     * CRUD repository handling {@link Role}s. Autowired by Spring.
+     */
+    private final IRoleService roleService;
 
     /**
      * CRUD service handling {@link EmailVerificationToken}s. Autowired by Spring.
@@ -74,11 +84,11 @@ public class RegistrationService implements IRegistrationService {
 
     private final WaitForQualificationListener listener;
 
-    public RegistrationService(IProjectUserService projectUserService, IRoleService pRoleService,
-            IEmailVerificationTokenService pTokenService, IAccountsClient accountsClient,
-            WaitForQualificationListener listener) {
+    public RegistrationService(IProjectUserRepository pProjectUserRepository, IRoleService pRoleService,
+            IEmailVerificationTokenService pTokenService, IAccountsClient accountsClient, WaitForQualificationListener listener) {
         super();
-        this.projectUserService = projectUserService;
+        projectUserRepository = pProjectUserRepository;
+        roleService = pRoleService;
         tokenService = pTokenService;
         this.accountsClient = accountsClient;
         this.listener = listener;
@@ -115,9 +125,7 @@ public class RegistrationService implements IRegistrationService {
                 isNotValid |= accountDto.getLastName() == null;
                 isNotValid |= (accountDto.getPassword() == null) && !isExternalAccess;
                 if (isNotValid) {
-                    LOG.error(
-                            "Account does not exist for user {} and there is not enough information to create a new one.",
-                            accountDto.getEmail());
+                    LOG.error("Account does not exist for user {} and there is not enough information to create a new one.", accountDto.getEmail());
                     throw new EntityNotFoundException(accountDto.getEmail(), Account.class);
                 }
                 Account account = new Account(accountDto.getEmail(),
@@ -151,16 +159,23 @@ public class RegistrationService implements IRegistrationService {
             Account account = accountResponse.getBody().getContent();
 
             // Check that no project user with same email exists
-            if (projectUserService.retrieveOneOptionalByEmail(accountDto.getEmail()).isPresent()) {
+            if (projectUserRepository.findOneByEmail(accountDto.getEmail()).isPresent()) {
                 throw new EntityAlreadyExistsException("The email " + accountDto.getEmail() + "is already in use.");
             }
 
+            // Init with default role
+            final Role role = roleService.getDefaultRole();
+
+            // Create a new project user
+            ProjectUser projectUser = new ProjectUser(accountDto.getEmail(), role, new ArrayList<>(),
+                    accountDto.getMetadata());
             // Create
-            ProjectUser projectUser = projectUserService.createProjectUser(accountDto);
-            if (!isExternal) {
+            if (isExternal) {
                 // External authenticated accounts doesn't need to validate email.
-                projectUser.setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE);
-                projectUser = projectUserService.updateUser(projectUser.getId(), projectUser);
+                projectUser.setStatus(UserStatus.ACCESS_GRANTED);
+                projectUser = projectUserRepository.save(projectUser);
+            } else {
+                projectUser = projectUserRepository.save(projectUser);
                 // Init the email verification token
                 tokenService.create(projectUser, accountDto.getOriginUrl(), accountDto.getRequestLink());
 

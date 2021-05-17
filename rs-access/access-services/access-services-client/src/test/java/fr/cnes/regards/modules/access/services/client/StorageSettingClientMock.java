@@ -1,24 +1,22 @@
 package fr.cnes.regards.modules.access.services.client;
 
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
-import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Set;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
+import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 
 /**
- * Make Spring DI happy.
+ * @author Sylvain VISSIERE-GUERINET
  */
 @Primary
 @Component
-public class AccessSettingsClientMock implements IAccessRightSettingClient {
+public class StorageSettingClientMock implements IStorageSettingClient {
 
     @Override
     public ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(String name, DynamicTenantSettingDto setting) {

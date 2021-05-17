@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +47,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -63,6 +65,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -174,6 +177,8 @@ public class ProjectUserServiceTest {
         userAccessGroupsClient = Mockito.mock(IUserClient.class);
         accessSettingsService = Mockito.mock(AccessSettingsService.class);
 
+        GsonUtil.setGson(new Gson());
+
         // Construct the tested service
         projectUserService = new ProjectUserService(authResolver, projectUserRepository, roleService, accountsClient,
                 userAccessGroupsClient, "instance_admin@regards.fr", accessSettingsService, new Gson());
@@ -185,7 +190,10 @@ public class ProjectUserServiceTest {
         Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
+        String defaultRoleName = AccessSettings.DEFAULT_ROLE_SETTING.getValue(String.class);
+        Mockito.when(accessSettingsService.defaultRole()).thenReturn(defaultRoleName);
+        Mockito.when(accessSettingsService.defaultGroups()).thenReturn(Arrays.asList("group1", "group2", "groupDontKnowWhat"));
+        Mockito.when(roleService.retrieveRole(defaultRoleName)).thenReturn(new RoleFactory().doNotAutoCreateParents().createRegisteredUser());
         ProjectUser user = new ProjectUser();
         user.setEmail("test@regards.fr");
         Mockito.when(projectUserRepository.save(Mockito.any(ProjectUser.class))).thenAnswer(args -> {
@@ -198,7 +206,7 @@ public class ProjectUserServiceTest {
         try {
             ProjectUser newUser = projectUserService.createProjectUser(accessRequest);
             projectUserService.configureAccessGroups(newUser);
-            Assert.assertEquals(accessSettingsService.defaultRole(), newUser.getRole());
+            Assert.assertEquals(accessSettingsService.defaultRole(), newUser.getRole().getName());
 
             // Check group association
             Assert.assertTrue("This test needs some groups configured id default settings",

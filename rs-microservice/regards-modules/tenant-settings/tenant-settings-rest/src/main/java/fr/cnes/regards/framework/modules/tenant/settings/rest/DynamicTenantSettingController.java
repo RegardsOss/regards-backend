@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.modules.tenant.settings.rest;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
@@ -17,10 +18,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -30,7 +35,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  */
 @RestController
 @RequestMapping(path = DynamicTenantSettingController.ROOT_PATH)
-public class DynamicTenantSettingController implements IResourceController<DynamicTenantSetting> {
+public class DynamicTenantSettingController implements IResourceController<DynamicTenantSettingDto> {
 
     public static final String ROOT_PATH = "/settings";
 
@@ -39,31 +44,44 @@ public class DynamicTenantSettingController implements IResourceController<Dynam
     @Autowired
     private IDynamicTenantSettingService dynamicTenantSettingService;
 
+    @Autowired
+    private IResourceService resourceService;
+
     @PutMapping(path = UPDATE_PATH)
     @ResponseBody
     @ResourceAccess(description = "Allows to update a dynamic tenant setting", role = DefaultRole.ADMIN)
-    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(@PathVariable(name = "name") String name,
-            @RequestBody DynamicTenantSetting setting)
+    public ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(@PathVariable(name = "name") String name,
+            @RequestBody DynamicTenantSettingDto setting)
             throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
-        return new ResponseEntity<>(toResource(dynamicTenantSettingService.update(name, setting.getValue())),
+        return new ResponseEntity<>(toResource(new DynamicTenantSettingDto(dynamicTenantSettingService.update(name, setting.getValue()))),
                                     HttpStatus.OK);
     }
 
     @GetMapping
     @ResponseBody
     @ResourceAccess(description = "Allows to retrieve dynamic tenant settings", role = DefaultRole.ADMIN)
-    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(
+    public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll(
             @RequestParam(name = "names", required = false) Set<String> names) {
         if (names == null || names.isEmpty()) {
-            return new ResponseEntity<>(toResources(dynamicTenantSettingService.readAll()), HttpStatus.OK);
+            return new ResponseEntity<>(toResources(dynamicTenantSettingService.readAll().stream().map(DynamicTenantSettingDto::new).collect(
+                    Collectors.toSet())), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(toResources(dynamicTenantSettingService.readAll(names)), HttpStatus.OK);
+            return new ResponseEntity<>(toResources(dynamicTenantSettingService.readAll(names).stream().map(DynamicTenantSettingDto::new).collect(
+                    Collectors.toSet())), HttpStatus.OK);
         }
     }
 
     @Override
-    public EntityModel<DynamicTenantSetting> toResource(DynamicTenantSetting element, Object... extras) {
-        //TODO add link
-        return new EntityModel<>(element);
+    public EntityModel<DynamicTenantSettingDto> toResource(DynamicTenantSettingDto element, Object... extras) {
+        EntityModel<DynamicTenantSettingDto> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "retrieveAll", LinkRels.SELF);
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "update",
+                                LinkRels.UPDATE,
+                                MethodParamFactory.build(String.class, element.getName()),
+                                MethodParamFactory.build(DynamicTenantSettingDto.class));
+
+        return resource;
     }
 }

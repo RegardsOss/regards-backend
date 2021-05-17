@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.access.services.rest.user.mock;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -30,47 +31,56 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 @Primary
 @Component
-public class AccessSettingsClientMock implements IAccessRightSettingClient, IResourceController<DynamicTenantSetting> {
+public class AccessSettingsClientMock implements IAccessRightSettingClient, IResourceController<DynamicTenantSettingDto> {
 
     public static final List<String> ACCESS_SETTINGS_STUB_GROUPS = Lists.newArrayList("dummy");
 
-    public static final List<DynamicTenantSetting> ACCESS_SETTINGS_STUB = Arrays
-            .asList(AccessSettings.DEFAULT_GROUPS_SETTING.setValue(ACCESS_SETTINGS_STUB_GROUPS),
-                    AccessSettings.DEFAULT_ROLE_SETTING,
-                    AccessSettings.MODE_SETTING);
+    public static final List<DynamicTenantSettingDto> ACCESS_SETTINGS_STUB;
+
+    static {
+        GsonUtil.setGson(new Gson());
+        ACCESS_SETTINGS_STUB = Arrays
+                .asList(AccessSettings.DEFAULT_GROUPS_SETTING.setValue(ACCESS_SETTINGS_STUB_GROUPS),
+                        AccessSettings.DEFAULT_ROLE_SETTING,
+                        AccessSettings.MODE_SETTING).stream().map(DynamicTenantSettingDto::new).collect(Collectors.toList());
+    }
 
     @Autowired
     private IResourceService resourceService;
 
     @Override
-    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(Set<String> names) {
+    public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll(Set<String> names) {
         return new ResponseEntity<>(HateoasUtils.wrapList(ACCESS_SETTINGS_STUB), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(String name, DynamicTenantSetting setting) {
+    public ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(String name, DynamicTenantSettingDto setting) {
         return new ResponseEntity<>(toResource(setting), HttpStatus.OK);
     }
 
     @Override
-    public EntityModel<DynamicTenantSetting> toResource(final DynamicTenantSetting element, final Object... extras) {
-        EntityModel<DynamicTenantSetting> resource = resourceService.toResource(element);
+    public EntityModel<DynamicTenantSettingDto> toResource(final DynamicTenantSettingDto element, final Object... extras) {
+        EntityModel<DynamicTenantSettingDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAll", LinkRels.SELF);
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "update",
                                 LinkRels.UPDATE,
+                                MethodParamFactory.build(String.class, element.getName()),
                                 MethodParamFactory.build(AccessSettings.class));
 
         return resource;

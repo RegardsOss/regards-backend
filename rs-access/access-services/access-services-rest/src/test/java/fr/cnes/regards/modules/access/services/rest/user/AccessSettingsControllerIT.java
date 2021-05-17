@@ -19,13 +19,16 @@
 package fr.cnes.regards.modules.access.services.rest.user;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.access.services.domain.user.AccessSettingsDto;
 
+import org.hamcrest.Matchers;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageSettingClientMock.DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA;
 import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageSettingClientMock.DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT;
@@ -47,39 +50,24 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer =
             customizer()
                 .expectStatusOk()
-                .expectValue("$.content.mode", AccessSettings.MODE)
-                .expectValue("$.content.maxQuota", DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA)
-                .expectValue("$.content.rateLimit", DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT)
+                .expectIsArray("$")
+                .expectToHaveSize("$", 5)
             ;
 
         performDefaultGet(api, customizer, "Failed to retrieve access settings");
     }
 
     @Test
-    @Ignore("FIXME: to reactivate once API has been decided with front dev")
     public void updateAccessSettings() {
-//        String api = AccessSettingsController.REQUEST_MAPPING_ROOT;
-//
-//        AccessSettingsDto dto = new AccessSettingsDto(
-//            ACCESS_SETTINGS_STUB_ID,
-//            ACCESS_SETTINGS_STUB_MODE,
-//            ACCESS_SETTINGS_STUB_ROLE,
-//            ACCESS_SETTINGS_STUB_GROUPS,
-//            DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA,
-//            DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT
-//        );
-//
-//        RequestBuilderCustomizer customizer =
-//            customizer()
-//                .expectStatusOk()
-//                .expectValue("$.content.id", ACCESS_SETTINGS_STUB_ID)
-//                .expectValue("$.content.mode", ACCESS_SETTINGS_STUB_MODE)
-//                .expectValue("$.content.role.name", ACCESS_SETTINGS_STUB_ROLE.getName())
-//                .expectValue("$.content.groups[0]", ACCESS_SETTINGS_STUB_GROUPS.get(0))
-//                .expectValue("$.content.maxQuota", DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA)
-//                .expectValue("$.content.rateLimit", DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT)
-//            ;
-//
-//        performDefaultPut(api, dto, customizer, "Failed to update access settings");
+        String api = AccessSettingsController.REQUEST_MAPPING_ROOT;
+
+        DynamicTenantSettingDto dto = new DynamicTenantSettingDto<>(AccessSettings.MODE_SETTING);
+
+        RequestBuilderCustomizer customizer =
+            customizer()
+                .expectStatusOk()
+            ;
+
+        performDefaultPut(api, dto, customizer, "Failed to update access settings");
     }
 }

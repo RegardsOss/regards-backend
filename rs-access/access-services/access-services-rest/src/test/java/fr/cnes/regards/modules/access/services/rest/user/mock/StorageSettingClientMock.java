@@ -4,20 +4,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.modules.tenant.settings.client.IDynamicTenantSettingClient;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@Primary
+@Component
 public class StorageSettingClientMock implements IStorageSettingClient {
 
     private static final Random random = new Random();
@@ -26,18 +30,17 @@ public class StorageSettingClientMock implements IStorageSettingClient {
 
     public static final Long DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT = (long) random.nextInt(10_000);
 
-    public static final List<DynamicTenantSetting> DEFAULT_STORAGE_SETTING_STUB = Arrays
-            .asList(StorageSetting.MAX_QUOTA.setValue(DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA),
-                    StorageSetting.RATE_LIMIT.setValue(DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT));
-
-
     @Override
-    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(Set<String> names) {
+    public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll(Set<String> names) {
+        List<DynamicTenantSettingDto> DEFAULT_STORAGE_SETTING_STUB = Arrays
+                .asList(StorageSetting.MAX_QUOTA.setValue(DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA),
+                        StorageSetting.RATE_LIMIT.setValue(DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT)).stream()
+                .map(DynamicTenantSettingDto::new).collect(Collectors.toList());
         return new ResponseEntity<>(HateoasUtils.wrapList(DEFAULT_STORAGE_SETTING_STUB), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(String name, DynamicTenantSetting setting) {
+    public ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(String name, DynamicTenantSettingDto setting) {
         return new ResponseEntity<>(new EntityModel<>(setting), HttpStatus.OK);
     }
 
