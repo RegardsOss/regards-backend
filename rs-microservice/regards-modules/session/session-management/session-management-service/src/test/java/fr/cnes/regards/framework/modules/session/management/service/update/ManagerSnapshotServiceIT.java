@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.session.management.service.update;
 
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
@@ -63,6 +64,9 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
     private ISourceManagerRepository sourceRepo;
 
     @Autowired
+    private ISnapshotProcessRepository snapshotProcessRepo;
+
+    @Autowired
     private ManagerSnapshotService managerSnapshotService;
 
     private static final String SOURCE_1 = "SOURCE 1";
@@ -89,7 +93,7 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
     public void generateSnapshotsTest() {
         // init session steps
         List<SessionStep> sessionStepsCreated = createSessionSteps();
-        SnapshotProcess snapshotProcess = new SnapshotProcess(SOURCE_1, null, null);
+        SnapshotProcess snapshotProcess = this.snapshotProcessRepo.save(new SnapshotProcess(SOURCE_1, null, null));
 
         // --- RUN 1 ---
         // generate sessions
@@ -98,7 +102,9 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
 
         // --- RUN 2 ---
         // update session snapshot
-        snapshotProcess = new SnapshotProcess(SOURCE_1, LAST_UPDATED, null);
+        snapshotProcess = this.snapshotProcessRepo.findBySource(SOURCE_1).orElse(null);
+        Assert.assertEquals("Snapshot process should have been updated with the most recent SessionStep",
+                            LAST_UPDATED.minusMinutes(8), snapshotProcess.getLastUpdateDate());
 
         // modify step2
         SessionStep sessionStep2Updated = sessionStepsCreated.get(2);
@@ -112,8 +118,9 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
 
         // --- RUN 3 ---
         // update session snapshot
-        snapshotProcess = new SnapshotProcess(SOURCE_1, LAST_UPDATED.plusMinutes(50), null);
-
+        snapshotProcess = this.snapshotProcessRepo.findBySource(SOURCE_1).orElse(null);
+        Assert.assertEquals("Snapshot process should have been updated with the most recent SessionStep",
+                            LAST_UPDATED.plusMinutes(9), snapshotProcess.getLastUpdateDate());
         // update steps
         SessionStep sessionStep1Updated = sessionStepsCreated.get(1);
         sessionStep1Updated.getState().setErrors(0);
@@ -129,8 +136,11 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
 
         this.sessionStepRepo.saveAll(sessionStepsCreated);
         managerSnapshotService.generateSnapshots(snapshotProcess, LAST_UPDATED.plusMinutes(70));
-        checkRun3Results(sessionStepsCreated);
 
+        snapshotProcess = this.snapshotProcessRepo.findBySource(SOURCE_1).orElse(null);
+        Assert.assertEquals("Snapshot process should have been updated with the most recent SessionStep",
+                            LAST_UPDATED.plusMinutes(62), snapshotProcess.getLastUpdateDate());
+        checkRun3Results(sessionStepsCreated);
     }
 
     private List<SessionStep> createSessionSteps() {

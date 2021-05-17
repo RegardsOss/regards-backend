@@ -1,14 +1,30 @@
-package fr.cnes.regards.framework.modules.session.agent.service.clean;
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.framework.modules.session.management.service.clean;
 
-import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessService;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.modules.session.management.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
@@ -24,26 +40,26 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Test for {@link AgentCleanSnapshotProcessService}
+ * Test for {@link ManagerCleanSnapshotProcessService}
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_process_it",
-        "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678",
-        "regards" + ".session.agent.limit.store.snapshot.process=30" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
+        "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678",
+        "regards.session.manager.limit.store.snapshot.process=30" })
 @ActiveProfiles(value = { "noscheduler" })
-public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTransactionalIT {
+public class ManagerCleanSnapshotProcessServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
-    private IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepo;
+    private ISessionStepRepository sessionStepRepo;
 
     @Autowired
     private ISnapshotProcessRepository snapshotProcessRepo;
 
     @Autowired
-    private AgentCleanSnapshotProcessService agentCleanSnapshotProcessService;
+    private ManagerCleanSnapshotProcessService managerCleanService;
 
-    @Value("${regards.session.agent.limit.store.snapshot.process}")
+    @Value("${regards.session.manager.limit.store.snapshot.process}")
     private int limitStoreSnapshotProcess;
 
     private static final String SOURCE_1 = "SOURCE_1";
@@ -64,18 +80,18 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
     public void init() {
         UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSnapshotProcess);
         this.snapshotProcessRepo.deleteAll();
-        this.stepPropertyUpdateRequestRepo.deleteAll();
+        this.sessionStepRepo.deleteAll();
     }
 
     @Test
     @Purpose("Test if old unused snapshot process are correctly deleted")
     public void cleanSnapshotProcessTest() {
-        // create requests
-        createRunStepRequests();
+        // create session step requests
+        createSessionStep();
 
         // create snapshot process and launch clean
         List<SnapshotProcess> snapshotProcessCreated = createSnapshotProcess();
-        this.agentCleanSnapshotProcessService.clean();
+        managerCleanService.clean();
 
         // Test result
         List<SnapshotProcess> snapshotProcessesRetrieved = this.snapshotProcessRepo.findAll();
@@ -88,15 +104,15 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
         Assert.assertTrue("Snapshot process should have been present. It is linked to a step request. ",
                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(2)));
         Assert.assertTrue("Snapshot process should not be present. It is not yet expired (cf. "
-                                + "limitStoreSnapshotProcess).",
-                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(3)));
+                                  + "limitStoreSnapshotProcess).",
+                          snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(3)));
 
         // SNAPSHOT linked to SOURCE_5, SOURCE_6 should be removed
         Assert.assertFalse("Snapshot process should not be present. It is not linked to any step requests and it is "
                                    + "older than the maximum snapshot process storage date.",
-                          snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(4)));
+                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(4)));
         Assert.assertFalse("Snapshot process should not be present. It is not linked to any step requests.",
-                          snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(5)));
+                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(5)));
 
     }
 
@@ -111,32 +127,25 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
         return this.snapshotProcessRepo.saveAll(snapshotProcesses);
     }
 
-    private void createRunStepRequests() {
-        List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
+    private void createSessionStep() {
+        List<SessionStep> stepRequests = new ArrayList<>();
 
         // ACQUISITION
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, "OWNER_1", OffsetDateTime.now(),
-                                                       StepPropertyEventTypeEnum.INC,
-
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "1", true, false)));
+        SessionStep step1 = new SessionStep("scan", SOURCE_1, "SESSION_1", StepTypeEnum.ACQUISITION, new StepState());
+        step1.setLastUpdateDate(UPDATE_DATE.minusMinutes(10L));
+        stepRequests.add(step1);
 
         // REFERENCING
-        stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE_2, "OWNER_2", OffsetDateTime.now(),
-                                                       StepPropertyEventTypeEnum.INC,
-
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "1", true, false)));
+        SessionStep step2 = new SessionStep("oais", SOURCE_2, "SESSION_2", StepTypeEnum.REFERENCING, new StepState());
+        step2.setLastUpdateDate(UPDATE_DATE.minusMinutes(9L));
+        stepRequests.add(step2);
 
         // STORAGE
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_3, "OWNER_3", OffsetDateTime.now(),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "1", true, false)));
+        SessionStep step3 = new SessionStep("storage", SOURCE_3, "SESSION_3", StepTypeEnum.STORAGE, new StepState());
+        step3.setLastUpdateDate(UPDATE_DATE.minusMinutes(8L));
+        stepRequests.add(step3);
+
         // SAVE
-        this.stepPropertyUpdateRequestRepo.saveAll(stepRequests);
+        this.sessionStepRepo.saveAll(stepRequests);
     }
 }

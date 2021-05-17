@@ -9,8 +9,6 @@ import fr.cnes.regards.framework.modules.session.management.service.clean.snapsh
 import fr.cnes.regards.framework.modules.session.management.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
 import fr.cnes.regards.framework.modules.session.management.service.controllers.SessionManagerService;
 import fr.cnes.regards.framework.modules.session.management.service.controllers.SourceManagerService;
-import fr.cnes.regards.framework.modules.session.management.service.delete.SessionDeleteService;
-import fr.cnes.regards.framework.modules.session.management.service.delete.SourceDeleteService;
 import fr.cnes.regards.framework.modules.session.management.service.handlers.SessionManagerHandler;
 import fr.cnes.regards.framework.modules.session.management.service.handlers.SessionManagerHandlerService;
 import fr.cnes.regards.framework.modules.session.management.service.update.ManagerSnapshotJobService;
@@ -46,19 +44,6 @@ public class SessionManagementServiceAutoConfiguration {
     @Bean
     public ManagerSnapshotService managerService() {
         return new ManagerSnapshotService();
-    }
-
-    /**
-     * Delete
-     */
-    @Bean
-    public SessionDeleteService managerSessionDeleteService() {
-        return new SessionDeleteService();
-    }
-
-    @Bean
-    public SourceDeleteService managerSourceDeleteService() {
-        return new SourceDeleteService();
     }
 
     /**

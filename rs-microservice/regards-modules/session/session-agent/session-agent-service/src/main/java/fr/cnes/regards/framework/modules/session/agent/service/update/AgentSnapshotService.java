@@ -8,6 +8,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
@@ -44,10 +45,15 @@ public class AgentSnapshotService {
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
 
     @Autowired
+    private ISnapshotProcessRepository snapshotProcessRepo;
+
+    @Autowired
     private IPublisher publisher;
 
     @Value("${regards.session.agent.step.requests.page.size:1000}")
     private int stepPropertyPageSize;
+
+    private OffsetDateTime lastSnapshotDate;
 
     /**
      * Create or update {@link SessionStep}s with new {@link StepPropertyUpdateRequest}.
@@ -82,6 +88,9 @@ public class AgentSnapshotService {
                 this.sessionStepRepo.saveAll(sessionStepsUpdated);
                 // save step property requests linked to session steps
                 this.stepPropertyRepo.saveAll(stepPropertyRequestsProcessed);
+                // update snapshotProcess lastUpdateDate with the most recent stepPropertyRequest
+                snapshotProcess.setLastUpdateDate(lastSnapshotDate);
+                this.snapshotProcessRepo.save(snapshotProcess);
                 // publish session steps events
                 this.publisher
                         .publish(sessionStepsUpdated.stream().map(SessionStepEvent::new).collect(Collectors.toList()));
@@ -113,7 +122,7 @@ public class AgentSnapshotService {
         Page<StepPropertyUpdateRequest> stepPropertyPage;
         if (lastUpdated != null) {
             stepPropertyPage = this.stepPropertyRepo
-                    .findBySourceAndDateBetween(source, lastUpdated, freezeDate, pageToRequest);
+                    .findBySourceAndDateGreaterThanAndDateLessThanEqual(source, lastUpdated, freezeDate, pageToRequest);
         } else {
             stepPropertyPage = this.stepPropertyRepo.findBySourceAndDateBefore(source, freezeDate, pageToRequest);
         }
@@ -130,8 +139,7 @@ public class AgentSnapshotService {
             // GET OR CREATE SESSION STEP if not already in sessionStepsBySession[session]
             SessionStep sessionStep = sessionStepsBySession.get(session).get(stepId);
             if (sessionStep == null) {
-                // if present in the database, initialize sessionStep
-                // else create sessionStep
+                // if present in the database, initialize sessionStep else create sessionStep
                 sessionStep = this.sessionStepRepo.findBySourceAndSessionAndStepId(source, session, stepId)
                         .orElse(new SessionStep(stepId, stepPropertyUpdateRequest.getSource(), session,
                                                 stepPropertyUpdateRequest.getStepPropertyInfo().getStepType(),
@@ -146,8 +154,14 @@ public class AgentSnapshotService {
 
             // UPDATE STEP PROPERTY REQUEST WITH ASSOCIATED SESSION STEP
             stepPropertyUpdateRequest.setSessionStep(sessionStep);
-        }
 
+            // UPDATE SNAPSHOT PROCESS LAST UPDATE DATE
+            OffsetDateTime stepPropertyDate = stepPropertyUpdateRequest.getDate();
+            if (lastSnapshotDate == null || lastSnapshotDate.isBefore(stepPropertyDate)) {
+                lastSnapshotDate = stepPropertyDate;
+            }
+        }
+        // add stepPropertyRequests processed to the list of stepProperties processed
         stepPropertyProcessed.addAll(stepPropertyUpdateRequests);
 
         return stepPropertyPage.hasNext() ? stepPropertyPage.nextPageable() : null;
@@ -179,14 +193,14 @@ public class AgentSnapshotService {
         if (type.equals(StepPropertyEventTypeEnum.INC) && (NumberUtils.isCreatable(previousValue) && NumberUtils
                 .isCreatable(value))) {
             // increment parameters (in/out, state, property)
-            calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property, NumberUtils.toLong(previousValue),
-                                 NumberUtils.toLong(value));
+            calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property,
+                                 NumberUtils.toLong(previousValue), NumberUtils.toLong(value));
 
         } else if (type.equals(StepPropertyEventTypeEnum.DEC) && (NumberUtils.isCreatable(previousValue) && NumberUtils
                 .isCreatable(value))) {
             // decrement parameters (in/out, state, property)
-            calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property, NumberUtils.toLong(previousValue),
-                                 -NumberUtils.toLong(value));
+            calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property,
+                                 NumberUtils.toLong(previousValue), -NumberUtils.toLong(value));
 
         } else {
             // set property with value
@@ -203,31 +217,33 @@ public class AgentSnapshotService {
     /**
      * Update properties and input/output related attributes of SessionStep
      *
-     * @param sessionStep      sessionStep to be updated
+     * @param sessionStep                   sessionStep to be updated
      * @param stepPropertyUpdateRequestInfo information of the step
-     * @param property         property to modify
-     * @param previousValue    previous value of the corresponding property
-     * @param valueNum         new value to update the corresponding property
+     * @param property                      property to modify
+     * @param previousValue                 previous value of the corresponding property
+     * @param valueNum                      new value to update the corresponding property
      */
-    private void calculateDifferences(SessionStep sessionStep, StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo, String property,
-            long previousValue, long valueNum) {
-
+    private void calculateDifferences(SessionStep sessionStep,
+            StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo, String property, long previousValue,
+            long valueNum) {
+        // forbid negative values
         // set in/out
         if (stepPropertyUpdateRequestInfo.isInputRelated()) {
-            sessionStep.setInputRelated(sessionStep.getInputRelated() + valueNum);
+            sessionStep.setInputRelated(Math.max(sessionStep.getInputRelated() + valueNum, 0L));
         }
         if (stepPropertyUpdateRequestInfo.isOutputRelated()) {
-            sessionStep.setOutputRelated(sessionStep.getOutputRelated() + valueNum);
+            sessionStep.setOutputRelated(Math.max(sessionStep.getOutputRelated() + valueNum, 0L));
         }
         // Set state
         StepState stepState = sessionStep.getState();
         if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.WAITING)) {
-            stepState.setWaiting(stepState.getWaiting() + valueNum);
+            stepState.setWaiting(Math.max(stepState.getWaiting() + valueNum, 0L));
         } else if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.ERROR)) {
-            stepState.setErrors(stepState.getErrors() + valueNum);
+            stepState.setErrors(Math.max(stepState.getErrors() + valueNum, 0L));
         } else if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.RUNNING)) {
-            stepState.setRunning(stepState.getRunning() + valueNum);
+            stepState.setRunning(Math.max(stepState.getRunning() + valueNum, 0L));
         }
-        sessionStep.getProperties().put(property, String.valueOf(previousValue + valueNum));
+        // set property
+        sessionStep.getProperties().put(property, String.valueOf(Math.max(previousValue + valueNum, 0L)));
     }
 }

@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.modules.session.management.service.update;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
@@ -48,6 +49,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
+ * Service to generate {@link Session}s associated to a single {@link Source} from {@link SessionStep}s
+ *
  * @author Iliana Ghazali
  **/
 @Service
@@ -62,6 +65,9 @@ public class ManagerSnapshotService {
 
     @Autowired
     private ISourceManagerRepository sourceRepo;
+
+    @Autowired
+    private ISnapshotProcessRepository snapshotProcessRepo;
 
     @Value("${regards.session.management.session.step.page.size:1000}")
     private int sessionStepPageSize;
@@ -85,6 +91,10 @@ public class ManagerSnapshotService {
                                                  freezeDate);
 
         if (!interrupted && !sessionSet.isEmpty()) {
+            // update snapshot process with the most recent SessionStep
+            snapshotProcess.setLastUpdateDate(source.getLastUpdateDate());
+            // save changes
+            this.snapshotProcessRepo.save(snapshotProcess);
             this.sessionRepo.saveAll(sessionSet);
             this.sourceRepo.save(source);
         } else {
@@ -95,17 +105,18 @@ public class ManagerSnapshotService {
     /**
      * Calculate session and aggregation snapshots
      *
-     * @param sessionSet
-     * @param source
-     * @param sourceName
-     * @param lastUpdateDate
-     * @param freezeDate
-     * @return
+     * @param sessionSet     set of session created or updated
+     * @param source         source processed
+     * @param sourceName     name of the source processed
+     * @param lastUpdateDate lower limit to process sessionSteps
+     * @param freezeDate     upper limit to process sessionSteps
+     * @return if thread was interrupted
      */
     private boolean calculateSnapshots(Set<Session> sessionSet, Source source, String sourceName,
             OffsetDateTime lastUpdateDate, OffsetDateTime freezeDate) {
         // Map sessionName - session to calculate sessions snapshots
         Map<String, Session> sessionMap = new HashMap<>();
+
         // Map stepType - agg to calculate source snapshot
         Map<StepTypeEnum, SourceStepAggregation> aggByStep = source.getSteps().stream()
                 .collect(Collectors.toMap(SourceStepAggregation::getType, s -> s));
@@ -133,16 +144,16 @@ public class ManagerSnapshotService {
     }
 
     /**
-     * Update sessions and src aggregation with one page of new session steps
+     * Update sessions and source aggregation with one page of new session steps
      *
-     * @param sessionMap
-     * @param aggByStep
-     * @param source
-     * @param sourceName
-     * @param lastUpdateDate
-     * @param freezeDate
-     * @param pageToRequest
-     * @return
+     * @param sessionMap     map of {@link Session}s per name
+     * @param aggByStep      map of {@link SourceStepAggregation}s per {@link StepTypeEnum}
+     * @param source         source processed
+     * @param sourceName     name of the source processed
+     * @param lastUpdateDate lower limit to process sessionSteps
+     * @param freezeDate     upper limit to process sessionSteps
+     * @param pageToRequest  page of {@link SessionStep} to be processed
+     * @return next page or null if there are no more pages
      */
     private Pageable updateOnePageSessionSteps(Map<String, Session> sessionMap,
             Map<StepTypeEnum, SourceStepAggregation> aggByStep, Source source, String sourceName,
@@ -153,7 +164,8 @@ public class ManagerSnapshotService {
         Page<SessionStep> sessionStepPage;
         if (lastUpdateDate != null) {
             sessionStepPage = this.sessionStepRepo
-                    .findBySourceAndLastUpdateDateBetween(sourceName, lastUpdateDate, freezeDate, pageToRequest);
+                    .findBySourceAndLastUpdateDateGreaterThanAndLastUpdateDateLessThanEqual(sourceName, lastUpdateDate,
+                                                                                            freezeDate, pageToRequest);
         } else {
             sessionStepPage = this.sessionStepRepo
                     .findBySourceAndLastUpdateDateBefore(sourceName, freezeDate, pageToRequest);
@@ -177,13 +189,14 @@ public class ManagerSnapshotService {
     /**
      * Create or update a session according to the SessionStep processed
      *
-     * @param sessionMap
-     * @param sourceName
-     * @param sessionStep
-     * @param delta
+     * @param sessionMap  map of {@link Session}s per name
+     * @param sourceName  name of the source processed
+     * @param sessionStep {@link SessionStep} currently processed
+     * @param deltaStep   difference between previous {@link SessionStep} (if there is one) and the {@link SessionStep}
+     *                    updated
      */
     private void updateSession(Map<String, Session> sessionMap, String sourceName, SessionStep sessionStep,
-            DeltaSessionStep delta) {
+            DeltaSessionStep deltaStep) {
         String sessionName = sessionStep.getSession();
         // add session if not already in the map
         Session session = sessionMap.get(sessionName);
@@ -197,10 +210,10 @@ public class ManagerSnapshotService {
             } else {
                 // if not create a new session
                 session = new Session(sourceName, sessionName);
-                delta.setSessionAdded(true);
+                deltaStep.setSessionAdded(true);
             }
         }
-        updateSessionProperties(session, sessionStep, delta);
+        updateSessionProperties(session, sessionStep, deltaStep);
 
         // CREATE OR UPDATE SESSION
         sessionMap.put(sessionName, session);
@@ -210,15 +223,16 @@ public class ManagerSnapshotService {
      * Update properties related to a session and calculate the difference between the previous sessionStep processed
      * (if it exists) and the new one with updated values
      *
-     * @param session
-     * @param sessionStep
-     * @param delta
+     * @param session     {@link Session} currently processed
+     * @param sessionStep {@link SessionStep} currently processed
+     * @param deltaStep   difference between previous {@link SessionStep} (if there is one) and the {@link SessionStep}
+     *                    updated
      */
-    private void updateSessionProperties(Session session, SessionStep sessionStep, DeltaSessionStep delta) {
+    private void updateSessionProperties(Session session, SessionStep sessionStep, DeltaSessionStep deltaStep) {
         // UPDATE THE SESSION STEP LINKED TO THE SESSION
         Set<SessionStep> steps = session.getSteps();
         // calculate the difference between the previous sessionStep (if existing) and the new one
-        calculateDelta(steps, sessionStep, delta);
+        calculateDelta(steps, sessionStep, deltaStep);
         // create or update with the new session step
         steps.add(sessionStep);
 
@@ -241,42 +255,51 @@ public class ManagerSnapshotService {
         OffsetDateTime sessionStepLastUpdate = sessionStep.getLastUpdateDate();
         if (session.getLastUpdateDate() == null || session.getLastUpdateDate().isBefore(sessionStepLastUpdate)) {
             session.setLastUpdateDate(sessionStepLastUpdate);
-            delta.setLastUpdateDate(sessionStepLastUpdate);
+            deltaStep.setLastUpdateDate(sessionStepLastUpdate);
         }
     }
 
-    private void calculateDelta(Set<SessionStep> steps, SessionStep sessionStep, DeltaSessionStep delta) {
+    /**
+     * Calculate the difference between previous {@link SessionStep} (if there is one) and the {@link SessionStep}
+     * updated
+     *
+     * @param steps       set of {@link SessionStep} related to the {@link Session} currently processed
+     * @param sessionStep the new {@link SessionStep} processed
+     * @param deltaStep   the difference between the current {@link SessionStep} and its previous state
+     */
+    private void calculateDelta(Set<SessionStep> steps, SessionStep sessionStep, DeltaSessionStep deltaStep) {
         // check if the session is already in the set of session step
         SessionStep oldSessionStep = steps.stream().filter(s -> s.equals(sessionStep)).findFirst().orElse(null);
         // if present calculate the difference between the previous sessionStep and its update
         if (oldSessionStep != null) {
             // update in/out
-            delta.setIn(sessionStep.getInputRelated() - oldSessionStep.getInputRelated());
-            delta.setOut(sessionStep.getOutputRelated() - oldSessionStep.getOutputRelated());
+            deltaStep.setIn(sessionStep.getInputRelated() - oldSessionStep.getInputRelated());
+            deltaStep.setOut(sessionStep.getOutputRelated() - oldSessionStep.getOutputRelated());
             // update states
-            delta.setError(sessionStep.getState().getErrors() - oldSessionStep.getState().getErrors());
-            delta.setWaiting(sessionStep.getState().getWaiting() - oldSessionStep.getState().getWaiting());
-            delta.setRunning(sessionStep.getState().getRunning() - oldSessionStep.getState().getRunning());
+            deltaStep.setError(sessionStep.getState().getErrors() - oldSessionStep.getState().getErrors());
+            deltaStep.setWaiting(sessionStep.getState().getWaiting() - oldSessionStep.getState().getWaiting());
+            deltaStep.setRunning(sessionStep.getState().getRunning() - oldSessionStep.getState().getRunning());
             // remove oldSessionStep from the set
             steps.remove(oldSessionStep);
         } else {
             // if oldSessionStep is not present, set the values as is
             // update in/out
-            delta.setIn(sessionStep.getInputRelated());
-            delta.setOut(sessionStep.getOutputRelated());
+            deltaStep.setIn(sessionStep.getInputRelated());
+            deltaStep.setOut(sessionStep.getOutputRelated());
             // update states
-            delta.setError(sessionStep.getState().getErrors());
-            delta.setWaiting(sessionStep.getState().getWaiting());
-            delta.setRunning(sessionStep.getState().getRunning());
+            deltaStep.setError(sessionStep.getState().getErrors());
+            deltaStep.setWaiting(sessionStep.getState().getWaiting());
+            deltaStep.setRunning(sessionStep.getState().getRunning());
         }
     }
 
     /**
      * Update source aggregations by step type
      *
-     * @param aggByStep
-     * @param source
-     * @param deltaStep
+     * @param aggByStep map of {@link SourceStepAggregation}s per {@link StepTypeEnum}
+     * @param source    {@link Source} processed
+     * @param deltaStep difference between previous {@link SessionStep} (if there is one) and the {@link SessionStep}
+     *                  updated
      */
     private void updateSourceAgg(Map<StepTypeEnum, SourceStepAggregation> aggByStep, Source source,
             DeltaSessionStep deltaStep) {
@@ -312,10 +335,10 @@ public class ManagerSnapshotService {
     }
 
     /**
-     * Update source properties
+     * Update source properties according to the set of {@link SourceStepAggregation}s
      *
-     * @param source
-     * @param aggSet
+     * @param source {@link Source} processed
+     * @param aggSet map of {@link SourceStepAggregation}s per {@link StepTypeEnum}
      */
     private void updateSourceProperties(Source source, Set<SourceStepAggregation> aggSet) {
         source.setSteps(aggSet);
@@ -332,6 +355,5 @@ public class ManagerSnapshotService {
                 source.getManagerState().setRunning(true);
             }
         }
-
     }
 }

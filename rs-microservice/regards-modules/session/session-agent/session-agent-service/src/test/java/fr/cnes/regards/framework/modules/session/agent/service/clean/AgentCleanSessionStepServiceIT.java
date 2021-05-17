@@ -90,7 +90,7 @@ public class AgentCleanSessionStepServiceIT extends AbstractRegardsServiceTransa
     }
 
     private void checkClean(int nbSessionStepsDeleted, List<StepPropertyUpdateRequest> stepRequests) {
-        // SOURCE 1 - OWNER 1  should be the only step deleted
+        // SOURCE 1 - OWNER 1  should be the only session deleted
         Assert.assertEquals("Wrong number of session steps deleted", 2, nbSessionStepsDeleted);
 
         // SOURCE 1 - OWNER 1 - scan should be deleted with all related events
@@ -101,70 +101,77 @@ public class AgentCleanSessionStepServiceIT extends AbstractRegardsServiceTransa
         Assert.assertFalse("Session step should have been deleted",
                            sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, OWNER_1, "scan").isPresent());
 
+        // SOURCE 1 - OWNER 1 - oais should be deleted with all related events
+        Assert.assertFalse("Step property request should have been deleted",
+                           stepPropertyRepo.findById(stepRequests.get(2).getId()).isPresent());
+        Assert.assertFalse("Session step should have been deleted",
+                           sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, OWNER_1, "oais").isPresent());
+
         // SOURCE 1 - OWNER 2 - scan should be present with all related events
-        Assert.assertTrue("Step property request should have been deleted",
-                          stepPropertyRepo.findById(stepRequests.get(2).getId()).isPresent());
-        Assert.assertTrue("Step property request  should have been deleted",
+        Assert.assertTrue("Step property request should have been present",
                           stepPropertyRepo.findById(stepRequests.get(3).getId()).isPresent());
-        Assert.assertTrue("Session step should have been deleted",
+        Assert.assertTrue("Step property request  should have been present",
+                          stepPropertyRepo.findById(stepRequests.get(4).getId()).isPresent());
+        Assert.assertTrue("Session step should have been present",
                           sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, OWNER_2, "scan").isPresent());
 
         // SOURCE 2 - OWNER 1 - oais should be present with all related events
-        Assert.assertTrue("Step property request  should have been deleted",
-                          stepPropertyRepo.findById(stepRequests.get(4).getId()).isPresent());
-        Assert.assertTrue("Session step should have been deleted",
+        Assert.assertTrue("Step property request  should have been present",
+                          stepPropertyRepo.findById(stepRequests.get(5).getId()).isPresent());
+        Assert.assertTrue("Session step should have been present",
                           sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_2, OWNER_1, "oais").isPresent());
 
-        // SOURCE 1 - OWNER 1 - oais should be deleted with all related events
-        Assert.assertFalse("Step property request should have been deleted",
-                           stepPropertyRepo.findById(stepRequests.get(5).getId()).isPresent());
-        Assert.assertFalse("Session step should have been deleted",
-                           sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, OWNER_1, "oais").isPresent());
     }
 
     private List<StepPropertyUpdateRequest> createRunStepEvents() {
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
 
-        // ACQUISITION - scan event OWNER 1
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE,
+        // ACQUISITION - SOURCE 1 / scan event OWNER 1
+        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE.plusSeconds(1),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "10", true, false)));
+                                                                                         "gen.products", "10", true,
+                                                                                         false)));
 
         stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(1),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "10", true, false)));
-        // ACQUISITION - scan event OWNER 2
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2, CREATION_DATE,
+                                                                                         "gen.products", "10", true,
+                                                                                         false)));
+
+        // REFERENCING - SOURCE 1 / oais event OWNER 1
+        stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1, CREATION_DATE.plusDays(limitStore),
+                                                       StepPropertyEventTypeEnum.INC,
+                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
+                                                                                         StepPropertyStateEnum.SUCCESS,
+                                                                                         "gen.products", "6", false,
+                                                                                         true)));
+        // ACQUISITION - SOURCE 1 / scan event OWNER 2
+        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2, CREATION_DATE.plusSeconds(1),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "8", true, false)));
+                                                                                         "gen.products", "8", true,
+                                                                                         false)));
 
         stepRequests
                 .add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2, CREATION_DATE.plusDays(limitStore + 1),
                                                    StepPropertyEventTypeEnum.INC,
                                                    new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                     StepPropertyStateEnum.SUCCESS, "gen.products",
-                                                                                     "4", true, false)));
+                                                                                     StepPropertyStateEnum.SUCCESS,
+                                                                                     "gen.products", "4", true,
+                                                                                     false)));
 
-        // REFERENCING - oais event OWNER 1
+        // REFERENCING - SOURCE 2 / oais event OWNER 1
         stepRequests
                 .add(new StepPropertyUpdateRequest("oais", SOURCE_2, OWNER_1, CREATION_DATE.plusDays(limitStore + 1),
                                                    StepPropertyEventTypeEnum.INC,
                                                    new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
-                                                                                     StepPropertyStateEnum.SUCCESS, "gen.products",
-                                                                                     "6", false, true)));
-        // REFERENCING - oais event OWNER 1
-        stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1, CREATION_DATE.plusDays(limitStore),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "6", false, true)));
-
+                                                                                     StepPropertyStateEnum.SUCCESS,
+                                                                                     "gen.products", "6", false,
+                                                                                     true)));
         return this.stepPropertyRepo.saveAll(stepRequests);
     }
 }

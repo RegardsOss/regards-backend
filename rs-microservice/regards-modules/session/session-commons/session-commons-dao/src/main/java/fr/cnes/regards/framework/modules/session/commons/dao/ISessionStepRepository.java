@@ -6,8 +6,6 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -25,19 +23,14 @@ public interface ISessionStepRepository extends JpaRepository<SessionStep, Long>
 
     int countBySourceAndLastUpdateDateBefore(String source, OffsetDateTime schedulerStartDate);
 
-    int countBySourceAndLastUpdateDateBetween(String source, OffsetDateTime lastUpdateDate,
-            OffsetDateTime schedulerStartDate);
-
-    Page<SessionStep> findBySourceAndLastUpdateDateBetween(String source, OffsetDateTime lastUpdateDate,
-            OffsetDateTime freezeDate, Pageable pageToRequest);
-
     Page<SessionStep> findBySourceAndLastUpdateDateBefore(String source, OffsetDateTime freezeDate,
             Pageable pageToRequest);
 
-    void deleteByLastUpdateDateBefore(OffsetDateTime startClean);
+    int countBySourceAndLastUpdateDateGreaterThanAndLastUpdateDateLessThanEqual(String source, OffsetDateTime lastUpdateDate,
+            OffsetDateTime schedulerStartDate);
 
-    @Modifying
-    @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM SessionStep s) "
-            + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
-    int deleteUnusedProcess(OffsetDateTime limitDate);
+    Page<SessionStep> findBySourceAndLastUpdateDateGreaterThanAndLastUpdateDateLessThanEqual(String source, OffsetDateTime lastUpdateDate,
+            OffsetDateTime freezeDate, Pageable pageToRequest);
+
+    void deleteByLastUpdateDateBefore(OffsetDateTime startClean);
 }

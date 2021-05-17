@@ -59,16 +59,11 @@ public class SnapshotJobEventService {
 
                 switch (jobInfoStatus.getStatus()) {
                     case SUCCEEDED:
-                        snapshotProcess.setJobId(null);
-                        snapshotProcess.setLastUpdateDate(jobInfoStatus.getStopDate());
-                        LOGGER.trace("Updated SnapshotProcess with source {} following JobEvent in success state",
-                                     snapshotProcess.getSource());
-                        break;
                     case FAILED:
                     case ABORTED:
                         snapshotProcess.setJobId(null);
-                        LOGGER.trace("Updated SnapshotProcess with source {} following JobEvent in failed or aborted "
-                                             + "state", snapshotProcess.getSource());
+                        LOGGER.trace("Updated SnapshotProcess with source {} following a SnapshotJobEvent",
+                                     snapshotProcess.getSource());
                         break;
                     default:
                         break;

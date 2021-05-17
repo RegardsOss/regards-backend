@@ -32,6 +32,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,11 +56,12 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
     @Test
     @Purpose("Test the generation of session steps from step request events")
     public void generateSessionStepTest() throws InterruptedException {
-        // launch the generation of sessionSteps from StepPropertyUpdateRequest
-        List<SessionStep> sessionStepList = createRunStepEvents();
+        // ---- RUN 1 ----
+        // launch the generation of sessionSteps
+        int nbEvents = createRunStepEvents();
 
         // wait for sessionStepEvent to be stored in database
-        boolean isEventRegistered = waitForSessionStepEventsStored(sessionStepList.size());
+        boolean isEventRegistered = waitForSessionStepEventsStored(nbEvents);
         if (!isEventRegistered) {
             Assert.fail("Events were not stored in database");
         }
@@ -75,10 +77,86 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
         if (!isJobManagerSuccess) {
             Assert.fail("ManagerSnapshotJob was not launched or was not in success state");
         }
-
+        waitForSnapshotUpdateSuccesses();
         checkResults();
 
+        // ---- RUN 2 ----
+        // create sessionStepEvents
+        createRun2StepEvents();
+        Thread.sleep(5000L);
+
+        // launch snapshot jobs
+        this.managerSnapshotJobService.scheduleJob();
+
+        isJobManagerSuccess = waitForJobSuccesses(ManagerSnapshotJob.class.getName(), 3, 20000L);
+        if (!isJobManagerSuccess) {
+            Assert.fail("ManagerSnapshotJob was not launched or was not in success state");
+        }
+
         waitForSnapshotUpdateSuccesses();
+        // check snapshot process was updated
+        Optional<SnapshotProcess> snapshotProcessOpt = this.snapshotProcessRepo.findBySource(SOURCE_2);
+        Assert.assertTrue("SnapshotProcessDate should have been present", snapshotProcessOpt.isPresent());
+        Assert.assertEquals("SnapshotProcessDate was not updated", LAST_UPDATED.minusSeconds(1),
+                            snapshotProcessOpt.get().getLastUpdateDate());
+
+        checkResults2();
+
+    }
+
+    private int createRunStepEvents() {
+        List<SessionStep> sessionStepList = new ArrayList<>();
+
+        // SOURCE 1 -  SESSION 1
+        SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
+                                                   new StepState(0, 0, 2));
+        sessionStep0.setInputRelated(2);
+        sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(2));
+        sessionStepList.add(sessionStep0);
+
+        SessionStep sessionStep1 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
+                                                   new StepState(0, 0, 3));
+        sessionStep1.setOutputRelated(2);
+        sessionStep1.setLastUpdateDate(LAST_UPDATED.minusMinutes(1));
+        sessionStepList.add(sessionStep1);
+
+        // SOURCE 1 -  SESSION 2
+        SessionStep sessionStep2 = new SessionStep("scan", SOURCE_1, SESSION_2, StepTypeEnum.ACQUISITION,
+                                                   new StepState(5, 0, 0));
+        sessionStep2.setInputRelated(5);
+        sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(5));
+        sessionStepList.add(sessionStep2);
+
+        // SOURCE 2 - SESSION 1
+        SessionStep sessionStep3 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.DISSEMINATION,
+                                                   new StepState(0, 10, 0));
+        sessionStep3.setOutputRelated(10);
+        sessionStep3.setLastUpdateDate(LAST_UPDATED.minusMinutes(12));
+        sessionStepList.add(sessionStep3);
+
+        // PUBLISH EVENTS
+        List<SessionStepEvent> eventSet = new ArrayList<>();
+        sessionStepList.forEach(step -> eventSet.add(new SessionStepEvent(step)));
+        publisher.publish(eventSet);
+
+        return sessionStepList.size();
+    }
+
+    private int createRun2StepEvents() {
+        List<SessionStep> sessionStepList = new ArrayList<>();
+        // SOURCE 2 - SESSION 1
+        SessionStep sessionStep3 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.DISSEMINATION,
+                                                   new StepState(0, 0, 0));
+        sessionStep3.setOutputRelated(10);
+        sessionStep3.setLastUpdateDate(LAST_UPDATED.minusSeconds(1));
+        sessionStepList.add(sessionStep3);
+
+        // PUBLISH EVENTS
+        List<SessionStepEvent> eventSet = new ArrayList<>();
+        sessionStepList.forEach(step -> eventSet.add(new SessionStepEvent(step)));
+        publisher.publish(eventSet);
+
+        return sessionStepList.size();
     }
 
     private void checkResults() {
@@ -176,41 +254,37 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
         }
     }
 
-    private List<SessionStep> createRunStepEvents() {
-        List<SessionStep> sessionStepList = new ArrayList<>();
+    private void checkResults2() {
+        // check sessions
+        Session session = this.sessionRepo.findBySourceAndName(SOURCE_2, SESSION_1).orElse(null);
+        Assert.assertEquals("Wrong lastUpdateDate", LAST_UPDATED.minusSeconds(1), session.getLastUpdateDate());
+        Assert.assertFalse("Wrong running state", session.getManagerState().isRunning());
+        Assert.assertFalse("Wrong error state", session.getManagerState().isErrors());
+        Assert.assertFalse("Wrong waiting state", session.getManagerState().isWaiting());
+        Assert.assertEquals("Wrong number of sessionSteps linked", 1, session.getSteps().size());
 
-        // SOURCE 1 -  SESSION 1
-        SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
-                                                   new StepState(0, 0, 2));
-        sessionStep0.setInputRelated(2);
-        sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(2));
-        sessionStepList.add(sessionStep0);
-
-        SessionStep sessionStep1 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
-                                                   new StepState(0, 0, 3));
-        sessionStep1.setOutputRelated(2);
-        sessionStep1.setLastUpdateDate(LAST_UPDATED.minusMinutes(1));
-        sessionStepList.add(sessionStep1);
-
-        // SOURCE 1 -  SESSION 2
-        SessionStep sessionStep2 = new SessionStep("scan", SOURCE_1, SESSION_2, StepTypeEnum.ACQUISITION,
-                                                   new StepState(5, 0, 0));
-        sessionStep2.setInputRelated(5);
-        sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(5));
-        sessionStepList.add(sessionStep2);
-
-        // SOURCE 2 - SESSION 1
-        SessionStep sessionStep3 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.DISSEMINATION,
-                                                   new StepState(0, 10, 0));
-        sessionStep3.setOutputRelated(10);
-        sessionStep3.setLastUpdateDate(LAST_UPDATED.minusMinutes(12));
-        sessionStepList.add(sessionStep3);
-
-        // PUBLISH EVENTS
-        List<SessionStepEvent> eventSet = new ArrayList<>();
-        sessionStepList.forEach(step -> eventSet.add(new SessionStepEvent(step)));
-        publisher.publish(eventSet);
-
-        return sessionStepList;
+        // check source aggregations
+        Source source = this.sourceRepo.findByName(SOURCE_2).orElse(null);
+        Assert.assertEquals("Wrong lastUpdateDate", LAST_UPDATED.minusSeconds(1), source.getLastUpdateDate());
+        Assert.assertEquals("Wrong number of sessions", 1, source.getNbSessions());
+        Assert.assertFalse("Wrong running state", source.getManagerState().isRunning());
+        Assert.assertFalse("Wrong error state", source.getManagerState().isErrors());
+        Assert.assertFalse("Wrong waiting state", source.getManagerState().isWaiting());
+        Set<SourceStepAggregation> aggSteps = source.getSteps();
+        for (SourceStepAggregation agg : aggSteps) {
+            StepTypeEnum type = agg.getType();
+            switch (type) {
+                case DISSEMINATION:
+                    Assert.assertEquals("Wrong number of in", 0, agg.getTotalIn());
+                    Assert.assertEquals("Wrong number of out", 10, agg.getTotalOut());
+                    Assert.assertEquals("Wrong number of waiting", 0, agg.getState().getWaiting());
+                    Assert.assertEquals("Wrong number of running", 0, agg.getState().getRunning());
+                    Assert.assertEquals("Wrong number of errors", 0, agg.getState().getErrors());
+                    break;
+                default:
+                    Assert.fail(String.format("Unexpected type %s", type));
+                    break;
+            }
+        }
     }
 }

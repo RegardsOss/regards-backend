@@ -100,15 +100,6 @@ public class SessionNotifier {
     public void incrementProductStorePending(IngestRequest request) {
         incrementCount(request, REQUESTS_RUNNING, request.getAips().size(), StepPropertyStateEnum.RUNNING, false,
                        false);
-
-        //FIXME
-       /* // Synchronize number of products according to available AIP(s)
-        if (request.getAips().size() > 1) {
-            // Increment number of total products (case of one SIP for many AIPs)
-            // In this way, there is the same count of products stored and total.
-            // 1 request => 1 product, but can produce several AIPs, so we add more product to match the number of AIPs
-            incrementCount(request, PRODUCT_COUNT, request.getAips().size() - 1, StepPropertyStateEnum.OK);
-        }*/
     }
 
     public void decrementProductStorePending(IngestRequest request) {

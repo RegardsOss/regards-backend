@@ -24,10 +24,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IStepPropertyUpdateRequestRepository extends JpaRepository<StepPropertyUpdateRequest, Long> {
 
-    Page<StepPropertyUpdateRequest> findBySourceAndDateBetween(String source, OffsetDateTime lastUpdate,
+
+    Page<StepPropertyUpdateRequest> findBySourceAndDateGreaterThanAndDateLessThanEqual(String source, OffsetDateTime lastUpdate,
             OffsetDateTime freezeDate, Pageable page);
 
-    long countBySourceAndDateBetween(String source, OffsetDateTime lastUpdate, OffsetDateTime freezeDate);
+    long countBySourceAndDateGreaterThanAndDateLessThanEqual(String source, OffsetDateTime lastUpdate, OffsetDateTime freezeDate);
 
     Page<StepPropertyUpdateRequest> findBySourceAndDateBefore(String source, OffsetDateTime freezeDate, Pageable page);
 

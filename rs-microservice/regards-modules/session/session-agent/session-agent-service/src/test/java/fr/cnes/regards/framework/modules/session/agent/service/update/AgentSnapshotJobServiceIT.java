@@ -1,10 +1,10 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
@@ -14,8 +14,10 @@ import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionSt
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Order;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -33,9 +35,11 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
 
     @Test
     @Purpose("Test the generation of session steps from step request events")
-    public void generateSessionStepTest() throws InterruptedException {
-        // launch the generation of sessionSteps from StepPropertyUpdateRequest
-        int nbEvents = createRunStepEvents();
+    @Order(1)
+    public void generateSessionStepTest1() throws InterruptedException {
+        // ---- RUN 1 ----
+        // create stepPropertyUpdateRequestEvents
+        int nbEvents = createRun1StepEvents();
 
         // wait for stepPropertyUpdateRequestEvent to be stored in database
         boolean isEventRegistered = waitForStepPropertyEventsStored(nbEvents);
@@ -45,29 +49,55 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
 
         // retrieve associated snapshot processes
         List<SnapshotProcess> snapshotProcessesCreated = this.snapshotProcessRepo.findAll();
-        Assert.assertEquals("Wrong number of snapshot processes created", 3, snapshotProcessesCreated.size());
+        Assert.assertEquals("Wrong number of snapshot process created", 3, snapshotProcessesCreated.size());
 
         // wait for job to be in success state
         agentJobSnapshotService.scheduleJob();
-
         boolean isJobAgentSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), 3, 20000L);
         if (!isJobAgentSuccess) {
-            Assert.fail("AgentSnapshotJob was not launched or was not in success state");
+            Assert.fail("AgentSnapshotJobs were not launched or were not in success state");
         }
-
-        Mockito.verify(publisher, Mockito.times(4)).publish(Mockito.any(SessionStepEvent.class));
-
-        // verify results
-        checkResult();
-
+        // wait for snapshot process to be updated
         boolean isSnapshotProcessesUpdated = waitForSnapshotUpdateSuccesses();
         if (!isSnapshotProcessesUpdated) {
             Assert.fail("Snapshot were not updated");
         }
+        // check SessionStep event was published and verify results
+        Mockito.verify(publisher, Mockito.times(4)).publish(Mockito.any(SessionStepEvent.class));
+        checkResult1();
 
+        // ---- RUN 2 ----
+        // init parameters
+        Mockito.clearInvocations(publisher);
+        snapshotProcessesCreated = this.snapshotProcessRepo.findAll();
+
+        // create stepPropertyUpdateRequestEvents
+        nbEvents+= createRun2StepEvents();
+        isEventRegistered = waitForStepPropertyEventsStored(nbEvents);
+        if (!isEventRegistered) {
+            Assert.fail("Events were not stored in database");
+        }
+
+        // wait for job to be in success state
+        agentJobSnapshotService.scheduleJob();
+        isJobAgentSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), 4, 20000L);
+        if (!isJobAgentSuccess) {
+            Assert.fail("AgentSnapshotJobs were not launched or were not in success state");
+        }
+
+        // wait for snapshot process to be updated
+        isSnapshotProcessesUpdated = waitForSnapshotUpdateSuccesses();
+        if (!isSnapshotProcessesUpdated) {
+            Assert.fail("Snapshot were not updated");
+        }
+
+        // check SessionStep event was published and verify results
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(SessionStepEvent.class));
+        checkResult2(snapshotProcessesCreated);
     }
 
-    private int createRunStepEvents() {
+
+    private int createRun1StepEvents() {
         List<StepPropertyUpdateRequestEvent> stepRequests = new ArrayList<>();
 
         // ACQUISITION - scan event SOURCE 1 OWNER 1
@@ -120,7 +150,8 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                                                                              new StepPropertyInfo(
                                                                                      StepTypeEnum.REFERENCING,
                                                                                      StepPropertyStateEnum.WAITING,
-                                                                                     "ref.products", "3", false, true)),
+                                                                                     "ref.products.pending", "3", false,
+                                                                                     false)),
                                                             StepPropertyEventTypeEnum.INC));
 
         // Publish events
@@ -128,7 +159,29 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
         return stepRequests.size();
     }
 
-    private void checkResult() {
+    public int createRun2StepEvents() {
+        List<StepPropertyUpdateRequestEvent> stepRequests = new ArrayList<>();
+
+        // UPDATE REFERENCING - oais event SOURCE 3 OWNER 1
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("oais", SOURCE_3, OWNER_1,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.REFERENCING,
+                                                                                     StepPropertyStateEnum.WAITING,
+                                                                                     "ref.products.pending", "3", false,
+                                                                                     false)),
+                                                            StepPropertyEventTypeEnum.DEC));
+        stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("oais", SOURCE_3, OWNER_1,
+                                                                             new StepPropertyInfo(
+                                                                                     StepTypeEnum.REFERENCING,
+                                                                                     StepPropertyStateEnum.SUCCESS,
+                                                                                     "ref.products", "3", false, true)),
+                                                            StepPropertyEventTypeEnum.INC));
+        // Publish events
+        this.publisher.publish(stepRequests);
+        return stepRequests.size();
+    }
+
+    private void checkResult1() {
         List<SessionStep> sessionSteps = this.sessionStepRepo.findAll();
         Assert.assertEquals("Wrong number of session steps created", 4, sessionSteps.size());
         for (SessionStep sessionStep : sessionSteps) {
@@ -171,15 +224,50 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
             } else if (source.equals(SOURCE_3) && session.equals(OWNER_1)) {
                 Assert.assertEquals("Wrong type", StepTypeEnum.REFERENCING, sessionStep.getType());
                 Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                Assert.assertEquals("Wrong num of output related", 3L, sessionStep.getOutputRelated());
+                Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 3L, sessionStep.getState().getWaiting());
                 Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
                 Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
-                Assert.assertTrue("Wrong properties", properties.containsKey("ref.products"));
-                Assert.assertEquals("Wrong properties", "3", properties.get("ref.products"));
+                Assert.assertTrue("Wrong properties", properties.containsKey("ref.products.pending"));
+                Assert.assertEquals("Wrong properties", "3", properties.get("ref.products.pending"));
             } else {
                 Assert.fail(String.format("Unexpected step source %s or session %s created", source, session));
+            }
+        }
+    }
+
+    private void checkResult2(List<SnapshotProcess> snapshotProcessesCreated) {
+        // check properties were updated
+        Optional<SessionStep> sessionStepOpt = this.sessionStepRepo
+                .findBySourceAndSessionAndStepId(SOURCE_3, OWNER_1, "oais");
+        Assert.assertTrue("Session should have been present", sessionStepOpt.isPresent());
+        SessionStep sessionStep = sessionStepOpt.get();
+        SessionStepProperties properties = sessionStep.getProperties();
+        Assert.assertEquals("Wrong type", StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
+        Assert.assertEquals("Wrong num of output related", 3L, sessionStep.getOutputRelated());
+        Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
+        Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
+        Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
+        Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
+        Assert.assertTrue("Wrong properties", properties.containsKey("ref.products.pending"));
+        Assert.assertEquals("Wrong properties", "0", properties.get("ref.products.pending"));
+        Assert.assertTrue("Wrong properties", properties.containsKey("ref.products"));
+        Assert.assertEquals("Wrong properties", "3", properties.get("ref.products"));
+
+        // check if only SOURCE_3 snapshotProcess was updated
+        List<SnapshotProcess> snapshotProcessUpdated = this.snapshotProcessRepo.findAll();
+        for (SnapshotProcess snapshotProcess : snapshotProcessUpdated) {
+            SnapshotProcess oldSnapshotProcess = snapshotProcessesCreated.stream().filter(snapshotProcess::equals)
+                    .findFirst().orElse(null);
+            Assert.assertNotNull("SnapshotProcess should have been present", oldSnapshotProcess);
+            if (!oldSnapshotProcess.getSource().equals(SOURCE_3)) {
+                Assert.assertEquals("lastUpdateDate should not have changed", oldSnapshotProcess.getLastUpdateDate(),
+                                    snapshotProcess.getLastUpdateDate());
+            } else {
+                Assert.assertNotEquals("lastUpdateDate should have changed", oldSnapshotProcess.getLastUpdateDate(),
+                                       snapshotProcess.getLastUpdateDate());
             }
         }
     }

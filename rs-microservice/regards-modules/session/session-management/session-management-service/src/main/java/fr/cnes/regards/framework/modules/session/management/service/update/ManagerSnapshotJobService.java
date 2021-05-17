@@ -66,8 +66,8 @@ public class ManagerSnapshotJobService {
                 (process.getLastUpdateDate() == null && sessionStepRepo
                         .countBySourceAndLastUpdateDateBefore(process.getSource(), schedulerStartDate) == 0) || (
                         process.getLastUpdateDate() != null && sessionStepRepo
-                                .countBySourceAndLastUpdateDateBetween(process.getSource(), process.getLastUpdateDate(),
-                                                                       schedulerStartDate) == 0));
+                                .countBySourceAndLastUpdateDateGreaterThanAndLastUpdateDateLessThanEqual(process.getSource(), process.getLastUpdateDate(),
+                                                                                                         schedulerStartDate) == 0));
 
         snapshotProcessesRetrieved.removeIf(predicateAlreadyProcessed);
 

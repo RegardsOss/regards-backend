@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
@@ -29,8 +30,8 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_snapshot_service_it",
-        "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678", "regards"
-        + ".session.agent.step.requests.page.size=2" })
+        "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678",
+        "regards.session.agent.step.requests.page.size=2" })
 @ActiveProfiles(value = { "noscheduler" })
 public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalIT {
 
@@ -39,6 +40,9 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
 
     @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
+
+    @Autowired
+    private ISnapshotProcessRepository snapshotProcessRepo;
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;
@@ -55,6 +59,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
 
     @Before
     public void init() {
+        this.snapshotProcessRepo.deleteAll();
         this.stepPropertyRepo.deleteAll();
         this.sessionStepRepo.deleteAll();
     }
@@ -63,7 +68,9 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
     @Purpose("Test if session steps are correctly generated from step property requests")
     public void generateSessionStepTest() {
         // launch the generation of sessionSteps from StepPropertyUpdateRequest
-        SnapshotProcess snapshotProcess = new SnapshotProcess(SOURCE, CREATION_DATE, null);
+        SnapshotProcess snapshotProcess = this.snapshotProcessRepo
+                .save(new SnapshotProcess(SOURCE, CREATION_DATE, null));
+
         List<StepPropertyUpdateRequest> stepRequests = createRun1StepEvents();
         Assert.assertEquals("Wrong number of stepPropertyUpdateRequests created", 9, stepRequests.size());
 
@@ -72,12 +79,14 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
         checkRun1Test(nbSessionStepsCreated);
 
         // launch the second run with same source and session owner, fields should be updated
-        SnapshotProcess snapshotProcess2 = new SnapshotProcess(SOURCE, CREATION_DATE.plusMinutes(25), null);
+        snapshotProcess = this.snapshotProcessRepo.findBySource(SOURCE).orElse(null);
+        Assert.assertEquals("Snapshot lastUpdateDate should have been updated", CREATION_DATE.plusMinutes(20),
+                            snapshotProcess.getLastUpdateDate());
         List<StepPropertyUpdateRequest> stepRequests2 = createRun2StepEvents();
         Assert.assertEquals("Wrong number of stepPropertyUpdateRequests created", 5, stepRequests2.size());
 
         OffsetDateTime freezeDate2 = CREATION_DATE.plusMinutes(50);
-        int nbSessionStepsCreated2 = agentSnapshotService.generateSessionStep(snapshotProcess2, freezeDate2);
+        int nbSessionStepsCreated2 = agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate2);
         checkRun2Test(nbSessionStepsCreated2);
     }
 
@@ -85,62 +94,68 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
 
         // ACQUISITION - scan event
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE, OWNER_1, CREATION_DATE,
+        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE, OWNER_1, CREATION_DATE.plusSeconds(1),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "2", true, false)));
+                                                                                         "gen.products", "2", true,
+                                                                                         false)));
 
         stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(1),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "4", true, false)));
+                                                                                         "gen.products", "4", true,
+                                                                                         false)));
 
         // REFERENCING - oais event
         stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(2),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "6", false, true)));
+                                                                                         "gen.products", "6", false,
+                                                                                         true)));
 
         // STORAGE - storage event
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(5),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "store.products", "2", false, true)));
+                                                                                         "store.products", "2", false,
+                                                                                         true)));
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(3),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
                                                                                          StepPropertyStateEnum.ERROR,
-                                                                                         "store.products.errors", "4", false,
-                                                                                         false)));
+                                                                                         "store.products.errors", "4",
+                                                                                         false, false)));
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(4),
                                                        StepPropertyEventTypeEnum.VALUE,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
                                                                                          StepPropertyStateEnum.ERROR,
-                                                                                         "store.products.state", "ERROR", false,
-                                                                                         false)));
+                                                                                         "store.products.state",
+                                                                                         "ERROR", false, false)));
         // DISSEMINATION - metacatalog event
         stepRequests.add(new StepPropertyUpdateRequest("metacatalog", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(7),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
                                                                                          StepPropertyStateEnum.WAITING,
-                                                                                         "dis.products.pending", "2", false,
-                                                                                         false)));
+                                                                                         "dis.products.pending", "2",
+                                                                                         false, false)));
 
         // OTHER EVENTS NOT RELATED TO SESSION 1
         stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE, OWNER_2, CREATION_DATE.plusMinutes(20),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "2", true, false)));
+                                                                                         "gen.products", "2", true,
+                                                                                         false)));
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_3, CREATION_DATE.plusMinutes(20),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "store.products", "6", false, true)));
+                                                                                         "store.products", "6", false,
+                                                                                         true)));
 
         return this.stepPropertyRepo.saveAll(stepRequests);
     }
@@ -152,32 +167,34 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                                                        StepPropertyEventTypeEnum.DEC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
                                                                                          StepPropertyStateEnum.ERROR,
-                                                                                         "store.products.errors", "4", false,
-                                                                                         false)));
+                                                                                         "store.products.errors", "4",
+                                                                                         false, false)));
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(35),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
                                                                                          StepPropertyStateEnum.RUNNING,
-                                                                                         "store.products", "4", false, true)));
+                                                                                         "store.products", "4", false,
+                                                                                         true)));
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(38),
                                                        StepPropertyEventTypeEnum.VALUE,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
                                                                                          StepPropertyStateEnum.INFO,
-                                                                                         "store.products.state", "RUNNING", false,
-                                                                                         false)));
+                                                                                         "store.products.state",
+                                                                                         "RUNNING", false, false)));
         // DISSEMINATION - metacatalog event
         stepRequests.add(new StepPropertyUpdateRequest("metacatalog", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(40),
                                                        StepPropertyEventTypeEnum.DEC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
                                                                                          StepPropertyStateEnum.WAITING,
-                                                                                         "dis.products.pending", "2", false,
-                                                                                         false)));
+                                                                                         "dis.products.pending", "2",
+                                                                                         false, false)));
 
         stepRequests.add(new StepPropertyUpdateRequest("metacatalog", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(40),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "dis.products", "2", false, true)));
+                                                                                         "dis.products", "2", false,
+                                                                                         true)));
         return this.stepPropertyRepo.saveAll(stepRequests);
     }
 
@@ -241,7 +258,8 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 2L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(7), sessionStep.getLastUpdateDate());
+                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(7),
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("dis.products.pending"));
                         Assert.assertEquals("Wrong properties", "2", properties.get("dis.products.pending"));
                         break;
