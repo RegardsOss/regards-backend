@@ -43,6 +43,8 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -70,10 +72,14 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
     @Autowired
     private IDynamicTenantSettingService dynamicTenantSettingService;
 
+    @Autowired
+    private IDynamicTenantSettingRepository dynamicTenantSettingRepository;
+
     @Before
     public void init() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         repository.deleteAll();
+        dynamicTenantSettingRepository.deleteAll();
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());

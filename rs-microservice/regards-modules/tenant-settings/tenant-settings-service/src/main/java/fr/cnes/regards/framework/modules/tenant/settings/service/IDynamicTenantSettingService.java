@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 
 import java.util.Optional;
 import java.util.Set;
@@ -40,6 +41,7 @@ public interface IDynamicTenantSettingService {
 
     void delete(String name) throws EntityNotFoundException;
 
-    void reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException;
+    DynamicTenantSetting reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException;
 
+    boolean canUpdate(String name);
 }

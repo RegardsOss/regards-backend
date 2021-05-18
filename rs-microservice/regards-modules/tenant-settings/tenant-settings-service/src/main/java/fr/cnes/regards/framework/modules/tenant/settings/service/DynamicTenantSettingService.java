@@ -93,15 +93,38 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     }
 
     @Override
-    public void reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException {
+    public DynamicTenantSetting reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException {
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
         if (!dynamicTenantSetting.getDefaultValue().equals(dynamicTenantSetting.getValue())) {
             dynamicTenantSetting.setValue(dynamicTenantSetting.getDefaultValue());
             IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
-            dynamicTenantSettingRepository.save(dynamicTenantSetting);
+            dynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
             customizer.doRightNow(dynamicTenantSetting);
         }
         LOGGER.info("Reset Tenant Setting {}", dynamicTenantSetting);
+        return dynamicTenantSetting;
+    }
+
+    @Override
+    public boolean canUpdate(String name) {
+        try {
+            // we are using getCustomizer exception so we do not have to duplicate research logic
+            DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
+            getCustomizer(dynamicTenantSetting);
+            return true;
+        } catch (EntityInvalidException e) {
+            // even if value is invalid(which is highly improbable at this point because we are looking for DB value),
+            // we can update the setting
+            return true;
+        } catch (EntityNotFoundException e) {
+            // If this occurs it most probably means we could not find the customizer which means we could not update the parameter anyway
+            LOGGER.error(e.getMessage(), e);
+            return false;
+        } catch (EntityOperationForbiddenException e) {
+            // If this occurs it means we effectively cannot ute this setting for now per customizer logic
+            LOGGER.debug(String.format("Setting %s currently cannot be updated: ", name), e);
+            return false;
+        }
     }
 
     private DynamicTenantSetting getDynamicTenantSetting(String name) throws EntityNotFoundException {
