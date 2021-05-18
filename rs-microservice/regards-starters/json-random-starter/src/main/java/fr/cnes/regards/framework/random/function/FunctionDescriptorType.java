@@ -31,6 +31,7 @@ public enum FunctionDescriptorType {
     SEQUENCE("seq"),
     STRING("string"),
     URN("urn"),
+    CRID("crid"),
     UUID("uuid");
 
     private String functionName;
