@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.domain.step;
 
+import java.util.Objects;
+
 /**
  * @author Iliana Ghazali
  **/
@@ -80,5 +82,26 @@ public class StepProperty {
 
     public void setStepPropertyInfo(StepPropertyInfo stepPropertyInfo) {
         this.stepPropertyInfo = stepPropertyInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        StepProperty that = (StepProperty) o;
+        return stepId.equals(that.stepId) && source.equals(that.source) && session.equals(that.session);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(stepId, source, session);
+    }
+
+    @Override
+    public String toString() {
+        return "StepProperty{" + "stepId='" + stepId + '\'' + ", source='" + source + '\'' + ", session='" + session
+                + '\'' + ", stepPropertyInfo=" + stepPropertyInfo + '}';
     }
 }

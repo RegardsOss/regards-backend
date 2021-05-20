@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service.session;
 
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 
 /**
  * Enumeration for all product status in sessions.
@@ -29,48 +29,67 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationSt
 public enum SessionProductPropertyEnum {
 
     /**
+     * Name of the property that indicates if a chain is running
+     */
+    CHAIN_RUNNING("chainRunning", StepPropertyStateEnum.RUNNING, false, false),
+
+    /**
      * Name of the property that collects number of products generated
      */
-    PROPERTY_GENERATED("generated", SessionNotificationState.OK),
+    GENERATED_PRODUCTS("generatedProducts", StepPropertyStateEnum.INFO, false, false),
 
     /**
      * Name of the property that collects number of products incomplete
      */
-    PROPERTY_INCOMPLETE("incomplete", SessionNotificationState.OK),
+    PROPERTY_INCOMPLETE("incomplete", StepPropertyStateEnum.INFO, false, false),
 
     /**
      * Name of the property that collects number of products invalid (too many files attached to a single product)
      */
-    PROPERTY_INVALID("invalid", SessionNotificationState.ERROR),
+    PROPERTY_INVALID("invalid", StepPropertyStateEnum.ERROR, false, false),
 
     /**
      * Name of the property that collects number of products generated
      */
-    PROPERTY_GENERATION_ERROR("generation_error", SessionNotificationState.ERROR),
+    PROPERTY_GENERATION_ERROR("generation_error", StepPropertyStateEnum.ERROR, false, false),
 
-    PROPERTY_INGESTION_FAILED("ingestion_failed", SessionNotificationState.OK),
+    PROPERTY_INGESTION_FAILED("ingestion_failed", StepPropertyStateEnum.ERROR, false, false),
 
-    PROPERTY_INGESTED("ingested", SessionNotificationState.OK),
+    PROPERTY_FILES_ACQUIRED("files_acquired", StepPropertyStateEnum.SUCCESS, true, false),
 
-    PROPERTY_FILES_ACQUIRED("files_acquired", SessionNotificationState.OK),
+    PROPERTY_COMPLETED("complete", StepPropertyStateEnum.INFO, false, false),
 
-    PROPERTY_COMPLETED("complete", SessionNotificationState.OK);
+    PROPERTY_INGESTED("ingested", StepPropertyStateEnum.SUCCESS, true, false);
 
-    private String value = null;
 
-    private SessionNotificationState state = SessionNotificationState.OK;
+    private String name;
 
-    SessionProductPropertyEnum(String value, SessionNotificationState state) {
-        this.value = value;
+    private StepPropertyStateEnum state;
+
+    private boolean inputRelated;
+
+    private boolean outputRelated;
+
+    SessionProductPropertyEnum(String name, StepPropertyStateEnum state, boolean inputRelated, boolean outputRelated) {
+        this.name = name;
         this.state = state;
+        this.inputRelated = inputRelated;
+        this.outputRelated = outputRelated;
     }
 
-    public String getValue() {
-        return value;
+    public String getName() {
+        return name;
     }
 
-    public SessionNotificationState getState() {
+    public StepPropertyStateEnum getState() {
         return state;
     }
 
+    public boolean isInputRelated() {
+        return inputRelated;
+    }
+
+    public boolean isOutputRelated() {
+        return outputRelated;
+    }
 }

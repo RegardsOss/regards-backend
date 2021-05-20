@@ -4,7 +4,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClient;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -40,146 +39,119 @@ public class SessionNotifier {
     /**
      * Parameters
      */
-    // Name of the step
-    private static final String SESSION_NOTIF_STEP = "oais";
+    // Name of the global step
+    private static final String GLOBAL_SESSION_STEP = "oais";
 
-    // Parameters to determine step properties
-
-    public static final String TOTAL_REQUESTS = "totalRequests";
-
-    public static final String REQUESTS_ERRORS = "requestsErrors";
-
-    public static final String REQUESTS_RUNNING = "requestsRunning";
-
-    public static final String GENERATED_PRODUCTS = "generatedProducts";
-
-    public static final String NEW_PRODUCT_VERSIONS = "newProductVersions";
-
-    public static final String REPLACED_PRODUCTS = "replacedProducts";
-
-    public static final String IGNORED_PRODUCTS = "ignoredProducts";
-
-    public static final String PRODUCT_WAIT_VERSION_MODE = "productWaitVersionMode";
-
-    public static final String POST_PROCESS_PENDING = "postProcessPending";
-
-    public static final String POST_PROCESS_SUCCESS = "postProcessSuccess";
-
-    public static final String POST_PROCESS_ERROR = "postProcessErrors";
-
+    /**
+     * Methods used to notify the session
+     */
     // Request count - corresponds to the number of referencing requests
-
     public void incrementRequestCount(String source, String session, int nbRequests) {
-        incrementCount(source, session, TOTAL_REQUESTS, nbRequests, StepPropertyStateEnum.SUCCESS, true, false);
+        incrementCount(source, session, SessionNotifierPropertyEnum.TOTAL_REQUESTS, nbRequests);
     }
 
     public void incrementRequestCount(IngestRequest request) {
-        incrementCount(request, TOTAL_REQUESTS, 1, StepPropertyStateEnum.SUCCESS, true, false);
+        incrementCount(request, SessionNotifierPropertyEnum.TOTAL_REQUESTS, 1);
     }
 
     // AIP generation
 
     public void incrementProductGenerationPending(IngestRequest request) {
-        incrementCount(request, REQUESTS_RUNNING, 1, StepPropertyStateEnum.RUNNING, false, false);
+        incrementCount(request, SessionNotifierPropertyEnum.REQUESTS_RUNNING, 1);
     }
 
     public void decrementProductGenerationPending(IngestRequest request) {
-        decrementCount(request, REQUESTS_RUNNING, 1, StepPropertyStateEnum.RUNNING, false, false);
+        decrementCount(request, SessionNotifierPropertyEnum.REQUESTS_RUNNING, 1);
     }
 
     public void incrementProductGenerationError(IngestRequest request) {
-        incrementCount(request, REQUESTS_ERRORS, 1, StepPropertyStateEnum.ERROR, false, false);
+        incrementCount(request, SessionNotifierPropertyEnum.REQUESTS_ERRORS, 1);
     }
 
     public void decrementProductGenerationError(IngestRequest request) {
-        decrementCount(request, REQUESTS_ERRORS, 1, StepPropertyStateEnum.ERROR, false, false);
+        decrementCount(request, SessionNotifierPropertyEnum.REQUESTS_ERRORS, 1);
     }
 
     // File storage
 
     public void incrementProductStorePending(IngestRequest request) {
-        incrementCount(request, REQUESTS_RUNNING, request.getAips().size(), StepPropertyStateEnum.RUNNING, false,
-                       false);
+        incrementCount(request, SessionNotifierPropertyEnum.REQUESTS_RUNNING, request.getAips().size());
     }
 
     public void decrementProductStorePending(IngestRequest request) {
-        decrementCount(request, REQUESTS_RUNNING, request.getAips().size(), StepPropertyStateEnum.RUNNING, false,
-                       false);
+        decrementCount(request, SessionNotifierPropertyEnum.REQUESTS_RUNNING, request.getAips().size());
     }
 
     public void incrementProductStoreSuccess(IngestRequest request) {
-        incrementCount(request, GENERATED_PRODUCTS, request.getAips().size(), StepPropertyStateEnum.SUCCESS, false,
-                       true);
+        incrementCount(request, SessionNotifierPropertyEnum.GENERATED_PRODUCTS, request.getAips().size());
     }
 
     public void incrementProductStoreError(IngestRequest request) {
-        incrementCount(request, REQUESTS_ERRORS, request.getAips().size(), StepPropertyStateEnum.ERROR, false, false);
+        incrementCount(request, SessionNotifierPropertyEnum.REQUESTS_ERRORS, request.getAips().size());
     }
 
     public void decrementProductStoreError(IngestRequest request) {
-        decrementCount(request, REQUESTS_ERRORS, request.getAips().size(), StepPropertyStateEnum.ERROR, false, false);
+        decrementCount(request, SessionNotifierPropertyEnum.REQUESTS_ERRORS, request.getAips().size());
     }
 
     public void incrementProductIgnored(IngestRequest request) {
         if (request.getState() == InternalRequestState.IGNORED) {
             this.decrementProductGenerationPending(request);
-            incrementCount(request, IGNORED_PRODUCTS, 1, StepPropertyStateEnum.INFO, false, false);
+            incrementCount(request, SessionNotifierPropertyEnum.IGNORED_PRODUCTS, 1);
         }
     }
 
     // Product versioning
 
     public void incrementNewProductVersion(AIPEntity aipEntity) {
-        incrementCount(aipEntity, NEW_PRODUCT_VERSIONS, 1, StepPropertyStateEnum.INFO, false, false);
+        incrementCount(aipEntity, SessionNotifierPropertyEnum.NEW_PRODUCT_VERSIONS, 1);
     }
 
     public void incrementProductReplace(AIPEntity aipEntity) {
-        incrementCount(aipEntity, REPLACED_PRODUCTS, 1, StepPropertyStateEnum.INFO, false, false);
+        incrementCount(aipEntity, SessionNotifierPropertyEnum.REPLACED_PRODUCTS, 1);
     }
 
     public void incrementProductWaitingVersioningMode(IngestRequest request) {
         if (request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) {
             this.decrementProductGenerationPending(request);
-            incrementCount(request, PRODUCT_WAIT_VERSION_MODE, 1, StepPropertyStateEnum.WAITING, false, false);
+            incrementCount(request, SessionNotifierPropertyEnum.PRODUCT_WAIT_VERSION_MODE, 1);
         }
     }
 
     public void decrementProductWaitingVersioningMode(IngestRequest request) {
         if (request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) {
-            decrementCount(request, PRODUCT_WAIT_VERSION_MODE, 1, StepPropertyStateEnum.WAITING, false, false);
+            decrementCount(request, SessionNotifierPropertyEnum.PRODUCT_WAIT_VERSION_MODE, 1);
         }
     }
 
     // Post Process
 
     public void incrementPostProcessSuccess(AIPPostProcessRequest request) {
-        incrementCount(request, POST_PROCESS_SUCCESS, 1, StepPropertyStateEnum.INFO, false, false);
-        decrementCount(request, POST_PROCESS_PENDING, 1, StepPropertyStateEnum.INFO, false, false);
+        incrementCount(request, SessionNotifierPropertyEnum.POST_PROCESS_SUCCESS, 1);
+        decrementCount(request, SessionNotifierPropertyEnum.POST_PROCESS_PENDING, 1);
     }
 
     public void incrementPostProcessPending(AIPPostProcessRequest request) {
-        incrementCount(request, POST_PROCESS_PENDING, 1, StepPropertyStateEnum.INFO, false, false);
+        incrementCount(request, SessionNotifierPropertyEnum.POST_PROCESS_PENDING, 1);
     }
 
     public void decrementPostProcessPending(AIPPostProcessRequest request) {
-        decrementCount(request, POST_PROCESS_PENDING, 1, StepPropertyStateEnum.INFO, false, false);
+        decrementCount(request, SessionNotifierPropertyEnum.POST_PROCESS_PENDING, 1);
     }
 
     public void incrementPostProcessError(AIPPostProcessRequest request) {
-        incrementCount(request, POST_PROCESS_ERROR, 1, StepPropertyStateEnum.INFO, false, false);
-        decrementCount(request, POST_PROCESS_PENDING, 1, StepPropertyStateEnum.INFO, false, false);
+        incrementCount(request, SessionNotifierPropertyEnum.POST_PROCESS_ERROR, 1);
+        decrementCount(request, SessionNotifierPropertyEnum.POST_PROCESS_PENDING, 1);
     }
 
     public void decrementPostProcessError(AIPPostProcessRequest request) {
-        decrementCount(request, POST_PROCESS_ERROR, 1, StepPropertyStateEnum.INFO, false, false);
+        decrementCount(request, SessionNotifierPropertyEnum.POST_PROCESS_ERROR, 1);
     }
 
     // AIP storage
 
     /**
      * Notify session when a request is deleted
-     *
-     * @param request
      */
     public void requestDeleted(AbstractRequest request) {
         // If INGEST request
@@ -269,12 +241,10 @@ public class SessionNotifier {
         }
         if ((nbStorePending > 0)) {
             // -x product_storing
-            decrementCount(sessionOwner, session, REQUESTS_RUNNING, nbStorePending, StepPropertyStateEnum.RUNNING,
-                           false, false);
+            decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REQUESTS_RUNNING, nbStorePending);
         }
 
-        decrementCount(sessionOwner, session, GENERATED_PRODUCTS, nbGenerated + nbStored, StepPropertyStateEnum.SUCCESS,
-                       true, true);
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.GENERATED_PRODUCTS, nbGenerated + nbStored);
     }
 
     // ----------- UTILS -----------
@@ -282,49 +252,49 @@ public class SessionNotifier {
     // GENERIC METHODS TO BUILD NOTIFICATIONS
 
     // INC
-    public void incrementCount(AbstractRequest request, String property, int nbProducts, StepPropertyStateEnum state,
-            boolean inputRelated, boolean outputRelated) {
-        StepProperty step = new StepProperty(SESSION_NOTIF_STEP, request.getSessionOwner(), request.getSession(),
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, state, property,
-                                                                  String.valueOf(nbProducts), inputRelated,
-                                                                  outputRelated));
+    public void incrementCount(AbstractRequest request, SessionNotifierPropertyEnum property, int nbProducts) {
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, request.getSessionOwner(), request.getSession(),
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
+                                                                  property.getName(), String.valueOf(nbProducts),
+                                                                  property.isInputRelated(),
+                                                                  property.isOutputRelated()));
         sessionNotificationClient.increment(step);
     }
 
-    public void incrementCount(AIPEntity aipEntity, String property, int nbProducts, StepPropertyStateEnum state,
-            boolean inputRelated, boolean outputRelated) {
-        StepProperty step = new StepProperty(SESSION_NOTIF_STEP, aipEntity.getSessionOwner(), aipEntity.getSession(),
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, state, property,
-                                                                  String.valueOf(nbProducts), inputRelated,
-                                                                  outputRelated));
+    public void incrementCount(AIPEntity aipEntity, SessionNotifierPropertyEnum property, int nbProducts) {
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, aipEntity.getSessionOwner(), aipEntity.getSession(),
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
+                                                                  property.getName(), String.valueOf(nbProducts),
+                                                                  property.isInputRelated(),
+                                                                  property.isOutputRelated()));
         sessionNotificationClient.increment(step);
     }
 
-    public void incrementCount(String source, String session, String property, int nbProducts,
-            StepPropertyStateEnum state, boolean inputRelated, boolean outputRelated) {
-        StepProperty step = new StepProperty(SESSION_NOTIF_STEP, source, session,
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, state, property,
-                                                                  String.valueOf(nbProducts), inputRelated,
-                                                                  outputRelated));
+    public void incrementCount(String source, String session, SessionNotifierPropertyEnum property, int nbProducts) {
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
+                                                                  property.getName(), String.valueOf(nbProducts),
+                                                                  property.isInputRelated(),
+                                                                  property.isOutputRelated()));
         sessionNotificationClient.increment(step);
     }
 
     // DEC
-    public void decrementCount(AbstractRequest request, String property, int nbProducts, StepPropertyStateEnum state,
-            boolean inputRelated, boolean outputRelated) {
-        StepProperty step = new StepProperty(SESSION_NOTIF_STEP, request.getSessionOwner(), request.getSession(),
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, state, property,
-                                                                  String.valueOf(nbProducts), inputRelated,
-                                                                  outputRelated));
+    public void decrementCount(AbstractRequest request, SessionNotifierPropertyEnum property, int nbProducts) {
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, request.getSessionOwner(), request.getSession(),
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
+                                                                  property.getName(), String.valueOf(nbProducts),
+                                                                  property.isInputRelated(),
+                                                                  property.isOutputRelated()));
         sessionNotificationClient.decrement(step);
     }
 
-    public void decrementCount(String source, String session, String property, int nbProducts,
-            StepPropertyStateEnum state, boolean inputRelated, boolean outputRelated) {
-        StepProperty step = new StepProperty(SESSION_NOTIF_STEP, source, session,
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, state, property,
-                                                                  String.valueOf(nbProducts), inputRelated,
-                                                                  outputRelated));
+    public void decrementCount(String source, String session, SessionNotifierPropertyEnum property, int nbProducts) {
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
+                                                                  property.getName(), String.valueOf(nbProducts),
+                                                                  property.isInputRelated(),
+                                                                  property.isOutputRelated()));
         sessionNotificationClient.decrement(step);
     }
 }

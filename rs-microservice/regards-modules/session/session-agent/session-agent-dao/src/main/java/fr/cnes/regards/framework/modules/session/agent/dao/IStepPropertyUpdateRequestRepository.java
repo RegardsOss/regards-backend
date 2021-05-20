@@ -36,6 +36,8 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
 
     List<StepPropertyUpdateRequest> findBySessionStepIn(List<SessionStep> content);
 
+    List<StepPropertyUpdateRequest> findBySession(String session);
+
     @Modifying
     @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM StepPropertyUpdateRequest s) "
             + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")

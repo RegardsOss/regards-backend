@@ -40,7 +40,6 @@ public class SessionAgentClient implements ISessionAgentClient {
     @Autowired
     private IPublisher publisher;
 
-
     @Override
     public void increment(StepProperty stepProperty) {
         // Create new event

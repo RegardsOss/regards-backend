@@ -29,6 +29,8 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
@@ -51,8 +53,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskStreamScanning;
 import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import java.io.File;
 import java.nio.file.Path;
@@ -83,7 +83,6 @@ import org.springframework.test.context.TestPropertySource;
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product" })
 public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
@@ -163,22 +162,22 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
-                                                                         new HashSet<IPluginParam>());
+        PluginConfiguration validationPlugin = PluginConfiguration
+                .build(DefaultFileValidation.class, null, new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
-                                                                      new HashSet<IPluginParam>());
+        PluginConfiguration productPlugin = PluginConfiguration
+                .build(DefaultProductPlugin.class, null, new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
-                                                                     new HashSet<IPluginParam>());
+        PluginConfiguration sipGenPlugin = PluginConfiguration
+                .build(DefaultSIPGeneration.class, null, new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -247,23 +246,23 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
-                                                                         new HashSet<IPluginParam>());
+        PluginConfiguration validationPlugin = PluginConfiguration
+                .build(DefaultFileValidation.class, null, new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation streamed plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
-                                                                      new HashSet<IPluginParam>());
+        PluginConfiguration productPlugin = PluginConfiguration
+                .build(DefaultProductPlugin.class, null, new HashSet<IPluginParam>());
 
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product streamed plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
-                                                                     new HashSet<IPluginParam>());
+        PluginConfiguration sipGenPlugin = PluginConfiguration
+                .build(DefaultSIPGeneration.class, null, new HashSet<IPluginParam>());
 
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation streamed plugin");
@@ -294,8 +293,8 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Test
     public void acquisitionByStreamWorkflowTest() throws ModuleException {
-        AcquisitionProcessingChain processingChain = createProcessingChainWithStream(Paths
-                .get("src/test/resources/data/income/stream_test"));
+        AcquisitionProcessingChain processingChain = createProcessingChainWithStream(
+                Paths.get("src/test/resources/data/income/stream_test"));
         Mockito.reset(publisher);
         String session = "session1";
         processingService.scanAndRegisterFiles(processingChain, session);
@@ -307,10 +306,10 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     @Test
     public void acquisitionWorkflowTest() throws ModuleException, InterruptedException {
         Set<Path> searchPaths = Sets.newHashSet(Paths.get("src", "test", "resources", "data", "plugins", "scan"),
-                                                    Paths.get("src", "test", "resources", "data", "plugins", "scan2"));
+                                                Paths.get("src", "test", "resources", "data", "plugins", "scan2"));
         int nbFiles = 0;
-        for(Path folderPath : searchPaths) {
-            nbFiles+= new File(folderPath.toString()).listFiles().length;
+        for (Path folderPath : searchPaths) {
+            nbFiles += new File(folderPath.toString()).listFiles().length;
         }
         AcquisitionProcessingChain processingChain = createProcessingChain(searchPaths);
         AcquisitionFileInfo fileInfo = processingChain.getFileInfos().iterator().next();
@@ -328,10 +327,9 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         processingService.manageRegisteredFiles(processingChain, session);
 
         // Check registered files
-        inProgressFiles = acqFileRepository
-                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
-                                                    processingChain.getFileInfos().iterator().next(),
-                                                    PageRequest.of(0, 1));
+        inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
+                                                                               processingChain.getFileInfos().iterator()
+                                                                                       .next(), PageRequest.of(0, 1));
         Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
 
         Page<AcquisitionFile> validFiles = acqFileRepository
@@ -343,15 +341,16 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertTrue(acquiredFiles.getTotalElements() == nbFiles);
 
         // Find product to schedule
-        long scheduled = productService.countByProcessingChainAndSipStateIn(processingChain,
-                                                                            Arrays.asList(ProductSIPState.SCHEDULED));
+        long scheduled = productService
+                .countByProcessingChainAndSipStateIn(processingChain, Arrays.asList(ProductSIPState.SCHEDULED));
         Assert.assertTrue(scheduled == nbFiles);
 
         Assert.assertTrue(fileService.countByChain(processingChain) == nbFiles);
-        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
-                                                             Arrays.asList(AcquisitionFileState.ACQUIRED)) == nbFiles);
-        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
-                                                             Arrays.asList(AcquisitionFileState.ERROR)) == 0);
+        Assert.assertTrue(
+                fileService.countByChainAndStateIn(processingChain, Arrays.asList(AcquisitionFileState.ACQUIRED))
+                        == nbFiles);
+        Assert.assertTrue(
+                fileService.countByChainAndStateIn(processingChain, Arrays.asList(AcquisitionFileState.ERROR)) == 0);
 
         Page<AcquisitionProcessingChainMonitor> monitor = processingService
                 .buildAcquisitionProcessingChainSummaries(null, null, null, PageRequest.of(0, 10));
@@ -359,36 +358,37 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertEquals(true, monitor.getContent().get(0).isActive());
 
         // Check product
-        Assert.assertEquals(0, productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
-                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID)));
+        Assert.assertEquals(0, productService.countByProcessingChainAndSipStateIn(processingChain, Arrays.asList(
+                ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID)));
         Assert.assertEquals(nbFiles, productService.countByChain(processingChain));
-        Assert.assertEquals(nbFiles,
-                            productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
-                                    .asList(ProductSIPState.NOT_SCHEDULED, ProductSIPState.SCHEDULED,
-                                            ProductSIPState.SCHEDULED_INTERRUPTED)));
+        Assert.assertEquals(nbFiles, productService.countByProcessingChainAndSipStateIn(processingChain, Arrays.asList(
+                ProductSIPState.NOT_SCHEDULED, ProductSIPState.SCHEDULED, ProductSIPState.SCHEDULED_INTERRUPTED)));
 
         // Check files
-        Assert.assertEquals(0, fileService
-                .countByChainAndStateIn(processingChain,
-                                        Arrays.asList(AcquisitionFileState.ERROR, AcquisitionFileState.INVALID)));
+        Assert.assertEquals(0, fileService.countByChainAndStateIn(processingChain,
+                                                                  Arrays.asList(AcquisitionFileState.ERROR,
+                                                                                AcquisitionFileState.INVALID)));
         Assert.assertEquals(nbFiles, fileService.countByChain(processingChain));
-        Assert.assertEquals(0, fileService
-                .countByChainAndStateIn(processingChain,
-                                        Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
+        Assert.assertEquals(0, fileService.countByChainAndStateIn(processingChain,
+                                                                  Arrays.asList(AcquisitionFileState.IN_PROGRESS,
+                                                                                AcquisitionFileState.VALID)));
 
         // Wait for job ends
         Thread.sleep(5000);
 
         // Let's test SessionNotifier
-        ArgumentCaptor<SessionMonitoringEvent> grantedInfo = ArgumentCaptor.forClass(SessionMonitoringEvent.class);
+        ArgumentCaptor<StepPropertyUpdateRequestEvent> grantedInfo = ArgumentCaptor
+                .forClass(StepPropertyUpdateRequestEvent.class);
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(grantedInfo.capture());
         // Capture how many notif of each type have been sent
         Map<String, Integer> callByProperty = new HashMap<>();
         for (ISubscribable event : grantedInfo.getAllValues()) {
             // We ignore all others types of events
-            if (event instanceof SessionMonitoringEvent) {
-                SessionMonitoringEvent monitoringEvent = (SessionMonitoringEvent) event;
-                String key = monitoringEvent.getProperty() + "_" + monitoringEvent.getOperator().toString();
+            if (event instanceof StepPropertyUpdateRequestEvent) {
+                StepPropertyUpdateRequestEvent monitoringEvent = (StepPropertyUpdateRequestEvent) event;
+                String key =
+                        monitoringEvent.getStepProperty().getStepPropertyInfo().getProperty() + "_" + monitoringEvent
+                                .getType().toString();
                 if (callByProperty.containsKey(key)) {
                     callByProperty.put(key, callByProperty.get(key) + 1);
                 } else {
@@ -397,17 +397,17 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
             }
         }
         Integer incCompleted = callByProperty
-                .get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue() + "_" + SessionNotificationOperator.INC);
+                .get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName() + "_" + StepPropertyEventTypeEnum.INC);
         Assert.assertNotNull(incCompleted);
         Assert.assertEquals(nbFiles, incCompleted.intValue());
 
         Integer decCompleted = callByProperty
-                .get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue() + "_" + SessionNotificationOperator.DEC);
+                .get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName() + "_" + StepPropertyEventTypeEnum.DEC);
         Assert.assertNotNull(decCompleted);
         Assert.assertEquals(nbFiles, decCompleted.intValue());
 
         Integer incGenerated = callByProperty
-                .get(SessionProductPropertyEnum.PROPERTY_GENERATED.getValue() + "_" + SessionNotificationOperator.INC);
+                .get(SessionProductPropertyEnum.GENERATED_PRODUCTS.getName() + "_" + StepPropertyEventTypeEnum.INC);
         Assert.assertNotNull(incGenerated);
         Assert.assertEquals(nbFiles, incGenerated.intValue());
     }

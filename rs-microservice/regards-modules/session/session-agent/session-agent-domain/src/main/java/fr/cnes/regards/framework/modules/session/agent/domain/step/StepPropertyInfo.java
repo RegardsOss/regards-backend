@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.modules.session.agent.domain.step;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import java.util.Objects;
 
 /**
  * Store information related to {@link StepPropertyUpdateRequestEvent}
@@ -96,5 +97,28 @@ public class StepPropertyInfo {
 
     public void setOutputRelated(boolean outputRelated) {
         this.outputRelated = outputRelated;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        StepPropertyInfo that = (StepPropertyInfo) o;
+        return inputRelated == that.inputRelated && outputRelated == that.outputRelated && stepType == that.stepType
+                && state == that.state && property.equals(that.property) && value.equals(that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(stepType, state, property, value, inputRelated, outputRelated);
+    }
+
+    @Override
+    public String toString() {
+        return "StepPropertyInfo{" + "stepType=" + stepType + ", state=" + state + ", property='" + property + '\''
+                + ", value='" + value + '\'' + ", inputRelated=" + inputRelated + ", outputRelated=" + outputRelated
+                + '}';
     }
 }
