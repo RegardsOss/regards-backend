@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import java.util.List;
 
 /**
  * Client to publish new {@link StepPropertyUpdateRequestEvent}. These events will then be used to create
@@ -38,10 +39,20 @@ public interface ISessionAgentClient {
     void increment(StepProperty stepProperty);
 
     /**
+     * Send a bulk of {@link StepPropertyUpdateRequestEvent}
+     */
+    void increment(List<StepProperty> stepProperty);
+
+    /**
      * Send a {@link StepPropertyUpdateRequestEvent} with a {@link StepPropertyEventTypeEnum} of type decrement. The
      * corresponding property in the session step will be decremented with the value provided.
      */
-    void decrement(StepProperty stepProperty);
+    void decrement(StepProperty stepProperties);
+
+    /**
+     * Send a bulk of {@link StepPropertyUpdateRequestEvent}
+     */
+    void decrement(List<StepProperty> stepProperties);
 
     /**
      * Send a {@link StepPropertyUpdateRequestEvent} with a {@link StepPropertyEventTypeEnum} of type increment. The

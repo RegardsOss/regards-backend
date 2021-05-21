@@ -16,12 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.service.session;
+package fr.cnes.regards.modules.featureprovider.service.session;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.session.commons.service.delete.ISessionDeleteService;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
+import fr.cnes.regards.modules.featureprovider.service.FeatureExtractionDeletionService;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Implementation of {@link ISessionDeleteService} to delete a session
+ * Implementation of {@link ISessionDeleteService} to delete all
+ * {@link fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest} linked to a source and a session
  *
  * @author Iliana Ghazali
  **/
@@ -40,17 +40,13 @@ public class SessionDeleteService implements ISessionDeleteService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionDeleteService.class);
 
     @Autowired
-    private IAcquisitionProcessingService acquisitionService;
+    private FeatureExtractionDeletionService deletionService;
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.info("Event received to program the deletion of all products from session {} of source {}", session,
-                    source);
+        LOGGER.info("Event received to program the deletion of all extraction requests from session {} of source {}",
+                    session, source);
         // Run a DeleteProductsJob
-        try {
-            acquisitionService.scheduleProductDeletion(source, Optional.ofNullable(session), false);
-        } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        deletionService.scheduleDeletion(source, Optional.of(session));
     }
 }

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
+import fr.cnes.regards.modules.featureprovider.domain.IFeatureExtractionRequestLight;
+import fr.cnes.regards.modules.featureprovider.service.session.SessionNotifier;
 import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -125,6 +127,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
     @Autowired
     private FeatureClient featureClient;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     @Override
     public void validateRequest(AbstractRequestEvent event, Errors errors) {
@@ -282,13 +287,15 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
     @Override
     public void processRequests(List<FeatureExtractionRequest> requests) {
-
         long processStart = System.currentTimeMillis();
 
         int successCreationRequestGenerationCount = 0;
         List<FeatureCreationRequestEvent> creationRequestsToRegister = new ArrayList<>();
 
+        // process requests
         for (FeatureExtractionRequest request : requests) {
+            // notify extract request received to the session agent
+            sessionNotifier.incrementRequestCount(request);
             try {
                 creationRequestsToRegister.add(initFeatureCreationRequest(request));
                 successCreationRequestGenerationCount++;
@@ -306,6 +313,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                                                                      request.getRequestOwner(),
                                                                      RequestState.ERROR,
                                                                      errors));
+                // notify error request to the session agent
+                sessionNotifier.incrementRequestErrors(request);
             }
         }
 
@@ -394,24 +403,29 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             Map<String, FeatureRequestEvent> deniedRequestPerRequestId = denied.stream()
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
             // Filter requests associated to an existing FeatureExtractionResponseEvent
-            Set<String> extractRequestIds = featureExtractionRequestRepo
-                    .findByRequestIdIn(deniedRequestPerRequestId.keySet());
+            Set<IFeatureExtractionRequestLight> extractRequestsLightSet =
+                    featureExtractionRequestRepo.findByRequestIdIn(deniedRequestPerRequestId.keySet());
 
-            if (!extractRequestIds.isEmpty()) {
+            if (!extractRequestsLightSet.isEmpty()) {
                 List<FeatureExtractionResponseEvent> events = new ArrayList<>();
                 // For each, send an extraction error event
-                for (String extractRequestId : extractRequestIds) {
-                    FeatureRequestEvent extractRequest = deniedRequestPerRequestId.get(extractRequestId);
-                    events.add(new FeatureExtractionResponseEvent(extractRequestId,
+                for (IFeatureExtractionRequestLight extractRequestLight : extractRequestsLightSet) {
+                    String requestId = extractRequestLight.getRequestId();
+                    FeatureRequestEvent extractRequest = deniedRequestPerRequestId.get(requestId);
+                    events.add(new FeatureExtractionResponseEvent(requestId,
                                                                   extractRequest.getRequestOwner(),
-                                                                  RequestState.ERROR,
-                                                                  extractRequest.getErrors()));
+                                                                  RequestState.ERROR, extractRequest.getErrors()));
+                    // notify request denied to session agent
+                    this.sessionNotifier.incrementRequestRefused(extractRequestLight.getMetadata().getSessionOwner(),
+                                                                 extractRequestLight.getMetadata().getSession());
                 }
                 publisher.publish(events);
                 // Update FeatureExtractionResponseEvent with error state
+                Set<String> extractRequestIds = extractRequestsLightSet.stream()
+                        .map(IFeatureExtractionRequestLight::getRequestId).collect(Collectors.toSet());
                 featureExtractionRequestRepo
                         .updateStepByRequestIdIn(FeatureRequestStep.REMOTE_CREATION_ERROR, extractRequestIds);
-                featureExtractionRequestRepo.updateState(RequestState.ERROR, extractRequestIds);
+                featureExtractionRequestRepo.updateState(RequestState.DENIED, extractRequestIds);
             }
         }
 
@@ -423,21 +437,26 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             Map<String, FeatureRequestEvent> grantedRequestPerRequestId = granted.stream()
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
             // Filter requests associated to an existing FeatureExtractionResponseEvent
-            Set<String> extractRequestIds = featureExtractionRequestRepo
+            Set<IFeatureExtractionRequestLight> extractRequestsLightSet = featureExtractionRequestRepo
                     .findByRequestIdIn(grantedRequestPerRequestId.keySet());
 
-            if (!extractRequestIds.isEmpty()) {
+            if (!extractRequestsLightSet.isEmpty()) {
                 List<FeatureExtractionResponseEvent> events = new ArrayList<>();
                 // For each, send an extraction success event
-                for (String extractRequestId : extractRequestIds) {
-                    events.add(new FeatureExtractionResponseEvent(extractRequestId,
-                                                                  grantedRequestPerRequestId.get(extractRequestId)
-                                                                          .getRequestOwner(),
-                                                                  RequestState.SUCCESS,
+                for (IFeatureExtractionRequestLight extractRequestLight : extractRequestsLightSet) {
+                    events.add(new FeatureExtractionResponseEvent(extractRequestLight.getRequestId(),
+                                                                  grantedRequestPerRequestId
+                                                                          .get(extractRequestLight.getRequestId())
+                                                                          .getRequestOwner(), RequestState.SUCCESS,
                                                                   new HashSet<>()));
+                    // notify request success
+                    this.sessionNotifier.incrementGeneratedProducts(extractRequestLight.getMetadata().getSessionOwner(),
+                                                                    extractRequestLight.getMetadata().getSession());
                 }
                 publisher.publish(events);
                 // Delete all success FeatureExtractionResponseEvent
+                Set<String> extractRequestIds = extractRequestsLightSet.stream()
+                        .map(IFeatureExtractionRequestLight::getRequestId).collect(Collectors.toSet());
                 featureExtractionRequestRepo.deleteAllByRequestIdIn(extractRequestIds);
             }
         }
@@ -454,6 +473,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                                                                   request.getRequestOwner(),
                                                                   RequestState.ERROR,
                                                                   errorMessages));
+            // notify error request to the session client
+            sessionNotifier.incrementRequestErrors(request);
         }
         featureExtractionRequestRepo.saveAll(featureExtractionRequests);
         publisher.publish(errorResponses);

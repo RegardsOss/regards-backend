@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,8 @@ public class SessionAgentClient implements ISessionAgentClient {
     @Autowired
     private IPublisher publisher;
 
+    // INCREMENT EVENTS
+
     @Override
     public void increment(StepProperty stepProperty) {
         // Create new event
@@ -49,6 +53,18 @@ public class SessionAgentClient implements ISessionAgentClient {
         publisher.publish(stepPropertyEvent);
     }
 
+    @Override
+    public void increment(List<StepProperty> stepProperties) {
+        // Create stepEvents
+        List<StepPropertyUpdateRequestEvent> stepEventList = new ArrayList<>();
+        stepProperties.forEach(property -> stepEventList
+                .add(new StepPropertyUpdateRequestEvent(property, StepPropertyEventTypeEnum.INC)));
+
+        // publish events
+        publisher.publish(stepEventList);
+    }
+
+    // DECREMENT EVENTS
 
     @Override
     public void decrement(StepProperty stepProperty) {
@@ -59,6 +75,16 @@ public class SessionAgentClient implements ISessionAgentClient {
         publisher.publish(stepPropertyEvent);
     }
 
+    @Override
+    public void decrement(List<StepProperty> stepProperties) {
+        // Create stepEvents
+        List<StepPropertyUpdateRequestEvent> stepEventList = new ArrayList<>();
+        stepProperties.forEach(property -> stepEventList
+                .add(new StepPropertyUpdateRequestEvent(property, StepPropertyEventTypeEnum.DEC)));
+
+        // publish events
+        publisher.publish(stepEventList);
+    }
 
     @Override
     public void stepValue(StepProperty stepProperty) throws EntityInvalidException {

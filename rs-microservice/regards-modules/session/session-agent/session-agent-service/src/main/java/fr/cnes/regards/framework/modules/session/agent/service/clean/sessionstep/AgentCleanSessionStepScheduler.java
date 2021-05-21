@@ -64,7 +64,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
     private LockingTaskExecutors lockingTaskExecutors;
 
     @Value("${spring.application.name}")
-    private static String microserviceName;
+    private String microserviceName;
 
     public static final Long MAX_TASK_DELAY = 60L; // In second
 

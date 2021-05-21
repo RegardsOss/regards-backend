@@ -1,15 +1,14 @@
 package fr.cnes.regards.modules.featureprovider.service;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
+import fr.cnes.regards.modules.featureprovider.service.session.SessionNotifier;
+import java.util.HashSet;
+import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -19,6 +18,9 @@ public class FeatureExtractionRequestRetryService implements IFeatureExtractionR
 
     @Autowired
     private IFeatureExtractionRequestRepository featureExtractionRequestRepository;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     //TODO according to filter parameters, we may need to schedule a job to search request to be retried
     /**
@@ -41,6 +43,7 @@ public class FeatureExtractionRequestRetryService implements IFeatureExtractionR
         }
         featureExtractionRequestRepository.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, notificationsToRetry);
         featureExtractionRequestRepository.updateStep(FeatureRequestStep.LOCAL_DELAYED, processToRetry);
+
     }
 
 }

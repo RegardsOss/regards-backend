@@ -68,7 +68,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
     private IJobInfoService jobService;
 
     @Value("${spring.application.name}")
-    private static String microserviceName;
+    private String microserviceName;
 
     @Value("${regards.session.manager.clean.session.cron}")
     private static final String CRON = "0 0 0 1-7 * SUN";
