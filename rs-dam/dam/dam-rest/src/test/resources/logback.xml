@@ -31,8 +31,8 @@
 	<logger name="fr.cnes.regards.modules.dam" level="DEBUG" />
 	<logger name="org.springframework.security.web" level="DEBUG" />
 	<!-- SQL statements and parameters -->
-	<logger name="org.hibernate.SQL" level="DEBUG" />
-	<logger name="org.hibernate.type.descriptor.sql" level="TRACE" />
+<!--	<logger name="org.hibernate.SQL" level="DEBUG" />-->
+<!--	<logger name="org.hibernate.type.descriptor.sql" level="TRACE" />-->
 
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />

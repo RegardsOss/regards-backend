@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.dam.dao.dataaccess;
 
 import java.time.OffsetDateTime;
 
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,10 +33,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTe
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityFilter;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityLevel;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -99,10 +96,12 @@ public class AccessRightRepositoryIT extends AbstractDaoTransactionalTest {
         ag1 = new AccessGroup(ag1Name);
         ag1 = agRepo.save(ag1);
         ar1 = new AccessRight(qf, al, ds1, ag1);
+        ar1.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
         ar1 = repo.save(ar1);
         ag2 = new AccessGroup(ag2Name);
         ag2 = agRepo.save(ag2);
         ar2 = new AccessRight(qf, al, ds2, ag2);
+        ar2.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
         ar2 = repo.save(ar2);
     }
 
