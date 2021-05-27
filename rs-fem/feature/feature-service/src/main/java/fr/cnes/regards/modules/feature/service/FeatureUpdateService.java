@@ -31,7 +31,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -47,6 +49,8 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.feature.dao.FeatureUpdateRequestSpecification;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
@@ -59,12 +63,14 @@ import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureHistory;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureUpdateState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
@@ -79,7 +85,8 @@ import fr.cnes.regards.modules.model.service.validation.ValidationMode;
  */
 @Service
 @MultitenantTransactional
-public class FeatureUpdateService extends AbstractFeatureService implements IFeatureUpdateService {
+public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRequest>
+        implements IFeatureUpdateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateService.class);
 
@@ -133,8 +140,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         // Batch save
         updateRepo.saveAll(grantedRequests);
 
-        LOGGER.trace("------------->>> {} update requests registered in {} ms",
-                     grantedRequests.size(),
+        LOGGER.trace("------------->>> {} update requests registered in {} ms", grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         return requestInfo;
@@ -145,9 +151,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         // Build events to reuse event registration code
         List<FeatureUpdateRequestEvent> toTreat = new ArrayList<>();
         for (Feature feature : toHandle.getFeatures()) {
-            toTreat.add(FeatureUpdateRequestEvent.build(toHandle.getRequestOwner(),
-                                                        toHandle.getMetadata(),
-                                                        feature,
+            toTreat.add(FeatureUpdateRequestEvent.build(toHandle.getRequestOwner(), toHandle.getMetadata(), feature,
                                                         OffsetDateTime.now().minusSeconds(1)));
         }
         return registerRequests(toTreat);
@@ -174,54 +178,39 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         if (errors.hasErrors()) {
             // Monitoring log
-            FeatureLogger.updateDenied(item.getRequestOwner(),
-                                       item.getRequestId(),
+            FeatureLogger.updateDenied(item.getRequestOwner(), item.getRequestId(),
                                        item.getFeature() != null ? item.getFeature().getId() : null,
                                        item.getFeature() != null ? item.getFeature().getUrn() : null,
                                        ErrorTranslator.getErrors(errors));
             // Publish DENIED request
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
-                                                        item.getRequestId(),
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH, item.getRequestId(),
                                                         item.getRequestOwner(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
                                                         item.getFeature() != null ? item.getFeature().getUrn() : null,
-                                                        RequestState.DENIED,
-                                                        ErrorTranslator.getErrors(errors)));
+                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             if (item.getFeature() == null) {
                 requestInfo.getMessages()
                         .add(String.format("Request {} without feature has been rejected", item.getRequestId()));
             } else {
                 requestInfo.addDeniedRequest(item.getFeature().getUrn(), ErrorTranslator.getErrors(errors));
             }
-            metrics.count(item.getFeature() != null ? item.getFeature().getId() : null,
-                          null,
+            metrics.count(item.getFeature() != null ? item.getFeature().getId() : null, null,
                           FeatureUpdateState.UPDATE_REQUEST_DENIED);
             return;
         }
 
         // Manage granted request
-        FeatureUpdateRequest request = FeatureUpdateRequest.build(item.getRequestId(),
-                                                                  item.getRequestOwner(),
-                                                                  item.getRequestDate(),
-                                                                  RequestState.GRANTED,
-                                                                  null,
-                                                                  item.getFeature(),
-                                                                  item.getMetadata().getPriority(),
-                                                                  FeatureRequestStep.LOCAL_DELAYED);
+        FeatureUpdateRequest request = FeatureUpdateRequest
+                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,
+                       item.getFeature(), item.getMetadata().getPriority(), FeatureRequestStep.LOCAL_DELAYED);
 
         // Monitoring log
-        FeatureLogger.updateGranted(request.getRequestOwner(),
-                                    request.getRequestId(),
-                                    request.getProviderId(),
+        FeatureLogger.updateGranted(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
                                     request.getUrn());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
-                                                    item.getRequestId(),
-                                                    item.getRequestOwner(),
-                                                    item.getFeature() != null ? item.getFeature().getId() : null,
-                                                    null,
-                                                    RequestState.GRANTED,
-                                                    null));
+        publisher.publish(FeatureRequestEvent
+                .build(FeatureRequestType.PATCH, item.getRequestId(), item.getRequestOwner(),
+                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.GRANTED, null));
         // Add to granted request collection
         metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_GRANTED);
         grantedRequests.add(request);
@@ -233,8 +222,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         long scheduleStart = System.currentTimeMillis();
         List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepo
-                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
-                                        OffsetDateTime.now(),
+                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(),
                                         PageRequest.of(0, this.properties.getMaxBulkSize()),
                                         OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing()))
                 .getContent();
@@ -263,8 +251,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                         jobParameters, authResolver.getUser(), FeatureUpdateJob.class.getName());
                 jobInfoService.createAsQueued(jobInfo);
 
-                LOGGER.trace("------------->>> {} update requests scheduled in {} ms",
-                             requestsToSchedule.size(),
+                LOGGER.trace("------------->>> {} update requests scheduled in {} ms", requestsToSchedule.size(),
                              System.currentTimeMillis() - scheduleStart);
                 return requestIds.size();
             }
@@ -326,19 +313,12 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 errorRequests.add(request);
 
                 // Monitoring log
-                FeatureLogger.updateError(request.getRequestOwner(),
-                                          request.getRequestId(),
-                                          request.getProviderId(),
-                                          request.getUrn(),
-                                          request.getErrors());
+                FeatureLogger.updateError(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
+                                          request.getUrn(), request.getErrors());
                 // Publish request failure
-                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
-                                                            request.getRequestId(),
-                                                            request.getRequestOwner(),
-                                                            request.getProviderId(),
-                                                            request.getUrn(),
-                                                            request.getState(),
-                                                            request.getErrors()));
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH, request.getRequestId(),
+                                                            request.getRequestOwner(), request.getProviderId(),
+                                                            request.getUrn(), request.getState(), request.getErrors()));
 
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_ERROR);
             } else {
@@ -352,10 +332,8 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 }
 
                 // Merge properties handling null property values to unset properties
-                IProperty.mergeProperties(entity.getFeature().getProperties(),
-                                          patch.getProperties(),
-                                          patch.getUrn().toString(),
-                                          request.getRequestOwner());
+                IProperty.mergeProperties(entity.getFeature().getProperties(), patch.getProperties(),
+                                          patch.getUrn().toString(), request.getRequestOwner());
 
                 // Geometry cannot be unset but can be mutated
                 if (!GeoJsonType.UNLOCATED.equals(patch.getGeometry().getType())) {
@@ -363,17 +341,12 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 }
 
                 // Monitoring log
-                FeatureLogger.updateSuccess(request.getRequestOwner(),
-                                            request.getRequestId(),
-                                            request.getProviderId(),
+                FeatureLogger.updateSuccess(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
                                             request.getFeature().getUrn());
                 // Publish request success
-                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
-                                                            request.getRequestId(),
-                                                            request.getRequestOwner(),
-                                                            entity.getProviderId(),
-                                                            entity.getUrn(),
-                                                            RequestState.SUCCESS));
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH, request.getRequestId(),
+                                                            request.getRequestOwner(), entity.getProviderId(),
+                                                            entity.getUrn(), RequestState.SUCCESS));
 
                 // Register
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);
@@ -388,17 +361,14 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         // if notifications are required
         if (notificationSettingsService.retrieve().isActiveNotification()) {
-            featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                                                successfulRequest.stream().map(AbstractFeatureRequest::getId)
-                                                        .collect(Collectors.toSet()));
+            featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequest.stream()
+                    .map(AbstractFeatureRequest::getId).collect(Collectors.toSet()));
         } else {
             featureUpdateRequestRepo.deleteInBatch(successfulRequest);
         }
 
-        LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {} ms",
-                     requests.size(),
-                     entities.size(),
-                     System.currentTimeMillis() - processStart);
+        LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {} ms", requests.size(),
+                     entities.size(), System.currentTimeMillis() - processStart);
 
         return entities;
     }
@@ -412,4 +382,33 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
         FeatureLogger.updateDenied(requestOwner, requestId, null, null, errors);
     }
+
+    @Override
+    public Page<FeatureUpdateRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
+        return updateRepo.findAll(FeatureUpdateRequestSpecification.searchAllByFilters(selection, page), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
+            return RequestsInfo.build(0L);
+        } else {
+            selection.getFilters().withState(RequestState.ERROR);
+            return RequestsInfo.build(updateRepo
+                    .count(FeatureUpdateRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
+        }
+    }
+
+    @Override
+    protected IAbstractFeatureRequestRepository<FeatureUpdateRequest> getRequestsRepository() {
+        return updateRepo;
+    }
+
+    @Override
+    protected FeatureUpdateRequest updateForRetry(FeatureUpdateRequest request) {
+        // nothing to do
+        return request;
+    }
+
 }

@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -45,6 +44,6 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
             @Param("now") OffsetDateTime offsetDateTime);
 
     @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
-    Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
-            @Param("now") OffsetDateTime now, Pageable page);
+    Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step, @Param("now") OffsetDateTime now,
+            Pageable page);
 }

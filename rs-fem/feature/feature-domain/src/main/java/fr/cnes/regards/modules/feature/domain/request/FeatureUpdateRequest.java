@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
-import java.time.OffsetDateTime;
-import java.util.Set;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -36,14 +36,13 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
  * @author Marc SORDI
  *
  */
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.UPDATE)
+@DiscriminatorValue(FeatureRequestTypeEnum.UPDATE_DISCRIMINENT)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class FeatureUpdateRequest extends AbstractFeatureRequest {
 
@@ -66,6 +65,7 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         return request;
     }
 
+    @Override
     public FeatureUniformResourceName getUrn() {
         return urn;
     }
@@ -75,6 +75,7 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         return visitor.visitUpdateRequest(this);
     }
 
+    @Override
     public void setUrn(FeatureUniformResourceName urn) {
         this.urn = urn;
     }

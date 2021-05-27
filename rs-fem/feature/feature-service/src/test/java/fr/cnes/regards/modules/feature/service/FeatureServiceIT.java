@@ -36,29 +36,30 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 
 /**
- * Test of {@link IDataObjectFeatureServiceIT}
+ * Test of {@link FeatureServiceIT}
  * @author Kevin Marchois
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_data_object" }, locations = {
         "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "noscheduler", "nohandler" })
-public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
-    private IDataObjectFeatureService dataObjectService;
+    private IFeatureService featureService;
 
     @Test
     public void testFindAll() {
         String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
 
-        FeatureEntity feature = FeatureEntity
+        FeatureEntity firstFeature = FeatureEntity
                 .build("owner", "session",
                        Feature.build("id2", "owner",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
@@ -66,32 +67,42 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
                                      IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
                        null, model);
 
-        this.featureRepo.save(feature);
+        this.featureRepo.save(firstFeature);
 
-        FeatureEntity featureUpdated = FeatureEntity
+        OffsetDateTime date = OffsetDateTime.now();
+
+        FeatureEntity secondFeature = FeatureEntity
                 .build("owner", "session",
                        Feature.build("id2", "owner",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
                                                                       "peps", UUID.randomUUID(), 1),
                                      IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
                        null, model);
-        featureUpdated.getFeature().addProperty(IProperty.buildString("data_type", "TYPE01"));
+        secondFeature.getFeature().addProperty(IProperty.buildString("data_type", "TYPE01"));
 
-        OffsetDateTime date = featureUpdated.getLastUpdate();
-        date = date.plusSeconds(1000);
-        featureUpdated.setLastUpdate(date);
-        this.featureRepo.save(featureUpdated);
+        this.featureRepo.save(secondFeature);
 
+        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withModel(model);
+        // Retrieve all from model
         Pageable page = PageRequest.of(0, 10);
-        Page<FeatureEntityDto> pageDof = dataObjectService.findAll(model, page, OffsetDateTime.now());
-        // the first feateure created in this test should not be return so we must have only one reseult
-        assertEquals(1, pageDof.getNumberOfElements());
-        FeatureEntityDto dof = pageDof.getContent().get(0);
+        Page<FeatureEntityDto> results = featureService.findAll(selection, page);
+        assertEquals(2, results.getNumberOfElements());
+
+        // Retrieve with an unknown model
+        selection = FeaturesSelectionDTO.build().withModel("unknown");
+        results = featureService.findAll(selection, page);
+        assertEquals(0, results.getNumberOfElements());
+
+        // Retrieve from model and  lastUpdateDate to retrieve only second feature
+        selection = FeaturesSelectionDTO.build().withModel(model).withFrom(date);
+        results = featureService.findAll(selection, page);
+        assertEquals(1, results.getNumberOfElements());
+        FeatureEntityDto dof = results.getContent().get(0);
         // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same
-        assertEquals(featureUpdated.getFeature().getProperties(), dof.getFeature().getProperties());
-        assertEquals(featureUpdated.getSession(), dof.getSession());
-        assertEquals(featureUpdated.getSessionOwner(), dof.getSessionOwner());
-        assertEquals(featureUpdated.getFeature().getModel(), dof.getFeature().getModel());
+        assertEquals(secondFeature.getFeature().getProperties(), dof.getFeature().getProperties());
+        assertEquals(secondFeature.getSession(), dof.getSession());
+        assertEquals(secondFeature.getSessionOwner(), dof.getSource());
+        assertEquals(secondFeature.getFeature().getModel(), dof.getFeature().getModel());
 
     }
 }
