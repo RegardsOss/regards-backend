@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.service.dataaccess;
 
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,10 +36,6 @@ import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityFilter;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityLevel;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
@@ -102,6 +99,7 @@ public class AccessRightServiceTest extends AbstractMultitenantServiceTest {
         // Create access right
         QualityFilter filter = new QualityFilter(10, 1, QualityLevel.ACCEPTED);
         AccessRight ar = new AccessRight(filter, AccessLevel.FULL_ACCESS, dataset, group);
+        ar.setDataAccessLevel(DataAccessLevel.NO_ACCESS);
         accessRightService.createAccessRight(ar);
 
         // Update access right
