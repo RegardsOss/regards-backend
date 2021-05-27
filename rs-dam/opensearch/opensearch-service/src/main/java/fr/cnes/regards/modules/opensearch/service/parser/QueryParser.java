@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseExcep
  *
  * This {@link IParser} implementation only handles the the "q" part of the OpenSearch request.<br>
  *
- * Expects HTML-encoded string values. For example, <code>q=title(harrypotter OR starwars)</code> will fail, but
+ * Expects HTML-encoded string values. For example, <code>q=title:(harrypotter OR starwars)</code> will fail, but
  * <code>q=title%3A%28harrypotter+OR+starwars%29</code> will work
  *
  * @author Marc Sordi
