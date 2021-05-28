@@ -3,10 +3,14 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
@@ -27,13 +31,6 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
     RequestInfo<String> registerRequests(FeatureCreationCollection collection);
 
     /**
-     * Schedule a job to process a batch of requests<br/>
-     * Inside this list there is only one occurence of {@link FeatureCreationRequest} per {@link Feature} id
-     * @return number of scheduled requests (0 if no request was scheduled)
-     */
-    int scheduleRequests();
-
-    /**
      * Process batch of requests during job
      * @return new feature created
      */
@@ -44,4 +41,12 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
      * @param requests successful requests
      */
     void handleSuccessfulCreation(Set<FeatureCreationRequest> requests);
+
+    /**
+     * Find all {@link FeatureCreationRequest}s
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @param page
+     * @return {@link FeatureCreationRequest}s
+     */
+    Page<FeatureCreationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
 }

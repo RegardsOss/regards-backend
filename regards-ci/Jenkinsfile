@@ -42,7 +42,6 @@ pipeline {
                 MODE="install"
             }
             steps {
-                sh 'printenv'
                 sh 'cd ' + CI_DIR + ' \
                      && docker-compose \
                             -f docker/docker-compose.yml \

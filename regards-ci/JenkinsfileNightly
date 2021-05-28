@@ -14,7 +14,6 @@
  */
 
 pipeline {
-    triggers{ cron('@midnight') }
     options {
         buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '2'))
         disableConcurrentBuilds()
@@ -33,9 +32,6 @@ pipeline {
             }
         }
         stage("(Docker) Tag git branch (fast build)") {
-            when {
-                branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
-            }
             environment {
                 MODE="nightly"
             }

@@ -1,0 +1,1 @@
+alter table t_feature_extraction_request add column last_exec_error_step varchar(50);

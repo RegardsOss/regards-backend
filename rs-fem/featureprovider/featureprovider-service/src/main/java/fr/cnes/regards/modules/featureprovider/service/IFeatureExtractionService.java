@@ -18,17 +18,25 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
+
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.amqp.event.IRequestValidation;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 
 /**
  * Service for deleting Features
@@ -72,4 +80,26 @@ public interface IFeatureExtractionService extends IRequestDeniedService, IReque
     void handleGranted(List<FeatureRequestEvent> granted);
 
     void handleProcessingUnexpectedException(List<FeatureExtractionRequest> featureExtractionRequests);
+
+    /**
+     * Find all {@link FeatureExtractionRequest}s
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @param page
+     * @return {@link FeatureCreationRequest}s
+     */
+    RequestsPage<FeatureRequestDTO> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
+    /**
+     * Delete requests by selection
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @return {@link RequestHandledResponse}
+     */
+    RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection);
+
+    /**
+     * Retry requests by selection
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @return {@link RequestHandledResponse}
+     */
+    RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection);
 }
