@@ -30,14 +30,12 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
@@ -315,8 +313,4 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
     }
 
-    @Override
-    public void doAfter() {
-        notificationSettingsRepository.deleteAll();
-    }
 }
