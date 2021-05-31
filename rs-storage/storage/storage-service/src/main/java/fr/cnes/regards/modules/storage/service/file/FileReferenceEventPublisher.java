@@ -58,11 +58,11 @@ public class FileReferenceEventPublisher {
      * @param message success message
      * @param groupId Business request identifier
      */
-    public void copySuccess(FileReference fileRef, String message, String groupId) {
+    public void copySuccess(FileReference fileRef, String message, String groupId, Collection<String> owners) {
         LOGGER.trace("Publishing FileReferenceEvent COPIED. {}", message);
         publisher.publish(FileReferenceEvent
-                .build(fileRef.getMetaInfo().getChecksum(), null, FileReferenceEventType.COPIED, fileRef.getOwners(),
-                       message, fileRef.getLocation(), fileRef.getMetaInfo(), Sets.newHashSet(groupId)));
+                .build(fileRef.getMetaInfo().getChecksum(), null, FileReferenceEventType.COPIED, owners, message,
+                       fileRef.getLocation(), fileRef.getMetaInfo(), Sets.newHashSet(groupId)));
     }
 
     /**
@@ -135,10 +135,11 @@ public class FileReferenceEventPublisher {
      * @param message Optional message
      * @param groupIds
      */
-    public void storeSuccess(FileReference fileRef, String message, Collection<String> groupIds) {
+    public void storeSuccess(FileReference fileRef, String message, Collection<String> groupIds,
+            Collection<String> owners) {
         LOGGER.trace("Publishing FileReferenceEvent STORED. {}", message);
         publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), null,
-                                                   FileReferenceEventType.STORED, fileRef.getOwners(), message,
+                                                   FileReferenceEventType.STORED, owners, message,
                                                    fileRef.getLocation(), fileRef.getMetaInfo(), groupIds));
     }
 
@@ -151,8 +152,8 @@ public class FileReferenceEventPublisher {
      * @param message Optional message
      * @param groupId
      */
-    public void storeSuccess(FileReference fileRef, String message, String groupId) {
-        storeSuccess(fileRef, message, Sets.newHashSet(groupId));
+    public void storeSuccess(FileReference fileRef, String message, String groupId, Collection<String> owners) {
+        storeSuccess(fileRef, message, Sets.newHashSet(groupId), owners);
     }
 
     /**

@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -73,11 +72,6 @@ public class FileReferenceService {
         }
     }
 
-    public void keepTransaction() throws InterruptedException {
-        Page<FileReference> response = fileRefRepo.findAll(PageRequest.of(0, 1000));
-        Thread.sleep(10_000);
-    }
-
     /**
      * Creates a new {@link FileReference} with given parameters. this method does not handle physical files.
      * After success, an AMQP message {@link FileReferenceEvent} is sent with STORED state.
@@ -118,18 +112,17 @@ public class FileReferenceService {
      */
     public void removeOwner(FileReference fileReference, String owner, String groupId) {
         String message;
-        if (!fileReference.getOwners().contains(owner)) {
+        if (!fileRefRepo.isOwnedBy(fileReference.getId(), owner)) {
             message = String.format("File <%s (checksum: %s)> at %s does not to belongs to %s",
                                     fileReference.getMetaInfo().getFileName(),
                                     fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
                                     owner);
         } else {
-            fileReference.getOwners().remove(owner);
+            fileRefRepo.removeOwner(fileReference.getId(), owner);
             message = String.format("File reference <%s (checksum: %s)> at %s does not belongs to %s anymore",
                                     fileReference.getMetaInfo().getFileName(),
                                     fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
                                     owner);
-            fileRefRepo.save(fileReference);
         }
         LOGGER.trace(message);
         fileRefEventPublisher.deletionForOwnerSuccess(fileReference, owner, message, groupId);
@@ -144,6 +137,10 @@ public class FileReferenceService {
     @Transactional(readOnly = true)
     public Page<FileReference> search(String storage, Pageable pageable) {
         return fileRefRepo.findByLocationStorage(storage, pageable);
+    }
+
+    public Collection<String> getOwners(Long fileRefId) {
+        return fileRefRepo.findOwnersById(fileRefId);
     }
 
     /**
@@ -215,6 +212,29 @@ public class FileReferenceService {
         FileReference saved = fileRefRepo.save(updatedFile);
         fileRefEventPublisher.updated(checksum, storage, updatedFile);
         return saved;
+    }
+
+    /**
+     * @param id
+     * @param owner
+     */
+    public void addOwner(Long id, String owner) {
+        if (!fileRefRepo.isOwnedBy(id, owner)) {
+            fileRefRepo.addOwner(id, owner);
+        }
+    }
+
+    public boolean hasOwner(Long id) {
+        return fileRefRepo.hasOwner(id);
+    }
+
+    /**
+     * @param storage
+     * @param pageRequest
+     * @return
+     */
+    public Page<FileReference> searchWithOwners(String storage, Pageable pageable) {
+        return fileRefRepo.findAllByLocationStorage(storage, pageable);
     }
 
 }

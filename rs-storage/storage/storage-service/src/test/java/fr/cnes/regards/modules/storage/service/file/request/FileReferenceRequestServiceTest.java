@@ -91,7 +91,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         fileDeletionRequestService.handle(Sets.newHashSet(request), deletionReqId);
 
         Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
-        Assert.assertTrue("File reference should no have any owners anymore", oFileRef.get().getOwners().isEmpty());
+        Assert.assertFalse("File reference should no have any owners anymore",
+                           fileRefService.hasOwner(oFileRef.get().getId()));
 
         // Simulate FileDeletionRequest in PENDING state
         FileDeletionRequest fdr = fileDeletionRequestRepo.findByFileReferenceId(fileRef.getId()).get();
@@ -118,7 +119,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         // Check that the file reference is still not referenced as owned by the new owner and the request is still existing
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
-        Assert.assertTrue("File reference should still have no owners", oFileRef.get().getOwners().isEmpty());
+        Assert.assertTrue("File reference should still have no owners", oFileRef.get().getLazzyOwners().isEmpty());
 
         // Simulate deletion request ends
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
@@ -150,7 +151,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("File storage request should not exists anymore", storageReqs.isEmpty());
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
         Assert.assertTrue("File reference should belongs to new owner",
-                          oFileRef.get().getOwners().contains(fileRefNewOwner));
+                          oFileRef.get().getLazzyOwners().contains(fileRefNewOwner));
     }
 
     @Requirement("REGARDS_DSL_STOP_AIP_070")

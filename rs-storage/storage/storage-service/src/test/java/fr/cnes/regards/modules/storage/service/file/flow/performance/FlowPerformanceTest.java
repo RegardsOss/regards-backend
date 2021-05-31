@@ -72,8 +72,10 @@ import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-local.properties" })
+@TestPropertySource(
+        properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
+                "regards.storage.cache.path=target/cache" },
+        locations = { "classpath:application-test.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractStorageTest {
 
@@ -150,6 +152,23 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         LOGGER.info("Saves {} NearLines done in {}ms", toSave.size(), System.currentTimeMillis() - start);
 
         LOGGER.info("----- Tests initialization OK-----");
+    }
+
+    @Test
+    public void referenceFileWithManyOwners() {
+        String checksum = UUID.randomUUID().toString();
+        Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
+        List<ReferenceFlowItem> items = new ArrayList<>();
+        for (int i = 0; i < 5_000; i++) {
+            items.clear();
+            requests.clear();
+            String newOwner = "owner-" + UUID.randomUUID().toString();
+            requests.add(FileReferenceRequestDTO.build(checksum, checksum, "MD5", "application/octet-stream", 10L,
+                                                       newOwner, "storage", "file://storage/location/file1"));
+            items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
+            referenceFlowHandler.handleBatch(getDefaultTenant(), items);
+        }
+
     }
 
     @Test
@@ -254,7 +273,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         for (FileReference fileRef : page.getContent()) {
             DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
                     .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                           fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
+                           fileRef.getLazzyOwners().iterator().next(), false), UUID.randomUUID().toString());
             TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
             deleteHandler.handle(wrapper);
         }
@@ -278,7 +297,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         for (FileReference fileRef : page.getContent()) {
             DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
                     .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                           fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
+                           fileRef.getLazzyOwners().iterator().next(), false), UUID.randomUUID().toString());
             TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
             deleteHandler.handle(wrapper);
         }

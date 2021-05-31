@@ -24,8 +24,10 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -42,6 +44,9 @@ public interface IFileReferenceRepository
         extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
 
     Page<FileReference> findByLocationStorage(String storage, Pageable page);
+
+    @EntityGraph("graph.filereference.owners")
+    Page<FileReference> findAllByLocationStorage(String storage, Pageable page);
 
     Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
 
@@ -61,5 +66,25 @@ public interface IFileReferenceRepository
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation(@Param("id") Long fromFileReferenceId);
 
     Long countByLocationStorage(String storage);
+
+    @Query(value = "insert into ta_file_reference_owner(file_ref_id,owner) values(:id, :owner)", nativeQuery = true)
+    @Modifying
+    void addOwner(@Param("id") Long id, @Param("owner") String owner);
+
+    @Query(value = "delete from ta_file_reference_owner where file_ref_id=:id and owner=:owner", nativeQuery = true)
+    @Modifying
+    void removeOwner(@Param("id") Long id, @Param("owner") String owner);
+
+    @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id and owner=:owner)",
+            nativeQuery = true)
+    boolean isOwnedBy(@Param("id") Long id, @Param("owner") String owner);
+
+    Collection<String> findOwnersById(Long fileRefId);
+
+    @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id)", nativeQuery = true)
+    boolean hasOwner(@Param("id") Long id);
+
+    @EntityGraph("graph.filereference.owners")
+    FileReference findOneById(Long id);
 
 }
