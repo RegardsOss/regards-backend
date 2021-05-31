@@ -29,43 +29,52 @@ package fr.cnes.regards.modules.feature.domain.request;
 public enum FeatureRequestStep {
 
     // Not granted before db persist
-    LOCAL_DENIED,
+    LOCAL_DENIED(false),
 
     // Request processing is delayed to handle concurrent asynchronous update
     // Manager waits for a configurable delay before scheduling feature update job.
-    LOCAL_DELAYED,
+    LOCAL_DELAYED(false),
 
     // Awaiting processing
-    LOCAL_SCHEDULED,
+    LOCAL_SCHEDULED(true),
 
     // ERROR
     // - update cannot be done because feature doesn't exist anymore
-    LOCAL_ERROR,
+    LOCAL_ERROR(false),
 
     // Delete files
-    REMOTE_STORAGE_DELETION_REQUESTED(true, true),
+    REMOTE_STORAGE_DELETION_REQUESTED(true, true, true),
     // Store files
-    REMOTE_STORAGE_REQUESTED(true, true),
+    REMOTE_STORAGE_REQUESTED(true, true, true),
 
     // this request handling still needs to be notified
-    LOCAL_TO_BE_NOTIFIED,
-    REMOTE_NOTIFICATION_REQUESTED(true, true),
-    REMOTE_NOTIFICATION_SUCCESS, REMOTE_NOTIFICATION_ERROR, REMOTE_CREATION_REQUESTED, REMOTE_CREATION_ERROR;
+    LOCAL_TO_BE_NOTIFIED(true),
+    REMOTE_NOTIFICATION_REQUESTED(true, true, true),
+    REMOTE_NOTIFICATION_SUCCESS(false),
+    REMOTE_NOTIFICATION_ERROR(false),
+    REMOTE_CREATION_REQUESTED(true),
+    REMOTE_CREATION_ERROR(false),
+    REMOTE_STORAGE_ERROR(false);
 
     private boolean remote = false;
 
+    private boolean processing;
+
     private boolean timeout = false;
 
-    private FeatureRequestStep() {
+    private FeatureRequestStep(boolean processing) {
+        this.processing = processing;
     }
 
-    private FeatureRequestStep(boolean remote) {
+    private FeatureRequestStep(boolean processing, boolean remote) {
         this.remote = remote;
+        this.processing = processing;
     }
 
-    private FeatureRequestStep(boolean remote, boolean timeout) {
+    private FeatureRequestStep(boolean processing, boolean remote, boolean timeout) {
         this.remote = remote;
         this.timeout = timeout;
+        this.processing = processing;
     }
 
     /**
@@ -80,6 +89,10 @@ public enum FeatureRequestStep {
      */
     public boolean withTimeout() {
         return timeout;
+    }
+
+    public boolean isProcessing() {
+        return processing;
     }
 
 }

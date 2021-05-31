@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
@@ -55,22 +56,25 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
+import fr.cnes.regards.modules.feature.dao.FeatureDeletionRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
@@ -84,7 +88,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO
  */
 @Service
 @MultitenantTransactional
-public class FeatureDeletionService extends AbstractFeatureService implements IFeatureDeletionService {
+public class FeatureDeletionService extends AbstractFeatureService<FeatureDeletionRequest>
+        implements IFeatureDeletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionService.class);
 
@@ -94,7 +99,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     private IFeatureDeletionRequestRepository deletionRepo;
 
     @Autowired
-    private IAbstractFeatureRequestRepository<AbstractFeatureRequest> requestRepo;
+    private IFeatureCreationRequestRepository creationRepo;
 
     @Autowired
     private IPublisher publisher;
@@ -340,6 +345,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
         }
 
         // Delete all features without files, related requests will be deleted once we know notifier has successfully sent the notification about it
+        this.creationRepo.deleteByFeatureEntityIn(sucessfullRequests.values());
         this.featureRepo.deleteAll(sucessfullRequests.values());
     }
 
@@ -404,4 +410,33 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
         FeatureLogger.deletionDenied(requestOwner, requestId, null, errors);
     }
+
+    @Override
+    public Page<FeatureDeletionRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
+        return deletionRepo.findAll(FeatureDeletionRequestSpecification.searchAllByFilters(selection, page), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
+            return RequestsInfo.build(0L);
+        } else {
+            selection.getFilters().withState(RequestState.ERROR);
+            return RequestsInfo.build(deletionRepo
+                    .count(FeatureDeletionRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
+        }
+    }
+
+    @Override
+    protected IAbstractFeatureRequestRepository<FeatureDeletionRequest> getRequestsRepository() {
+        return deletionRepo;
+    }
+
+    @Override
+    protected FeatureDeletionRequest updateForRetry(FeatureDeletionRequest request) {
+        // nothing to do
+        return request;
+    }
+
 }

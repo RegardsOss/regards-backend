@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import java.time.OffsetDateTime;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -33,23 +35,49 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 public class FeatureEntityDto {
 
     @NotNull
-    private String sessionOwner;
+    private Long id;
+
+    @NotNull
+    private FeatureUniformResourceName urn;
+
+    @NotNull
+    private String source;
 
     @NotNull
     private String session;
 
     @NotNull
+    private String providerId;
+
+    @NotNull
+    private Integer version;
+
+    @NotNull
+    private OffsetDateTime lastUpdate;
+
     @Type(type = "jsonb")
     @Valid
     private Feature feature;
 
-    public static FeatureEntityDto build(String sessionOwner, String session, Feature feature,
-            FeatureUniformResourceName previousVersionUrn, String model) {
+    public static FeatureEntityDto build(String source, String session, Feature feature,
+            FeatureUniformResourceName previousVersionUrn, String model, String providerId, Integer version,
+            OffsetDateTime lastUpdate) {
         FeatureEntityDto featureEntity = new FeatureEntityDto();
-        featureEntity.setSessionOwner(sessionOwner);
+        featureEntity.setSource(source);
         featureEntity.setSession(session);
         featureEntity.setFeature(feature);
+        featureEntity.setProviderId(providerId);
+        featureEntity.setVersion(version);
+        featureEntity.setLastUpdate(lastUpdate);
         return featureEntity;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Feature getFeature() {
@@ -60,12 +88,12 @@ public class FeatureEntityDto {
         this.feature = feature;
     }
 
-    public String getSessionOwner() {
-        return sessionOwner;
+    public String getSource() {
+        return source;
     }
 
-    public void setSessionOwner(String sessionOwner) {
-        this.sessionOwner = sessionOwner;
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getSession() {
@@ -74,6 +102,38 @@ public class FeatureEntityDto {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public OffsetDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(OffsetDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+
+    public FeatureUniformResourceName getUrn() {
+        return urn;
+    }
+
+    public void setUrn(FeatureUniformResourceName urn) {
+        this.urn = urn;
     }
 
 }

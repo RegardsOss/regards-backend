@@ -510,7 +510,7 @@ public class PluginService implements IPluginService {
     /**
      * We consider only plugin without dynamic parameters so we can profit from the cache system.
      * @return whether a plugin conf, without dynamic parameters is instanciable or not
-     * @throws ModuleException when no plugin configuration with this id exists
+     * @throws ModuleException when no plugin configuration with this business id exists
      * @throws NotAvailablePluginConfigurationException
      */
     @Override

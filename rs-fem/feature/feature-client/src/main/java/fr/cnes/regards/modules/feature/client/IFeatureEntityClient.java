@@ -45,6 +45,6 @@ public interface IFeatureEntityClient {
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(@RequestParam("model") String model,
-            @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate, @RequestParam("page") int page,
+            @RequestParam("from") OffsetDateTime lastUpdateDate, @RequestParam("page") int page,
             @RequestParam("size") int size);
 }

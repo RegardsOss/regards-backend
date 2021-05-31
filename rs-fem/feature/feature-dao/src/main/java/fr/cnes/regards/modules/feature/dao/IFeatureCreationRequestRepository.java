@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -63,6 +64,9 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
     List<FeatureCreationRequest> findAllById(Iterable<Long> longs);
 
     @Modifying
-    @Query(value ="UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns", nativeQuery = true)
-    void updateLastByUrnIn(@Param("last") boolean last,@Param("urns") Set<String> urns);
+    @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns",
+            nativeQuery = true)
+    void updateLastByUrnIn(@Param("last") boolean last, @Param("urns") Set<String> urns);
+
+    Long deleteByFeatureEntityIn(Collection<FeatureEntity> features);
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.rest.dataaccess;
 
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
@@ -36,6 +37,7 @@ public class AccessRightControllerNoTxIT extends AbstractAccessRightControllerIT
     public void testUpdateAccessRight() {
         // Change access level
         AccessRight garTmp = new AccessRight(qf, AccessLevel.RESTRICTED_ACCESS, ds1, ag1);
+        garTmp.setDataAccessLevel(DataAccessLevel.NO_ACCESS);
         garTmp.setId(ar1.getId());
 
         performDefaultPut(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_ACCESS_RIGHTS_ID,

@@ -21,9 +21,12 @@ package fr.cnes.regards.modules.featureprovider.service;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import static org.junit.Assert.fail;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -63,14 +67,20 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.feature.client.FeatureClient;
 import fr.cnes.regards.modules.feature.client.FeatureRequestEventHandler;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
@@ -89,7 +99,7 @@ import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 //Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
+public class FeatureExtractionServiceIT extends AbstractMultitenantServiceTest {
 
     @Configuration
     static class Config {
@@ -139,10 +149,10 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     protected IPublisher publisher;
 
     @Autowired
-    private IFeatureExtractionRequestRepository referenceRequestRepo;
+    private IFeatureExtractionRequestRepository extractionRequestRepo;
 
     @Autowired
-    private IFeatureExtractionService featureReferenceService;
+    private IFeatureExtractionService featureExtractionService;
 
     @Autowired
     private IPluginConfigurationRepository pluginConfRepo;
@@ -162,7 +172,7 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     @Before
     public void setup() throws InterruptedException {
         cleanAMQP();
-        this.referenceRequestRepo.deleteAll();
+        this.extractionRequestRepo.deleteAll();
         this.pluginConfRepo.deleteAll();
         simulateApplicationReadyEvent();
     }
@@ -193,15 +203,15 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         }
         this.publisher.publish(eventsToPublish);
         // lets wait until all requests are registered
-        this.waitRequest(referenceRequestRepo, properties.getMaxBulkSize(), 60_000);
+        this.waitRequest(extractionRequestRepo, properties.getMaxBulkSize(), 60_000);
         // once this is done, lets schedule all requests
-        featureReferenceService.scheduleRequests();
+        featureExtractionService.scheduleRequests();
         // wait for all jobs to be finished it means all requests are in step REMOTE_CREATION_REQUESTED
-        waitForStep(referenceRequestRepo, FeatureRequestStep.REMOTE_CREATION_REQUESTED, 120_000);
+        waitForStep(extractionRequestRepo, FeatureRequestStep.REMOTE_CREATION_REQUESTED, 120_000);
         // now simulate that every request has been successfully granted by feature module
         publisher.publish(creationGrantedToPublish);
         // then lets wait for the DB to be empty
-        this.waitRequest(referenceRequestRepo, 0, 10_000);
+        this.waitRequest(extractionRequestRepo, 0, 10_000);
     }
 
     @Test
@@ -228,12 +238,93 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
 
         Mockito.doThrow(new ModuleException("")).when(pluginService).getPlugin(Mockito.anyString());
         // lets wait until all requests are registered
-        this.waitRequest(referenceRequestRepo, properties.getMaxBulkSize(), 60_000);
+        this.waitRequest(extractionRequestRepo, properties.getMaxBulkSize(), 60_000);
         // once this is done, lets schedule all requests
-        featureReferenceService.scheduleRequests();
+        featureExtractionService.scheduleRequests();
         // now lets wait for request to be in error
-        waitForState(this.referenceRequestRepo, RequestState.ERROR);
+        waitForState(this.extractionRequestRepo, RequestState.ERROR);
         Mockito.verify(featureClient, Mockito.times(0)).createFeatures(Mockito.anyList());
+    }
+
+    @Test
+    public void findRequests() {
+        createRequests("source1", "session1", 10, RequestState.GRANTED);
+        createRequests("source1", "session2", 20, RequestState.GRANTED);
+        createRequests("source2", "session1", 30, RequestState.GRANTED);
+        createRequests("source2", "session2", 40, RequestState.GRANTED);
+        createRequests("source1", "session1", 50, RequestState.ERROR);
+
+        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build();
+        RequestsPage<FeatureRequestDTO> results = featureExtractionService.findRequests(selection,
+                                                                                        PageRequest.of(0, 10));
+        Assert.assertEquals(150, results.getTotalElements());
+        Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
+        Assert.assertEquals(10, results.getNumberOfElements());
+
+        selection = FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED);
+        results = featureExtractionService.findRequests(selection, PageRequest.of(0, 10));
+        Assert.assertEquals(100, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+        Assert.assertEquals(10, results.getNumberOfElements());
+
+        selection = FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR);
+        results = featureExtractionService.findRequests(selection, PageRequest.of(0, 10));
+        Assert.assertEquals(50, results.getTotalElements());
+        Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
+        Assert.assertEquals(10, results.getNumberOfElements());
+
+        selection = FeatureRequestsSelectionDTO.build().withEnd(OffsetDateTime.now().plusDays(1))
+                .withStart(OffsetDateTime.now().minusDays(1));
+        results = featureExtractionService.findRequests(selection, PageRequest.of(0, 10));
+        Assert.assertEquals(150, results.getTotalElements());
+        Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
+        Assert.assertEquals(10, results.getNumberOfElements());
+
+        selection = FeatureRequestsSelectionDTO.build().withSource("source1").withSession("session1");
+        results = featureExtractionService.findRequests(selection, PageRequest.of(0, 10));
+        Assert.assertEquals(60, results.getTotalElements());
+        Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
+        Assert.assertEquals(10, results.getNumberOfElements());
+    }
+
+    @Test
+    public void testDeleteRequests() {
+        createRequests("source1", "session1", 10, RequestState.GRANTED);
+        createRequests("source1", "session1", 50, RequestState.ERROR);
+
+        RequestsPage<FeatureRequestDTO> searchResp = featureExtractionService
+                .findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000));
+        Assert.assertEquals(60, searchResp.getTotalElements());
+
+        RequestHandledResponse response = featureExtractionService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        Assert.assertEquals("There should 50 requests in error state deleted", 50, response.getTotalHandled());
+        Assert.assertEquals("There should 50 requests in error state deleted", 50, response.getTotalRequested());
+
+        searchResp = featureExtractionService.findRequests(FeatureRequestsSelectionDTO.build(),
+                                                           PageRequest.of(0, 1000));
+        Assert.assertEquals("The 50 request in error state should be deleted", 10, searchResp.getTotalElements());
+    }
+
+    @Test
+    public void testRetryRequests() {
+
+        createRequests("source1", "session1", 10, RequestState.GRANTED);
+        createRequests("source1", "session1", 50, RequestState.ERROR);
+
+        RequestsPage<FeatureRequestDTO> searchResp = featureExtractionService
+                .findRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED),
+                              PageRequest.of(0, 1000));
+        Assert.assertEquals(10, searchResp.getTotalElements());
+
+        RequestHandledResponse response = featureExtractionService.retryRequests(FeatureRequestsSelectionDTO.build());
+        Assert.assertEquals("There should 50 requests in error state deleted", 50, response.getTotalHandled());
+        Assert.assertEquals("There should 50 requests in error state deleted", 50, response.getTotalRequested());
+
+        searchResp = featureExtractionService
+                .findRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED),
+                              PageRequest.of(0, 1000));
+        Assert.assertEquals("All error request  should be granted now", 60, searchResp.getTotalElements());
+
     }
 
     /**
@@ -321,6 +412,19 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     private void cleanAMQP() {
         cleanAMQPQueues(FeatureExtractionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FeatureRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+    }
+
+    private void createRequests(String source, String session, int nbRequests, RequestState state) {
+        List<FeatureExtractionRequest> requests = Lists.newArrayList();
+        for (int i = 0; i < nbRequests; i++) {
+            FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity.build(source, session,
+                                                                                         Lists.newArrayList(), true);
+            requests.add(FeatureExtractionRequest.build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(),
+                                                        state, metadata, FeatureRequestStep.LOCAL_DELAYED,
+                                                        PriorityLevel.NORMAL, new JsonObject(), "factory"));
+        }
+        requests = extractionRequestRepo.saveAll(requests);
+        Assert.assertEquals(nbRequests, requests.size());
     }
 
 }
