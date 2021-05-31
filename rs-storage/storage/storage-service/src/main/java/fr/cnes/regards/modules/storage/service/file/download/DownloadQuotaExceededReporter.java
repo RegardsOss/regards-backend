@@ -58,6 +58,8 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
 
     private DownloadQuotaExceededReporter self;
 
+    // Map<(tenant, user), (failure causes written, more causes but not written)>
+    // FIXME: change to Map<tenant, Map<user, (failure causes written, more causes but not written)>> for legibility
     private AtomicReference<Map<QuotaKey, Tuple2<List<String>, Long>>> errors = new AtomicReference<>(HashMap.empty());
 
     public DownloadQuotaExceededReporter() {}
@@ -124,6 +126,7 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
     public void notifyErrorsBatch(String tenant) {
         Map<String, Tuple2<List<String>, Long>> tenantErrors =
             errors.getAndUpdate(m ->
+                    // Imagine this operation is executed after the rest of the code if you are not used to AtomicReference and vavr Map
                 m.filterKeys(k -> !k.getTenant().equals(tenant))
             )
                 .filterKeys(k -> k.getTenant().equals(tenant))

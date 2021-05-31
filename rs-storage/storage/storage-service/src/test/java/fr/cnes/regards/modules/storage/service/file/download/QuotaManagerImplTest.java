@@ -269,7 +269,7 @@ public class QuotaManagerImplTest {
 
         // when
         // the sync runs
-        quotaManager.syncGauges(TENANT);
+        quotaManager.syncDiffs(TENANT);
 
         // then
         QuotaManagerImpl.UserDiffs userDiffs = cache.getIfPresent(email);
@@ -334,7 +334,7 @@ public class QuotaManagerImplTest {
             throw expected;
         }).when(quotaManager)
             .flushSyncAndRefreshQuotas(any());
-        assertThatThrownBy(() -> quotaManager.syncGauges(TENANT))
+        assertThatThrownBy(() -> quotaManager.syncDiffs(TENANT))
             .isEqualTo(expected);
 
         // assert that
@@ -364,7 +364,7 @@ public class QuotaManagerImplTest {
             );
         }}).when(quotaManager)
             .flushSyncAndRefreshQuotas(any());
-        quotaManager.syncGauges(TENANT);
+        quotaManager.syncDiffs(TENANT);
 
         // then
         userDiffs = cache.getIfPresent(email);
