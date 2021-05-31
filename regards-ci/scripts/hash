@@ -163,7 +163,7 @@ function parentHash {
         -print0 | sort -z | xargs -0 sha1sum | sha1sum | awk '{ print $1 }'
 }
 
-function computeModuleHashes {
+function calculateHash {
     local module=$1
     local parentModule=$2
     local treated=0
@@ -233,7 +233,7 @@ function displayModule {
 }
 
 
-function computeHashes {
+function computeModuleHashes {
     echo -e "\nComputing hashes for all modules..."
 
     # Clean old stuff beforehand
