@@ -1,7 +1,8 @@
 /* CREATE new table for owner file reference association */
 create table ta_file_reference_owner (file_ref_id int8 not null, owner varchar(255));
 alter table ta_file_reference_owner add constraint fk_file_ref_owner foreign key (file_ref_id) references t_file_reference;
-create index idx_file_ref_owner on ta_file_reference_owner (owner);
+create index idx_ta_file_ref_owner_owner on ta_file_reference_owner (owner);
+create index idx_ta_file_ref_owner_file_id on ta_file_reference_owner (file_ref_id);
 
 /* REPLACE owners column to owners assoccation table for existing file references */
 DO $$
