@@ -119,7 +119,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         // Check that the file reference is still not referenced as owned by the new owner and the request is still existing
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
-        Assert.assertTrue("File reference should still have no owners", oFileRef.get().getLazzyOwners().isEmpty());
+        Assert.assertFalse("File reference should still have no owners",
+                           fileRefService.hasOwner(oFileRef.get().getId()));
 
         // Simulate deletion request ends
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
@@ -150,8 +151,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File storage request should not exists anymore", storageReqs.isEmpty());
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
-        Assert.assertTrue("File reference should belongs to new owner",
-                          oFileRef.get().getLazzyOwners().contains(fileRefNewOwner));
+        FileReference fr = fileRefRepo.findOneById(oFileRef.get().getId());
+        Assert.assertTrue("File reference should belongs to new owner", fr.getLazzyOwners().contains(fileRefNewOwner));
     }
 
     @Requirement("REGARDS_DSL_STOP_AIP_070")
