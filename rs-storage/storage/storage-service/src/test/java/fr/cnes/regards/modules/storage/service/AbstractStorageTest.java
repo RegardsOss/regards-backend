@@ -36,7 +36,6 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import fr.cnes.regards.framework.urn.DataType;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -59,6 +58,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDownloadTokenRepository;
@@ -351,7 +351,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             Assert.fail(e.getMessage());
         }
         Assert.assertTrue("File reference request should not exists anymore", fileRefReqs.isEmpty());
-        return oFileRef.get();
+        return fileRefRepo.findOneById(oFileRef.get().getId());
     }
 
     protected Optional<FileReference> referenceFile(String checksum, String owner, String type, String fileName,
@@ -480,9 +480,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         try {
             String filePath = cacheService.getFilePath(checksum);
             cacheService.addFile(checksum, 123L, "file", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                                 DataType.RAWDATA.name(),
-                                 new URL("file", null, filePath), OffsetDateTime.now().plusDays(1),
-                                 UUID.randomUUID().toString());
+                                 DataType.RAWDATA.name(), new URL("file", null, filePath),
+                                 OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
             // Create file on disk
             if (!Files.exists(Paths.get(filePath).getParent())) {
                 Files.createDirectories(Paths.get(filePath).getParent());
