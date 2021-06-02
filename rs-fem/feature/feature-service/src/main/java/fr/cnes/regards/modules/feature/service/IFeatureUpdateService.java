@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
  * This service handles feature update workflow.
  * @author Marc SORDI
  */
-public interface IFeatureUpdateService extends IAbstractFeatureService {
+public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUpdateRequest> {
 
     /**
      * Register update requests in database for further processing from incoming request events

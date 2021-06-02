@@ -18,24 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
+import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
@@ -47,16 +36,35 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.runners.MethodSorters;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Kevin Marchois
  *
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+        properties = {"spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true"},
+        locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
     @SpyBean
@@ -78,6 +86,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
      * we will test that the {@link FeatureDeletionRequest}
      * are deleted and all FeatureEntity are deleted too
      * because they have not files
+     *
      * @throws InterruptedException
      */
     @Test
@@ -330,6 +339,206 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", 0,
                             response.getTotalRequested());
 
+    }
+
+    @Test
+    public void test1SessionNotifierWithFiles() throws InterruptedException {
+
+        // Create and Delete One with Files
+        List<FeatureDeletionRequestEvent> eventWithFiles = prepareDeletionTestData(owner, true, 1, true);
+        featureDeletionService.registerRequests(eventWithFiles);
+        featureDeletionService.scheduleRequests();
+        TimeUnit.SECONDS.sleep(5);
+        mockNotificationSuccess();
+        waitRequest(featureDeletionRequestRepo, 0, 20000);
+
+        checkOneDeletion();
+    }
+
+    @Test
+    public void test1SessionNotifierWithoutFiles() throws InterruptedException {
+
+        // Create and Delete One without files
+        List<FeatureDeletionRequestEvent> eventWithoutFiles = prepareDeletionTestData(owner, false, 1, true);
+        featureDeletionService.registerRequests(eventWithoutFiles);
+        featureDeletionService.scheduleRequests();
+        TimeUnit.SECONDS.sleep(5);
+        mockNotificationSuccess();
+        waitRequest(featureDeletionRequestRepo, 0, 20000);
+
+        checkOneDeletion();
+    }
+
+    @Test
+    public void test1SessionNotifierWithoutNotification() throws InterruptedException, EntityException {
+
+        setNotificationSetting(false);
+
+        // Create and Delete One without files
+        List<FeatureDeletionRequestEvent> eventWithoutFiles = prepareDeletionTestData(owner, false, 1, false);
+        featureDeletionService.registerRequests(eventWithoutFiles);
+        TimeUnit.SECONDS.sleep(5);
+        featureDeletionService.scheduleRequests();
+        waitRequest(featureDeletionRequestRepo, 0, 20000);
+
+        checkOneDeletion();
+    }
+
+    @Test
+    public void test1SessionNotifierWithRetry() throws InterruptedException {
+
+        createRequestWithError();
+
+        // Retry
+        featureDeletionService.retryRequests(new FeatureRequestsSelectionDTO());
+        mockNotificationSuccess();
+        waitRequest(featureDeletionRequestRepo, 0, 20000);
+
+        // Compute Session step
+        computeSessionStep();
+
+        // Check Session step values
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        Assertions.assertEquals(13, requests.size());
+        checkRequests(8, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(5, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1, property("referencingRequests"), requests);
+        checkRequests(2, property("referencedProducts"), requests);
+        checkRequests(2, property("runningReferencingRequests"), requests);
+        checkRequests(1, property("deleteRequests"), requests);
+        checkRequests(1, property("deletedProducts"), requests);
+        checkRequests(4, property("runningDeleteRequests"), requests);
+        checkRequests(2, property("inErrorDeleteRequests"), requests);
+        checkRequests(1, inputRelated(), requests);
+        checkRequests(2, outputRelated(), requests);
+
+        // Check Session step
+        SessionStep sessionStep = getSessionStep();
+        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assertions.assertEquals(1, sessionStep.getInputRelated());
+        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
+        Assertions.assertEquals(7, sessionStepProperties.size());
+        checkKey(1, "referencingRequests", sessionStepProperties);
+        checkKey(0, "referencedProducts", sessionStepProperties);
+        checkKey(0, "runningReferencingRequests", sessionStepProperties);
+        checkKey(1, "deleteRequests", sessionStepProperties);
+        checkKey(1, "deletedProducts", sessionStepProperties);
+        checkKey(0, "runningDeleteRequests", sessionStepProperties);
+        checkKey(0, "inErrorDeleteRequests", sessionStepProperties);
+    }
+
+    @Test
+    public void test1SessionNotifierWithDelete() throws InterruptedException {
+
+        createRequestWithError();
+
+        // Retry
+        featureDeletionService.deleteRequests(new FeatureRequestsSelectionDTO());
+        mockNotificationSuccess();
+        waitRequest(featureDeletionRequestRepo, 0, 20000);
+
+        // Compute Session step
+        computeSessionStep();
+
+        // Check Session step values
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        Assertions.assertEquals(10, requests.size());
+        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1, property("referencingRequests"), requests);
+        checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(2, property("runningReferencingRequests"), requests);
+        checkRequests(2, property("deleteRequests"), requests);
+        checkRequests(2, property("runningDeleteRequests"), requests);
+        checkRequests(2, property("inErrorDeleteRequests"), requests);
+        checkRequests(1, inputRelated(), requests);
+        checkRequests(1, outputRelated(), requests);
+
+        // Check Session step
+        SessionStep sessionStep = getSessionStep();
+        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assertions.assertEquals(1, sessionStep.getInputRelated());
+        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
+        Assertions.assertEquals(6, sessionStepProperties.size());
+        checkKey(1, "referencingRequests", sessionStepProperties);
+        checkKey(1, "referencedProducts", sessionStepProperties);
+        checkKey(0, "runningReferencingRequests", sessionStepProperties);
+        checkKey(0, "deleteRequests", sessionStepProperties);
+        checkKey(0, "runningDeleteRequests", sessionStepProperties);
+        checkKey(0, "inErrorDeleteRequests", sessionStepProperties);
+    }
+
+    private void checkOneDeletion() throws InterruptedException {
+        // Compute Session step
+        computeSessionStep();
+
+        // Check Session step values
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        Assertions.assertEquals(4 + 5, requests.size());
+        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(3, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1, property("referencingRequests"), requests);
+        checkRequests(2, property("referencedProducts"), requests);
+        checkRequests(2, property("runningReferencingRequests"), requests);
+        checkRequests(1, property("deleteRequests"), requests);
+        checkRequests(1, property("deletedProducts"), requests);
+        checkRequests(2, property("runningDeleteRequests"), requests);
+        checkRequests(1, inputRelated(), requests);
+        checkRequests(2, outputRelated(), requests);
+
+        // Check Session step
+        SessionStep sessionStep = getSessionStep();
+        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assertions.assertEquals(1, sessionStep.getInputRelated());
+        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
+        Assertions.assertEquals(6, sessionStepProperties.size());
+        checkKey(1, "referencingRequests", sessionStepProperties);
+        checkKey(0, "referencedProducts", sessionStepProperties);
+        checkKey(0, "runningReferencingRequests", sessionStepProperties);
+        checkKey(1, "deleteRequests", sessionStepProperties);
+        checkKey(1, "deletedProducts", sessionStepProperties);
+        checkKey(0, "runningDeleteRequests", sessionStepProperties);
+    }
+
+    private void createRequestWithError() throws InterruptedException {
+        // Create and Delete One with Files, fail on notification
+        List<FeatureDeletionRequestEvent> eventWithFiles = prepareDeletionTestData(owner, true, 1, true);
+        featureDeletionService.registerRequests(eventWithFiles);
+        TimeUnit.SECONDS.sleep(5);
+        featureDeletionService.scheduleRequests();
+        waitForStep(featureDeletionRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 20);
+        mockNotificationError();
+        waitForSate(featureDeletionRequestRepo, RequestState.ERROR, 1, 20);
+
+        // Compute Session step
+        computeSessionStep();
+
+        // Check Session step values
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        Assertions.assertEquals(4 + 4, requests.size());
+        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(2, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1, property("referencingRequests"), requests);
+        checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(2, property("runningReferencingRequests"), requests);
+        checkRequests(1, property("deleteRequests"), requests);
+        checkRequests(2, property("runningDeleteRequests"), requests);
+        checkRequests(1, property("inErrorDeleteRequests"), requests);
+        checkRequests(1, inputRelated(), requests);
+        checkRequests(1, outputRelated(), requests);
+
+        // Check Session step
+        SessionStep sessionStep = getSessionStep();
+        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assertions.assertEquals(1, sessionStep.getInputRelated());
+        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
+        Assertions.assertEquals(6, sessionStepProperties.size());
+        checkKey(1, "referencingRequests", sessionStepProperties);
+        checkKey(1, "referencedProducts", sessionStepProperties);
+        checkKey(0, "runningReferencingRequests", sessionStepProperties);
+        checkKey(1, "deleteRequests", sessionStepProperties);
+        checkKey(0, "runningDeleteRequests", sessionStepProperties);
+        checkKey(1, "inErrorDeleteRequests", sessionStepProperties);
     }
 
 }

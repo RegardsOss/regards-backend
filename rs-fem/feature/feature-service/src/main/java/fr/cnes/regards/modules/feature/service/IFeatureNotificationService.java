@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEv
  * @author Kevin Marchois
  *
  */
-public interface IFeatureNotificationService extends IAbstractFeatureService {
+public interface IFeatureNotificationService extends IAbstractFeatureService<FeatureNotificationRequest> {
 
     /**
      * Register notification requests in database for further processing from incoming request events
