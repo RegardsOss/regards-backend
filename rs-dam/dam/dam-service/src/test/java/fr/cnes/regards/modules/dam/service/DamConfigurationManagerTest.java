@@ -23,13 +23,13 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.entities.DatasetConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
-import fr.cnes.regards.modules.dam.service.entities.FakeDataSourcePlugin;
 import fr.cnes.regards.modules.model.dao.IModelAttrAssocRepository;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -79,39 +79,52 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
     private IModelAttrAssocRepository modelAttrAssocRepository;
 
     @Autowired
-    protected IAttributeModelService attributeModelService;
+    private IAttributeModelService attributeModelService;
 
     @Autowired
-    protected MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
+    private MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
+
+    @Autowired
+    private IDatasetRepository datasetRepository;
+
+    @Autowired
+    private IPluginConfigurationRepository pluginConfigurationRepository;
+
+    private Model datasetModel;
+
+    private Model dataModel;
+
+    private PluginConfiguration datasourceConfiguration;
 
     @Before
-    public void before() {
+    public void before() throws ModuleException, IOException {
         // Clean all
-        modelAttrAssocRepository.deleteAll();
+        datasetRepository.deleteAllInBatch();
+        pluginConfigurationRepository.deleteAllInBatch();
+        modelAttrAssocRepository.deleteAllInBatch();
         modelRepository.deleteAll();
-    }
-
-    @Test
-    public void importConfiguration() throws IOException, ModuleException {
 
         // - Prepare context
         // Import dataset model
-        Model datasetModel = modelService
+        datasetModel = modelService
                 .importModel(Files.newInputStream(DATA_FOLDER.resolve("dataset-model.xml")));
         // Import data model
-        Model dataModel = modelService
+        dataModel = modelService
                 .importModel(Files.newInputStream(DATA_FOLDER.resolve("data-model.xml")));
         // Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // Import datasource
-        PluginConfiguration datasourceConfiguration = PluginConfiguration.build(
+        datasourceConfiguration = PluginConfiguration.build(
                 "FakeDatasourcePlugin",
                 "Test datasource",
-                IPluginParam.set(IPluginParam.build(FakeDatasourcePlugin.MODEL_PARAM,dataModel.getName())));
+                IPluginParam.set(IPluginParam.build(FakeDatasourcePlugin.MODEL_PARAM, dataModel.getName())));
         pluginService.savePluginConfiguration(datasourceConfiguration);
+    }
 
+    @Test
+    public void importConfiguration() throws IOException, ModuleException {
 
         DatasetFeature feature = new DatasetFeature(getDefaultTenant(), "dataset01", "Dataset 01");
         feature.setModel(datasetModel.getName());
@@ -132,5 +145,9 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
         Set<String> errors = configurationManager.importConfiguration(conf);
         errors.forEach(error -> LOGGER.error(error));
         Assert.assertTrue("Error detected", errors.isEmpty());
+
+        // Export configuration
+        ModuleConfiguration moduleConfiguration = configurationManager.exportConfiguration();
+        Assert.assertNotNull("Module configuration must not be null",moduleConfiguration);
     }
 }

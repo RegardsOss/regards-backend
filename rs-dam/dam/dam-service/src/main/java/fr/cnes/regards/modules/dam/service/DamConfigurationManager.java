@@ -110,6 +110,9 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
         for (PluginConfiguration dataSource : pluginService.getPluginConfigurationsByType(IDataSourcePlugin.class)) {
             configurations.add(ModuleConfigurationItem.build(pluginService.prepareForExport(dataSource)));
         }
+        // export datasets
+        configurations.addAll(exportDatasets());
+
         return ModuleConfiguration.build(info, configurations);
     }
 
@@ -165,5 +168,17 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
             }
         }
         return errors;
+    }
+
+    private List<ModuleConfigurationItem<DatasetConfiguration>> exportDatasets() {
+        List<ModuleConfigurationItem<DatasetConfiguration>> exportedDatasets = new ArrayList<>();
+        for (Dataset dataset : datasetService.findAll()) {
+            DatasetConfiguration configuration = DatasetConfiguration.builder()
+                    .datasource(dataset.getDataSource().getBusinessId())
+                    .subsetting(dataset.getOpenSearchSubsettingClause())
+                    .feature(dataset.getFeature()).build();
+            exportedDatasets.add(ModuleConfigurationItem.build(configuration));
+        }
+        return exportedDatasets;
     }
 }
