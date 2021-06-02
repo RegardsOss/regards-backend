@@ -253,7 +253,7 @@ public class FileReferenceController {
             } else {
                 page = page.next();
             }
-            results = fileRefService.search(page);
+            results = fileRefService.searchWithOwners(page);
             for (FileReference fileRef : results.getContent()) {
                 printer.printRecord(fileRef.getId(), fileRef.getLocation().getUrl(), fileRef.getLocation().getStorage(),
                                     fileRef.getLazzyOwners().stream().collect(Collectors.joining(",")));

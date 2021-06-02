@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -44,9 +43,6 @@ public interface IFileReferenceRepository
         extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
 
     Page<FileReference> findByLocationStorage(String storage, Pageable page);
-
-    @EntityGraph("graph.filereference.owners")
-    Page<FileReference> findAllByLocationStorage(String storage, Pageable page);
 
     Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
 
@@ -83,8 +79,5 @@ public interface IFileReferenceRepository
 
     @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id)", nativeQuery = true)
     boolean hasOwner(@Param("id") Long id);
-
-    @EntityGraph("graph.filereference.owners")
-    FileReference findOneById(Long id);
 
 }
