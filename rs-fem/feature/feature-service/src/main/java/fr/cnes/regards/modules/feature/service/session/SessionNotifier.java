@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.featureprovider.service.session;
+package fr.cnes.regards.modules.feature.service.session;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClient;
@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Service that sends notifications to collect statistics about feature extraction requests.
+ * Service that sends notifications to collect statistics about feature requests.
  *
  * @author Iliana Ghazali
  **/
@@ -38,7 +38,7 @@ public class SessionNotifier {
     /**
      * Name of the corresponding SessionStep
      */
-    private static final String GLOBAL_SESSION_STEP = "extract";
+    private static final String GLOBAL_SESSION_STEP = "feature";
 
     /**
      * Service to notify property changes
@@ -46,52 +46,36 @@ public class SessionNotifier {
     @Autowired
     private ISessionAgentClient sessionNotificationClient;
 
-
-    // Extraction requests received
-
-    public void incrementRequestCount(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.TOTAL_REQUESTS, 1);
-    }
+    //TODO : one method per each property : examples below
 
     // Error requests
-
     public void incrementRequestErrors(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.REQUESTS_ERRORS, 1);
+        incrementCount(sessionOwner, session, SessionFeaturePropertyEnum.REQUESTS_ERRORS, 1);
     }
 
     public void decrementRequestErrors(String sessionOwner, String session, long nbProducts) {
-        decrementCount(sessionOwner, session, SessionExtractionPropertyEnum.REQUESTS_ERRORS, nbProducts);
+        decrementCount(sessionOwner, session, SessionFeaturePropertyEnum.REQUESTS_ERRORS, nbProducts);
     }
 
     // Refused requests
 
     public void incrementRequestRefused(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.REQUESTS_REFUSED, 1);
+        incrementCount(sessionOwner, session, SessionFeaturePropertyEnum.REQUESTS_REFUSED, 1);
     }
 
     public void decrementRequestRefused(String sessionOwner, String session, long nbProducts) {
-        decrementCount(sessionOwner, session, SessionExtractionPropertyEnum.REQUESTS_REFUSED, nbProducts);
+        decrementCount(sessionOwner, session, SessionFeaturePropertyEnum.REQUESTS_REFUSED, nbProducts);
     }
-
-    // Generated products
-    public void incrementGeneratedProducts(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.GENERATED_PRODUCTS, 1);
-    }
-
-    public void decrementGeneratedProducts(String sessionOwner, String session) {
-        decrementCount(sessionOwner, session, SessionExtractionPropertyEnum.GENERATED_PRODUCTS, 1);
-    }
-
 
     // ----------- UTILS -----------
 
     // GENERIC METHODS TO BUILD NOTIFICATIONS
 
     // INC
-    private void incrementCount(String source, String session, SessionExtractionPropertyEnum property,
+    private void incrementCount(String source, String session, SessionFeaturePropertyEnum property,
             long nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source,
-                                             session, new StepPropertyInfo(StepTypeEnum.ACQUISITION, property.getState(),
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
                                                                   property.getName(), String.valueOf(nbProducts),
                                                                   property.isInputRelated(),
                                                                   property.isOutputRelated()));
@@ -99,13 +83,13 @@ public class SessionNotifier {
     }
 
     // DEC
-    private void decrementCount(String source, String session, SessionExtractionPropertyEnum property,
+    private void decrementCount(String source, String session, SessionFeaturePropertyEnum property,
             long nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source,
-                                             session, new StepPropertyInfo(StepTypeEnum.ACQUISITION, property.getState(),
-                                                                           property.getName(), String.valueOf(nbProducts),
-                                                                           property.isInputRelated(),
-                                                                           property.isOutputRelated()));
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
+                                                                  property.getName(), String.valueOf(nbProducts),
+                                                                  property.isInputRelated(),
+                                                                  property.isOutputRelated()));
         sessionNotificationClient.decrement(step);
     }
 }
