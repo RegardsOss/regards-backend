@@ -66,6 +66,7 @@ import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
@@ -154,6 +155,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
 
     @Autowired
     protected IFileReferenceRepository fileRefRepo;
+
+    @Autowired
+    protected IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
 
     @Autowired
     protected IFileCacheRequestRepository fileCacheReqRepo;
@@ -351,7 +355,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             Assert.fail(e.getMessage());
         }
         Assert.assertTrue("File reference request should not exists anymore", fileRefReqs.isEmpty());
-        return fileRefRepo.findOneById(oFileRef.get().getId());
+        return fileRefWithOwnersRepo.findOneById(oFileRef.get().getId());
     }
 
     protected Optional<FileReference> referenceFile(String checksum, String owner, String type, String fileName,

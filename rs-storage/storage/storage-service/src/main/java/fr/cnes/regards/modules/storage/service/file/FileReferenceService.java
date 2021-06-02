@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -54,6 +55,9 @@ public class FileReferenceService {
 
     @Autowired
     private IFileReferenceRepository fileRefRepo;
+
+    @Autowired
+    private IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
 
     @Autowired
     private RequestsGroupService requInfoService;
@@ -210,7 +214,7 @@ public class FileReferenceService {
         Assert.notNull(updatedFile, "File reference to update can not be null");
         Assert.notNull(updatedFile.getId(), "File reference id to update can not be null");
         FileReference saved = fileRefRepo.save(updatedFile);
-        fileRefEventPublisher.updated(checksum, storage, updatedFile);
+        fileRefEventPublisher.updated(checksum, storage, saved);
         return saved;
     }
 
@@ -234,7 +238,11 @@ public class FileReferenceService {
      * @return
      */
     public Page<FileReference> searchWithOwners(String storage, Pageable pageable) {
-        return fileRefRepo.findAllByLocationStorage(storage, pageable);
+        return fileRefWithOwnersRepo.findAllByLocationStorage(storage, pageable);
+    }
+
+    public Page<FileReference> searchWithOwners(Pageable pageable) {
+        return fileRefWithOwnersRepo.findAll(pageable);
     }
 
 }
