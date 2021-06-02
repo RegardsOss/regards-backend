@@ -226,17 +226,18 @@ function nightly {
     echo -e "\nRunning nightly Maven build and Docker tag..."
 
     set -x
-    mvn -B -P delivery,docker,CI,oracle clean \
+    mvn -B -P delivery,CI,oracle clean \
         org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
+	sonar:sonar \
         -Dsonar.jacoco.reportPath="${SERVICES}/jacoco-ut.exec" \
         -Dsonar.jacoco.itReportPath="${SERVICES}/jacoco-it.exec" \
         -Dsonar.branch.name=${BRANCH_NAME} \
         -Dmaven.multiModuleProjectDirectory=${SERVICES} \
         -Dfile.encoding=UTF-8 \
         -DcmdLineTarget=target \
-        -Dmaven-deploy.skip=false \
+        -Dmaven-deploy.skip=true \
         -Djacoco.skip=false \
-        -DskipDocker=false \
+        -DskipDocker=true \
         -DpushImageTag=true \
         -Dasciidoctor.skip=true \
         -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
