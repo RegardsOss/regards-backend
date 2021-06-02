@@ -440,6 +440,10 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
         return feature;
     }
 
+    public void setFeature(F feature) {
+        this.feature = feature;
+    }
+
     public boolean isLast() {
         return feature.isLast();
     }

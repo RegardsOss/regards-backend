@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+	Last changes :
+-->
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
+    <name>DATASET001</name>
+    <description>Hydrology datasets (one per data type)</description>
+    <version>0.1.0</version>
+    <type>DATASET</type>
+    <attribute optional="true">
+        <label>Title</label>
+        <name>title</name>
+        <type>STRING</type>
+    </attribute>
+    <attribute>
+        <label>Description</label>
+        <name>description</name>
+        <type>STRING</type>
+    </attribute>
+    <attribute optional="true">
+        <label>Keywords</label>
+        <name>keywords</name>
+        <type>STRING_ARRAY</type>
+    </attribute>
+    <attribute>
+        <label>License</label>
+        <name>license</name>
+        <type>STRING</type>
+    </attribute>
+    <attribute optional="true">
+        <label>Providers</label>
+        <name>providers</name>
+        <type>JSON</type>
+        <restriction>
+            <json_schema><![CDATA[ {
+				"$schema": "http://json-schema.org/draft-07/schema#",
+				"$id": "https://schemas.stacspec.org/v1.0.0/item-spec/json-schema/provider.json#",
+				"title": "Provider Fields",
+				"type": "object",
+				"properties": {
+				  "providers": {
+					"title": "Providers",
+					"type": "array",
+					"items": {
+					  "type": "object",
+					  "required": [
+						"name"
+					  ],
+					  "properties": {
+						"name": {
+						  "title": "Organization name",
+						  "type": "string",
+						  "minLength": 1
+						},
+						"description": {
+						  "title": "Organization description",
+						  "type": "string"
+						},
+						"roles": {
+						  "title": "Organization roles",
+						  "type": "array",
+						  "items": {
+							"type": "string",
+							"enum": [
+							  "producer",
+							  "licensor",
+							  "processor",
+							  "host"
+							]
+						  }
+						},
+						"url": {
+						  "title": "Organization homepage",
+						  "type": "string",
+						  "format": "iri"
+						}
+					  }
+					}
+				  }
+				}
+			  }]]></json_schema>
+        </restriction>
+    </attribute>
+    <!-- TODO : add attribute to compute summaries -->
+</model>

@@ -46,6 +46,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.model</groupId>
 			<artifactId>model-domain</artifactId>
 		</dependency>
