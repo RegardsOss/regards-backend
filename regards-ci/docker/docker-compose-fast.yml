@@ -10,8 +10,7 @@ services:
       - MODE
       - REGARDS_HOME
     volumes:
-      - /DATA/maven-multibranch-repository:/localRepository
-      - /DATA/maven-fast-repository:/fastRepository
+      - /DATA/maven-fast-repository:/localRepository
       - /usr/bin/docker:/bin/docker
       - /var/run/docker.sock:/var/run/docker.sock
       - ../../.:/app_to_build

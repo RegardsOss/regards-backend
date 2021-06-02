@@ -34,6 +34,7 @@ function checkArtifactsRebuild {
             if [[ ! -z "$mvnPlArg" ]]; then
                 mvnPlArg="${mvnPlArg},"
             fi
+            # ',' allows to constitute the list of maven module and maven syntax requires modules to be given prefixed by ':'
             mvnPlArg="${mvnPlArg}:${module}"
             artifactsThatNeedARebuild+=("$module")
         else
@@ -114,7 +115,7 @@ function install {
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
         set -x
-        mvn -U -B -P delivery,CI,oracle clean install \
+        mvn -U -B -P CI,oracle clean install \
             -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
@@ -195,7 +196,6 @@ function fast {
         set -x
         mvn -U -B -P docker,install clean install docker:build \
             -Dregards.version="${REGARDS_VERSION}" \
-            -Dmaven.repo.local=/fastRepository \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
             -DcmdLineTarget=target-docker \

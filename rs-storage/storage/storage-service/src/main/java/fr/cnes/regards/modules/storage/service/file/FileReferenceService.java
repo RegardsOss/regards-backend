@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -35,6 +34,7 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -57,6 +57,9 @@ public class FileReferenceService {
     private IFileReferenceRepository fileRefRepo;
 
     @Autowired
+    private IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
+
+    @Autowired
     private RequestsGroupService requInfoService;
 
     @Autowired
@@ -71,11 +74,6 @@ public class FileReferenceService {
         } else {
             return fileRefRepo.getTotalFileSizeAggregation();
         }
-    }
-
-    public void keepTransaction() throws InterruptedException {
-        Page<FileReference> response = fileRefRepo.findAll(PageRequest.of(0, 1000));
-        Thread.sleep(10_000);
     }
 
     /**
@@ -118,18 +116,17 @@ public class FileReferenceService {
      */
     public void removeOwner(FileReference fileReference, String owner, String groupId) {
         String message;
-        if (!fileReference.getOwners().contains(owner)) {
+        if (!fileRefRepo.isOwnedBy(fileReference.getId(), owner)) {
             message = String.format("File <%s (checksum: %s)> at %s does not to belongs to %s",
                                     fileReference.getMetaInfo().getFileName(),
                                     fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
                                     owner);
         } else {
-            fileReference.getOwners().remove(owner);
+            fileRefRepo.removeOwner(fileReference.getId(), owner);
             message = String.format("File reference <%s (checksum: %s)> at %s does not belongs to %s anymore",
                                     fileReference.getMetaInfo().getFileName(),
                                     fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
                                     owner);
-            fileRefRepo.save(fileReference);
         }
         LOGGER.trace(message);
         fileRefEventPublisher.deletionForOwnerSuccess(fileReference, owner, message, groupId);
@@ -144,6 +141,10 @@ public class FileReferenceService {
     @Transactional(readOnly = true)
     public Page<FileReference> search(String storage, Pageable pageable) {
         return fileRefRepo.findByLocationStorage(storage, pageable);
+    }
+
+    public Collection<String> getOwners(Long fileRefId) {
+        return fileRefRepo.findOwnersById(fileRefId);
     }
 
     /**
@@ -213,8 +214,35 @@ public class FileReferenceService {
         Assert.notNull(updatedFile, "File reference to update can not be null");
         Assert.notNull(updatedFile.getId(), "File reference id to update can not be null");
         FileReference saved = fileRefRepo.save(updatedFile);
-        fileRefEventPublisher.updated(checksum, storage, updatedFile);
+        fileRefEventPublisher.updated(checksum, storage, saved);
         return saved;
+    }
+
+    /**
+     * @param id
+     * @param owner
+     */
+    public void addOwner(Long id, String owner) {
+        if (!fileRefRepo.isOwnedBy(id, owner)) {
+            fileRefRepo.addOwner(id, owner);
+        }
+    }
+
+    public boolean hasOwner(Long id) {
+        return fileRefRepo.hasOwner(id);
+    }
+
+    /**
+     * @param storage
+     * @param pageRequest
+     * @return
+     */
+    public Page<FileReference> searchWithOwners(String storage, Pageable pageable) {
+        return fileRefWithOwnersRepo.findAllByLocationStorage(storage, pageable);
+    }
+
+    public Page<FileReference> searchWithOwners(Pageable pageable) {
+        return fileRefWithOwnersRepo.findAll(pageable);
     }
 
 }

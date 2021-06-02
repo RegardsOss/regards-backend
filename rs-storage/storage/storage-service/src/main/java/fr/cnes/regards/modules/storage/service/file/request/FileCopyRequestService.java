@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,10 +171,10 @@ public class FileCopyRequestService {
                     String message = String.format("File to copy %s already exists for destination storage %s",
                                                    requestDto.getChecksum(), requestDto.getStorage());
                     LOGGER.debug("[COPY REQUEST] {}", message);
-                    publisher.copySuccess(existingfileRef, message, groupId);
+                    publisher.copySuccess(existingfileRef, message, groupId, existingfileRef.getLazzyOwners());
                     reqGrpService.requestSuccess(groupId, FileRequestType.COPY, requestDto.getChecksum(),
                                                  requestDto.getStorage(), requestDto.getSubDirectory(),
-                                                 existingfileRef.getOwners(), existingfileRef);
+                                                 existingfileRef.getLazzyOwners(), existingfileRef);
                 } else {
                     LOGGER.debug("[COPY REQUEST] Create copy request for group {}", groupId);
                     FileCopyRequest newRequest = copyRepository
@@ -248,9 +249,9 @@ public class FileCopyRequestService {
                 cacheService.delete(oCf.get());
             }
         }
-        publisher.copySuccess(newFileRef, successMessage, request.getGroupId());
+        publisher.copySuccess(newFileRef, successMessage, request.getGroupId(), Lists.newArrayList());
         reqGrpService.requestSuccess(request.getGroupId(), FileRequestType.COPY, request.getMetaInfo().getChecksum(),
-                                     request.getStorage(), request.getStorageSubDirectory(), newFileRef.getOwners(),
+                                     request.getStorage(), request.getStorageSubDirectory(), Lists.newArrayList(),
                                      newFileRef);
 
         // Delete the copy request

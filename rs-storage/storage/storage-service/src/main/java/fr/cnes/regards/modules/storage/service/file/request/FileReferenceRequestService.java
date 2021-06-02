@@ -139,7 +139,8 @@ public class FileReferenceRequestService {
             try {
                 FileReference fileRef = reference(file, oFileRef, oFileDeletionReq, Sets.newHashSet(groupId));
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
-                                             fileRef.getLocation().getStorage(), null, fileRef.getOwners(), fileRef);
+                                             fileRef.getLocation().getStorage(), null,
+                                             Lists.newArrayList(file.getOwner()), fileRef);
                 fileRefs.add(fileRef);
                 // Add newly created fileRef to existing file refs in case of the requests contains multiple time the same file to reference
                 existingOnes.add(fileRef);
@@ -202,7 +203,7 @@ public class FileReferenceRequestService {
             String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
                                            newFileRef.getMetaInfo().getFileName(), newFileRef.getLocation().toString(),
                                            newFileRef.getMetaInfo().getChecksum());
-            fileRefEventPublisher.storeSuccess(newFileRef, message, groupIds);
+            fileRefEventPublisher.storeSuccess(newFileRef, message, groupIds, Lists.newArrayList(request.getOwner()));
             return newFileRef;
         }
     }
@@ -263,8 +264,9 @@ public class FileReferenceRequestService {
                     .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
                             request.getOwner(), fileReference.getMetaInfo().getFileName(),
                             fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
-            fileRefEventPublisher.storeSuccess(fileReference, message, groupIds);
-            fileReference.getOwners().add(request.getOwner());
+            fileRefEventPublisher.storeSuccess(fileReference, message, groupIds,
+                                               Lists.newArrayList(request.getOwner()));
+            fileRefService.addOwner(fileReference.getId(), request.getOwner());
             return fileReference;
         }
     }

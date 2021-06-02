@@ -13,7 +13,6 @@ source ${SCRIPTS}/build
 STEP=$1
 
 mkdir -p ${DATADIR}
-#TODO mkdir pour swagger? la doc?
 
 echo "#####################################"
 echo "#        ---  REGARDS CI ---        #"
@@ -23,23 +22,22 @@ cd ${SERVICES} || exit
 case $STEP in
     install)
         tm dependencyTree
-        tm computeHashes
+        tm computeModuleHashes
         tm install
     ;;
     deploy)
         tm dependencyTree
-        tm computeHashes
+        tm computeModuleHashes
         tm deploy
     ;;
     fast)
         tm dependencyTree
-        tm computeHashes
+        tm computeModuleHashes
         tm fast
     ;;
     nightly)
         tm nightly
     ;;
-  #TODO Junit test report (+ maven-assembly-plugin) + Artifacts
   #TODO Improve hash (get git diff since last build success' commit, assoc files to modules, only hash those)
   #TODO Build docs site
     *)

@@ -91,6 +91,40 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         this.isToNotify = initDefaultNotificationSettings();
     }
 
+    @Test
+    public void testScheduleFeatureUpdateDuringDeletion() throws InterruptedException {
+
+        // create features
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(3, true);
+        this.featureCreationService.registerRequests(events);
+
+        this.featureCreationService.scheduleRequests();
+        int cpt = 0;
+        long featureNumberInDatabase;
+        do {
+            featureNumberInDatabase = this.featureRepo.count();
+            Thread.sleep(1000);
+            cpt++;
+        } while ((cpt < 100) && (featureNumberInDatabase != 3));
+        List<FeatureEntity> entities = super.featureRepo.findAll();
+
+        // Simulate a deletion running request
+        FeatureDeletionRequest req = FeatureDeletionRequest
+                .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null,
+                       FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL, entities.get(0).getUrn());
+        this.featureDeletionRequestRepo.save(req);
+
+        // Send a new update request on the currently deleting feature
+        this.featureUpdateService
+                .registerRequests(this.prepareUpdateRequests(Lists.newArrayList(entities.get(0).getUrn())));
+        assertEquals("No update request sould be scheduled", 0, this.featureUpdateService.scheduleRequests());
+
+        // Check that the update request is delayed waiting for deletion ends
+        FeatureUpdateRequest uReq = super.featureUpdateRequestRepo.findAll().get(0);
+        assertEquals("Update request should be on delayed step", FeatureRequestStep.LOCAL_DELAYED, uReq.getStep());
+
+    }
+
     /**
      * Test update scheduler we will create 4 {@link FeatureUpdateRequest}
      * fur1, fur2, fur3, fur4
@@ -119,7 +153,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         FeatureDeletionRequestEvent featureDeletionRequest = FeatureDeletionRequestEvent
                 .build("TEST", toDelete.getUrn(), PriorityLevel.NORMAL);
         this.featureDeletionService.registerRequests(Lists.list(featureDeletionRequest));
-        this.featureDeletionService.scheduleRequests();
+
         // simulate an update request on a feature being deleted
         FeatureUpdateRequest fur4 = FeatureUpdateRequest
                 .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null,
@@ -148,23 +182,26 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         fur3 = super.featureUpdateRequestRepo.save(fur3);
         fur4 = super.featureUpdateRequestRepo.save(fur4);
 
-        // wait 5 second to delay so that deletion job can be executed
+        assertEquals("There should be 1 deletion request scheduled", 1, this.featureDeletionService.scheduleRequests());
+        // Wait minimum processing time for request to be scheduled after being delayed
         Thread.sleep(properties.getDelayBeforeProcessing() * 1000);
-
-        this.featureUpdateService.scheduleRequests();
+        // fur1 and fur4 should be scheduled. Fur1 cause nothing prevents it, and fur4 because deletion is done so the update request can be scheduled (but will fail)
+        assertEquals("There should be 2 update requests scheduled", 2, this.featureUpdateService.scheduleRequests());
 
         List<FeatureUpdateRequest> updateRequests = this.featureUpdateRequestRepo.findAll();
 
-        // fur1 and fur2 should be scheduled
-        assertEquals(2, updateRequests.stream()
+        // fur1 ,fur2 and fur4 should be scheduled
+        assertEquals(3, updateRequests.stream()
                 .filter(request -> request.getStep().equals(FeatureRequestStep.LOCAL_SCHEDULED)).count());
-        // fur3 stay delayed cause a update on the same feature is scheduled and fur4 concern a feature in deletion
-        assertEquals(2, updateRequests.stream()
+        // fur3 stay delayed cause a update on the same feature is scheduled
+        assertEquals(1, updateRequests.stream()
                 .filter(request -> request.getStep().equals(FeatureRequestStep.LOCAL_DELAYED)).count());
 
+        // Wait for update job done
+        Thread.sleep(10000);
         fur4 = super.featureUpdateRequestRepo.findById(fur4.getId()).get();
-
-        assertEquals(RequestState.ERROR, fur4.getState());
+        assertEquals("Update request on already deleted feature should be in error", RequestState.ERROR,
+                     fur4.getState());
     }
 
     /**
