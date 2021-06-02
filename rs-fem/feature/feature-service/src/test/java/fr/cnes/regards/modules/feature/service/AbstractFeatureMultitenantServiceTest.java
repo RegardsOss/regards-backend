@@ -1,37 +1,5 @@
 package fr.cnes.regards.modules.feature.service;
 
-import static fr.cnes.regards.framework.amqp.event.Target.ONE_PER_MICROSERVICE_TYPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.assertj.core.util.Lists;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -42,28 +10,23 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
+import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureFile;
-import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
-import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
-import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
+import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
@@ -76,6 +39,7 @@ import fr.cnes.regards.modules.feature.service.flow.FeatureDeletionRequestEventH
 import fr.cnes.regards.modules.feature.service.flow.FeatureUpdateRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.flow.NotificationRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
+import fr.cnes.regards.modules.feature.service.session.SessionNotifier;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
@@ -90,6 +54,44 @@ import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
+import org.assertj.core.util.Lists;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.MimeType;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static fr.cnes.regards.framework.amqp.event.Target.ONE_PER_MICROSERVICE_TYPE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
@@ -97,78 +99,67 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     private static final String RESOURCE_PATH = "fr/cnes/regards/modules/feature/service/";
 
+    protected final String sessionStepName = (String) ReflectionTestUtils.getField(SessionNotifier.class, "GLOBAL_SESSION_STEP");
+
+    protected String owner = "owner";
+    protected String session = "session";
+
     // Mock for test purpose
     @Autowired
     protected IComputationPluginService cps;
-
     @Autowired
     protected IModelAttrAssocClient modelAttrAssocClientMock;
-
     @Autowired
     protected IModelClient modelClientMock;
-
     @Autowired
     protected MultitenantFlattenedAttributeAdapterFactory factory;
-
     @Autowired
     protected IFeatureCreationRequestRepository featureCreationRequestRepo;
-
     @Autowired
     protected IFeatureEntityRepository featureRepo;
-
     @Autowired
     protected IFeatureUpdateRequestRepository featureUpdateRequestRepo;
-
     @Autowired
     protected IFeatureDeletionRequestRepository featureDeletionRequestRepo;
-
     @Autowired
     protected IFeatureNotificationRequestRepository notificationRequestRepo;
-
     @Autowired
     protected IFeatureSaveMetadataRequestRepository featureSaveMetadataRequestRepository;
-
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
-
     @Autowired
     protected FeatureConfigurationProperties properties;
-
     @Autowired
     protected FeatureCreationService featureCreationService;
-
     @Autowired
     protected IFeatureDeletionService featureDeletionService;
-
     @Autowired
     protected ISubscriber subscriber;
-
     @Autowired
     protected IPublisher publisher;
-
     @Autowired
     protected IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
-
-    @Autowired
-    private IFeatureNotificationSettingsRepository featureNotificationSettingsRepo;
-
     @Autowired
     protected IFeatureNotificationService featureNotificationService;
-
     @Autowired
     protected IFeatureNotificationSettingsService featureSettingsNotificationService;
+    @Autowired
+    protected IFeatureRequestService featureRequestService;
+    @Autowired
+    protected ISessionStepRepository sessionStepRepository;
+    @Autowired
+    protected IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepository;
+    @Autowired
+    protected AgentSnapshotJobService agentSnapshotJobService;
 
     @Autowired
     private IJobInfoRepository jobInfoRepository;
-
+    @Autowired
+    private IFeatureNotificationSettingsRepository featureNotificationSettingsRepo;
     @Autowired(required = false)
     private IAmqpAdmin amqpAdmin;
-
     @Autowired(required = false)
     private IRabbitVirtualHostAdmin vhostAdmin;
-
-    @Autowired
-    protected IFeatureRequestService featureRequestService;
 
     // ------------------------
     // TO CLEAN TESTS
@@ -179,6 +170,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         cleanRepo();
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
+        setNotificationSetting(true);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         doInit();
     }
@@ -190,7 +182,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     @After
     public void after() throws Exception {
         cleanQueues();
-        // cleanRepo();
+        setNotificationSetting(true);
         doAfter();
     }
 
@@ -207,6 +199,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         this.notificationRequestRepo.deleteAllInBatch();
         this.jobInfoRepository.deleteAll();
         this.featureNotificationSettingsRepo.deleteAll();
+        stepPropertyUpdateRequestRepository.deleteAll();
+        sessionStepRepository.deleteAll();
     }
 
     public void cleanQueues() {
@@ -250,7 +244,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             long now = System.currentTimeMillis();
             if (end > now) {
                 try {
-                    Thread.sleep(1000);
+                    TimeUnit.MILLISECONDS.sleep(1000);
                 } catch (InterruptedException e) {
                     Assert.fail("Thread interrupted");
                 }
@@ -291,7 +285,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             long now = System.currentTimeMillis();
             if (end > now) {
                 try {
-                    Thread.sleep(1000);
+                    TimeUnit.MILLISECONDS.sleep(1000);
                 } catch (InterruptedException e) {
                     LOGGER.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
                                                entityCount));
@@ -307,19 +301,37 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         } while (true);
     }
 
-    protected void waitForErrorState(JpaRepository<? extends AbstractRequest, ?> repo)
+    protected void waitForErrorState(JpaRepository<? extends AbstractRequest, ?> repo) throws InterruptedException {
 
-            throws InterruptedException {
         int cpt = 0;
-
         // we will expect that all feature reference remain in database with the error state
         do {
-            Thread.sleep(1000);
+            TimeUnit.MILLISECONDS.sleep(1000);
             if (cpt == 60) {
                 fail("Timeout");
             }
             cpt++;
         } while (!repo.findAll().stream().allMatch(request -> RequestState.ERROR.equals(request.getState())));
+    }
+
+    protected void waitForStep(JpaRepository<? extends AbstractRequest, ?> repository, FeatureRequestStep step, int count, int timeout) throws InterruptedException {
+        Instant start = Instant.now();
+        while (repository.findAll().stream().filter(item -> step.equals(item.getStep())).count() != count) {
+            TimeUnit.SECONDS.sleep(1);
+            if (Instant.now().isAfter(start.plusSeconds(timeout))) {
+                fail("Timeout reached waiting for FeatureRequest : " + step);
+            }
+        }
+    }
+
+    protected void waitForSate(JpaRepository<? extends AbstractRequest, ?> repository, RequestState state, int count, int timeout) throws InterruptedException {
+        Instant start = Instant.now();
+        while (repository.findAll().stream().filter(item -> state.equals(item.getState())).count() != count) {
+            TimeUnit.SECONDS.sleep(1);
+            if (Instant.now().isAfter(start.plusSeconds(timeout))) {
+                fail("Timeout reached waiting for FeatureState  : " + state);
+            }
+        }
     }
 
     // ------------------------
@@ -332,12 +344,13 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     /**
      * Mock model client importing model specified by its filename
+     *
      * @param filename model filename found using {@link Class#getResourceAsStream(String)}
      * @return mocked model name
      */
-    public String mockModelClient(String filename, IComputationPluginService cps,
-            MultitenantFlattenedAttributeAdapterFactory factory, String tenant,
-            IModelAttrAssocClient modelAttrAssocClientMock) {
+    public String mockModelClient(String filename, IComputationPluginService cps, MultitenantFlattenedAttributeAdapterFactory factory, String tenant,
+                                  IModelAttrAssocClient modelAttrAssocClientMock
+    ) {
 
         try (InputStream input = new ClassPathResource(RESOURCE_PATH + filename).getInputStream()) {
             // Import model
@@ -349,7 +362,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             List<EntityModel<ModelAttrAssoc>> resources = new ArrayList<>();
             for (ModelAttrAssoc assoc : assocs) {
                 atts.add(assoc.getAttribute());
-                resources.add(new EntityModel<ModelAttrAssoc>(assoc));
+                resources.add(new EntityModel<>(assoc));
                 if (modelName == null) {
                     modelName = assoc.getModel().getName();
                 }
@@ -359,13 +372,12 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             factory.registerAttributes(tenant, atts);
 
             // Mock client
-            List<EntityModel<Model>> models = new ArrayList<EntityModel<Model>>();
+            List<EntityModel<Model>> models = new ArrayList<>();
             Model mockModel = Mockito.mock(Model.class);
             Mockito.when(mockModel.getName()).thenReturn(modelName);
             models.add(new EntityModel<Model>(mockModel));
             Mockito.when(modelClientMock.getModels(null)).thenReturn(ResponseEntity.ok(models));
-            Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(modelName))
-                    .thenReturn(ResponseEntity.ok(resources));
+            Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(modelName)).thenReturn(ResponseEntity.ok(resources));
 
             return modelName;
         } catch (IOException | ImportException e) {
@@ -387,8 +399,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             // find first page of requests to handle
             fcrPage = featureCreationRequestRepo.findByStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED, pageToRequest);
             // simulate storage response
-            featureRequestService.handleStorageSuccess(fcrPage.stream().map(AbstractFeatureRequest::getGroupId)
-                    .collect(Collectors.toSet()));
+            featureRequestService.handleStorageSuccess(fcrPage.stream().map(AbstractFeatureRequest::getGroupId).collect(Collectors.toSet()));
             // get next page of requests if present
             if (fcrPage.hasNext()) {
                 fcrPage.nextPageable();
@@ -419,6 +430,19 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                 featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
             }
         }
+    }
+
+    protected void mockNotificationError() {
+        Page<AbstractFeatureRequest> requestsToSend;
+        Pageable pageable = PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate")));
+        do {
+            requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, OffsetDateTime.now().plusDays(1), pageable);
+            if (!requestsToSend.isEmpty()) {
+                featureNotificationService.sendToNotifier();
+                featureNotificationService.handleNotificationError(requestsToSend.toSet(), FeatureRequestStep.REMOTE_NOTIFICATION_ERROR);
+            }
+            pageable = requestsToSend.nextPageable();
+        } while (requestsToSend.hasNext());
     }
 
     // ------------------------
@@ -467,17 +491,16 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return factory;
     }
 
-    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
-            boolean override) {
+    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate, boolean override) {
+
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
         FeatureCreationRequestEvent toAdd;
         Feature featureToAdd;
         FeatureFile file;
-        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
-                                       modelAttrAssocClientMock);
+        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(), modelAttrAssocClientMock);
 
         try {
-            Thread.sleep(5000);
+            TimeUnit.MILLISECONDS.sleep(5000);
         } catch (InterruptedException e) {
             // Skip
         }
@@ -485,18 +508,16 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         // create events to publish
         for (int i = 0; i < featureNumberToCreate; i++) {
             file = FeatureFile.build(
-                                     FeatureFileAttributes.build(DataType.DESCRIPTION, new MimeType("mime"), "toto",
-                                                                 1024l, "MD5", "checksum"),
-                                     FeatureFileLocation.build("www.google.com", "GPFS"));
-            featureToAdd = Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
-                                         EntityType.DATA, model)
-                    .withFiles(file);
-            featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
-            featureToAdd.addProperty(IProperty.buildObject("file_characterization",
-                                                           IProperty.buildBoolean("valid", Boolean.TRUE)));
+                    FeatureFileAttributes.build(DataType.DESCRIPTION, new MimeType("mime"), "toto", 1024L, "MD5", "checksum"),
+                    FeatureFileLocation.build("www.google.com", "GPFS"));
 
-            toAdd = FeatureCreationRequestEvent.build("owner", FeatureCreationSessionMetadata
-                    .build("owner", "session", PriorityLevel.NORMAL, Lists.emptyList(), override), featureToAdd);
+            featureToAdd = Feature.build("id" + i, owner, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model).withFiles(file);
+            featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
+            featureToAdd.addProperty(IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", Boolean.TRUE)));
+
+            toAdd = FeatureCreationRequestEvent.build(owner,
+                                                      FeatureCreationSessionMetadata.build(owner, session, PriorityLevel.NORMAL, Lists.emptyList(), override),
+                                                      featureToAdd);
             toAdd.setRequestId(String.valueOf(i));
             toAdd.setFeature(featureToAdd);
             toAdd.setRequestDate(OffsetDateTime.now().minusDays(1));
@@ -506,8 +527,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return events;
     }
 
-    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles,
-            int featureToCreateNumber, boolean isToNotify, boolean override) throws InterruptedException {
+    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles, int featureToCreateNumber, boolean isToNotify, boolean override)
+            throws InterruptedException {
+
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, override);
 
         if (!prepareFeatureWithFiles) {
@@ -528,7 +550,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         long featureNumberInDatabase;
         do {
             featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
+            TimeUnit.MILLISECONDS.sleep(1000);
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != featureToCreateNumber));
 
@@ -555,16 +577,14 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return events;
     }
 
-    protected List<FeatureDeletionRequestEvent> prepareDeletionTestData(String deletionOwner,
-            boolean prepareFeatureWithFiles, Integer featureToCreateNumber, boolean isToNotify)
+    protected List<FeatureDeletionRequestEvent> prepareDeletionTestData(String deletionOwner, boolean prepareFeatureWithFiles, Integer featureToCreateNumber, boolean isToNotify)
             throws InterruptedException {
 
         // create features
         prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, true);
 
         // get urn from feature we just created
-        List<FeatureUniformResourceName> entityCreatedUrn = this.featureRepo.findAll().stream()
-                .map(feature -> feature.getUrn()).collect(Collectors.toList());
+        List<FeatureUniformResourceName> entityCreatedUrn = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn).collect(Collectors.toList());
 
         // preparation of the FeatureDeletionRequestEvent
         List<FeatureDeletionRequestEvent> deletionEvents = entityCreatedUrn.stream()
@@ -582,8 +602,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return deletionEvents;
     }
 
-    protected List<FeatureNotificationRequestEvent> prepareNotificationRequests(
-            Collection<FeatureUniformResourceName> urns) {
+    protected List<FeatureNotificationRequestEvent> prepareNotificationRequests(Collection<FeatureUniformResourceName> urns) {
         List<FeatureNotificationRequestEvent> events = Lists.newArrayList();
         urns.forEach(u -> events.add(FeatureNotificationRequestEvent.build("notifier", u, PriorityLevel.NORMAL)));
         return events;
@@ -595,6 +614,60 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                     e.getFeature().getProperties().clear();
                     return e;
                 }).collect(Collectors.toList());
+    }
+
+    protected SessionStep getSessionStep() {
+        Optional<SessionStep> sessionStepOptional = sessionStepRepository.findBySourceAndSessionAndStepId(owner, session, sessionStepName);
+        Assertions.assertTrue(sessionStepOptional.isPresent());
+        return sessionStepOptional.get();
+    }
+
+    protected void checkRequests(int expected, Predicate<StepPropertyUpdateRequest> predicate, List<StepPropertyUpdateRequest> requestList
+    ) {
+        Assertions.assertEquals(expected, requestList.stream().filter(predicate).count());
+    }
+
+    protected Predicate<StepPropertyUpdateRequest> property(String property) {
+        return request -> request.getStepPropertyInfo().getProperty().equals(property);
+    }
+
+    protected Predicate<StepPropertyUpdateRequest> type(StepPropertyEventTypeEnum type) {
+        return request -> request.getType().equals(type);
+    }
+
+    protected Predicate<StepPropertyUpdateRequest> inputRelated() {
+        return request -> request.getStepPropertyInfo().isInputRelated();
+    }
+
+    protected Predicate<StepPropertyUpdateRequest> outputRelated() {
+        return request -> request.getStepPropertyInfo().isOutputRelated();
+    }
+
+    protected void checkKey(int expected, String key, SessionStepProperties sessionStepProperties) {
+        Assertions.assertTrue(sessionStepProperties.containsKey(key));
+        Assertions.assertEquals(expected, Integer.valueOf(sessionStepProperties.get(key)));
+    }
+
+    protected void setNotificationSetting(boolean value) {
+        FeatureNotificationSettings settings = featureSettingsNotificationService.retrieve();
+        settings.setActiveNotification(value);
+        featureSettingsNotificationService.update(settings);
+    }
+
+    protected void computeSessionStep() throws InterruptedException {
+        OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
+        SessionStep sessionStep;
+        boolean done = false;
+        do {
+            agentSnapshotJobService.scheduleJob();
+            TimeUnit.SECONDS.sleep(1);
+            sessionStep = sessionStepRepository.findAll().stream().findFirst().orElse(null);
+            if (sessionStep != null &&
+                    stepPropertyUpdateRequestRepository.countBySourceAndDateGreaterThanAndDateLessThanEqual(owner, sessionStep.getLastUpdateDate(), start) == 0) {
+                done = true;
+            }
+
+        } while (!done && OffsetDateTime.now(ZoneOffset.UTC).isBefore(start.plusSeconds(60)));
     }
 
 }

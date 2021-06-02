@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureDeletionService extends IAbstractFeatureService {
+public interface IFeatureDeletionService extends IAbstractFeatureService<FeatureDeletionRequest> {
 
     /**
      * Register delete requests in database for further processing from incoming request events
