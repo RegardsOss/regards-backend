@@ -146,6 +146,11 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
         errors.forEach(error -> LOGGER.error(error));
         Assert.assertTrue("Error detected", errors.isEmpty());
 
+        // Re-entrant import
+        errors = configurationManager.importConfiguration(conf);
+        errors.forEach(error -> LOGGER.error(error));
+        Assert.assertTrue("Error detected", errors.isEmpty());
+
         // Export configuration
         ModuleConfiguration moduleConfiguration = configurationManager.exportConfiguration();
         Assert.assertNotNull("Module configuration must not be null",moduleConfiguration);

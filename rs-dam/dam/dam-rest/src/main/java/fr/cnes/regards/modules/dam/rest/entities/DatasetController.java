@@ -250,12 +250,7 @@ public class DatasetController implements IResourceController<Dataset> {
     @ResourceAccess(description = "Update a dataset")
     public ResponseEntity<EntityModel<Dataset>> updateDataset(@PathVariable("dataset_id") Long datasetId,
                                                               @Valid @RequestBody Dataset dataset, BindingResult result) throws ModuleException, IOException {
-        service.checkAndOrSetModel(dataset);
-        // Validate dynamic model
-        service.validate(dataset, result, ValidationMode.UPDATE);
-
-        Dataset dataSet = service.update(datasetId, dataset);
-        EntityModel<Dataset> resource = toResource(dataSet);
+        EntityModel<Dataset> resource = toResource(service.updateDataset(datasetId,dataset,result));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 

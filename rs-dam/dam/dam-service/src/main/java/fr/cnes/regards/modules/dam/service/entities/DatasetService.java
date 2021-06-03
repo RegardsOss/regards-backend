@@ -59,7 +59,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UriUtils;
 
@@ -120,6 +119,14 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
         // Validate dynamic model
         validate(dataset, errors, ValidationMode.CREATION);
         return create(dataset);
+    }
+
+    @Override
+    public Dataset updateDataset(Long datasetId, Dataset dataset, Errors errors) throws ModuleException {
+        checkAndOrSetModel(dataset);
+        // Validate dynamic model
+        validate(dataset, errors, ValidationMode.UPDATE);
+        return update(datasetId, dataset);
     }
 
     /**

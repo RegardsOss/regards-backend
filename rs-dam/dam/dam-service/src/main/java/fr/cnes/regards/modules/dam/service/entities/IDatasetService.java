@@ -42,7 +42,16 @@ public interface IDatasetService extends IEntityService<Dataset> {
     /**
      * Create a dataset
      */
-    Dataset createDataset(Dataset dataset, Errors errors) throws ModuleException ;
+    Dataset createDataset(Dataset dataset, Errors errors) throws ModuleException;
+
+    /**
+     * Update dataset
+     * @param datasetId internal identifier
+     * @param dataset the dataset to update
+     * @param errors validation errors
+     * @return updated dataset
+     */
+    Dataset updateDataset(Long datasetId, Dataset dataset, Errors errors) throws ModuleException;
 
     /**
      * Extract the AttributeModel of {@link DataObject} that can be contained into datasets. <br/>
