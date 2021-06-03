@@ -156,7 +156,7 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
                 }
 
                 // Create or update if possible (update only available if only one DATASET exists for the specified provider id)
-                createOrUpdateDataset(model,datasource,conf,validationErrors);
+                createOrUpdateDataset(model, datasource, conf, validationErrors);
             } catch (ModuleException mex) {
                 LOGGER.error("Dataset import throw an exception", mex);
                 String message = String.format("Cannot import dataset %s : %s", conf.getFeature().getId(), mex.getMessage());
@@ -166,7 +166,7 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
         return errors;
     }
 
-    private void createOrUpdateDataset(Model model, PluginConfiguration datasource, DatasetConfiguration  conf, Errors validationErrors) throws ModuleException {
+    private void createOrUpdateDataset(Model model, PluginConfiguration datasource, DatasetConfiguration conf, Errors validationErrors) throws ModuleException {
         // First : try to load dataset from its provider id
         Set<Dataset> datasets = datasetService.findAllByProviderId(conf.getFeature().getProviderId());
         if (datasets.isEmpty()) {
@@ -179,7 +179,7 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
             datasetService.createDataset(dataset, validationErrors);
         } else {
             if (datasets.size() > 1) {
-                String message = String.format("Multiple datasets exist with this provider id : %s. Import cannot select right one!",conf.getFeature().getProviderId());
+                String message = String.format("Multiple datasets exist with this provider id : %s. Import cannot select right one!", conf.getFeature().getProviderId());
                 throw new ModuleException(message);
             }
             // Update dataset
@@ -191,7 +191,7 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
             // Workaround : model cannot be changed - always override it!
             dataset.getFeature().setModel(dataset.getModel().getName());
             // Call service to persist dataset
-            datasetService.updateDataset(dataset.getId(),dataset,validationErrors);
+            datasetService.updateDataset(dataset.getId(), dataset, validationErrors);
         }
     }
 

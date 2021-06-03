@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.dam.service;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -30,8 +32,10 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.entities.DatasetConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
+import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
 import fr.cnes.regards.modules.model.dao.IModelAttrAssocRepository;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
+import fr.cnes.regards.modules.model.dao.IRestrictionRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -56,13 +60,14 @@ import java.util.Set;
 /**
  * @author Marc SORDI
  */
-@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=dam_configuration"},
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_configuration" },
         locations = "classpath:es.properties")
 public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DamConfigurationManagerTest.class);
 
     private static final Path DATA_FOLDER = Paths.get("src", "test", "resources", "data");
+
     @Autowired
     private DamConfigurationManager configurationManager;
 
@@ -79,6 +84,9 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
     private IModelAttrAssocRepository modelAttrAssocRepository;
 
     @Autowired
+    private IAttributeModelRepository attributeModelRepository;
+
+    @Autowired
     private IAttributeModelService attributeModelService;
 
     @Autowired
@@ -89,6 +97,9 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
 
     @Autowired
     private IPluginConfigurationRepository pluginConfigurationRepository;
+
+    @Autowired
+    private IRestrictionRepository restrictionRepository;
 
     private Model datasetModel;
 
@@ -102,24 +113,22 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
         datasetRepository.deleteAllInBatch();
         pluginConfigurationRepository.deleteAllInBatch();
         modelAttrAssocRepository.deleteAllInBatch();
+        attributeModelRepository.deleteAll();
         modelRepository.deleteAll();
+        restrictionRepository.deleteAll();
 
         // - Prepare context
         // Import dataset model
-        datasetModel = modelService
-                .importModel(Files.newInputStream(DATA_FOLDER.resolve("dataset-model.xml")));
+        datasetModel = modelService.importModel(Files.newInputStream(DATA_FOLDER.resolve("dataset-model.xml")));
         // Import data model
-        dataModel = modelService
-                .importModel(Files.newInputStream(DATA_FOLDER.resolve("data-model.xml")));
+        dataModel = modelService.importModel(Files.newInputStream(DATA_FOLDER.resolve("data-model.xml")));
         // Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // Import datasource
-        datasourceConfiguration = PluginConfiguration.build(
-                "FakeDatasourcePlugin",
-                "Test datasource",
-                IPluginParam.set(IPluginParam.build(FakeDatasourcePlugin.MODEL_PARAM, dataModel.getName())));
+        datasourceConfiguration = PluginConfiguration.build("FakeDatasourcePlugin", "Test datasource", IPluginParam
+                .set(IPluginParam.build(FakeDatasourcePlugin.MODEL_PARAM, dataModel.getName())));
         pluginService.savePluginConfiguration(datasourceConfiguration);
     }
 
@@ -131,17 +140,29 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
         // Add required properties
         feature.addProperty(IProperty.buildString("description", "Dataset 01 description"));
         feature.addProperty(IProperty.buildString("license", "Proprietary"));
+        // Build providers
+        JsonArray providers = new JsonArray();
+        // - First provider
+        JsonObject firstProvider = new JsonObject();
+        firstProvider.addProperty("name", "CNES");
+        firstProvider.addProperty("description", "Centre National ...");
+        JsonArray roles = new JsonArray();
+        roles.add("licensor");
+        roles.add("producer");
+        firstProvider.add("roles", roles);
+        firstProvider.addProperty("url", "http://www.cnes.fr");
+        // - Add provider(s)
+        providers.add(firstProvider);
+        feature.addProperty(IProperty.buildJson("providers", providers));
 
         // Create a dataset configuration module item
-        DatasetConfiguration dsConf = DatasetConfiguration.builder()
-                .datasource(datasourceConfiguration.getBusinessId())
-                .subsetting("hydro.data_type:TEST_TYPE")
-                .feature(feature)
-                .build();
+        DatasetConfiguration dsConf = DatasetConfiguration.builder().datasource(datasourceConfiguration.getBusinessId())
+                .subsetting("hydro.data_type:TEST_TYPE").feature(feature).build();
         ModuleConfigurationItem<DatasetConfiguration> item = ModuleConfigurationItem.build(dsConf);
 
         // Import configuration
-        ModuleConfiguration conf = ModuleConfiguration.build(configurationManager.getModuleInformation(), Lists.newArrayList(item));
+        ModuleConfiguration conf = ModuleConfiguration
+                .build(configurationManager.getModuleInformation(), Lists.newArrayList(item));
         Set<String> errors = configurationManager.importConfiguration(conf);
         errors.forEach(error -> LOGGER.error(error));
         Assert.assertTrue("Error detected", errors.isEmpty());
@@ -153,6 +174,6 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
 
         // Export configuration
         ModuleConfiguration moduleConfiguration = configurationManager.exportConfiguration();
-        Assert.assertNotNull("Module configuration must not be null",moduleConfiguration);
+        Assert.assertNotNull("Module configuration must not be null", moduleConfiguration);
     }
 }
