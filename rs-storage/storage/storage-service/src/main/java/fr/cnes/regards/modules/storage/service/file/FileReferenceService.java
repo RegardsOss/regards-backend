@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -65,6 +66,9 @@ public class FileReferenceService {
     @Autowired
     private FileReferenceEventPublisher fileRefEventPublisher;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     /**
      * Calculate the total file size by adding fileSize of each {@link FileReference} with an id over the given id.
      */
@@ -93,11 +97,12 @@ public class FileReferenceService {
     /**
      * Delete the given {@link FileReference} in database and send a AMQP {@link FileReferenceEvent} as FULLY_DELETED.
      * This method does not delete file physically.
-     *
-     * @param fileRef {@link FileReference} to delete.
+     *  @param fileRef {@link FileReference} to delete.
      * @param groupId request business identifier
+     * @param sessionOwner
+     * @param session
      */
-    public void delete(FileReference fileRef, String groupId) {
+    public void delete(FileReference fileRef, String groupId, String sessionOwner, String session) {
         Assert.notNull(fileRef, "File reference to delete cannot be null");
         Assert.notNull(fileRef.getId(), "File reference identifier to delete cannot be null");
 
@@ -107,6 +112,11 @@ public class FileReferenceService {
         String message = String.format("File reference %s (checksum: %s) as been completly deleted for all owners.",
                                        fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum());
         fileRefEventPublisher.deletionSuccess(fileRef, message, groupId);
+
+        // Decrement the number of running requests to the session agent
+        this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+        // Notify successfully deleted file
+        this.sessionNotifier.notifyDeletedFiles(sessionOwner, session);
     }
 
     /**
@@ -234,7 +244,7 @@ public class FileReferenceService {
 
     /**
      * @param storage
-     * @param pageRequest
+     * @param pageable
      * @return
      */
     public Page<FileReference> searchWithOwners(String storage, Pageable pageable) {

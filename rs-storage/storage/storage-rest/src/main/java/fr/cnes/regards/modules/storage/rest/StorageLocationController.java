@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +98,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
     public static final String METHOD_DOWN = "down";
     public static final String METHOD_UP = "up";
 
+
     @Autowired
     private StorageLocationService service;
 
@@ -107,6 +110,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     @Autowired
     private IResourceService resourceService;
+
+    @Autowired
+    private IAuthenticationResolver authenticationResolver;
 
     /**
      * End-point to retrieve a storage location by his name
@@ -204,10 +210,15 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @ResourceAccess(description = "Delete all files of the storage location", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> deleteFiles(@PathVariable(name = "id") String storageLocationId,
             @RequestParam(name = "force", required = false) Boolean forceDelete) throws ModuleException {
+        // initialize sessionOwner and session
+        // By default, sessionOwner is the user requesting the deletion of the files
+        String sessionOwner = authenticationResolver.getUser();
+        String session = OffsetDateTime.now().toString();
+        // order deletion of files
         if (forceDelete != null) {
-            service.deleteFiles(storageLocationId, forceDelete);
+            service.deleteFiles(storageLocationId, forceDelete, sessionOwner, session);
         } else {
-            service.deleteFiles(storageLocationId, false);
+            service.deleteFiles(storageLocationId, false, sessionOwner, session);
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -223,15 +234,21 @@ public class StorageLocationController implements IResourceController<StorageLoc
             role = DefaultRole.ADMIN)
     public ResponseEntity<Void> copyFiles(@Valid @RequestBody CopyFilesParametersDTO parameters)
             throws ModuleException {
+        // assert parameters are not null
         Assert.notNull(parameters, "Copy parameters can not be null");
         Assert.notNull(parameters.getFrom(), "Source copy parameters can not be null");
         Assert.notNull(parameters.getFrom().getStorage(), "Source storage location copy parameters can not be null");
         Assert.notNull(parameters.getFrom().getUrl(), "Source storage url to copy parameters can not be null");
         Assert.notNull(parameters.getTo(), "Destination copy parameters can not be null");
         Assert.notNull(parameters.getTo().getStorage(), "Destination storage location copy parameters can not be null");
+
+        // initialize sessionOwner and session
+        // By default, sessionOwner is the user requesting the deletion of the files
+        String sessionOwner = authenticationResolver.getUser();
+        String session = OffsetDateTime.now().toString();
         service.copyFiles(parameters.getFrom().getStorage(), parameters.getFrom().getUrl(),
                           parameters.getTo().getStorage(), Optional.ofNullable(parameters.getTo().getUrl()),
-                          parameters.getTypes());
+                          parameters.getTypes(), sessionOwner, session);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -110,6 +111,9 @@ public class FileCopyRequestService {
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Value("${regards.storage.copy.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
@@ -132,6 +136,7 @@ public class FileCopyRequestService {
      */
     public void copy(Collection<FileCopyRequestDTO> requests, String groupId) {
         for (FileCopyRequestDTO request : requests) {
+            // copy the file
             copy(request, groupId);
         }
     }
@@ -147,12 +152,16 @@ public class FileCopyRequestService {
      * @return {@link FileCopyRequest} created if any.
      */
     public Optional<FileCopyRequest> copy(FileCopyRequestDTO requestDto, String groupId) {
+
         // Check a same request already exists
         Optional<FileCopyRequest> request = copyRepository.findOneByMetaInfoChecksumAndStorage(requestDto.getChecksum(),
                                                                                                requestDto.getStorage());
         if (request.isPresent()) {
             return Optional.of(handleAlreadyExists(requestDto, request.get(), groupId));
         } else {
+            // notify the copy request to the session agent
+            this.sessionNotifier.incrementCopyRequests(requestDto.getSessionOwner(), requestDto.getSession());
+
             // get file meta info to copy
             Set<FileReference> refs = fileRefService.search(requestDto.getChecksum());
             if (refs.isEmpty()) {
@@ -162,8 +171,10 @@ public class FileCopyRequestService {
                 LOGGER.warn("[COPY REQUEST] {}", message);
                 notificationClient.notify(message, "File copy request refused", NotificationLevel.WARNING,
                                           DefaultRole.PROJECT_ADMIN);
+                // notify denied request to the session agent
+                sessionNotifier.incrementDeniedRequests(requestDto.getSessionOwner(), requestDto.getSession());
             } else {
-                // Check if destination file already ecists
+                // Check if destination file already exists
                 if (refs.stream().anyMatch(r -> r.getLocation().getStorage().equals(requestDto.getStorage()))) {
                     FileReference existingfileRef = refs.stream()
                             .filter(r -> r.getLocation().getStorage().equals(requestDto.getStorage())).findFirst()
@@ -179,8 +190,12 @@ public class FileCopyRequestService {
                     LOGGER.debug("[COPY REQUEST] Create copy request for group {}", groupId);
                     FileCopyRequest newRequest = copyRepository
                             .save(new FileCopyRequest(groupId, refs.stream().findFirst().get().getMetaInfo(),
-                                    requestDto.getSubDirectory(), requestDto.getStorage()));
+                                                      requestDto.getSubDirectory(), requestDto.getStorage(),
+                                                      requestDto.getSessionOwner(), requestDto.getSession()));
                     request = Optional.of(newRequest);
+                    // notify request is running
+                    this.sessionNotifier
+                            .incrementRunningRequests(requestDto.getSessionOwner(), requestDto.getSession());
                 }
             }
         }
@@ -197,6 +212,9 @@ public class FileCopyRequestService {
     private FileCopyRequest handleAlreadyExists(FileCopyRequestDTO requestDto, FileCopyRequest request,
             String newGroupId) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
+            // decrement the number of errors to the session agent
+            this.sessionNotifier.decrementErrorRequests(requestDto.getSessionOwner(), requestDto.getSession());
+            // set the new status
             request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
             request.setFileCacheGroupId(newGroupId);
             return update(request);
@@ -348,7 +366,7 @@ public class FileCopyRequestService {
      * Schedule a job to create {@link FileCopyRequest}s for the given criterion
      */
     public JobInfo scheduleJob(String storageLocationId, String sourcePath, String destinationStorageId,
-            Optional<String> destinationPath, Collection<String> types) {
+            Optional<String> destinationPath, Collection<String> types, String sessionOwner, String session) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, storageLocationId));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID,
@@ -356,6 +374,9 @@ public class FileCopyRequestService {
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, sourcePath));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, destinationPath.orElse("")));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.FILE_TYPES, types));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER, sessionOwner));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION, session));
+
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
         LOGGER.debug("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for types {}.",

@@ -303,7 +303,7 @@ public class StorageLocationService {
 
     /**
      * Delete the given storage location informations. <br/>
-     * Files reference are not deleted, to do so, use {@link #deleteFiles(String, Boolean)}
+     * Files reference are not deleted, to do so, use {@link #deleteFiles(String, Boolean, String, String)}
      * @param storageLocationId
      * @throws EntityNotFoundException
      */
@@ -327,13 +327,15 @@ public class StorageLocationService {
      * Delete all referenced files of the give storage location
      * @param storageLocationId
      * @param forceDelete remove reference if physical file deletion fails.
+     * @param sessionOwner the user who has requested the deletion of files
+     * @param session tags the deletion files requests with a session name
      * @throws ModuleException
      */
-    public void deleteFiles(String storageLocationId, Boolean forceDelete) throws ModuleException {
+    public void deleteFiles(String storageLocationId, Boolean forceDelete, String sessionOwner, String session) throws ModuleException {
         if (storageLocationId.equals(CacheService.CACHE_NAME)) {
             cacheScheduler.cleanCache();
         } else {
-            deletionService.scheduleJob(storageLocationId, forceDelete);
+            deletionService.scheduleJob(storageLocationId, forceDelete, sessionOwner, session);
         }
     }
 
@@ -345,8 +347,10 @@ public class StorageLocationService {
      * @param destinationPath
      */
     public void copyFiles(String storageLocationId, String sourcePath, String destinationStorageId,
-            Optional<String> destinationPath, Collection<String> types) {
-        copyService.scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath, types);
+            Optional<String> destinationPath, Collection<String> types, String sessionOwner, String session) {
+        copyService
+                .scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath, types, sessionOwner,
+                             session);
     }
 
     /**

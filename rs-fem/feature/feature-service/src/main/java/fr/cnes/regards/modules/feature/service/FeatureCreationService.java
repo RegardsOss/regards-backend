@@ -425,28 +425,31 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         for (FeatureFile file : fcr.getFeature().getFiles()) {
             FeatureFileAttributes attribute = file.getAttributes();
             for (FeatureFileLocation loc : file.getLocations()) {
+                FeatureCreationMetadataEntity metadata = fcr.getMetadata();
                 // there is no metadata but a file location so we will update reference
-                if (!fcr.getMetadata().hasStorage()) {
+                if (!metadata.hasStorage()) {
                     fcr.setGroupId(this.storageClient
                             .reference(FileReferenceRequestDTO
                                     .build(attribute.getFilename(), attribute.getChecksum(), attribute.getAlgorithm(),
                                            attribute.getMimeType().toString(), attribute.getFilesize(),
-                                           fcr.getFeature().getUrn().toString(), loc.getStorage(), loc.getUrl()))
+                                           fcr.getFeature().getUrn().toString(), loc.getStorage(), loc.getUrl(),
+                                           metadata.getSessionOwner(), metadata.getSession()))
                             .getGroupId());
                 }
-                for (StorageMetadata metadata : fcr.getMetadata().getStorages()) {
+                for (StorageMetadata storageMetadata : metadata.getStorages()) {
                     if (loc.getStorage() == null) {
                         fcr.setGroupId(this.storageClient.store(FileStorageRequestDTO
                                 .build(attribute.getFilename(), attribute.getChecksum(), attribute.getAlgorithm(),
                                        attribute.getMimeType().toString(), fcr.getFeature().getUrn().toString(),
-                                       loc.getUrl(), metadata.getPluginBusinessId(), Optional.of(loc.getUrl())))
+                                       metadata.getSessionOwner(), metadata.getSession(), loc.getUrl(),
+                                       storageMetadata.getPluginBusinessId(), Optional.of(loc.getUrl())))
                                 .getGroupId());
                     } else {
                         fcr.setGroupId(this.storageClient.reference(FileReferenceRequestDTO
                                 .build(attribute.getFilename(), attribute.getChecksum(), attribute.getAlgorithm(),
                                        attribute.getMimeType().toString(), attribute.getFilesize(),
-                                       fcr.getFeature().getUrn().toString(), loc.getStorage(), loc.getUrl()))
-                                .getGroupId());
+                                       fcr.getFeature().getUrn().toString(), loc.getStorage(), loc.getUrl(),
+                                       metadata.getSessionOwner(), metadata.getSession())).getGroupId());
                     }
                 }
             }

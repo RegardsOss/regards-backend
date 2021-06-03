@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -64,11 +67,16 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class StoreFileFlowItemTest extends AbstractStorageTest {
 
+    private static final  String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
+
     @Autowired
     private StorageFlowItemHandler storeHandler;
 
     @Autowired
     private RetryFlowItemHandler retryHandler;
+
 
     @Before
     public void initialize() throws ModuleException {
@@ -82,7 +90,8 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
     public void storeFileWithoutChecksum() {
         // Create a new bus message File reference request
         StorageFlowItem.build(
-                              FileStorageRequestDTO.build("file.name", null, "MD5", "application/octet-stream", "owner",
+                              FileStorageRequestDTO.build("file.name", null, "MD5", "application/octet-stream",
+                                                          "owner", SESSION_OWNER, SESSION,
                                                           originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                               UUID.randomUUID().toString());
     }
@@ -99,6 +108,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         // Create a new bus message File reference request
         StorageFlowItem item = StorageFlowItem
                 .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner,
+                                                   SESSION_OWNER, SESSION,
                                                    originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                        UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
@@ -127,6 +137,18 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORED,
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
+
+        // Check step events were correctly send
+        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 4, stepEventList.size());
+        checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION);
     }
 
     @Test
@@ -135,10 +157,12 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         Set<FileStorageRequestDTO> requests = Sets.newHashSet();
         String cs1 = UUID.randomUUID().toString();
         String cs2 = UUID.randomUUID().toString();
-        requests.add(FileStorageRequestDTO.build("file.name", cs1, "MD5", "application/octet-stream", "owner",
-                                                 originUrl, ONLINE_CONF_LABEL, Optional.empty()));
-        requests.add(FileStorageRequestDTO.build("file.name", cs2, "MD5", "application/octet-stream", "owner",
-                                                 originUrl, ONLINE_CONF_LABEL, Optional.empty()));
+        requests.add(FileStorageRequestDTO
+                             .build("file.name", cs1, "MD5", "application/octet-stream", "owner", SESSION_OWNER,
+                                    SESSION, originUrl, ONLINE_CONF_LABEL, Optional.empty()));
+        requests.add(FileStorageRequestDTO
+                             .build("file.name", cs2, "MD5", "application/octet-stream", "owner", SESSION_OWNER,
+                                    SESSION, originUrl, ONLINE_CONF_LABEL, Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(requests, UUID.randomUUID().toString());
 
         List<StorageFlowItem> items = new ArrayList<>();
@@ -176,7 +200,6 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORED,
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
-
     }
 
     /**
@@ -190,7 +213,8 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         // Create a new bus message File reference request
         StorageFlowItem item = StorageFlowItem
                 .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                   "owner-test", originUrl, storageDestination, Optional.empty()),
+                                                   "owner-test", SESSION_OWNER, SESSION, originUrl, storageDestination,
+                                                   Optional.empty()),
                        UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
@@ -205,6 +229,17 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORE_ERROR,
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
+        // Check step events were correctly send
+        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 4, stepEventList.size());
+        checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.REQUESTS_ERRORS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION);
     }
 
     /**
@@ -214,10 +249,12 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
     public void storeFileFlowItem_storeError() {
         String checksum = UUID.randomUUID().toString();
         // Create a new bus message File reference request
-        StorageFlowItem item = StorageFlowItem
-                .build(FileStorageRequestDTO.build("error.file.name", checksum, "MD5", "application/octet-stream",
-                                                   "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
-                       UUID.randomUUID().toString());
+        StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("error.file.name", checksum, "MD5",
+                                                                                 "application/octet-stream",
+                                                                                 "owner-test", SESSION_OWNER, SESSION,
+                                                                                 originUrl, ONLINE_CONF_LABEL,
+                                                                                 Optional.empty()),
+                                                     UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(getDefaultTenant(), items);
@@ -267,16 +304,17 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         String storageDestination = "somewheere";
         String owner = "retry-test";
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
+
         // Create a new bus message File reference request
-        files.add(FileStorageRequestDTO.build("file1.test", UUID.randomUUID().toString(), "MD5",
-                                              "application/octet-stream", owner, originUrl, storageDestination,
-                                              Optional.empty()));
-        files.add(FileStorageRequestDTO.build("file2.test", UUID.randomUUID().toString(), "MD5",
-                                              "application/octet-stream", owner, originUrl, storageDestination,
-                                              Optional.empty()));
-        files.add(FileStorageRequestDTO.build("file3.test", UUID.randomUUID().toString(), "MD5",
-                                              "application/octet-stream", owner, originUrl, storageDestination,
-                                              Optional.empty()));
+        files.add(FileStorageRequestDTO
+                          .build("file1.test", UUID.randomUUID().toString(), "MD5", "application/octet-stream", owner,
+                                 SESSION_OWNER, SESSION, originUrl, storageDestination, Optional.empty()));
+        files.add(FileStorageRequestDTO
+                          .build("file2.test", UUID.randomUUID().toString(), "MD5", "application/octet-stream", owner,
+                                 SESSION_OWNER, SESSION, originUrl, storageDestination, Optional.empty()));
+        files.add(FileStorageRequestDTO
+                          .build("file3.test", UUID.randomUUID().toString(), "MD5", "application/octet-stream", owner,
+                                 SESSION_OWNER, SESSION, originUrl, storageDestination, Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
@@ -304,7 +342,6 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner), FileRequestStatus.ERROR,
                                                                   PageRequest.of(0, 1_000));
         Assert.assertEquals("The 3 requests should be in error again", 3, requests.getTotalElements());
-
     }
 
     @Test
@@ -313,15 +350,18 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         List<String> owners = Lists.newArrayList("retry-test", "retry-test-2", "retry-test-3");
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
         // Create a new bus message File reference request
-        files.add(FileStorageRequestDTO.build("file1.test", UUID.randomUUID().toString(), "MD5",
-                                              "application/octet-stream", owners.get(0), originUrl, storageDestination,
-                                              Optional.empty()));
-        files.add(FileStorageRequestDTO.build("file2.test", UUID.randomUUID().toString(), "MD5",
-                                              "application/octet-stream", owners.get(1), originUrl, storageDestination,
-                                              Optional.empty()));
-        files.add(FileStorageRequestDTO.build("file3.test", UUID.randomUUID().toString(), "MD5",
-                                              "application/octet-stream", owners.get(2), originUrl, storageDestination,
-                                              Optional.empty()));
+        files.add(FileStorageRequestDTO
+                          .build("file1.test", UUID.randomUUID().toString(), "MD5", "application/octet-stream",
+                                 owners.get(0), SESSION_OWNER, SESSION, originUrl, storageDestination,
+                                 Optional.empty()));
+        files.add(FileStorageRequestDTO
+                          .build("file2.test", UUID.randomUUID().toString(), "MD5", "application/octet-stream",
+                                 owners.get(1), SESSION_OWNER, SESSION, originUrl, storageDestination,
+                                 Optional.empty()));
+        files.add(FileStorageRequestDTO
+                          .build("file3.test", UUID.randomUUID().toString(), "MD5", "application/octet-stream",
+                                 owners.get(2), SESSION_OWNER, SESSION, originUrl, storageDestination,
+                                 Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
@@ -350,6 +390,24 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                                                   PageRequest.of(0, 1_000));
         Assert.assertEquals("The 3 requests should be in error again", 3, requests.getTotalElements());
 
+        // Check step events were correctly send (check only for the first request)
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 21, stepEventList.size());
+        checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.REQUESTS_ERRORS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(12), SessionNotifierPropertyEnum.REQUESTS_ERRORS,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(15), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEventList.get(16), SessionNotifierPropertyEnum.REQUESTS_ERRORS,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION);
     }
-
 }

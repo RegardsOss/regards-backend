@@ -93,13 +93,18 @@ public class FileDeletionRequest {
     @Column(name = "job_id")
     private String jobId;
 
+    @Column(name = "session_owner")
+    private String sessionOwner;
+
+    @Column(name = "session_name")
+    private String session;
+
     public FileDeletionRequest() {
         super();
         this.creationDate = OffsetDateTime.now();
-
     }
 
-    public FileDeletionRequest(FileReference fileReference, String groupId) {
+    public FileDeletionRequest(FileReference fileReference, String groupId, String sessionOwner, String session) {
         super();
 
         Assert.notNull(fileReference, "File reference to delete cannot be null");
@@ -110,16 +115,19 @@ public class FileDeletionRequest {
         this.storage = fileReference.getLocation().getStorage();
         this.groupId = groupId;
         this.creationDate = OffsetDateTime.now();
+        this.sessionOwner = sessionOwner;
+        this.session = session;
     }
 
-    public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String groupId) {
-        this(fileReference, groupId);
+    public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String groupId, String sessionOwner,
+            String session) {
+        this(fileReference, groupId, sessionOwner, session);
         this.forceDelete = forceDelete;
     }
 
     public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String groupId,
-            FileRequestStatus status) {
-        this(fileReference, forceDelete, groupId);
+            FileRequestStatus status, String sessionOwner, String session) {
+        this(fileReference, forceDelete, groupId, sessionOwner, session);
         this.status = status;
     }
 
@@ -185,6 +193,22 @@ public class FileDeletionRequest {
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
+    }
+
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public void setSessionOwner(String sessionOwner) {
+        this.sessionOwner = sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 
     @Override

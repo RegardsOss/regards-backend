@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -25,7 +29,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -300,7 +306,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileReference generateRandomStoredOnlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, ONLINE_CONF_LABEL,
-                                                subDir, Optional.empty());
+                                                subDir, Optional.empty(), "source1", "session1");
     }
 
     protected FileReference generateRandomStoredNearlineFileReference()
@@ -311,27 +317,28 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileReference generateRandomStoredNearlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, NEARLINE_CONF_LABEL,
-                                                subDir, Optional.empty());
+                                                subDir, Optional.empty(), "source1", "session1");
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,
-            String newOwner) {
+            String newOwner, String sessionOwner, String session) {
         Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
-        return stoReqService.handleRequest(newOwner, oFilef.get().getMetaInfo(), originUrl,
+        return stoReqService.handleRequest(newOwner, sessionOwner, session, oFilef.get().getMetaInfo(), originUrl,
                                            oFilef.get().getLocation().getStorage(), Optional.empty(),
                                            UUID.randomUUID().toString());
 
     }
 
     protected FileReference generateStoredFileReference(String checksum, String owner, String fileName, String storage,
-            Optional<String> subDir, Optional<String> type) throws InterruptedException, ExecutionException {
+            Optional<String> subDir, Optional<String> type, String sessionOwner, String session) throws InterruptedException, ExecutionException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 1024L,
                 MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.withType(type.orElse(null));
         FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storage, subDir, UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner, sessionOwner, session, fileMetaInfo, originUrl, storage, subDir,
+                                    UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(), checksum);
@@ -359,13 +366,14 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     }
 
     protected Optional<FileReference> referenceFile(String checksum, String owner, String type, String fileName,
-            String storage) {
+            String storage, String sessionOwner, String session) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 1024L,
-                MediaType.APPLICATION_OCTET_STREAM);
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setType(type);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
         try {
-            fileReqService.reference(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            fileReqService.reference(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()),
+                                     sessionOwner, session);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -373,17 +381,19 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         return fileRefService.search(location.getStorage(), fileMetaInfo.getChecksum());
     }
 
-    protected Optional<FileReference> referenceRandomFile(String owner, String type, String fileName, String storage) {
-        return this.referenceFile(UUID.randomUUID().toString(), owner, type, fileName, storage);
+    protected Optional<FileReference> referenceRandomFile(String owner, String type, String fileName, String storage,
+            String sessionOwner, String session) {
+        return this.referenceFile(UUID.randomUUID().toString(), owner, type, fileName, storage, sessionOwner, session);
     }
 
-    protected FileStorageRequest generateStoreFileError(String owner, String storageDestination)
+    protected FileStorageRequest generateStoreFileError(String owner, String storageDestination, String sessionOwner,
+            String session)
             throws InterruptedException, ExecutionException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5",
                 "error.file.test", 132L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storageDestination,
+        stoReqService.handleRequest(owner, sessionOwner, session, fileMetaInfo, originUrl, storageDestination,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
@@ -478,6 +488,34 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         }
         Assert.assertFalse("No file reference event checked", events.isEmpty());
         return evts;
+    }
+
+    protected List<StepPropertyUpdateRequestEvent> getStepPropertyEvents(Collection<ISubscribable> events) {
+        // get all events of type StepPropertyUpdateRequestEvent
+        List<StepPropertyUpdateRequestEvent> stepList = new ArrayList<>();
+        for (ISubscribable e : events) {
+            if (e instanceof StepPropertyUpdateRequestEvent) {
+                stepList.add((StepPropertyUpdateRequestEvent) e);
+            }
+        }
+        Assert.assertFalse("No step event found", stepList.isEmpty());
+        // sort list to make sure it is sorted by creation date
+        stepList.sort(Comparator.comparing(StepPropertyUpdateRequestEvent::getDate));
+        return stepList;
+    }
+
+    protected void checkStepEvent(StepPropertyUpdateRequestEvent event,
+            SessionNotifierPropertyEnum expectedEventProperty, StepPropertyEventTypeEnum expectedType,
+            String expectedSessionOwner, String expectedSession) {
+        StepProperty stepProperty = event.getStepProperty();
+        Assert.assertEquals("This property was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedEventProperty.getName(), stepProperty.getStepPropertyInfo().getProperty());
+        Assert.assertEquals("This type was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedType, event.getType());
+        Assert.assertEquals("This session owner was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedSessionOwner, stepProperty.getSource());
+        Assert.assertEquals("This session was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedSession, stepProperty.getSession());
     }
 
     protected void simulateFileInCache(String checksum) {

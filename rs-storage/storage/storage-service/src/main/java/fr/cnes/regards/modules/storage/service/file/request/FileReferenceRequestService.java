@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -89,6 +90,9 @@ public class FileReferenceRequestService {
     @Autowired
     private StoragePluginConfigurationHandler storagePluginConfHandler;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Value("${regards.storage.reference.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
@@ -105,6 +109,13 @@ public class FileReferenceRequestService {
             if (errors.hasErrors()) {
                 reqGrpService.denied(item.getGroupId(), FileRequestType.REFERENCE,
                                      ErrorTranslator.getErrorsAsString(errors));
+                // notify denied requests to the session agent
+                item.getFiles().forEach(file -> {
+                    String sessionOwner = file.getSessionOwner();
+                    String session = file.getSession();
+                    this.sessionNotifier.incrementReferenceRequests(sessionOwner, session);
+                    this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
+                });
             } else {
                 reqGrpService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size(),
                                       getRequestExpirationDate());
@@ -127,6 +138,13 @@ public class FileReferenceRequestService {
         Set<FileReference> fileRefs = Sets.newHashSet();
         for (FileReferenceRequestDTO file : requests) {
             long start = System.currentTimeMillis();
+
+            // notify reference request to the session agent
+            String sessionOwner = file.getSessionOwner();
+            String session = file.getSession();
+            this.sessionNotifier.incrementReferenceRequests(sessionOwner, session);
+            this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
+
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getMetaInfo().getChecksum().equals(file.getChecksum())
@@ -144,12 +162,18 @@ public class FileReferenceRequestService {
                 fileRefs.add(fileRef);
                 // Add newly created fileRef to existing file refs in case of the requests contains multiple time the same file to reference
                 existingOnes.add(fileRef);
+                // Notify reference success to session agent
+                this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+                this.sessionNotifier.incrementReferencedFiles(sessionOwner, session);
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
                 fileRefEventPublisher.storeError(file.getChecksum(), Sets.newHashSet(file.getOwner()),
                                                  file.getStorage(), e.getMessage(), Sets.newHashSet(groupId));
                 reqGrpService.requestError(groupId, FileRequestType.REFERENCE, file.getChecksum(), file.getStorage(),
                                            null, Sets.newHashSet(file.getOwner()), e.getMessage());
+                // notify error request to the session agent
+                this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+                this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
             } finally {
                 LOGGER.trace("[REFERENCE REQUEST] New reference request ({}) handled in {}ms", file.getFileName(),
                              System.currentTimeMillis() - start);
@@ -164,11 +188,13 @@ public class FileReferenceRequestService {
      * @param metaInfo information about file
      * @param location location of file
      * @param groupIds Business requests identifiers associated to the new file reference.
+     * @param sessionOwner Source of the request
+     * @param session tag name for the ongoing session
      * @return {@link FileReference}
      * @throws ModuleException if the file reference can not be created.
      */
     public FileReference reference(String owner, FileReferenceMetaInfo metaInfo, FileLocation location,
-            Collection<String> groupIds) throws ModuleException {
+            Collection<String> groupIds, String sessionOwner, String session) throws ModuleException {
         Optional<FileReference> oFileRef = fileRefService.search(location.getStorage(), metaInfo.getChecksum());
         Optional<FileDeletionRequest> oFileDelReq = Optional.empty();
         if (oFileRef.isPresent()) {
@@ -177,7 +203,7 @@ public class FileReferenceRequestService {
         return reference(FileReferenceRequestDTO
                 .build(metaInfo.getFileName(), metaInfo.getChecksum(), metaInfo.getAlgorithm(),
                        metaInfo.getMimeType().toString(), metaInfo.getFileSize(), owner, location.getStorage(),
-                       location.getUrl())
+                       location.getUrl(), sessionOwner, session)
                 .withHeight(metaInfo.getHeight()).withWidth(metaInfo.getWidth()).withType(metaInfo.getType()), oFileRef,
                          oFileDelReq, groupIds);
     }

@@ -40,6 +40,8 @@ public class FileStorageRequestJobTest {
     @Test
     public void testImageSizeCalculation() throws MalformedURLException, URISyntaxException {
         String owner = "test";
+        String sessionOwner = "source 1";
+        String session = "session 1";
         String checksum = "12345";
         String algorithm = "plop";
         String fileName = "file.test";
@@ -50,7 +52,7 @@ public class FileStorageRequestJobTest {
         String storage = "storage";
         String groupId = "10";
         FileStorageRequest request = new FileStorageRequest(owner, metaInfos, originUrl, storage, Optional.empty(),
-                groupId);
+                groupId, sessionOwner, session);
         FileStorageRequestJob.calculateImageDimension(request);
 
         Assert.assertEquals(Integer.valueOf(499), request.getMetaInfo().getWidth());

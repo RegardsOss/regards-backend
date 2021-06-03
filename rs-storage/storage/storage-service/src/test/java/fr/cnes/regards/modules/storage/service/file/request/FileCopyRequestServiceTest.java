@@ -69,6 +69,10 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     @Autowired
     private RequestsGroupService reqGrpService;
 
+    private static final  String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
+
     @Before
     @Override
     public void init() throws ModuleException {
@@ -82,15 +86,17 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of(pathToCopy), Optional.of("plop"));
+                                        ONLINE_CONF_LABEL, Optional.of(pathToCopy), Optional.of("plop"),
+                                        SESSION_OWNER, SESSION);
         }
         for (int i = 0; i < 5; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of("/rep/two"), Optional.of("plop"));
+                                        ONLINE_CONF_LABEL, Optional.of("/rep/two"), Optional.of("plop"),
+                                        SESSION_OWNER, SESSION);
         }
-        JobInfo ji = fileCopyRequestService.scheduleJob(ONLINE_CONF_LABEL,
-                                                        SimpleOnlineDataStorage.BASE_URL + pathToCopy,
-                                                        NEARLINE_CONF_LABEL, Optional.empty(), Sets.newHashSet("plop"));
+        JobInfo ji = fileCopyRequestService
+                .scheduleJob(ONLINE_CONF_LABEL, SimpleOnlineDataStorage.BASE_URL + pathToCopy, NEARLINE_CONF_LABEL,
+                             Optional.empty(), Sets.newHashSet("plop"), SESSION_OWNER, SESSION);
         Assert.assertNotNull("A job should be created", ji);
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();
@@ -115,12 +121,13 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     public void copyFile() throws InterruptedException, ExecutionException {
         String requestGroup = UUID.randomUUID().toString();
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
-        Set<FileCopyRequestDTO> requests = Sets
-                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL));
+        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                                                    ONLINE_CONF_LABEL, SESSION_OWNER,
+                                                                                    SESSION));
         fileCopyRequestService.copy(Sets.newHashSet(CopyFlowItem.build(requests, requestGroup)));
         // A new copy request should be created
-        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
-                                                                       ONLINE_CONF_LABEL);
+        Optional<FileCopyRequest> oReq = fileCopyRequestService
+                .search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
@@ -218,8 +225,10 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     public void copyFileInSubDir() throws InterruptedException, ExecutionException {
         String copyDestinationPath = "dir/test/copy";
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO
-                .build(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL, copyDestinationPath));
+        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                                                    ONLINE_CONF_LABEL,
+                                                                                    copyDestinationPath, SESSION_OWNER,
+                                                                                    SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         // A new copy request should be created
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
@@ -301,12 +310,12 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     public void copyFile_error_offlineFile() {
         String storage = "somewhere";
         String storageCopyDest = "somewhereElse";
-        FileReference fileRef = referenceRandomFile("owner", "type", "file1.test", storage).get();
-        Set<FileCopyRequestDTO> requests = Sets
-                .newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storageCopyDest));
+        FileReference fileRef = referenceRandomFile("owner", "type", "file1.test", storage, SESSION_OWNER, SESSION).get();
+        Set<FileCopyRequestDTO> requests = Sets.newHashSet(
+                FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storageCopyDest, SESSION_OWNER, SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
-        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
-                                                                       storageCopyDest);
+        Optional<FileCopyRequest> oReq = fileCopyRequestService
+                .search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
@@ -345,7 +354,8 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     public void copyFile_error_unknownFile() {
         String storage = "somewhere";
         String unknownChecksum = UUID.randomUUID().toString();
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(unknownChecksum, storage));
+        Set<FileCopyRequestDTO> requests = Sets
+                .newHashSet(FileCopyRequestDTO.build(unknownChecksum, storage, SESSION_OWNER, SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(unknownChecksum, storage);
         Assert.assertFalse("There should not be a copy request created", oReq.isPresent());

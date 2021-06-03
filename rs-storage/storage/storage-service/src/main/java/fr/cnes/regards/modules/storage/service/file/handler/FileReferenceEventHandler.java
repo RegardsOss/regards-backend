@@ -243,8 +243,8 @@ public class FileReferenceEventHandler
 
     /**
      * Handle copy process after a file available event received
-     * @param event {@link FileReferenceEvent} Event of file available
-     * @param fileRefMeta {@link FileReferenceMetaInfo} meta information of file to store
+     * @param availableEvent {@link FileReferenceEvent} Event of file available
+     * @param fileAvailableMetaInfo {@link FileReferenceMetaInfo} meta information of file to store
      */
     private void handleCopyProcess(FileReferenceEvent availableEvent,
             Optional<FileReferenceMetaInfo> fileAvailableMetaInfo) {
@@ -262,7 +262,8 @@ public class FileReferenceEventHandler
                                                                   availableEvent.getLocation().getUrl(),
                                                                   copyReq.getStorage(),
                                                                   Optional.ofNullable(copyReq.getStorageSubDirectory()),
-                                                                  storageGroupId, Optional.empty(), Optional.empty());
+                                                                  storageGroupId, Optional.empty(), Optional.empty(),
+                                                                  copyReq.getSessionOwner(), copyReq.getSession());
             copyReq.setFileStorageGroupId(storageGroupId);
             fileCopyRequestService.update(copyReq);
             LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",

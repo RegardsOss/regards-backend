@@ -81,6 +81,10 @@ public class FlowPerformanceTest extends AbstractStorageTest {
 
     private static final String FILE_REF_OWNER = "owner";
 
+    private static final  String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
+
     @Autowired
     private ReferenceFlowItemHandler referenceFlowHandler;
 
@@ -163,8 +167,11 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             items.clear();
             requests.clear();
             String newOwner = "owner-" + UUID.randomUUID().toString();
+            String sessionOwner = "source-" + i;
+            String session = "session-" + i;
             requests.add(FileReferenceRequestDTO.build(checksum, checksum, "MD5", "application/octet-stream", 10L,
-                                                       newOwner, "storage", "file://storage/location/file1"));
+                                                       newOwner, "storage", "file://storage/location/file1",
+                                                       sessionOwner, session));
             items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
             referenceFlowHandler.handleBatch(getDefaultTenant(), items);
         }
@@ -179,23 +186,26 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         List<ReferenceFlowItem> items = new ArrayList<>();
         for (int i = 0; i < 5000; i++) {
             String newOwner = "owner-" + UUID.randomUUID().toString();
+            String sessionOwner = "source-" + i;
+            String session = "session-" + i;
             String checksum = UUID.randomUUID().toString();
             Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
             requests.add(FileReferenceRequestDTO.build("quicklook.1-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.2-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.3-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.4-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             // Create a new bus message File reference request
             requests.add(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
-                                                       newOwner, storage, "file://storage/location/file.name"));
+                                                       newOwner, storage, "file://storage/location/file.name",
+                                                       sessionOwner, session));
             items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
             if (items.size() >= referenceFlowHandler.getBatchSize()) {
                 referenceFlowHandler.handleBatch(getDefaultTenant(), items);
@@ -229,7 +239,8 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             // Create a new bus message File reference request
             items.add(StorageFlowItem
                     .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                       "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
+                                                       "owner-test", SESSION_OWNER, SESSION, originUrl,
+                                                       ONLINE_CONF_LABEL, Optional.empty()),
                            UUID.randomUUID().toString()));
 
             // Publish request
@@ -271,7 +282,8 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         for (FileReference fileRef : page.getContent()) {
             items.add(DeletionFlowItem
                     .build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
-                                                        fileRef.getLocation().getStorage(), FILE_REF_OWNER, false),
+                                                        fileRef.getLocation().getStorage(), FILE_REF_OWNER,
+                                                        SESSION_OWNER, SESSION, false),
                            UUID.randomUUID().toString()));
             if (items.size() > deleteHandler.getBatchSize()) {
                 deleteHandler.handleBatch(getDefaultTenant(), items);
@@ -295,7 +307,8 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         for (FileReference fileRef : page.getContent()) {
             items.add(DeletionFlowItem
                     .build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
-                                                        fileRef.getLocation().getStorage(), FILE_REF_OWNER, false),
+                                                        fileRef.getLocation().getStorage(), FILE_REF_OWNER,
+                                                        SESSION_OWNER, SESSION, false),
                            UUID.randomUUID().toString()));
             if (items.size() > deleteHandler.getBatchSize()) {
                 deleteHandler.handleBatch(getDefaultTenant(), items);

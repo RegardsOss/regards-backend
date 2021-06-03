@@ -63,6 +63,10 @@ import io.vavr.control.Try;
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileDownloadServiceTest extends AbstractStorageTest {
 
+    private static final  String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
+
     @Before
     @Override
     public void init() throws ModuleException {
@@ -76,7 +80,7 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
                                                    fileRef.getLazzyOwners().stream().findFirst().get(),
                                                    fileRef.getMetaInfo().getFileName(),
                                                    ONLINE_CONF_LABEL_WITHOUT_DELETE, Optional.empty(),
-                                                   Optional.empty());
+                                                   Optional.empty(), SESSION_OWNER, SESSION);
         downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
         // there should not be any exception as the file is at the same time online and nearline
     }
@@ -91,7 +95,8 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     public void downloadFileReferenceOffLine()
             throws ModuleException, InterruptedException, ExecutionException, FileNotFoundException {
         FileReference fileRef = this
-                .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere").get();
+                .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere", "source1",
+                               "session1").get();
         Try<Callable<DownloadableFile>> result = Try
                 .of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()));
         assertTrue("File should not be available for download as it is not handled by a known storage location plugin",
@@ -180,7 +185,7 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
             DataType type = typesCache[r.nextInt(typesCache.length)];
             FileReference fileRef = generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test",
                                                                 ONLINE_CONF_LABEL, Optional.empty(),
-                                                                Optional.of(type.name()));
+                                                                Optional.of(type.name()), SESSION_OWNER, SESSION);
 
             DownloadableFile dlFile = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
                     .mapTry(Callable::call).get();

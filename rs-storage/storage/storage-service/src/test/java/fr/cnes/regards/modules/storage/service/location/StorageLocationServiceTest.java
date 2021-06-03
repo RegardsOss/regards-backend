@@ -87,7 +87,8 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
         try {
-            fileRefService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            fileRefService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString())
+                    ,"source1", "session1");
         } catch (ModuleException e) {
             Assert.fail(e.getMessage());
         }

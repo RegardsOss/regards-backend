@@ -63,6 +63,10 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
 
     public static final String FORCE_DELETE = "force";
 
+    public static final String SESSION_OWNER = "sessionOwner";
+
+    public static final String SESSION = "session";
+
     @Autowired
     private IPublisher publisher;
 
@@ -87,8 +91,11 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
      * Task to execute if lock acquired to publish {@link DeletionFlowItem} to initialize new deletion requests
      */
     private final Task publishdeletionFlowItemsTask = () -> {
+        // init values
         String storage = parameters.get(STORAGE_LOCATION_ID).getValue();
         Boolean forceDelete = parameters.get(FORCE_DELETE).getValue();
+        String sessionOwner = parameters.get(SESSION_OWNER).getValue();
+        String session = parameters.get(SESSION).getValue();
         Pageable pageRequest = PageRequest.of(0, DeletionFlowItem.MAX_REQUEST_PER_GROUP);
         Page<FileReference> pageResults;
         long start = System.currentTimeMillis();
@@ -96,13 +103,16 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
                     forceDelete);
         String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
         Set<FileDeletionRequestDTO> deletionRequests = Sets.newHashSet();
+
+        // Search for all file references of the given storage location
         do {
             // Search for all file references of the given storage location
             pageResults = fileRefService.searchWithOwners(storage, pageRequest);
             for (FileReference fileRef : pageResults.getContent()) {
                 for (String owner : fileRef.getLazzyOwners()) {
-                    deletionRequests.add(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storage,
-                                                                      owner, forceDelete));
+                    deletionRequests.add(FileDeletionRequestDTO
+                                                 .build(fileRef.getMetaInfo().getChecksum(), storage, owner,
+                                                        sessionOwner, session, forceDelete));
                     if (deletionRequests.size() == DeletionFlowItem.MAX_REQUEST_PER_GROUP) {
                         publisher.publish(DeletionFlowItem.build(deletionRequests, requestGroupId));
                         deletionRequests.clear();
