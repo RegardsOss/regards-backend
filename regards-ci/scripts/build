@@ -68,7 +68,7 @@ function updateArtifacts {
     # For each module (with its new hash)
     while read moduleWithHash; do
         local module=$(echo ${moduleWithHash} | awk -F: '{print $1}')
-        echo "Checking hash to update for module $module"
+        #echo "Checking hash to update for module $module"
 
         # Check if the module was successfully rebuilt
         newModuleWithHash=$(grep "^${module}:" <"${DATADIR}/hashes-success.txt")
@@ -76,15 +76,15 @@ function updateArtifacts {
 
         if [[ ! -z "${newModuleWithHash}" ]]; then
             # If so, take its new hash
-            echo "Found in successfully built modules, taking new hash ${newModuleWithHash}"
+            #echo "Found in successfully built modules, taking new hash ${newModuleWithHash}"
             hashes+=("${newModuleWithHash}")
         else
             if [[ ! -z "${previousModuleWithHash}" ]]; then
                 # Otherwise, keep its old one. During next build, the new hash will be re-calculated and the module will be rebuilt
-                echo "Not found in success build, but found in previous hashes file from nexus, taking previous hash ${previousModuleWithHash}"
+                # echo "Not found in success build, but found in previous hashes file from nexus, taking previous hash ${previousModuleWithHash}"
                 hashes+=("$previousModuleWithHash")
             else
-                echo "Fuond nowhere, ignore hash"
+                # echo "Found nowhere, ignore hash"
             fi
             # If module was not successful and was not referenced on nexus before we aren't going to reference it now so do nothing
         fi
@@ -98,7 +98,7 @@ function updateArtifacts {
         >> "${DATADIR}/hashes.txt"
     done
 
-    echo "Module hashes to nexus"
+    echo "Upload modules hashes to nexus"
     cat ${DATADIR}/hashes.txt
 
     set -x
@@ -223,10 +223,10 @@ function fast {
 }
 
 function nightly {
-    echo -e "\nRunning nightly Maven build and Docker tag..."
+    echo -e "\nRunning nightly Maven build and Sonar analyse on branch ${BRANCH_NAME} ..."
 
     set -x
-    mvn -B -P delivery,CI,oracle \
+    mvn -B -fae -P delivery,CI \
         package\
         org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
 	sonar:sonar \
@@ -236,10 +236,10 @@ function nightly {
         -Dmaven.multiModuleProjectDirectory=${SERVICES} \
         -Dfile.encoding=UTF-8 \
         -DcmdLineTarget=target \
-        -Dmaven-deploy.skip=true \
+        -Dmaven-deploy.skip=false \
         -Djacoco.skip=false \
         -DskipDocker=true \
-        -DpushImageTag=true \
+        -DpushImageTag=false \
         -Dasciidoctor.skip=true \
         -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
         -Dmaven.wagon.http.ssl.insecure=true \
