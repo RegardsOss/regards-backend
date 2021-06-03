@@ -226,7 +226,8 @@ function nightly {
     echo -e "\nRunning nightly Maven build and Docker tag..."
 
     set -x
-    mvn -B -P delivery,CI,oracle clean \
+    mvn -B -P delivery,CI,oracle
+        package\
         org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
 	sonar:sonar \
         -Dsonar.jacoco.reportPath="${SERVICES}/jacoco-ut.exec" \
