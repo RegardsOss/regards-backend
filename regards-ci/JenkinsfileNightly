@@ -22,7 +22,7 @@ pipeline {
         PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
         REGARDS_HOME="${WORKSPACE}"
     }
-    agent { label 'fast-build' }
+    agent { label 'unix-integration' }
     stages {
         // Refresh docker images
         stage('Pull docker images') {
@@ -31,7 +31,7 @@ pipeline {
                      && docker-compose -f docker/docker-compose.yml pull'
             }
         }
-        stage("(Docker) Tag git branch (fast build)") {
+        stage("Run build") {
             environment {
                 MODE="nightly"
             }
@@ -54,7 +54,7 @@ pipeline {
         cleanup {
             echo 'lets clean up the mess!'
             sh 'cd ' + CI_DIR + ' \
-                 && docker-compose -f docker/docker-compose-fast.yml -p ' + PROJECT_NAME + ' down'
+                 && docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' down'
             echo 'In case any test played with access rights, lets add read/write to owner'
             sh 'chmod -R +rw .'
         }

@@ -159,7 +159,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File storage request should not exists anymore", storageReqs.isEmpty());
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
-        FileReference fr = fileRefRepo.findOneById(oFileRef.get().getId());
+        FileReference fr = fileRefWithOwnersRepo.findOneById(oFileRef.get().getId());
         Assert.assertTrue("File reference should belongs to new owner", fr.getLazzyOwners().contains(fileRefNewOwner));
     }
 
