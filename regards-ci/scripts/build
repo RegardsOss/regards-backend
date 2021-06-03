@@ -83,7 +83,7 @@ function updateArtifacts {
                 # Otherwise, keep its old one. During next build, the new hash will be re-calculated and the module will be rebuilt
                 # echo "Not found in success build, but found in previous hashes file from nexus, taking previous hash ${previousModuleWithHash}"
                 hashes+=("$previousModuleWithHash")
-            else
+            # else
                 # echo "Found nowhere, ignore hash"
             fi
             # If module was not successful and was not referenced on nexus before we aren't going to reference it now so do nothing
@@ -226,8 +226,8 @@ function nightly {
     echo -e "\nRunning nightly Maven build and Sonar analyse on branch ${BRANCH_NAME} ..."
 
     set -x
-    mvn -B -fae -P delivery,CI \
-        package\
+    mvn -B -P delivery,CI \
+        package \
         org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
 	sonar:sonar \
         -Dsonar.jacoco.reportPath="${SERVICES}/jacoco-ut.exec" \
