@@ -223,7 +223,8 @@ function fast {
 }
 
 function nightly {
-    echo -e "\nRunning nightly Maven build and Sonar analyse on branch ${BRANCH_NAME} ..."
+    echo -e "\nRunning nightly Maven build and Sonar analyse on branch develop ..."
+    echo -e "\nWARN : Nightly build is specificly run on develop branch and is not made for multibranch build !!!!!!"
 
     set -x
     mvn -B -P delivery,CI \
@@ -232,7 +233,7 @@ function nightly {
 	sonar:sonar \
         -Dsonar.jacoco.reportPath="${SERVICES}/jacoco-ut.exec" \
         -Dsonar.jacoco.itReportPath="${SERVICES}/jacoco-it.exec" \
-        -Dsonar.branch.name=${BRANCH_NAME} \
+        -Dsonar.branch.name="develop" \
         -Dmaven.multiModuleProjectDirectory=${SERVICES} \
         -Dfile.encoding=UTF-8 \
         -DcmdLineTarget=target \
