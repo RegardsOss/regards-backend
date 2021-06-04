@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IConnectionPlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -75,6 +76,9 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Autowired
+    private IDatasetRepository datasetRepository;
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
@@ -129,11 +133,9 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
 
     private Set<String> importDatasets(List<ModuleConfigurationItem<?>> items) {
         Set<String> errors = new HashSet<>();
-        List<DatasetConfiguration> confs = items
-                .stream()
+        List<DatasetConfiguration> confs = items.stream()
                 .filter(i -> DatasetConfiguration.class.isAssignableFrom(i.getKey()))
-                .map(i -> (DatasetConfiguration) i.getTypedValue())
-                .collect(Collectors.toList());
+                .map(i -> (DatasetConfiguration) i.getTypedValue()).collect(Collectors.toList());
 
         for (DatasetConfiguration conf : confs) {
             try {
@@ -150,7 +152,8 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
                 PluginConfiguration datasource = pluginService.getPluginConfiguration(conf.getDatasource());
                 // Validate subsetting clause
                 if (!datasetService.validateOpenSearchSubsettingClause(conf.getSubsetting())) {
-                    String message = String.format("Cannot import dataset %s cause to an invalid subsetting clause %s", conf.getFeature().getId(), conf.getSubsetting());
+                    String message = String.format("Cannot import dataset %s cause to an invalid subsetting clause %s",
+                                                   conf.getFeature().getId(), conf.getSubsetting());
                     errors.add(message);
                     continue;
                 }
@@ -159,50 +162,75 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
                 createOrUpdateDataset(model, datasource, conf, validationErrors);
             } catch (ModuleException mex) {
                 LOGGER.error("Dataset import throw an exception", mex);
-                String message = String.format("Cannot import dataset %s : %s", conf.getFeature().getId(), mex.getMessage());
+                String message = String
+                        .format("Cannot import dataset %s : %s", conf.getFeature().getId(), mex.getMessage());
                 errors.add(message);
             }
         }
         return errors;
     }
 
-    private void createOrUpdateDataset(Model model, PluginConfiguration datasource, DatasetConfiguration conf, Errors validationErrors) throws ModuleException {
-        // First : try to load dataset from its provider id
-        Set<Dataset> datasets = datasetService.findAllByProviderId(conf.getFeature().getProviderId());
-        if (datasets.isEmpty()) {
+    private void createOrUpdateDataset(Model model, PluginConfiguration datasource, DatasetConfiguration conf,
+            Errors validationErrors) throws ModuleException {
+
+        // First : try to load dataset from its id or provider id
+        Optional<Dataset> existingOne = Optional.empty();
+        if (conf.getFeature().getId() != null) {
+            Dataset dataset = datasetRepository.findByIpId(conf.getFeature().getId());
+            if (dataset == null) {
+                String message = String.format("Unknown dataset for id : %s.!", conf.getFeature().getId());
+                throw new ModuleException(message);
+            } else {
+                existingOne = Optional.of(dataset);
+            }
+        } else {
+            Set<Dataset> datasets = datasetService.findAllByProviderId(conf.getFeature().getProviderId());
+            if (!datasets.isEmpty()) {
+                if (datasets.size() > 1) {
+                    String message = String
+                            .format("Multiple datasets exist with this provider id : %s. Import cannot select right one! Please fulfil the id to precisely select it!",
+                                    conf.getFeature().getProviderId());
+                    throw new ModuleException(message);
+                } else {
+                    existingOne = datasets.stream().findFirst();
+                }
+            }
+        }
+
+        // Create or update dataset
+        if (existingOne.isPresent()) {
+            // Update dataset
+            Dataset dataset = existingOne.get();
+            dataset.setProviderId(conf.getFeature().getProviderId());
+            dataset.setLabel(conf.getFeature().getLabel());
+            dataset.setOpenSearchSubsettingClause(conf.getSubsetting());
+            // Override id, virtual id, last, version and model from existing one
+            conf.getFeature().setId(dataset.getIpId());
+            conf.getFeature().setLast(dataset.isLast()); // Virtual id will be set accordingly
+            conf.getFeature().setVersion(dataset.getVersion());
+            conf.getFeature().setModel(dataset.getModel().getName()); // model cannot be changed - always override it!
+            // Propagate feature
+            dataset.setFeature(conf.getFeature());
+            // Call service to persist dataset
+            datasetService.updateDataset(dataset.getId(), dataset, validationErrors);
+        } else {
             // Create new dataset
-            Dataset dataset = new Dataset(model, runtimeTenantResolver.getTenant(), conf.getFeature().getProviderId(), conf.getFeature().getLabel());
+            Dataset dataset = new Dataset(model, runtimeTenantResolver.getTenant(), conf.getFeature().getProviderId(),
+                                          conf.getFeature().getLabel());
             dataset.setDataSource(datasource);
             dataset.setOpenSearchSubsettingClause(conf.getSubsetting());
             dataset.setFeature(conf.getFeature());
             // Call service to persist dataset
             datasetService.createDataset(dataset, validationErrors);
-        } else {
-            if (datasets.size() > 1) {
-                String message = String.format("Multiple datasets exist with this provider id : %s. Import cannot select right one!", conf.getFeature().getProviderId());
-                throw new ModuleException(message);
-            }
-            // Update dataset
-            Dataset dataset = datasets.stream().findFirst().get();
-            dataset.setProviderId(conf.getFeature().getProviderId());
-            dataset.setLabel(conf.getFeature().getLabel());
-            dataset.setOpenSearchSubsettingClause(conf.getSubsetting());
-            dataset.setFeature(conf.getFeature());
-            // Workaround : model cannot be changed - always override it!
-            dataset.getFeature().setModel(dataset.getModel().getName());
-            // Call service to persist dataset
-            datasetService.updateDataset(dataset.getId(), dataset, validationErrors);
         }
     }
-
 
     private List<ModuleConfigurationItem<DatasetConfiguration>> exportDatasets() {
         List<ModuleConfigurationItem<DatasetConfiguration>> exportedDatasets = new ArrayList<>();
         for (Dataset dataset : datasetService.findAll()) {
             DatasetConfiguration configuration = DatasetConfiguration.builder()
                     .datasource(dataset.getDataSource().getBusinessId())
-                    .subsetting(dataset.getOpenSearchSubsettingClause())
-                    .feature(dataset.getFeature()).build();
+                    .subsetting(dataset.getOpenSearchSubsettingClause()).feature(dataset.getFeature()).build();
             exportedDatasets.add(ModuleConfigurationItem.build(configuration));
         }
         return exportedDatasets;

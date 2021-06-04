@@ -18,32 +18,25 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities.feature;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.persistence.Transient;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.Assert;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
+import org.springframework.util.Assert;
+
+import javax.persistence.Transient;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
 /**
  * Public and common entity feature properties
@@ -51,6 +44,7 @@ import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
  */
 public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, UniformResourceName> {
 
+    @ConfigIgnore
     protected UniformResourceName virtualId;
 
     /**
@@ -84,8 +78,10 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
     @GsonIgnore
     private Map<String, IProperty<?>> propertyMap = null;
 
+    @ConfigIgnore
     private boolean last = false;
 
+    @ConfigIgnore
     private Integer version;
 
     public EntityFeature(UniformResourceName id, String providerId, EntityType entityType, String label) {

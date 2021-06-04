@@ -136,6 +136,7 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
     public void importConfiguration() throws IOException, ModuleException {
 
         DatasetFeature feature = new DatasetFeature(getDefaultTenant(), "dataset01", "Dataset 01");
+        feature.setId(null);
         feature.setModel(datasetModel.getName());
         // Add required properties
         feature.addProperty(IProperty.buildString("description", "Dataset 01 description"));
