@@ -2082,9 +2082,9 @@
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>bom</flattenMode>
 						<pomElements>
-						    <!-- <pluginManagement>keep</pluginManagement> -->
-						    <!-- <dependencyManagement>keep</dependencyManagement> -->
-						    <!-- <build>keep</build> -->
+						    <pluginManagement>keep</pluginManagement>
+						    <dependencyManagement>keep</dependencyManagement>
+						    <build>keep</build>
 						    <profiles>expand</profiles>
 						    <!--
 						    <parent>keep</parent>
