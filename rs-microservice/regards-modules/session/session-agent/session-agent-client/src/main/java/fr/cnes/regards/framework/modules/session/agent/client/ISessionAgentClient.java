@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.client;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
@@ -39,24 +38,20 @@ public interface ISessionAgentClient {
     void increment(StepProperty stepProperty);
 
     /**
-     * Send a bulk of {@link StepPropertyUpdateRequestEvent}
-     */
-    void increment(List<StepProperty> stepProperty);
-
-    /**
      * Send a {@link StepPropertyUpdateRequestEvent} with a {@link StepPropertyEventTypeEnum} of type decrement. The
      * corresponding property in the session step will be decremented with the value provided.
      */
-    void decrement(StepProperty stepProperties);
+    void decrement(StepProperty stepProperty);
 
     /**
-     * Send a bulk of {@link StepPropertyUpdateRequestEvent}
+     * Send a {@link StepPropertyUpdateRequestEvent} with a {@link StepPropertyEventTypeEnum} of type
+     * value. The corresponding properties in the session steps will be set to the value provided.
      */
-    void decrement(List<StepProperty> stepProperties);
+    void stepValue(StepProperty stepProperty);
 
     /**
-     * Send a {@link StepPropertyUpdateRequestEvent} with a {@link StepPropertyEventTypeEnum} of type increment. The
-     * corresponding property in the session step will be set to the value provided.
+     * Send a bulk of {@link StepPropertyUpdateRequestEvent} with a {@link StepPropertyEventTypeEnum} of type
+     * value. The corresponding properties in the session steps will be set to the value provided.
      */
-    void stepValue(StepProperty stepProperty) throws EntityInvalidException;
+    void stepValue(List<StepProperty> stepProperty);
 }

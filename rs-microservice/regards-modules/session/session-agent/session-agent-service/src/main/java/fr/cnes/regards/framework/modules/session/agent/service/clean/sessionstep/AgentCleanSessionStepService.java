@@ -46,7 +46,7 @@ public class AgentCleanSessionStepService {
         LOGGER.debug("Check old session steps before {}", startClean);
 
         int nbSessionStepsDeleted = 0;
-        Pageable page = PageRequest.of(0, pageSize, Sort.by(Sort.Order.asc("lastUpdateDate")));
+        Pageable page = PageRequest.of(0, pageSize, Sort.by("lastUpdateDate"));
         Page<SessionStep> sessionStepsToDelete;
         do {
             // Get all session steps to delete older than startClean

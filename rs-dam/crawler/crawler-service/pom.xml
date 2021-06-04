@@ -82,10 +82,6 @@
 			<artifactId>notification-regards-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.session-manager</groupId>
-			<artifactId>session-manager-domain</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.locationtech.spatial4j</groupId>
 			<artifactId>spatial4j</artifactId>
 		</dependency>
@@ -101,6 +97,15 @@
 			<groupId>org.noggit</groupId>
 			<artifactId>noggit</artifactId>
 			<version>0.5</version>
+		</dependency>
+		<!-- session handling -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+			<artifactId>session-agent-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+			<artifactId>session-agent-service</artifactId>
 		</dependency>
 
 		<!-- Test dependencies -->

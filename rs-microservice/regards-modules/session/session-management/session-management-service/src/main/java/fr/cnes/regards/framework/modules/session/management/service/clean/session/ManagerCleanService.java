@@ -68,7 +68,7 @@ public class ManagerCleanService {
 
         // find all sessions to be deleted
         int nbSessions = 0;
-        Pageable page = PageRequest.of(0, pageSize, Sort.by(Sort.Order.asc("id")));
+        Pageable page = PageRequest.of(0, pageSize, Sort.by("id"));
         Page<Session> sessionPage;
 
         Map<String, Source> sourceMap = new HashMap<>();

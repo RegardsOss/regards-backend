@@ -123,7 +123,7 @@ public class ManagerSnapshotService {
 
         // CREATE SESSIONS
         boolean interrupted;
-        Pageable pageToRequest = PageRequest.of(0, sessionStepPageSize, Sort.by(Sort.Order.asc("lastUpdateDate")));
+        Pageable pageToRequest = PageRequest.of(0, sessionStepPageSize, Sort.by("lastUpdateDate"));
         // iterate on all pages of sessionSteps to create Sessions
         do {
             interrupted = Thread.currentThread().isInterrupted();
@@ -176,11 +176,11 @@ public class ManagerSnapshotService {
         for (SessionStep sessionStep : sessionSteps) {
             // initialize delta object which represents the difference between the previous version sessionStep (if it
             // exists) and the updated version
-            DeltaSessionStep delta = new DeltaSessionStep(sessionStep.getType());
+            DeltaSessionStep deltaStep = new DeltaSessionStep(sessionStep.getType());
             // update the session and calculate the delta
-            updateSession(sessionMap, sourceName, sessionStep, delta);
+            updateSession(sessionMap, sourceName, sessionStep, deltaStep);
             // update the source aggregation according to the delta
-            updateSourceAgg(aggByStep, source, delta);
+            updateSourceAgg(aggByStep, source, deltaStep);
         }
 
         return sessionStepPage.hasNext() ? sessionStepPage.nextPageable() : null;

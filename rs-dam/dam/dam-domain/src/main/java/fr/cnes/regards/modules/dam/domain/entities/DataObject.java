@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import org.elasticsearch.common.geo.GeoPoint;
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectMetadata;
 import fr.cnes.regards.modules.model.domain.Model;
+import java.util.HashSet;
+import java.util.Set;
+import org.elasticsearch.common.geo.GeoPoint;
+import org.springframework.util.Assert;
 
 /**
  *
@@ -89,7 +86,7 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
                       providerId, label));
     }
 
-    private DataObject(Model model, DataObjectFeature feature) {
+    public DataObject(Model model, DataObjectFeature feature) {
         super(model, feature);
     }
 

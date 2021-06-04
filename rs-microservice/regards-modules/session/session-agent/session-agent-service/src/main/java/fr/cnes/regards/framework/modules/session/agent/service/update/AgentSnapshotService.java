@@ -68,7 +68,7 @@ public class AgentSnapshotService {
 
         // CREATE SESSION STEPS
         boolean interrupted;
-        Pageable pageToRequest = PageRequest.of(0, stepPropertyPageSize, Sort.by(Sort.Order.asc("id")));
+        Pageable pageToRequest = PageRequest.of(0, stepPropertyPageSize, Sort.by("date").and(Sort.by("id")));
         List<StepPropertyUpdateRequest> stepPropertyRequestsProcessed = new ArrayList<>();
         // iterate on all pages of stepPropertyUpdateRequest to create SessionSteps
         do {
@@ -202,6 +202,9 @@ public class AgentSnapshotService {
             calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property,
                                  NumberUtils.toLong(previousValue), -NumberUtils.toLong(value));
 
+        } else if (type.equals(StepPropertyEventTypeEnum.VALUE) && NumberUtils.isCreatable(value)) {
+            // reset all values to 0 if value is a number
+            resetSessionStep(sessionStep);
         } else {
             // set property with value
             sessionStep.getProperties().put(property, value);
@@ -245,5 +248,15 @@ public class AgentSnapshotService {
         }
         // set property
         sessionStep.getProperties().put(property, String.valueOf(Math.max(previousValue + valueNum, 0L)));
+    }
+
+    private void resetSessionStep(SessionStep sessionStep) {
+        // reset input related/output related
+        sessionStep.setInputRelated(0L);
+        sessionStep.setOutputRelated(0L);
+        // reset state
+        sessionStep.setState(new StepState());
+        // reset all properties
+        sessionStep.getProperties().replaceAll((key, val) -> String.valueOf(0L));
     }
 }

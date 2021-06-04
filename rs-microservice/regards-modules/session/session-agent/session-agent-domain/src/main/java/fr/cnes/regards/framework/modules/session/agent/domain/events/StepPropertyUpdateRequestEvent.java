@@ -7,6 +7,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 /**
  * Events sent to update {@link SessionStep}.
@@ -60,5 +61,26 @@ public class StepPropertyUpdateRequestEvent implements ISubscribable {
 
     public void setStepProperty(StepProperty stepProperty) {
         this.stepProperty = stepProperty;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        StepPropertyUpdateRequestEvent that = (StepPropertyUpdateRequestEvent) o;
+        return date.equals(that.date) && type == that.type && stepProperty.equals(that.stepProperty);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(date, type, stepProperty);
+    }
+
+    @Override
+    public String toString() {
+        return "StepPropertyUpdateRequestEvent{" + "date=" + date + ", type=" + type + ", stepProperty=" + stepProperty
+                + '}';
     }
 }

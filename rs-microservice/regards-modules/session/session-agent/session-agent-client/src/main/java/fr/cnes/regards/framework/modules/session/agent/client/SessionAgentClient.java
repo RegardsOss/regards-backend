@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.modules.session.agent.client;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
@@ -53,17 +52,6 @@ public class SessionAgentClient implements ISessionAgentClient {
         publisher.publish(stepPropertyEvent);
     }
 
-    @Override
-    public void increment(List<StepProperty> stepProperties) {
-        // Create stepEvents
-        List<StepPropertyUpdateRequestEvent> stepEventList = new ArrayList<>();
-        stepProperties.forEach(property -> stepEventList
-                .add(new StepPropertyUpdateRequestEvent(property, StepPropertyEventTypeEnum.INC)));
-
-        // publish events
-        publisher.publish(stepEventList);
-    }
-
     // DECREMENT EVENTS
 
     @Override
@@ -75,29 +63,22 @@ public class SessionAgentClient implements ISessionAgentClient {
         publisher.publish(stepPropertyEvent);
     }
 
-    @Override
-    public void decrement(List<StepProperty> stepProperties) {
-        // Create stepEvents
-        List<StepPropertyUpdateRequestEvent> stepEventList = new ArrayList<>();
-        stepProperties.forEach(property -> stepEventList
-                .add(new StepPropertyUpdateRequestEvent(property, StepPropertyEventTypeEnum.DEC)));
+    // VALUE EVENTS
 
-        // publish events
-        publisher.publish(stepEventList);
+    @Override
+    public void stepValue(List<StepProperty> stepPropertyList) {
+        List<StepPropertyUpdateRequestEvent> stepList = new ArrayList<>();
+
+        // create events
+        stepPropertyList.forEach(stepProperty -> stepList
+                .add(new StepPropertyUpdateRequestEvent(stepProperty, StepPropertyEventTypeEnum.VALUE)));
+
+        // Publish events
+        publisher.publish(stepList);
     }
 
     @Override
-    public void stepValue(StepProperty stepProperty) throws EntityInvalidException {
-        // check if input and output are false
-        if (stepProperty.getStepPropertyInfo().isInputRelated() || stepProperty.getStepPropertyInfo()
-                .isOutputRelated()) {
-            String msg = String
-                    .format("Step property with source \"%s\", session \"%s\" and step \"%s\" cannot be input "
-                                    + "related or output related if the event is of type \"VALUE\"",
-                            stepProperty.getSource(), stepProperty.getSession(), stepProperty.getStepId());
-            throw new EntityInvalidException(msg);
-        }
-
+    public void stepValue(StepProperty stepProperty) {
         // Create new event
         StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepProperty,
                                                                                               StepPropertyEventTypeEnum.VALUE);
