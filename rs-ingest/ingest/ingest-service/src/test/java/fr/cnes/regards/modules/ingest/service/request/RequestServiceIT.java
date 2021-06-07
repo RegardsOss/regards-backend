@@ -81,10 +81,10 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_it",
-        "regards.amqp.enabled=true", "eureka.client.enabled=false",
-        "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=true" },
+        "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.scheduler.pool.size=4",
+        "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=false" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock","noschedule" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
 public class RequestServiceIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");

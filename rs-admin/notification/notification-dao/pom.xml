@@ -25,7 +25,6 @@
 	<artifactId>notification-dao</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Notification DAO</name>
 	<description>DAO layer of Notification module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

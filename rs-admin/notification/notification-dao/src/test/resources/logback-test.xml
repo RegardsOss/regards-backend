@@ -30,8 +30,10 @@
 	<logger name="org.springframework" level="INFO" />
 	
 	<!-- SQL statements and parameters -->
-    <logger name="org.hibernate.SQL" level="DEBUG"/>
-    <logger name="org.hibernate.type.descriptor.sql" level="TRACE" />
+	<!--
+	     <logger name="org.hibernate.SQL" level="DEBUG"/>
+	     <logger name="org.hibernate.type.descriptor.sql" level="TRACE" />
+        -->
 
 	<root level="info">
 		<appender-ref ref="STDOUT" />

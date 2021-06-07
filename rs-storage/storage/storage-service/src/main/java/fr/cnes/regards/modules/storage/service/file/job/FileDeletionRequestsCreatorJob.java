@@ -98,9 +98,9 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
         Set<FileDeletionRequestDTO> deletionRequests = Sets.newHashSet();
         do {
             // Search for all file references of the given storage location
-            pageResults = fileRefService.search(storage, pageRequest);
+            pageResults = fileRefService.searchWithOwners(storage, pageRequest);
             for (FileReference fileRef : pageResults.getContent()) {
-                for (String owner : fileRef.getOwners()) {
+                for (String owner : fileRef.getLazzyOwners()) {
                     deletionRequests.add(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storage,
                                                                       owner, forceDelete));
                     if (deletionRequests.size() == DeletionFlowItem.MAX_REQUEST_PER_GROUP) {

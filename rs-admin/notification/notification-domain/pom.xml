@@ -24,7 +24,6 @@
 	<groupId>fr.cnes.regards.modules.notification</groupId>
 	<artifactId>notification-domain</artifactId>
 
-	<name>Notification Model</name>
 	<description>Model layer of Notification module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

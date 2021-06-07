@@ -396,7 +396,7 @@ public class FileDeletionRequestService {
             Collection<FileDeletionRequest> existingRequests, String groupId) {
         fileRefService.removeOwner(fileReference, owner, groupId);
         // If file reference does not belongs to anyone anymore, delete file reference
-        if (fileReference.getOwners().isEmpty()) {
+        if (!fileRefService.hasOwner(fileReference.getId())) {
             if (storageHandler.isConfigured(fileReference.getLocation().getStorage())) {
                 // If the file is stored on an accessible storage, create a new deletion request
                 create(fileReference, forceDelete, groupId, existingRequests, FileRequestStatus.TO_DO);
@@ -473,7 +473,7 @@ public class FileDeletionRequestService {
             // Publish request error
             reqGroupService.requestError(fileDeletionRequest.getGroupId(), FileRequestType.DELETION,
                                          fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), null,
-                                         fileRef.getOwners(), errorCause);
+                                         fileRef.getLazzyOwners(), errorCause);
         } else {
             // Force delete option.
             handleSuccess(fileDeletionRequest);
