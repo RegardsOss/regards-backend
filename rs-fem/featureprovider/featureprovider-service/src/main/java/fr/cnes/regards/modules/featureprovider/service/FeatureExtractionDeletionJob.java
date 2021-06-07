@@ -29,6 +29,8 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * See {@link FeatureExtractionDeletionService}
+ *
  * @author Iliana Ghazali
  **/
 public class FeatureExtractionDeletionJob extends AbstractJob<Void> {
@@ -66,5 +68,4 @@ public class FeatureExtractionDeletionJob extends AbstractJob<Void> {
         logger.trace("[{}] FeatureExtractionDeletionJob ends in {} ms. {} extractionRequestsDeleted ",
                      jobInfoId, System.currentTimeMillis() - start, nbDeletedRequests);
     }
-
 }

@@ -114,4 +114,12 @@ public abstract class AbstractRequestEvent implements IMessagePropertiesAware {
     public void setRequestOwner(String requestOwner) {
         getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_OWNER_HEADER, requestOwner);
     }
+
+    public static String getSessionOwner(MessageProperties messageProperties) {
+        return messageProperties.getHeader(AmqpConstants.REGARDS_REQUEST_SESSION_OWNER_HEADER);
+    }
+
+    public static String getSession(MessageProperties messageProperties) {
+        return messageProperties.getHeader(AmqpConstants.REGARDS_REQUEST_SESSION_HEADER);
+    }
 }

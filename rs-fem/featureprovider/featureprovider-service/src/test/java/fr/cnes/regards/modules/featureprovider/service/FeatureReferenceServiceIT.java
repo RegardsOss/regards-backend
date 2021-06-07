@@ -35,9 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -50,8 +47,6 @@ import org.springframework.test.context.TestPropertySource;
                 "spring.task.scheduling.pool.size=2", "zuul.prefix=zuulPrefix" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
-//Clean all context (schedulers)
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class FeatureReferenceServiceIT extends FeatureProviderMultitenantTest {
 
     @Test

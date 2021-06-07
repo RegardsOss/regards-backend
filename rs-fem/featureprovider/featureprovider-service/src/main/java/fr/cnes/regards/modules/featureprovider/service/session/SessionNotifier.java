@@ -18,22 +18,30 @@
  */
 package fr.cnes.regards.modules.featureprovider.service.session;
 
+import com.google.common.base.Strings;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClient;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Service that sends notifications to collect statistics about feature extraction requests.
+ * Service that sends notifications to collect statistics about feature extraction process.
  *
  * @author Iliana Ghazali
  **/
 @Service
 @MultitenantTransactional
 public class SessionNotifier {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionNotifier.class);
 
     /**
      * Name of the corresponding SessionStep
@@ -45,7 +53,6 @@ public class SessionNotifier {
      */
     @Autowired
     private ISessionAgentClient sessionNotificationClient;
-
 
     // Extraction requests received
 
@@ -74,6 +81,7 @@ public class SessionNotifier {
     }
 
     // Generated products
+
     public void incrementGeneratedProducts(String sessionOwner, String session) {
         incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.GENERATED_PRODUCTS, 1);
     }
@@ -82,30 +90,60 @@ public class SessionNotifier {
         decrementCount(sessionOwner, session, SessionExtractionPropertyEnum.GENERATED_PRODUCTS, 1);
     }
 
-
     // ----------- UTILS -----------
 
     // GENERIC METHODS TO BUILD NOTIFICATIONS
 
     // INC
+
+    /**
+     * Send an INC event to {@link ISessionAgentClient}
+     *
+     * @param source     also called sessionOwner, originator of the request
+     * @param session    tags the data processed with the same name
+     * @param property   property to be notified
+     * @param nbProducts value to increment the corresponding property
+     */
     private void incrementCount(String source, String session, SessionExtractionPropertyEnum property,
             long nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source,
-                                             session, new StepPropertyInfo(StepTypeEnum.ACQUISITION, property.getState(),
-                                                                  property.getName(), String.valueOf(nbProducts),
-                                                                  property.isInputRelated(),
-                                                                  property.isOutputRelated()));
-        sessionNotificationClient.increment(step);
+        if (!Strings.isNullOrEmpty(source) && !Strings.isNullOrEmpty(session)) {
+            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
+                                                 new StepPropertyInfo(StepTypeEnum.ACQUISITION, property.getState(),
+                                                                      property.getName(), String.valueOf(nbProducts),
+                                                                      property.isInputRelated(),
+                                                                      property.isOutputRelated()));
+            sessionNotificationClient.increment(step);
+        } else {
+            LOGGER.debug(
+                    "Session has not been incremented of {} features because either sessionOwner({}) or session({}) is null or empty",
+                    nbProducts, source, session);
+        }
     }
 
     // DEC
+
+    /**
+     * Send an DEC event to {@link ISessionAgentClient}
+     *
+     * @param source     also called sessionOwner, originator of the request
+     * @param session    tags the data processed with the same name
+     * @param property   property to be notified
+     * @param nbProducts value to decrement the corresponding property
+     */
     private void decrementCount(String source, String session, SessionExtractionPropertyEnum property,
             long nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source,
-                                             session, new StepPropertyInfo(StepTypeEnum.ACQUISITION, property.getState(),
-                                                                           property.getName(), String.valueOf(nbProducts),
-                                                                           property.isInputRelated(),
-                                                                           property.isOutputRelated()));
-        sessionNotificationClient.decrement(step);
+        if (!Strings.isNullOrEmpty(source) && !Strings.isNullOrEmpty(session)) {
+
+            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
+                                                 new StepPropertyInfo(StepTypeEnum.ACQUISITION, property.getState(),
+                                                                      property.getName(), String.valueOf(nbProducts),
+                                                                      property.isInputRelated(),
+                                                                      property.isOutputRelated()));
+            sessionNotificationClient.decrement(step);
+        } else {
+            LOGGER.debug(
+                    "Session has not been decremented of {} features because either sessionOwner({}) or session({}) "
+                            + "is null or empty", nbProducts, source, session);
+        }
     }
 }

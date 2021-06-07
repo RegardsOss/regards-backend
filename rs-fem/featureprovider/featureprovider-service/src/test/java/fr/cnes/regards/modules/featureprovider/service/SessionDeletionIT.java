@@ -23,6 +23,8 @@ import com.google.gson.JsonPrimitive;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.service.delete.SessionDeleteEventHandler;
@@ -32,23 +34,22 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.featureprovider.service.session.SessionDeleteService;
+import fr.cnes.regards.modules.featureprovider.service.session.SessionExtractionPropertyEnum;
 import fr.cnes.regards.modules.featureprovider.service.session.SourceDeleteService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -63,9 +64,6 @@ import org.springframework.test.context.TestPropertySource;
                 "regards.feature.provider.max.bulk.size=10" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
-//Clean all context (schedulers)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS,
-        hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class SessionDeletionIT extends FeatureProviderMultitenantTest {
 
     private static final String SOURCE_1 = "SOURCE 1";
@@ -75,6 +73,10 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
     private static final String SESSION_1 = "SESSION 1";
 
     private static final String SESSION_2 = "SESSION 2";
+
+    private static final int NB_ERROR_REQUESTS = 5;
+
+    private static final int NB_GRANTED_REQUESTS = 10;
 
     @Autowired
     private SessionDeleteService sessionDeleteService;
@@ -88,14 +90,13 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
     }
 
     @Test
-    @Purpose("Assert a session is correctly deleted. Only requests other than in error and denied states should "
-            + "remain.")
+    @Purpose("Assert a session is correctly deleted. Only requests other than error requests should remain.")
     public void deleteSessionTest() throws InterruptedException {
         sessionDeleteService.deleteSession(SOURCE_1, SESSION_1);
         waitForJobSuccesses(FeatureExtractionDeletionJob.class.getName(), 1, 30000);
 
         // assert session is correctly deleted
-        Set<RequestState> statesDeleted = new HashSet<>(Arrays.asList(RequestState.DENIED, RequestState.ERROR));
+        Set<RequestState> statesDeleted = new HashSet<>(Arrays.asList(RequestState.ERROR));
         Assert.assertEquals(String.format("All requests in %s from source %s and session %s should have been deleted",
                                           statesDeleted, SOURCE_1, SESSION_1), 0L, this.referenceRequestRepo
                                     .findByMetadataSessionOwnerAndMetadataSessionAndStateIn(SOURCE_1, SESSION_1,
@@ -105,7 +106,7 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
                                     .getTotalPages());
         // assert other sessions are still present
         Set<RequestState> allStates = new HashSet<>(
-                Arrays.asList(RequestState.DENIED, RequestState.ERROR, RequestState.GRANTED, RequestState.SUCCESS));
+                Arrays.asList(RequestState.ERROR, RequestState.DENIED, RequestState.GRANTED, RequestState.SUCCESS));
         Assert.assertNotEquals(
                 String.format("All requests from source %s and session %s should be present", SOURCE_1, SESSION_1), 0L,
                 this.referenceRequestRepo
@@ -121,16 +122,24 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
                                                                                 PageRequest.of(0, properties
                                                                                         .getMaxBulkSize()))
                         .getTotalPages());
+
+        // assert decrement events on errors was correctly sent
+        List<StepPropertyUpdateRequest> stepPropertyList = stepRepo.findAll();
+        List<StepPropertyUpdateRequest> decEvents = stepPropertyList.stream()
+                .filter(step -> step.getType().equals(StepPropertyEventTypeEnum.DEC)).collect(Collectors.toList());
+        Assert.assertEquals("Unexpected number of events. Check the workflow", 1, decEvents.size());
+        checkStepEvent(decEvents.get(0), SessionExtractionPropertyEnum.REQUESTS_ERRORS.getName(),
+                       String.valueOf(NB_ERROR_REQUESTS), StepPropertyEventTypeEnum.DEC, SOURCE_1, SESSION_1);
     }
 
     @Test
-    @Purpose("Assert a source is correctly deleted. Only requests other than in error or denied states should remain.")
+    @Purpose("Assert a source is correctly deleted. Only requests other than error requests should remain.")
     public void deleteSourceTest() throws InterruptedException {
         sourceDeleteService.deleteSource(SOURCE_1);
         waitForJobSuccesses(FeatureExtractionDeletionJob.class.getName(), 1, 30000);
 
         // assert source is correctly deleted
-        Set<RequestState> statesDeleted = new HashSet<>(Arrays.asList(RequestState.DENIED, RequestState.ERROR));
+        Set<RequestState> statesDeleted = new HashSet<>(Arrays.asList(RequestState.ERROR));
         Assert.assertEquals(
                 String.format("All requests in %s states from source %s should have been deleted", statesDeleted,
                               SOURCE_1), 0L, this.referenceRequestRepo
@@ -140,13 +149,30 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
 
         // assert other source is still present
         Set<RequestState> allStates = new HashSet<>(
-                Arrays.asList(RequestState.DENIED, RequestState.ERROR, RequestState.GRANTED, RequestState.SUCCESS));
+                Arrays.asList(RequestState.ERROR, RequestState.DENIED, RequestState.GRANTED, RequestState.SUCCESS));
         Assert.assertNotEquals(String.format("All requests from source %s should have be present", SOURCE_2), 0L,
                                this.referenceRequestRepo.findByMetadataSessionOwnerAndStateIn(SOURCE_2, allStates,
                                                                                               PageRequest.of(0,
                                                                                                              properties
                                                                                                                      .getMaxBulkSize()))
                                        .getTotalPages());
+
+        // assert decrement events on errors were correctly sent
+        List<StepPropertyUpdateRequest> stepPropertyList = stepRepo.findAll();
+        List<StepPropertyUpdateRequest> decEvents = stepPropertyList.stream()
+                .filter(step -> step.getType().equals(StepPropertyEventTypeEnum.DEC)).collect(Collectors.toList());
+        Assert.assertEquals("Unexpected number of events. Check the workflow", 2, decEvents.size());
+        for (StepPropertyUpdateRequest decEvent : decEvents) {
+            if (decEvent.getSession().equals(SESSION_1)) {
+                checkStepEvent(decEvent, SessionExtractionPropertyEnum.REQUESTS_ERRORS.getName(),
+                               String.valueOf(NB_ERROR_REQUESTS), StepPropertyEventTypeEnum.DEC, SOURCE_1, SESSION_1);
+            } else if (decEvent.getSession().equals(SESSION_2)) {
+                checkStepEvent(decEvent, SessionExtractionPropertyEnum.REQUESTS_ERRORS.getName(),
+                               String.valueOf(NB_ERROR_REQUESTS), StepPropertyEventTypeEnum.DEC, SOURCE_1, SESSION_2);
+            } else {
+                Assert.fail("Unexpected event");
+            }
+        }
     }
 
     /**
@@ -161,49 +187,41 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
         createPlugin();
 
         // --- CREATE REQUESTS ---
-        int nbErrorRequests = 10;
-        int nbDeniedRequests = 10;
-        int nbGrantedRequests = 12;
-
-        // DENIED REQ
-        List<FeatureExtractionRequestEvent> eventsToPublish = createExtractionRequests(SOURCE_1, SESSION_1,
-                                                                                       nbDeniedRequests);
-        this.publisher.publish(eventsToPublish);
-        // wait requests registration
-        this.waitRequest(referenceRequestRepo, nbDeniedRequests, 60_000);
-        // simulate requests denied
-        List<FeatureRequestEvent> deniedToPublish = new ArrayList<>();
-        eventsToPublish.forEach(event -> deniedToPublish.add(FeatureRequestEvent.build(FeatureRequestType.CREATION,
-                                                                                       event.getRequestId(),
-                                                                                       event.getRequestOwner(), null,
-                                                                                       null, RequestState.DENIED)));
-        publisher.publish(deniedToPublish);
-        waitForState(this.referenceRequestRepo, RequestState.DENIED, nbDeniedRequests);
 
         // ERROR REQ
-        eventsToPublish = createExtractionRequests(SOURCE_1, SESSION_2, nbErrorRequests);
+        // source 1 / session 1
+        List<FeatureExtractionRequestEvent> eventsToPublish = createExtractionRequests(SOURCE_1, SESSION_1, NB_ERROR_REQUESTS);
         this.publisher.publish(eventsToPublish);
         Mockito.doThrow(new ModuleException("")).when(pluginService).getPlugin(Mockito.anyString());
         // wait requests registration
-        this.waitRequest(referenceRequestRepo, nbDeniedRequests + nbErrorRequests, 60_000);
+        this.waitRequest(referenceRequestRepo, NB_ERROR_REQUESTS, 60_000);
         // process requests and wait for error state
         featureReferenceService.scheduleRequests();
-        waitForState(this.referenceRequestRepo, RequestState.ERROR, nbErrorRequests);
+        waitForState(this.referenceRequestRepo, RequestState.ERROR, NB_ERROR_REQUESTS);
+
+        // source 1 / session 2
+        eventsToPublish = createExtractionRequests(SOURCE_1, SESSION_2, NB_ERROR_REQUESTS);
+        this.publisher.publish(eventsToPublish);
+        // wait requests registration
+        this.waitRequest(referenceRequestRepo, NB_ERROR_REQUESTS * 2, 60_000);
+        // process requests and wait for error state
+        featureReferenceService.scheduleRequests();
+        waitForState(this.referenceRequestRepo, RequestState.ERROR, NB_ERROR_REQUESTS * 2);
 
         // GRANTED REQ
-        // source 1
+        // source 1 / session 1
         Mockito.reset(pluginService);
-        eventsToPublish = createExtractionRequests(SOURCE_1, SESSION_1, nbGrantedRequests);
+        eventsToPublish = createExtractionRequests(SOURCE_1, SESSION_1, NB_GRANTED_REQUESTS);
         this.publisher.publish(eventsToPublish);
         // wait requests registration
-        this.waitRequest(referenceRequestRepo, nbDeniedRequests + nbErrorRequests + nbGrantedRequests, 60_000);
+        this.waitRequest(referenceRequestRepo, NB_ERROR_REQUESTS * 2 + NB_GRANTED_REQUESTS, 60_000);
 
-        // source 2
+        // source 2 / session 1
         Mockito.reset(pluginService);
-        eventsToPublish = createExtractionRequests(SOURCE_2, SESSION_1, nbGrantedRequests);
+        eventsToPublish = createExtractionRequests(SOURCE_2, SESSION_1, NB_GRANTED_REQUESTS);
         this.publisher.publish(eventsToPublish);
         // wait requests registration
-        this.waitRequest(referenceRequestRepo, nbDeniedRequests + nbErrorRequests + 2 * nbGrantedRequests, 60_000);
+        this.waitRequest(referenceRequestRepo, NB_ERROR_REQUESTS * 2 + 2 * NB_GRANTED_REQUESTS, 60_000);
     }
 
     private void createPlugin() {

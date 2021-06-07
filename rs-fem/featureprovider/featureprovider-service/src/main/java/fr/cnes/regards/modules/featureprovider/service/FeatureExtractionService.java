@@ -72,6 +72,7 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -158,18 +159,24 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
     @Override
     public boolean denyMessage(Message message, String errorMessage) {
+        MessageProperties messageProperties = message.getMessageProperties();
 
-        String requestId = AbstractRequestEvent.getRequestId(message.getMessageProperties());
+        String requestId = AbstractRequestEvent.getRequestId(messageProperties);
         if (requestId == null) {
             return false;
         }
 
-        String requestOwner = AbstractRequestEvent.getRequestOwner(message.getMessageProperties());
+        String requestOwner = AbstractRequestEvent.getRequestOwner(messageProperties);
+        String sessionOwner = AbstractRequestEvent.getSessionOwner(messageProperties);
+        String session = AbstractRequestEvent.getSession(messageProperties);
+
         // Monitoring log
         LOGGER.error(String.format(REFERENCE_DENIED_FORMAT, requestOwner, requestId, errorMessage));
         // Publish DENIED request
         publisher.publish(new FeatureExtractionResponseEvent(requestId, requestOwner, RequestState.DENIED,
                 Sets.newHashSet(errorMessage)));
+        // Notify denied request to the session agent
+        this.sessionNotifier.incrementRequestRefused(sessionOwner, session);
         return true;
     }
 
@@ -203,6 +210,13 @@ public class FeatureExtractionService implements IFeatureExtractionService {
     private void prepareFeatureReferenceRequest(FeatureExtractionRequestEvent item,
             List<FeatureExtractionRequest> grantedRequests, RequestInfo<String> requestInfo,
             Set<String> existingRequestIds) {
+        // init
+        String sessionOwner = item.getMetadata().getSessionOwner();
+        String session = item.getMetadata().getSession();
+
+        // notify extract request to the session agent
+        sessionNotifier.incrementRequestCount(sessionOwner, session);
+
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureExtractionRequestEvent.class.getName());
         validator.validate(item, errors);
@@ -223,6 +237,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             // Publish DENIED request (do not persist it in DB)
             publisher.publish(new FeatureExtractionResponseEvent(item.getRequestId(), item.getRequestOwner(),
                     RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            // publish request denied to the session agent
+            sessionNotifier.incrementRequestRefused(sessionOwner, session);
             return;
         }
         // Monitoring log
@@ -283,8 +299,6 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
         // process requests
         for (FeatureExtractionRequest request : requests) {
-            // notify extract request received to the session agent
-            sessionNotifier.incrementRequestCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession());
             try {
                 creationRequestsToRegister.add(initFeatureCreationRequest(request));
                 successCreationRequestGenerationCount++;
@@ -299,6 +313,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                 request.addError(e.getMessage());
                 publisher.publish(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
                         RequestState.ERROR, errors));
+                // Notify error request to the session agent
+                this.sessionNotifier.incrementRequestErrors(request.getMetadata().getSessionOwner(),
+                                                            request.getMetadata().getSession());
             }
         }
 
@@ -446,6 +463,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             request.setState(RequestState.ERROR);
             errorResponses.add(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
                     RequestState.ERROR, errorMessages));
+            // notify error to the session agent
+            this.sessionNotifier.incrementRequestErrors(request.getMetadata().getSessionOwner(),
+                                                        request.getMetadata().getSession());
         }
         featureExtractionRequestRepo.saveAll(featureExtractionRequests);
         publisher.publish(errorResponses);

@@ -50,7 +50,7 @@ public enum SessionExtractionPropertyEnum {
     /**
      * Number of requests in error
      */
-    REQUESTS_ERRORS("requestsErrors", StepPropertyStateEnum.ERROR, false, true);
+    REQUESTS_ERRORS("requestsErrors", StepPropertyStateEnum.ERROR, false, false);
 
     /**
      * Name of the property

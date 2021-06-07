@@ -18,54 +18,12 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
-import static org.junit.Assert.fail;
-
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import org.assertj.core.util.Lists;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.feature.client.FeatureClient;
-import fr.cnes.regards.modules.feature.client.FeatureRequestEventHandler;
-import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
@@ -78,14 +36,21 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
-import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
-import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
-import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.model.client.IModelClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author kevin
@@ -96,80 +61,13 @@ import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
                 "spring.task.scheduling.pool.size=2", "zuul.prefix=zuulPrefix" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
-//Clean all context (schedulers)
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-public class FeatureExtractionServiceIT extends AbstractMultitenantServiceTest {
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public IProjectsClient projectsClient() {
-            return Mockito.mock(IProjectsClient.class);
-        }
-
-        @Bean
-        public IProjectUsersClient projectUsersClient() {
-            return Mockito.mock(IProjectUsersClient.class);
-        }
-
-        @Bean
-        public IModelAttrAssocClient modelAttrAssocClient() {
-            return Mockito.mock(IModelAttrAssocClient.class);
-        }
-
-        @Bean
-        public IModelClient modelClient() {
-            return Mockito.mock(IModelClient.class);
-        }
-
-        @Bean
-        public IToponymsClient toponymsClient() {
-            return Mockito.mock(IToponymsClient.class);
-        }
-
-    }
-
-    @Autowired
-    protected IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    protected FeatureProviderConfigurationProperties properties;
-
-    @Autowired
-    protected ISubscriber subscriber;
-
-    @Autowired
-    protected IPublisher publisher;
-
-    @Autowired
-    private IFeatureExtractionRequestRepository extractionRequestRepo;
+public class FeatureExtractionServiceIT extends FeatureProviderMultitenantTest {
 
     @Autowired
     private IFeatureExtractionService featureExtractionService;
 
-    @Autowired
-    private IPluginConfigurationRepository pluginConfRepo;
-
-    @SpyBean
-    private IPluginService pluginService;
-
-    @Autowired(required = false)
-    private IAmqpAdmin amqpAdmin;
-
-    @Autowired(required = false)
-    private IRabbitVirtualHostAdmin vhostAdmin;
-
     @Spy
     private FeatureClient featureClient;
-
-    @Before
-    public void setup() throws InterruptedException {
-        cleanAMQP();
-        this.extractionRequestRepo.deleteAll();
-        this.pluginConfRepo.deleteAll();
-        simulateApplicationReadyEvent();
-    }
 
     @Test
     public void testProcessReference() throws InterruptedException {
@@ -319,93 +217,6 @@ public class FeatureExtractionServiceIT extends AbstractMultitenantServiceTest {
                               PageRequest.of(0, 1000));
         Assert.assertEquals("All error request  should be granted now", 60, searchResp.getTotalElements());
 
-    }
-
-    /**
-     * Internal method to clean AMQP queues, if actives
-     */
-    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-            runtimeTenantResolver.forceTenant(getDefaultTenant());
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
-            } catch (AmqpIOException e) {
-                //todo
-            } finally {
-                vhostAdmin.unbind();
-            }
-        }
-    }
-
-    protected void waitForState(JpaRepository<? extends AbstractRequest, ?> repo, RequestState state)
-            throws InterruptedException {
-        int cpt = 0;
-
-        // we will expect that all feature reference remain in database with the error state
-        do {
-            Thread.sleep(1000);
-            if (cpt == 60) {
-                fail("Timeout");
-            }
-            cpt++;
-        } while (!repo.findAll().stream().allMatch(request -> state.equals(request.getState())));
-    }
-
-    protected void waitForStep(JpaRepository<? extends AbstractRequest, ?> repo, FeatureRequestStep step, int timeout)
-            throws InterruptedException {
-        int cpt = 0;
-
-        // we will expect that all feature reference remain in database with the error state
-        do {
-            Thread.sleep(1000);
-            if (cpt == (timeout / 1000)) {
-                fail("Timeout");
-            }
-            cpt++;
-        } while (!repo.findAll().stream().allMatch(request -> step.equals(request.getStep())));
-    }
-
-    protected void waitRequest(JpaRepository<?, ?> repo, long expected, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long entityCount;
-        do {
-            entityCount = repo.count();
-            logger.trace("{} request(s) remain(s) in database", entityCount);
-            if (entityCount == expected) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    logger.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
-                                               entityCount));
-                    Assert.fail(String.format("Thread interrupted {} expected in database, {} really ", expected,
-                                              entityCount));
-
-                }
-            } else {
-                logger.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
-                                           entityCount));
-                Assert.fail("Timeout");
-            }
-        } while (true);
-    }
-
-    @After
-    public void after() {
-        subscriber.unsubscribeFrom(FeatureExtractionRequestEvent.class);
-        cleanAMQP();
-    }
-
-    private void cleanAMQP() {
-        cleanAMQPQueues(FeatureExtractionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FeatureRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 
     private void createRequests(String source, String session, int nbRequests, RequestState state) {

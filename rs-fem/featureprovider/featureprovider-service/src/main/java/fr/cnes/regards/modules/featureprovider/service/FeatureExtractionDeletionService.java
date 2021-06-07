@@ -39,11 +39,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
- * Service to schedule a {@link FeatureExtractionDeletionJob} and delete {@link FeatureExtractionRequest}
- * with state DENIED or ERROR
+ * Service to schedule a {@link FeatureExtractionDeletionJob} and delete all {@link FeatureExtractionRequest}s
+ * linked to a source and/or a session with state DENIED or ERROR
  *
  * @author Iliana Ghazali
  **/
@@ -69,7 +70,7 @@ public class FeatureExtractionDeletionService {
     private FeatureExtractionDeletionService self;
 
     /**
-     * Schedule a {@link FeatureExtractionDeletionJob} to delete {@link FeatureExtractionRequest}
+     * Schedule a {@link FeatureExtractionDeletionJob} to delete {@link FeatureExtractionRequest}s
      *
      * @param source  name of the source requested for deletion
      * @param session optional name of the session requested for deletion
@@ -93,7 +94,7 @@ public class FeatureExtractionDeletionService {
         // init parameters
         long nbDeletedReq = 0;
         Page<FeatureExtractionRequest> pageExtractionReq;
-        Pageable pageToRequest = PageRequest.of(0, confProperties.getMaxBulkSize());
+        Pageable pageToRequest = PageRequest.of(0, confProperties.getMaxBulkSize(), Sort.by("id"));
         // define requests states to delete
         Set<RequestState> states = Sets.newHashSet(RequestState.DENIED, RequestState.ERROR);
 
