@@ -1,6 +1,7 @@
 package fr.cnes.regards.framework.modules.tenant.settings.rest;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -87,7 +88,8 @@ public class DynamicTenantSettingController implements IResourceController<Dynam
     @Override
     public EntityModel<DynamicTenantSettingDto> toResource(DynamicTenantSettingDto element, Object... extras) {
         EntityModel<DynamicTenantSettingDto> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrieveAll", LinkRels.SELF);
+        resourceService
+                .addLink(resource, this.getClass(), "retrieveAll", LinkRels.SELF, MethodParamFactory.build(Set.class));
         if (dynamicTenantSettingService.canUpdate(element.getName())) {
             resourceService.addLink(resource,
                                     this.getClass(),
@@ -95,11 +97,13 @@ public class DynamicTenantSettingController implements IResourceController<Dynam
                                     LinkRels.UPDATE,
                                     MethodParamFactory.build(String.class, element.getName()),
                                     MethodParamFactory.build(DynamicTenantSettingDto.class));
-            resourceService.addLink(resource,
-                                    this.getClass(),
-                                    "reset",
-                                    LinkRelation.of("reset"),
-                                    MethodParamFactory.build(String.class, element.getName()));
+            if (!Objects.equals(element.getDefaultValue(), element.getValue())) {
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "reset",
+                                        LinkRelation.of("reset"),
+                                        MethodParamFactory.build(String.class, element.getName()));
+            }
         }
         return resource;
     }
