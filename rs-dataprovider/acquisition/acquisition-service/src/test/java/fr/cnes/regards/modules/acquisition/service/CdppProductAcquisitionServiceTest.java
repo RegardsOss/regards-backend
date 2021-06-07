@@ -19,43 +19,21 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
-import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
+import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfoRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.plugins.Arcad3IsoprobeDensiteProductPlugin;
-import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
@@ -65,27 +43,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -99,8 +70,8 @@ import org.springframework.test.context.TestPropertySource;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_cdpp_product",
         "regards.session.agent.snapshot.process.scheduler.bulk.delay=15000", "regards.amqp.enabled=true" })
-@ActiveProfiles(value = { "testAmqp" })
-public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
+@ActiveProfiles({ "testAmqp", "noscheduler", "disableDataProviderTask"})
+public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(CdppProductAcquisitionServiceTest.class);
@@ -117,69 +88,13 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
 
     private static final Path TARGET_BROWSE_PATH = TARGET_BASE_PATH.resolve("browse");
 
-    @Autowired
-    private IAcquisitionProcessingService processingService;
-
-    @Autowired
-    private IAcquisitionFileRepository acqFileRepository;
-
-    @Autowired
-    private IProductService productService;
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
-    @Autowired
-    private IAcquisitionFileInfoRepository fileInfoRepository;
-
-    @Autowired
-    private IScanDirectoriesInfoRepository scanDirectoriesInfo;
-
-    @Autowired
-    private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
-
-    @Autowired
-    private IProductRepository productRepository;
-
-    @Autowired
-    private IPluginConfigurationRepository pluginConfRepository;
-
-    @Autowired
-    private ISessionStepRepository sessionStepRepo;
-
-    @Autowired
-    private IStepPropertyUpdateRequestRepository stepRepo;
-
-    @SpyBean
-    private IPublisher publisher;
-
-    @Autowired(required = false)
-    private IAmqpAdmin amqpAdmin;
-
-    @Autowired(required = false)
-    private IRabbitVirtualHostAdmin vhostAdmin;
-
-    @Autowired
-    private ISubscriber subscriber;
 
     @Before
     public void before() throws ModuleException, IOException {
-        // simulate application started and ready
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        simulateApplicationStartedEvent();
-        simulateApplicationReadyEvent();
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-
-        // clean databases
-        acqFileRepository.deleteAllInBatch();
-        productRepository.deleteAllInBatch();
-        scanDirectoriesInfo.deleteAllInBatch();
-        fileInfoRepository.deleteAllInBatch();
-        acquisitionProcessingChainRepository.deleteAllInBatch();
-        pluginConfRepository.deleteAllInBatch();
-        stepRepo.deleteAll();
-        sessionStepRepo.deleteAll();
-
         // Prepare data repositories
         if (Files.exists(TARGET_DATA_PATH)) {
             FileUtils.forceDelete(TARGET_DATA_PATH.toFile());
@@ -307,8 +222,15 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         String session2 = "session2";
         doAcquire(processingChain, session2, true);
 
-        assertSessionStep(processingChain.getLabel(), session1, 0L, 0L, null, 0L, 11);
-        assertSessionStep(processingChain.getLabel(), session2, 6L, 0L, null, 1L, 4);
+        // wait the registration of all StepPropertyUpdateRequests
+        waitStepRegistration("session1", 8);
+        waitStepRegistration("session2", 7);
+        // launch the generation of sessionStep from StepPropertyUpdateRequests
+        this.agentService
+                .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
+        // check result
+        assertSessionStep(processingChain.getLabel(), session1, 3L, 0L, null, 0L);
+        assertSessionStep(processingChain.getLabel(), session2, 3L, 0L, null, 1L);
     }
 
     @Test
@@ -328,65 +250,63 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         String session2 = "session2";
         doAcquire(processingChain, session2, false);
 
-        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(Mockito.any(StepPropertyUpdateRequestEvent.class));
-        assertSessionStep(processingChain.getLabel(), session1, 0L, null, 0L, null, 4);
-        assertSessionStep(processingChain.getLabel(), session2, 3L, 0L, null, 1L, 9);
+        // wait the registration of all StepPropertyUpdateRequests
+        waitStepRegistration("session1", 4);
+        waitStepRegistration("session2", 7);
+        // launch the generation of sessionStep from StepPropertyUpdateRequests
+        this.agentService
+                .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
+        // check result
+        assertSessionStep(processingChain.getLabel(), session1, 0L, null, 0L, null);
+        assertSessionStep(processingChain.getLabel(), session2, 3L, 0L, null, 1L);
     }
 
-    private void assertSessionStep(String sessionOwner, String session, Long acquiredFiles, Long completed,
-            Long incompleted, Long generated, int nbEvents) throws InterruptedException {
-        // get the SessionStep generated from the aggregation of step property events
-        // refer to AgentSnapshotScheduler for more information
-        Optional<SessionStep> stepOpt;
+    private void waitStepRegistration(String session, int nbSteps) throws InterruptedException {
         long now = System.currentTimeMillis(), end = now + 60000L;
-        long count;
-        LOGGER.info("Waiting for SessionStep to be created from all StepPropertyUpdateRequestEvents required for "
-                            + "session \"{}\"...", session);
-        // count the number of StepPropertyUpdateRequestEvents successfully processed to create the SessionStep
+        int count;
+        logger.info("Waiting for StepPropertyUpdateRequests creation for session {}", session);
         do {
-            List<StepPropertyUpdateRequest> steps = this.stepRepo.findBySession(session);
-            count = steps.stream().filter(step -> step.getSessionStep() != null).count();
+            count = this.stepRepo.findBySession(session).size();
             now = System.currentTimeMillis();
-            if (count != nbEvents) {
-                Thread.sleep(10000L);
+            if (count != nbSteps) {
+                Thread.sleep(30000L);
             }
-        } while (count != nbEvents && now < end);
+        } while (count != nbSteps && now < end);
 
-        // check if SessionStep was created
-        if (count != nbEvents) {
-            Assert.fail(String.format(
-                    "SessionStep associated to source \"%s\" and session \"%s\" was not successfully processed. "
-                            + "Check if the AgentSnapshotJob was correctly executed with %d "
-                            + "StepPropertyUpdateRequests.", sessionOwner, session, nbEvents));
-        } else {
-            // assert all properties required are present and have the correct count
-            SessionStepProperties sessionSteps = this.sessionStepRepo
-                    .findBySourceAndSessionAndStepId(sessionOwner, session, SessionNotifier.GLOBAL_SESSION_STEP).get()
-                    .getProperties();
-            String generatedValue = sessionSteps.get(SessionProductPropertyEnum.GENERATED_PRODUCTS.getName());
-            String completedValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName());
-            String incompleteValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName());
-            String acqFilesValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName());
-
-            Assert.assertTrue(String.format("Wrong property count expected %s but was %s", generated, generatedValue),
-                              (generated == null && generatedValue == null) || (Objects.requireNonNull(generated)
-                                      .toString().equals(generatedValue)));
-            Assert.assertTrue(String.format("Wrong property count expected %s but was %s", completed, completedValue),
-                              (completed == null && completedValue == null) || (Objects.requireNonNull(completed)
-                                      .toString().equals(completedValue)));
-            Assert.assertTrue(
-                    String.format("Wrong property count expected %s but was %s", incompleted, incompleteValue),
-                    (incompleted == null && incompleteValue == null) || (Objects.requireNonNull(incompleted).toString()
-                            .equals(incompleteValue)));
-            Assert.assertTrue(
-                    String.format("Wrong property count expected %s but was %s", acquiredFiles, acqFilesValue),
-                    (acquiredFiles == null && acqFilesValue == null) || (Objects.requireNonNull(acquiredFiles)
-                            .toString().equals(acqFilesValue)));
+        if(count!= nbSteps) {
+            Assert.fail("Unexpected number of step events created. Check the workflow through events collected in "
+                                + "t_step_property_update_request");
         }
     }
 
+    private void assertSessionStep(String sessionOwner, String session, Long acquiredFiles, Long completed,
+            Long incompleted, Long generated) throws InterruptedException {
+        // assert all properties required are present and have the correct count
+        SessionStepProperties sessionSteps = this.sessionStepRepo
+                .findBySourceAndSessionAndStepId(sessionOwner, session, SessionNotifier.GLOBAL_SESSION_STEP).get()
+                .getProperties();
+        String generatedValue = sessionSteps.get(SessionProductPropertyEnum.GENERATED_PRODUCTS.getName());
+        String completedValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName());
+        String incompleteValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName());
+        String acqFilesValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName());
+
+        Assert.assertTrue(String.format("Wrong property count expected %s but was %s", generated, generatedValue),
+                          (generated == null && generatedValue == null) || (Objects.requireNonNull(generated).toString()
+                                  .equals(generatedValue)));
+        Assert.assertTrue(String.format("Wrong property count expected %s but was %s", completed, completedValue),
+                          (completed == null && completedValue == null) || (Objects.requireNonNull(completed).toString()
+                                  .equals(completedValue)));
+        Assert.assertTrue(String.format("Wrong property count expected %s but was %s", incompleted, incompleteValue),
+                          (incompleted == null && incompleteValue == null) || (Objects.requireNonNull(incompleted)
+                                  .toString().equals(incompleteValue)));
+        Assert.assertTrue(String.format("Wrong property count expected %s but was %s", acquiredFiles, acqFilesValue),
+                          (acquiredFiles == null && acqFilesValue == null) || (Objects.requireNonNull(acquiredFiles)
+                                  .toString().equals(acqFilesValue)));
+
+    }
+
     public void doAcquire(AcquisitionProcessingChain processingChain, String session, boolean assertResult)
-            throws ModuleException {
+            throws ModuleException, InterruptedException {
 
         processingService.scanAndRegisterFiles(processingChain, session);
 
@@ -401,8 +321,9 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         }
 
         processingService.manageRegisteredFiles(processingChain, session);
+        Thread.sleep(2000L);
         productService.manageUpdatedProducts(processingChain);
-
+        Thread.sleep(2000L);
         // Check registered files
         if (assertResult) {
             for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
@@ -419,65 +340,6 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
                         .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo,
                                                             PageRequest.of(0, 1));
                 Assert.assertTrue(acquiredFiles.getTotalElements() == 1);
-            }
-        }
-
-        // Find product to schedule
-        if (assertResult) {
-            long scheduled = productService
-                    .countByProcessingChainAndSipStateIn(processingChain, Arrays.asList(ProductSIPState.SCHEDULED));
-            Assert.assertEquals(1, scheduled);
-
-            Assert.assertTrue(
-                    productService.existsByProcessingChainAndSipStateIn(processingChain, ProductSIPState.SCHEDULED));
-        }
-
-        // Run the job synchronously
-        SIPGenerationJob genJob = new SIPGenerationJob();
-        beanFactory.autowireBean(genJob);
-
-        Map<String, JobParameter> parameters = new HashMap<>();
-        parameters.put(SIPGenerationJob.CHAIN_PARAMETER_ID,
-                       new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, processingChain.getId()));
-        Set<String> productNames = new HashSet<>();
-        productNames.add("ISO_DENS_20330518_0533");
-        parameters.put(SIPGenerationJob.PRODUCT_NAMES, new JobParameter(SIPGenerationJob.PRODUCT_NAMES, productNames));
-
-        genJob.setParameters(parameters);
-        genJob.run();
-
-        if (assertResult) {
-            Assert.assertFalse(
-                    productService.existsByProcessingChainAndSipStateIn(processingChain, ProductSIPState.SCHEDULED));
-
-            // Find product to submitted
-            long submitted = productService
-                    .countByProcessingChainAndSipStateIn(processingChain, Arrays.asList(ProductSIPState.SUBMITTED));
-            Assert.assertEquals(1, submitted);
-        }
-    }
-
-    @After
-    public void after() {
-        subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
-        cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-    }
-
-    /**
-     * Internal method to clean AMQP queues, if actives
-     */
-    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
-            } catch (AmqpIOException e) {
-                LOGGER.warn("Failed to clean AMQP queues", e);
-            } finally {
-                vhostAdmin.unbind();
             }
         }
     }

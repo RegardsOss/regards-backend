@@ -750,19 +750,22 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         RegisterFilesResponse response;
         long totalCount = 0;
         OffsetDateTime lmd = null;
+        long nbFilesAcquired;
         do {
             long startTime = System.currentTimeMillis();
             response = self.registerFilesBatch(filePathsIt, fileInfo, scanningDate, BATCH_SIZE, session, sessionOwner);
-            totalCount += response.getNumberOfRegisteredFiles();
+            nbFilesAcquired = response.getNumberOfRegisteredFiles();
             // Calculate most recent file registered.
             if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate()) && !Thread.currentThread()
                     .isInterrupted())) {
                 lmd = response.getLastUpdateDate();
             }
-            sessionNotifier.notifyFileAcquired(session, sessionOwner, response.getNumberOfRegisteredFiles());
-            LOGGER.info("{} new file(s) registered in {} milliseconds",
-                        response.getNumberOfRegisteredFiles(),
-                        System.currentTimeMillis() - startTime);
+            // notify only if files were acquired
+            if(nbFilesAcquired > 0) {
+                totalCount += nbFilesAcquired;
+                sessionNotifier.notifyFileAcquired(session, sessionOwner, nbFilesAcquired);
+                LOGGER.info("{} new file(s) registered in {} milliseconds", nbFilesAcquired, System.currentTimeMillis() - startTime);
+            }
         } while (response.hasNext() && !Thread.currentThread().isInterrupted());
         // Update scanDirInfo last update date with the most recent file registered.
         if ((lmd != null) && ((scanDir.getLastModificationDate() == null) || lmd

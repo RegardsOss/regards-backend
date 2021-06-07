@@ -460,7 +460,7 @@ public class ProductService implements IProductService {
             //                COMPLETED : If product is complete (without optional)
             //                FINISHED  : If product is complete (with optional included)
             //                UPDATED   : If product was complete before the new file acquired.
-            fulfillProduct(productNewValidFiles, currentProduct);
+            fulfillProduct(productNewValidFiles, currentProduct, changingStateProbe);
 
             // Store for scheduling
             if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED)
@@ -500,17 +500,19 @@ public class ProductService implements IProductService {
      *  @param validFiles new files acquired for the product to handle
      *  @param currentProduct product to handle
      */
-    private Product fulfillProduct(Collection<AcquisitionFile> validFiles, Product currentProduct) {
+    private Product fulfillProduct(Collection<AcquisitionFile> validFiles, Product currentProduct,SessionChangingStateProbe changingStateProbe) {
         for (AcquisitionFile validFile : validFiles) {
             // Mark old file as superseded
             for (AcquisitionFile existing : currentProduct.getAcquisitionFiles()) {
                 if (existing.getFileInfo().equals(validFile.getFileInfo())) {
                     if (AcquisitionFileState.ACQUIRED.equals(existing.getState())) {
                         existing.setState(AcquisitionFileState.SUPERSEDED);
+                        changingStateProbe.incInitialNbAcquiredFilesSuperseded();
                         acqFileRepository.save(existing);
                     }
                     if (AcquisitionFileState.ERROR.equals(existing.getState())) {
                         existing.setState(AcquisitionFileState.SUPERSEDED_AFTER_ERROR);
+                        changingStateProbe.incInitialNbAcquiredFilesSuperseded();
                         acqFileRepository.save(existing);
                     }
                 }

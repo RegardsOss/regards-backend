@@ -21,6 +21,8 @@ public class SessionChangingStateProbe {
 
     private long initalNbAcquiredFiles = 0L;
 
+    private long initialNbAcquiredFilesSuperseded = 0L;
+
     // Gathers info about updated product
     private String ingestionChain;
 
@@ -111,6 +113,18 @@ public class SessionChangingStateProbe {
 
     public String getSessionOwner() {
         return sessionOwner;
+    }
+
+    public long getInitialNbAcquiredFilesSuperseded() {
+        return initialNbAcquiredFilesSuperseded;
+    }
+
+    public void setInitialNbAcquiredFilesSuperseded(long initialNbAcquiredFilesSuperseded) {
+        this.initialNbAcquiredFilesSuperseded = initialNbAcquiredFilesSuperseded;
+    }
+
+    public void incInitialNbAcquiredFilesSuperseded() {
+        this.initialNbAcquiredFilesSuperseded++;
     }
 
 }

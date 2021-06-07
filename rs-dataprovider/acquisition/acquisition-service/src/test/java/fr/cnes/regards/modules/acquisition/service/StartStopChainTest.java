@@ -19,21 +19,12 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
@@ -61,14 +52,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -87,43 +74,20 @@ import org.springframework.test.context.TestPropertySource;
 // ,locations = { "classpath:application-local.properties" }
 )
 @ActiveProfiles("testAmqp")
-public class StartStopChainTest extends AbstractMultitenantServiceTest {
+public class StartStopChainTest extends DataproviderMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(StartStopChainTest.class);
 
-    @Autowired
-    private IAcquisitionProcessingService processingService;
 
-    @Autowired
-    private IProductRepository productRepository;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepo;
-
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IPluginConfigurationRepository pluginRepo;
-
-    @Autowired
-    private SessionNotificationHandler notifHandler;
-
-    @Autowired
-    private IAmqpAdmin amqpAdmin;
-
-    @Autowired
-    private IRabbitVirtualHostAdmin vhostAdmin;
-
-    @After
-    public void after() throws ModuleException, InterruptedException {
+    @Override
+    public void doAfter() throws ModuleException, InterruptedException {
         int loops = 0;
         do {
             Thread.sleep(100);
             loops++;
         } while ((jobInfoRepo.countByStatusStatusIn(JobStatus.RUNNING) > 0) || (loops > 600));
-        this.before();
+        this.doInit();
         LOGGER.info("|-----------------------------> TEST DONE REMAINING RUNNING JOBS = {} <-----------------------------------------|",
                     jobInfoRepo.countByStatusStatusIn(JobStatus.RUNNING));
         LOGGER.info("|-----------------------------> TEST ENDING .... <-----------------------------------------|");
@@ -131,8 +95,8 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         LOGGER.info("|-----------------------------> TEST DONE .... <-----------------------------------------|");
     }
 
-    @Before
-    public void before() throws ModuleException, InterruptedException {
+    @Override
+    public void doInit() throws InterruptedException {
         processingService.getFullChains().forEach(c -> {
             try {
                 processingService.patchStateAndMode(c.getId(), UpdateAcquisitionProcessingChains
@@ -143,34 +107,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             }
         });
         Thread.sleep(2_000);
-        pluginRepo.deleteAll();
-        jobInfoRepo.deleteAll();
-        productRepository.deleteAll();
-        notifHandler.clear();
-        cleanAMQPQueues();
-        LOGGER.info("|-----------------------------> TEST RESET DONE <-----------------------------------------|");
-        Thread.sleep(2_000);
-    }
-
-    /**
-     * Internal method to clean AMQP queues, if actives
-     */
-    public void cleanAMQPQueues() {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(SessionNotificationHandler.class,
-                                                                        Target.ONE_PER_MICROSERVICE_TYPE),
-                                     false);
-            } catch (AmqpIOException e) {
-                LOGGER.warn("Failed to clean AMQP queues", e);
-            } finally {
-                vhostAdmin.unbind();
-            }
-        }
     }
 
     /**
@@ -271,11 +207,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
 
         processingService.updateChain(processingChain);
-    }
-
-    @Before
-    public void init() {
-        simulateApplicationReadyEvent();
     }
 
     @Test

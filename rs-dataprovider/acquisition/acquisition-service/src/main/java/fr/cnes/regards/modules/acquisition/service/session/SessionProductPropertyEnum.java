@@ -29,37 +29,49 @@ import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyS
 public enum SessionProductPropertyEnum {
 
     /**
+     * Name of the property that collects the number of files acquired
+     */
+    PROPERTY_FILES_ACQUIRED("filesAcquired", StepPropertyStateEnum.SUCCESS, true, false),
+
+    /**
      * Name of the property that indicates if a chain is running
      */
     CHAIN_RUNNING("chainRunning", StepPropertyStateEnum.RUNNING, false, false),
 
     /**
-     * Name of the property that collects number of products generated
-     */
-    GENERATED_PRODUCTS("generatedProducts", StepPropertyStateEnum.INFO, false, false),
-
-    /**
-     * Name of the property that collects number of products incomplete
+     * Name of the property that collects the number of products incomplete
      */
     PROPERTY_INCOMPLETE("incomplete", StepPropertyStateEnum.INFO, false, false),
 
     /**
-     * Name of the property that collects number of products invalid (too many files attached to a single product)
+     * Name of the property indicating when a product was successfully created
+     */
+    PROPERTY_COMPLETED("complete", StepPropertyStateEnum.INFO, false, false),
+
+    /**
+     * Name of the property that collects the number of products invalid (too many files attached to a single product)
      */
     PROPERTY_INVALID("invalid", StepPropertyStateEnum.ERROR, false, false),
 
     /**
-     * Name of the property that collects number of products generated
+     * Name of the property that collects the number of products generated
      */
-    PROPERTY_GENERATION_ERROR("generation_error", StepPropertyStateEnum.ERROR, false, false),
+    GENERATED_PRODUCTS("generatedProducts", StepPropertyStateEnum.SUCCESS, false, true),
 
-    PROPERTY_INGESTION_FAILED("ingestion_failed", StepPropertyStateEnum.ERROR, false, false),
+    /**
+     * Name of the property that collects the number of products generated
+     */
+    PROPERTY_GENERATION_ERROR("generationError", StepPropertyStateEnum.ERROR, false, false),
 
-    PROPERTY_FILES_ACQUIRED("files_acquired", StepPropertyStateEnum.SUCCESS, true, false),
+    /**
+     * Name of the property that collects the number of ingestion fails after the sip submission
+     */
+    PROPERTY_INGESTION_FAILED("ingestionFailed", StepPropertyStateEnum.ERROR, false, false),
 
-    PROPERTY_COMPLETED("complete", StepPropertyStateEnum.INFO, false, false),
-
-    PROPERTY_INGESTED("ingested", StepPropertyStateEnum.SUCCESS, true, false);
+    /**
+     *  Name of the property indicating the sip has been successfully ingested
+     */
+    PROPERTY_INGESTED("ingested", StepPropertyStateEnum.INFO, false, false);
 
 
     private String name;
