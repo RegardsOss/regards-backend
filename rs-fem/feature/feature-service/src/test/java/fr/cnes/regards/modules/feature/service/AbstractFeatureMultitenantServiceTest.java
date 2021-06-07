@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
