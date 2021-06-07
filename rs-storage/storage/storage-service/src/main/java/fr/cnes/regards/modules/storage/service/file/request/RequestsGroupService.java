@@ -123,7 +123,7 @@ public class RequestsGroupService {
      * Handle new request error for the given groupId.<br>
      */
     public void requestError(String groupId, FileRequestType type, String checksum, String storage, String storePath,
-            Set<String> owners, String errorCause) {
+            Collection<String> owners, String errorCause) {
         requestDone(groupId, type, checksum, storage, storePath, owners, null, true, errorCause);
     }
 
@@ -218,7 +218,7 @@ public class RequestsGroupService {
                     if (checkRequestsGroupDone(reqGrp)) {
                         groupDones.add(reqGrp);
                     } else {
-                        expired = checkRequestGroupExpired(reqGrp)? expired+1:expired;
+                        expired = checkRequestGroupExpired(reqGrp) ? expired + 1 : expired;
                     }
                 } while (it.hasNext() && ((groupDones.size() + expired) < maxRequestPerTransaction));
             }
@@ -234,9 +234,11 @@ public class RequestsGroupService {
             groupReqInfoRepository
                     .deleteByGroupIdIn(groupDones.stream().map(RequestGroup::getId).collect(Collectors.toSet()));
             reqGroupRepository.deleteAll(groupDones);
-            LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}. Expired groups {}", System.currentTimeMillis() - start, groupDones.size(), response.getTotalElements(), expired);
+            LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}. Expired groups {}",
+                        System.currentTimeMillis() - start, groupDones.size(), response.getTotalElements(), expired);
         } else {
-            LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. Expired groups {}/{}", System.currentTimeMillis() - start, expired, response.getTotalElements());
+            LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. Expired groups {}/{}",
+                         System.currentTimeMillis() - start, expired, response.getTotalElements());
         }
     }
 

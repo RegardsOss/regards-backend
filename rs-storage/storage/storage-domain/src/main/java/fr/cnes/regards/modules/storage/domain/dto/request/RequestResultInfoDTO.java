@@ -82,7 +82,7 @@ public class RequestResultInfoDTO {
         if (fileReference != null) {
             dto.resultFile = FileReferenceDTO
                     .build(fileReference.getStorageDate(), FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
-                           FileLocationDTO.build(fileReference.getLocation()), fileReference.getOwners());
+                           FileLocationDTO.build(fileReference.getLocation()), fileReference.getLazzyOwners());
         }
         dto.errorCause = errorCause;
         return dto;

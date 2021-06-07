@@ -221,6 +221,8 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
 
         QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
 
+        // flatMap is only called in case try is still in success
+        //t._1 represent current quota and rate limit for this instance
         return cacheUserQuota(userEmail, key).flatMap(self::getUserQuotaAndRate).flatMap(t -> apply(operation, t._1));
     }
 
@@ -331,6 +333,14 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
                                                                            defaults.getRateLimit())));
     }
 
+    /**
+     * In caller logic, we just got the quota and rate for this user but nothing prevents other thread from this instance to have modified them.
+     * For example, this user has just finished downloading a file (started before we looked for quota and rate in this thread)
+     * so its rate and quota have been modified and we are looking for the most recent values possible
+     * @param quotaLimits retrieved by this thread
+     * @return If success: current quota and rate value for this instance(thanks to quotaManager) and previously retrieved values.
+     * If quota or rate exceeded: try containing exceptions
+     */
     @VisibleForTesting
     protected Try<Tuple3<DownloadQuotaLimits, Long, Long>> getUserQuotaAndRate(DownloadQuotaLimits quotaLimits) {
         return Try.of(() -> quotaManager.get(quotaLimits)).mapTry(quotaAndRate -> {
@@ -388,7 +398,7 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
         // }
         //
         // Please refrain from doing so because it would conflict with
-        // and operation which is asynchronous and where the caller
+        // an operation which is asynchronous and where the caller
         // simply decided to keep a reference to the quotaHandler and
         // call stop in a callback of its own.
         //
@@ -399,7 +409,6 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
         // trying to be too clever could actually make the quota manager
         // abstraction leak and cause issues to the called.
         return operation.apply(new WithQuotaOperationHandler() {
-
             @Override
             public void start() {
                 quotaManager.increment(quota);
@@ -418,6 +427,8 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
             try {
                 return self.createDownloadQuota(userEmail, maxQuota, rateLimit);
             } catch (DataIntegrityViolationException e) {
+                //This case means that we could not create the quota for this user in DB because another process (from storage)
+                // has done it for use while we were trying to see if it already existed. So lets simply get the one created for us
                 return Option.of(e.getRootCause()).filter(t -> t instanceof PSQLException)
                         .filter(t -> t.getMessage().contains(UK_DOWNLOAD_QUOTA_LIMITS_EMAIL))
                         .flatMap(throwable -> Option.ofOptional(quotaRepository.findByEmail(userEmail)))

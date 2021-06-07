@@ -9,6 +9,9 @@ import java.util.concurrent.Future;
 
 public interface IQuotaManager {
 
+    /**
+     * @return best available view of the system, quota and rate wise, at this time
+     */
     Tuple2<UserQuotaAggregate, UserRateAggregate> get(DownloadQuotaLimits quota);
 
     void increment(DownloadQuotaLimits quota);

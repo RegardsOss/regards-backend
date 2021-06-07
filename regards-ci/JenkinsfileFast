@@ -38,6 +38,7 @@ pipeline {
                 }
             }
             environment {
+                // TODO merge logic for main branches and feature branches because it's the same!(keep feature because version replace is more complete)
                 REGARDS_VERSION="fast-${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}"
                 MODE="fast"
             }

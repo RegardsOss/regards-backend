@@ -123,11 +123,12 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         // File reference should still exists for the remaining owner
         Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
                                                                       fileRef.getMetaInfo().getChecksum());
+
         Assert.assertTrue("File reference should be always existing", afterDeletion.isPresent());
-        Assert.assertEquals("File reference should always be owned by one owner", 1,
-                            afterDeletion.get().getOwners().size());
+        FileReference fr = fileRefWithOwnersRepo.findOneById(afterDeletion.get().getId());
+        Assert.assertEquals("File reference should always be owned by one owner", 1, fr.getLazzyOwners().size());
         Assert.assertTrue("File reference should always be owned by one owner",
-                          afterDeletion.get().getOwners().contains(owners.get(1)));
+                          fr.getLazzyOwners().contains(owners.get(1)));
 
         // To check that cache request are deleted with fileReference add a cache request for one stored file
         fileCacheRequestService.create(fileRef, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
@@ -152,16 +153,17 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", ONLINE_CONF_LABEL,
                                                             Optional.empty(), Optional.empty());
         Assert.assertNotNull("File reference should have been created", fileRef);
-        Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
+        Assert.assertTrue("File reference should belongs to first owner",
+                          fileRef.getLazzyOwners().contains(firstOwner));
         Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,
                                                                                         fileRef.getLocation()
                                                                                                 .getStorage(),
                                                                                         secondOwner);
         Assert.assertTrue("File reference should be updated", oFileRef.isPresent());
         Assert.assertTrue("File reference should belongs to first owner",
-                          oFileRef.get().getOwners().contains(firstOwner));
+                          oFileRef.get().getLazzyOwners().contains(firstOwner));
         Assert.assertTrue("File reference should belongs to second owner",
-                          oFileRef.get().getOwners().contains(secondOwner));
+                          oFileRef.get().getLazzyOwners().contains(secondOwner));
         fileRef = oFileRef.get();
 
         // Create deletion request for each owner
@@ -190,7 +192,8 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "delErr.file1.test",
                                                             ONLINE_CONF_LABEL, Optional.empty(), Optional.empty());
         Assert.assertNotNull("File reference should have been created", fileRef);
-        Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
+        Assert.assertTrue("File reference should belongs to first owner",
+                          fileRef.getLazzyOwners().contains(firstOwner));
 
         // Delete file reference
         FileDeletionRequestDTO request = FileDeletionRequestDTO
@@ -201,7 +204,8 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
         Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
                                                                       fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should still exists", afterDeletion.isPresent());
-        Assert.assertTrue("File reference should not belongs to anyone", afterDeletion.get().getOwners().isEmpty());
+        FileReference fr = fileRefWithOwnersRepo.findOneById(afterDeletion.get().getId());
+        Assert.assertTrue("File reference should not belongs to anyone", fr.getLazzyOwners().isEmpty());
         Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(fileRef);
         Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
 
@@ -243,16 +247,17 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
             FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test", pluginConf,
                                                                 Optional.empty(), Optional.empty());
             Assert.assertNotNull("File reference should have been created", fileRef);
-            Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
+            Assert.assertTrue("File reference should belongs to first owner",
+                              fileRef.getLazzyOwners().contains(firstOwner));
             Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,
                                                                                             fileRef.getLocation()
                                                                                                     .getStorage(),
                                                                                             secondOwner);
             Assert.assertTrue("File reference should be updated", oFileRef.isPresent());
             Assert.assertTrue("File reference should belongs to first owner",
-                              oFileRef.get().getOwners().contains(firstOwner));
+                              oFileRef.get().getLazzyOwners().contains(firstOwner));
             Assert.assertTrue("File reference should belongs to second owner",
-                              oFileRef.get().getOwners().contains(secondOwner));
+                              oFileRef.get().getLazzyOwners().contains(secondOwner));
             fileRef = oFileRef.get();
             Path filePathToDelete;
             filePathToDelete = Paths.get(new URL(fileRef.getLocation().getUrl()).getPath());
@@ -266,10 +271,10 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
             Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
                                                                           fileRef.getMetaInfo().getChecksum());
             Assert.assertTrue("File reference should be always existing", afterDeletion.isPresent());
-            Assert.assertEquals("File reference should always be owned by one owner", 1,
-                                afterDeletion.get().getOwners().size());
+            FileReference fr = fileRefWithOwnersRepo.findOneById(afterDeletion.get().getId());
+            Assert.assertEquals("File reference should always be owned by one owner", 1, fr.getLazzyOwners().size());
             Assert.assertTrue("File reference should always be owned by one owner",
-                              afterDeletion.get().getOwners().contains(secondOwner));
+                              fr.getLazzyOwners().contains(secondOwner));
 
             // To check that cache request are deleted with fileReference add a cache request for one stored file
             fileCacheRequestService.create(fileRef, OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
@@ -283,7 +288,8 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
             afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
                                                   fileRef.getMetaInfo().getChecksum());
             Assert.assertTrue("File reference should still exists", afterDeletion.isPresent());
-            Assert.assertTrue("File reference should not belongs to anyone", afterDeletion.get().getOwners().isEmpty());
+            fr = fileRefWithOwnersRepo.findOneById(afterDeletion.get().getId());
+            Assert.assertTrue("File reference should not belongs to anyone", fr.getLazzyOwners().isEmpty());
             Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(fileRef);
             Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
             Assert.assertTrue("File should exists on disk", Files.exists(filePathToDelete));

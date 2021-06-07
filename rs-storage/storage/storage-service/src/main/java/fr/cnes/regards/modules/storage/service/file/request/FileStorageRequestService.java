@@ -670,8 +670,9 @@ public class FileStorageRequestService {
                     .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
                             request.getOwner(), fileReference.getMetaInfo().getFileName(),
                             fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
-            eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId));
-            fileReference.getOwners().add(request.getOwner());
+            eventPublisher.storeSuccess(fileReference, message, Sets.newHashSet(groupId),
+                                        Lists.newArrayList(request.getOwner()));
+            fileReference.getLazzyOwners().add(request.getOwner());
             reqGroupService.requestSuccess(groupId, FileRequestType.STORAGE, request.getChecksum(),
                                            request.getStorage(), request.getOptionalSubDirectory().orElse(null),
                                            Sets.newHashSet(request.getOwner()), fileReference);

@@ -192,7 +192,7 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
             }};
 
         // when
-        // this instance flushes its diff and refreshes the global gauge value across instances
+        // instance1 flushes its diff and refreshes the global gauge value across instances
         quotaManager.flushSyncAndRefreshQuotas(diffSyncs);
 
         // then

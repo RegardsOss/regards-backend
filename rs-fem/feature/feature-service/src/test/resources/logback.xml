@@ -30,7 +30,7 @@
 <!--    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>-->
 <!--    <logger name="org.hibernate.event.internal" level="TRACE"/>-->
 <!--    <logger name="org.hibernate.persister.entity" level="TRACE"/>-->
-    <logger name="fr.cnes.regards.modules.feature.service.FeatureCreationService" level="TRACE"/>
+    <!-- <logger name="fr.cnes.regards.modules.feature.service.FeatureCreationService" level="TRACE"/> -->
     <logger name="fr.cnes.regards.modules.feature.service.logger.FeatureLogger" level="ERROR"/>
     <logger name="fr.cnes.regards.modules.model.service.validation" level="INFO"/>
     <root level="INFO">

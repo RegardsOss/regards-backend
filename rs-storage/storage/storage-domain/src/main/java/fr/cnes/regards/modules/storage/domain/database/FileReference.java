@@ -22,19 +22,24 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
@@ -54,6 +59,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
                 @Index(name = "idx_file_reference_type", columnList = "type") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_reference_checksum_storage",
                 columnNames = { "checksum", "storage" }) })
+@NamedEntityGraph(name = "graph.filereference.owners", attributeNodes = { @NamedAttributeNode(value = "owners") })
 public class FileReference {
 
     /**
@@ -71,9 +77,10 @@ public class FileReference {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime storageDate;
 
-    @Column(columnDefinition = "jsonb", name = "owners")
-    @Type(type = "jsonb")
-    private Set<String> owners = Sets.newHashSet();
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Column(name = "owner")
+    @CollectionTable(name = "ta_file_reference_owner", joinColumns = @JoinColumn(name = "file_ref_id"))
+    private final Set<String> owners = Sets.newHashSet();
 
     /**
      * Meta information about current file reference
@@ -165,17 +172,10 @@ public class FileReference {
     }
 
     /**
-     * @return the owners
+     * @return
      */
-    public Set<String> getOwners() {
+    public Collection<String> getLazzyOwners() {
         return owners;
-    }
-
-    /**
-     * @param owners the owners to set
-     */
-    public void setOwners(Set<String> owners) {
-        this.owners = owners;
     }
 
 }
