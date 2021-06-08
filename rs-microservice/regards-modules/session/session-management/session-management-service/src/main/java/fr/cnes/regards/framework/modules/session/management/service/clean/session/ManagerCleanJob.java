@@ -21,5 +21,4 @@ public class ManagerCleanJob extends AbstractJob<Void> {
         logger.debug("[{}] AgentCleanJob ends in {} ms. {} sessions deleted", jobInfoId,
                      System.currentTimeMillis() - start, nbSession);
     }
-
 }

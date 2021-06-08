@@ -91,7 +91,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
      * Bulk save queued items every second.
      */
     @Scheduled(cron = CRON)
-    protected void scheduleCleanSession() {
+    public void scheduleCleanSession() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

@@ -75,11 +75,11 @@ public class SessionNotifier {
     // File storage
 
     public void incrementProductStorePending(IngestRequest request) {
-        incrementCount(request, SessionNotifierPropertyEnum.REQUESTS_RUNNING, request.getAips().size());
+        incrementCount(request, SessionNotifierPropertyEnum.REQUESTS_RUNNING, 1);
     }
 
     public void decrementProductStorePending(IngestRequest request) {
-        decrementCount(request, SessionNotifierPropertyEnum.REQUESTS_RUNNING, request.getAips().size());
+        decrementCount(request, SessionNotifierPropertyEnum.REQUESTS_RUNNING, 1);
     }
 
     public void incrementProductStoreSuccess(IngestRequest request) {
@@ -87,11 +87,11 @@ public class SessionNotifier {
     }
 
     public void incrementProductStoreError(IngestRequest request) {
-        incrementCount(request, SessionNotifierPropertyEnum.REQUESTS_ERRORS, request.getAips().size());
+        incrementCount(request, SessionNotifierPropertyEnum.REQUESTS_ERRORS, 1);
     }
 
     public void decrementProductStoreError(IngestRequest request) {
-        decrementCount(request, SessionNotifierPropertyEnum.REQUESTS_ERRORS, request.getAips().size());
+        decrementCount(request, SessionNotifierPropertyEnum.REQUESTS_ERRORS, 1);
     }
 
     public void incrementProductIgnored(IngestRequest request) {

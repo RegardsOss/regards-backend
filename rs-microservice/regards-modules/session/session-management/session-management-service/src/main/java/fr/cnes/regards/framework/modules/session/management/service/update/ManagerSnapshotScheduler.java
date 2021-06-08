@@ -94,7 +94,7 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
             + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
                     + DEFAULT_SCHEDULING_DELAY + "}")
-    protected void scheduleManagerSnapshot() {
+    public void scheduleManagerSnapshot() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

@@ -88,7 +88,7 @@ public class ManagerCleanService {
         this.sourceRepo.saveAll(sourceMap.values());
 
         // delete source not associated to any sessions
-        this.sourceRepo.deleteByNbSessions(0);
+        this.sourceRepo.deleteByNbSessions(0L);
 
         // delete expired session steps
         this.sessionStepRepo.deleteByLastUpdateDateBefore(startClean);
@@ -175,7 +175,5 @@ public class ManagerCleanService {
                 agg.getState().setRunning(agg.getState().getRunning() - delta.getRunning());
             }
         }
-
     }
-
 }

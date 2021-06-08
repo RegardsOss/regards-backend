@@ -38,7 +38,7 @@ public interface ISourceManagerRepository extends JpaRepository<Source, Long>, J
 
     Optional<Source> findByName(String name);
 
-    void deleteByNbSessions(int noSession);
+    void deleteByNbSessions(long noSession);
 
     void deleteByName(String source);
 
