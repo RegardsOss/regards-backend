@@ -52,7 +52,7 @@ function checkArtifactsRebuild {
     fi
 }
 
-function updateArtifacts {
+function updateNexusHashes {
     HASHES_SUFFIX=$1
 
     # Compile new hashes of modules that were successfully rebuilt
@@ -132,7 +132,7 @@ function install {
             2>&1 | tee ${DATADIR}/mvn-build.log
         set +x
 
-        updateArtifacts ${REGARDS_VERSION}
+        updateNexusHashes ${REGARDS_VERSION}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
@@ -170,7 +170,7 @@ function deploy {
             2>&1 | tee ${DATADIR}/mvn-build.log
         set +x
 
-        updateArtifacts ${BRANCH_NAME}
+        updateNexusHashes ${BRANCH_NAME}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
@@ -211,7 +211,7 @@ function fast {
             2>&1 | tee ${DATADIR}/mvn-build.log
         set +x
 
-        updateArtifacts ${REGARDS_VERSION}
+        updateNexusHashes ${REGARDS_VERSION}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"

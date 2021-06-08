@@ -5,7 +5,7 @@
  */
 
 /**
- * Declaratve Jenkinsfile. The language is Groovy.
+ * Declarative Jenkinsfile. The language is Groovy.
  * Contains the definition of a Jenkins Pipeline, is checked into source control
  * and is expected to be the reference.
  * To fully support multibranch builds without issues, we are using docker-compose to setup cots for each build.
@@ -76,6 +76,7 @@ pipeline {
     }
     post {
         failure {
+            mattermostSend color: 'danger', message: "Build Failed - ${env.JOB_NAME}#${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)", text: "Changes: \n"+getChangeString()
             echo 'The build FAILED'
         }
         cleanup {
@@ -86,4 +87,24 @@ pipeline {
             sh 'chmod -R +rw .'
         }
     }
+}
+
+@NonCPS
+def getChangeString() {
+    def changeString = ""
+
+    echo "Gathering SCM changes"
+    def changeLogSets = currentBuild.changeSets
+    for (int i = 0; i < changeLogSets.size(); i++) {
+        def entries = changeLogSets[i].items
+        for (int j = 0; j < entries.length; j++) {
+            def entry = entries[j]
+            changeString += " - ${entry.msg} [@${entry.author}]\n"
+        }
+    }
+
+    if (!changeString) {
+        changeString = " - No new changes"
+    }
+    return changeString
 }
