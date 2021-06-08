@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+
 import static org.junit.Assert.assertNotEquals;
 
 import java.time.OffsetDateTime;
@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.service.request.FeatureStorageListener;
 import fr.cnes.regards.modules.storage.client.RequestInfo;

@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.feature.domain.request;
 
 import java.time.OffsetDateTime;
 
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
