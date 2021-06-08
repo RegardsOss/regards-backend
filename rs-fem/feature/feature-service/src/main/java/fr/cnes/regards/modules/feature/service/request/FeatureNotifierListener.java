@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
 import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
@@ -21,9 +21,9 @@ import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-public class FeatureNotfierListener implements INotifierRequestListener {
+public class FeatureNotifierListener implements INotifierRequestListener {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FeatureNotfierListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FeatureNotifierListener.class);
 
     public static final String RECEIVED_FROM_NOTIFIER_FORMAT = "Received {} {} indicating {} to handle from rs-notifier";
 
