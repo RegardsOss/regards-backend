@@ -28,7 +28,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 
 /**
  * @author Kevin Marchois

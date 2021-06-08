@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;

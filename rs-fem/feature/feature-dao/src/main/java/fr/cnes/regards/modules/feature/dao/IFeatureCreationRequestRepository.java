@@ -32,8 +32,8 @@ import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 
 @Repository
 public interface IFeatureCreationRequestRepository extends IAbstractFeatureRequestRepository<FeatureCreationRequest> {
