@@ -1,7 +1,12 @@
 package fr.cnes.regards.modules.feature.service;
 
+import java.util.Optional;
+import java.util.Set;
+
 import com.google.gson.Gson;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
@@ -14,7 +19,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRequestVisitor<NotificationRequestEvent> {
+public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRequestVisitor<Optional<NotificationRequestEvent>> {
 
     public static class NotificationActionEventMetadata {
 
@@ -37,58 +42,81 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
 
     private final IFeatureEntityRepository featureRepo;
 
-    public CreateNotificationRequestEventVisitor(Gson gson, IFeatureEntityRepository featureRepo) {
+    private final Set<AbstractFeatureRequest> visitorErrorRequests;
+
+    public CreateNotificationRequestEventVisitor(Gson gson, IFeatureEntityRepository featureRepo,
+            Set<AbstractFeatureRequest> visitorErrorRequests) {
         this.gson = gson;
         this.featureRepo = featureRepo;
+        this.visitorErrorRequests = visitorErrorRequests;
     }
 
     @Override
-    public NotificationRequestEvent visitCreationRequest(FeatureCreationRequest creationRequest) {
-        return new NotificationRequestEvent(gson.toJsonTree(creationRequest.getFeature()).getAsJsonObject(),
+    public Optional<NotificationRequestEvent> visitCreationRequest(FeatureCreationRequest creationRequest) {
+        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(creationRequest.getFeature()).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.CREATED)),
                                             creationRequest.getRequestId(),
-                                            creationRequest.getRequestOwner());
+                                            creationRequest.getRequestOwner()));
     }
 
     @Override
-    public NotificationRequestEvent visitDeletionRequest(FeatureDeletionRequest deletionRequest) {
+    public Optional<NotificationRequestEvent> visitDeletionRequest(FeatureDeletionRequest deletionRequest) {
         if (deletionRequest.isAlreadyDeleted()) {
-            return new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()).getAsJsonObject(),
+            return Optional.of(new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()).getAsJsonObject(),
                                                 gson.toJsonTree(new NotificationActionEventMetadata(
                                                        FeatureManagementAction.ALREADY_DELETED)),
                                                 deletionRequest.getRequestId(),
-                                                deletionRequest.getRequestOwner());
+                                                deletionRequest.getRequestOwner()));
         } else {
-            return new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()).getAsJsonObject(),
+            return Optional.of(new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()).getAsJsonObject(),
                                                 gson.toJsonTree(new NotificationActionEventMetadata(
                                                        FeatureManagementAction.DELETED)),
                                                 deletionRequest.getRequestId(),
-                                                deletionRequest.getRequestOwner());
+                                                deletionRequest.getRequestOwner()));
         }
     }
 
     @Override
-    public NotificationRequestEvent visitCopyRequest(FeatureCopyRequest copyRequest) {
-        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(copyRequest.getUrn()).getFeature()).getAsJsonObject(),
-                                            gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.COPY)),
-                                            copyRequest.getRequestId(),
-                                            copyRequest.getRequestOwner());
+    public Optional<NotificationRequestEvent> visitCopyRequest(FeatureCopyRequest copyRequest) {
+        FeatureEntity featureEntity = featureRepo.findByUrn(copyRequest.getUrn());
+        if(featureEntity != null) {
+            return Optional.of(new NotificationRequestEvent(gson.toJsonTree(featureEntity.getFeature()).getAsJsonObject(),
+                                                gson.toJsonTree(new NotificationActionEventMetadata(
+                                                        FeatureManagementAction.COPY)),
+                                                copyRequest.getRequestId(),
+                                                copyRequest.getRequestOwner()));
+        } else {
+            visitorErrorRequests.add(copyRequest);
+            return Optional.empty();
+        }
     }
 
     @Override
-    public NotificationRequestEvent visitUpdateRequest(FeatureUpdateRequest updateRequest) {
-        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(updateRequest.getUrn()).getFeature()).getAsJsonObject(),
+    public Optional<NotificationRequestEvent> visitUpdateRequest(FeatureUpdateRequest updateRequest) {
+        FeatureEntity featureEntity = featureRepo.findByUrn(updateRequest.getUrn());
+        if(featureEntity != null) {
+        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(featureEntity.getFeature()).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.UPDATED)),
                                             updateRequest.getRequestId(),
-                                            updateRequest.getRequestOwner());
+                                            updateRequest.getRequestOwner()));
+        } else {
+            visitorErrorRequests.add(updateRequest);
+            return Optional.empty();
+        }
     }
 
     @Override
-    public NotificationRequestEvent visitNotificationRequest(FeatureNotificationRequest featureNotificationRequest) {
-        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(featureNotificationRequest.getUrn())
+    public Optional<NotificationRequestEvent> visitNotificationRequest(FeatureNotificationRequest featureNotificationRequest) {
+        FeatureEntity featureEntity = featureRepo.findByUrn(featureNotificationRequest.getUrn());
+            if(featureEntity != null) {
+        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(featureEntity
                                                                    .getFeature()).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.NOTIFIED)),
                                             featureNotificationRequest.getRequestId(),
-                                            featureNotificationRequest.getRequestOwner());
+                                            featureNotificationRequest.getRequestOwner()));
+            } else {
+                visitorErrorRequests.add(featureNotificationRequest);
+                return Optional.empty();
+            }
     }
 }

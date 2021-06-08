@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.feature.service;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -170,14 +172,25 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                        PageRequest.of(0, properties.getMaxBulkSize(), Sort
                                                                .by(Order.asc("priority"), Order.asc("requestDate"))))
                 .getContent();
+        Set<AbstractFeatureRequest> visitorErrorRequests = new HashSet<>();
+        CreateNotificationRequestEventVisitor visitor = new CreateNotificationRequestEventVisitor(gson,
+                                                                                                  featureRepo,
+                                                                                                  visitorErrorRequests);
         if (!requestsToSend.isEmpty()) {
             List<NotificationRequestEvent> eventToSend = requestsToSend.stream()
-                    .map(r -> r.accept(new CreateNotificationRequestEventVisitor(gson, featureRepo)))
+                    .map(r -> r.accept(visitor))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .collect(Collectors.toList());
             effectivelySend(sendingStart, eventToSend);
+            // remove visitor error requests from requests to send because they are in error and not sent!
+            Set<AbstractFeatureRequest> requestsSent = new HashSet<>(requestsToSend);
+            requestsSent.removeAll(visitorErrorRequests);
             abstractFeatureRequestRepo
                     .updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
-                                requestsToSend.stream().map(AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+                                requestsSent.stream().map(AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+            // handle notification error for visitor error requests
+            handleNotificationError(visitorErrorRequests, FeatureRequestStep.LOCAL_NOTIFICATION_ERROR);
         }
         return requestsToSend.size();
     }
@@ -204,7 +217,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     }
 
     @Override
-    public void handleNotificationError(Set<AbstractFeatureRequest> error) {
+    public void handleNotificationError(Set<AbstractFeatureRequest> error, FeatureRequestStep errorStep) {
         for (AbstractFeatureRequest request : error) {
             FeatureLogger.notificationError(request.getRequestOwner(), request.getRequestId(), request.getUrn());
             // Publish request success
@@ -213,7 +226,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                         RequestState.ERROR));
         }
         Set<Long> ids = error.stream().map(AbstractFeatureRequest::getId).collect(Collectors.toSet());
-        abstractFeatureRequestRepo.updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, ids);
+        abstractFeatureRequestRepo.updateStep(errorStep, ids);
         abstractFeatureRequestRepo.updateState(RequestState.ERROR, ids);
     }
 

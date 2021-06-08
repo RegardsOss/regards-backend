@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
 import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
@@ -47,7 +48,7 @@ public class FeatureNotfierListener implements INotifierRequestListener {
         List<String> requestIds = denied.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
         Set<AbstractFeatureRequest> errorRequest = abstractFeatureRequestRepo.findAllByRequestIdIn(requestIds);
         if (!errorRequest.isEmpty()) {
-            featureNotificationService.handleNotificationError(errorRequest);
+            featureNotificationService.handleNotificationError(errorRequest, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR);
             LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT,
                       denied.size(),
                       NotificationState.ERROR,

@@ -41,6 +41,7 @@ public enum FeatureRequestStep {
     // ERROR
     // - update cannot be done because feature doesn't exist anymore
     LOCAL_ERROR(false),
+    LOCAL_NOTIFICATION_ERROR(false),
 
     // Delete files
     REMOTE_STORAGE_DELETION_REQUESTED(true, true, true),
@@ -62,16 +63,11 @@ public enum FeatureRequestStep {
 
     private boolean timeout = false;
 
-    private FeatureRequestStep(boolean processing) {
+    FeatureRequestStep(boolean processing) {
         this.processing = processing;
     }
 
-    private FeatureRequestStep(boolean processing, boolean remote) {
-        this.remote = remote;
-        this.processing = processing;
-    }
-
-    private FeatureRequestStep(boolean processing, boolean remote, boolean timeout) {
+    FeatureRequestStep(boolean processing, boolean remote, boolean timeout) {
         this.remote = remote;
         this.timeout = timeout;
         this.processing = processing;
