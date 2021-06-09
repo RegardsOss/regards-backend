@@ -172,12 +172,19 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         self = applicationContext.getBean(DownloadQuotaService.class);
         subscriber.subscribeTo(ProjectUserEvent.class, this);
-        for(DynamicTenantSetting setting : storageSettingService.retrieve()) {
-            if(Objects.equals(StorageSetting.MAX_QUOTA_NAME, setting.getName())) {
-                changeDefaultQuotaLimits(setting.getValue());
-            }
-            if(Objects.equals(StorageSetting.RATE_LIMIT_NAME, setting.getName())) {
-                changeDefaultRateLimits(setting.getValue());
+        for(String tenant: tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                for (DynamicTenantSetting setting : storageSettingService.retrieve()) {
+                    if (Objects.equals(StorageSetting.MAX_QUOTA_NAME, setting.getName())) {
+                        changeDefaultQuotaLimits(setting.getValue());
+                    }
+                    if (Objects.equals(StorageSetting.RATE_LIMIT_NAME, setting.getName())) {
+                        changeDefaultRateLimits(setting.getValue());
+                    }
+                }
+            } finally {
+                runtimeTenantResolver.clearTenant();
             }
         }
     }
