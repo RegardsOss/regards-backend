@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -252,8 +253,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
 
     @Override
     public int scheduleRequests() {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new NotImplementedException("Schedule of notification requests is not implemented.");
     }
 
     @Override
