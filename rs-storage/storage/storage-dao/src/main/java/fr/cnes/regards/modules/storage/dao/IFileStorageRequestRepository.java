@@ -89,11 +89,12 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Page<FileStorageRequest> findByStatus(FileRequestStatus delayed, Pageable page);
 
+    Page<FileStorageRequest> findByStatusAndSessionOwnerAndSession(FileRequestStatus error, String source, String session, Pageable pageToRequest);
+
     boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage, String checksum,
             Set<FileRequestStatus> ruuninstatus);
 
     Set<FileStorageRequest> findByMetaInfoChecksumIn(Set<String> checksums);
 
     Optional<FileStorageRequest> findByMetaInfoChecksum(String checksum);
-
 }

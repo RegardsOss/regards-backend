@@ -111,13 +111,13 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 4, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REFERENCE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.REFERENCED_FILES,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
     }
 
     @Test
@@ -185,9 +185,9 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REFERENCE_REQUESTS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_REFUSED,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
 
     }
 
@@ -232,21 +232,21 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 8, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(4), SessionNotifierPropertyEnum.REFERENCE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_2, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_2, SESSION_1, "1");
         checkStepEvent(stepEventList.get(5), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_2, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_2, SESSION_1, "1");
         checkStepEvent(stepEventList.get(6), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_2, SESSION_1);
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_2, SESSION_1, "1");
         checkStepEvent(stepEventList.get(7), SessionNotifierPropertyEnum.REFERENCED_FILES,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_2, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_2, SESSION_1, "1");
     }
 
     /**

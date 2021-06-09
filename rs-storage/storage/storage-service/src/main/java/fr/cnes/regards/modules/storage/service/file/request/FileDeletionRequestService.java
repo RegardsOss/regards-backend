@@ -163,7 +163,6 @@ public class FileDeletionRequestService {
         }
         return request;
     }
-
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      */
@@ -183,6 +182,24 @@ public class FileDeletionRequestService {
         } else {
             return request;
         }
+    }
+
+    /**
+     * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
+     */
+    public void retryBySession(List<FileDeletionRequest> requestList, String sessionOwner, String session) {
+        int nbRequests = requestList.size();
+        for (FileDeletionRequest request : requestList) {
+            // reset status
+            request.setStatus(FileRequestStatus.TO_DO);
+            request.setErrorCause(null);
+        }
+        // save changes in database
+        updateFileDeletionRequestList(requestList);
+        // decrement error requests
+        this.sessionNotifier.decrementErrorRequests(sessionOwner, session, nbRequests);
+        // notify running requests to the session agent
+        this.sessionNotifier.incrementRunningRequests(sessionOwner, session, nbRequests);
     }
 
     /**
@@ -214,15 +231,29 @@ public class FileDeletionRequestService {
      * Schedule jobs for deletion requests by using a new transaction
      * @param storage
      * @param deletionRequestPage
+     * @param requestStatus
      * @return scheduled {@link JobInfo}
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
-            Page<FileDeletionRequest> deletionRequestPage) {
+            Page<FileDeletionRequest> deletionRequestPage, FileRequestStatus requestStatus) {
         LOGGER.debug("[DELETION REQUESTS] scheduling {} deletion jobs for storage {} ... ", deletionRequestPage.get(),
                      storage);
+        // SESSION HANDLING
+        List<FileDeletionRequest> storageReqList = deletionRequestPage.getContent();
+        // if status is in error state decrement the number of requests in error
+        if(requestStatus.equals(FileRequestStatus.ERROR)) {
+            storageReqList.forEach(req -> {
+                String sessionOwner = req.getSessionOwner();
+                String session = req.getSession();
+                sessionNotifier.decrementErrorRequests(sessionOwner, session);
+                sessionNotifier.incrementRunningRequests(sessionOwner, session);
+            });
+        }
+
+        // SCHEDULER - schedule jobs by storage
         if (storageHandler.isConfigured(storage)) {
-            return scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
+            return scheduleDeletionJobsByStorage(storage, storageReqList);
         } else {
             handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
         }
@@ -465,6 +496,18 @@ public class FileDeletionRequestService {
         Assert.notNull(fileDeletionRequest, "File deletion request to update cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to update identifier cannot be null");
         return fileDeletionRequestRepo.save(fileDeletionRequest);
+    }
+
+    /**
+     * Update a list {@link FileDeletionRequest}s
+     * @param fileDeletionRequestList
+     */
+    public List<FileDeletionRequest> updateFileDeletionRequestList(List<FileDeletionRequest> fileDeletionRequestList) {
+        fileDeletionRequestList.forEach(req -> {
+            Assert.notNull(req, "File deletion request to update cannot be null");
+            Assert.notNull(req.getId(), "File deletion request to update identifier cannot be null");
+        });
+        return fileDeletionRequestRepo.saveAll(fileDeletionRequestList);
     }
 
     /**

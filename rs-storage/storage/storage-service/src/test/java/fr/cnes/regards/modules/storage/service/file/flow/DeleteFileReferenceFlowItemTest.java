@@ -119,7 +119,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 1, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
     }
 
     /**
@@ -154,15 +154,15 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 5, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.DELETE_REQUESTS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.DELETED_FILES, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(4), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
     }
 
     /**
@@ -196,7 +196,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 1, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
     }
 
     /**
@@ -231,9 +231,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.DELETE_REQUESTS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
 
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
@@ -256,11 +256,11 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 3, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.DELETED_FILES, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
 
     }
 
@@ -304,9 +304,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.DELETE_REQUESTS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
 
         // Now schedule deletion jobs
         Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
@@ -323,9 +323,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_ERRORS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
     }
 
     /**
@@ -368,9 +368,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.DELETE_REQUESTS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
 
         // Now schedule deletion jobs
         Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
@@ -387,11 +387,11 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 3, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1);
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.DELETED_FILES, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
         checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1, SESSION_1);
+                       SESSION_OWNER_1, SESSION_1, "1");
     }
 
     public class LockDeletion extends Thread {

@@ -285,6 +285,7 @@ public class FileStorageRequestService {
                 existingReq.setStatus(FileRequestStatus.TO_DO);
                 // decrement errors to the session agent
                 this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
+                this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
             }
             LOGGER.trace("[STORAGE REQUESTS] Existing request ({}) updated to handle same file of request ({})",
                          existingReq.getMetaInfo().getFileName(), request.getFileName());
@@ -380,8 +381,13 @@ public class FileStorageRequestService {
             request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
             request.setErrorCause(null);
             update(request);
+            // Session handling
+            String sessionOwner = request.getSessionOwner();
+            String session = request.getSession();
             // decrement number of errors to the session agent
-            this.sessionNotifier.decrementErrorRequests(request.getSessionOwner(), request.getSession());
+            this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
+            // increment number of running to the session agent
+            this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
         }
     }
 
@@ -399,10 +405,31 @@ public class FileStorageRequestService {
                 update(request);
                 // decrement number of errors to the session agent
                 this.sessionNotifier.decrementErrorRequests(request.getSessionOwner(), request.getSession());
+                // increment number of running to the session agent
+                this.sessionNotifier.incrementRunningRequests(request.getSessionOwner(), request.getSession());
             }
             // Always retrieve the first page has we modify each element of the results.
             // All element are handled when result is empty.
         } while (results.hasNext());
+    }
+
+    /**
+     * Update all {@link FileStorageRequest} in error status to change status to {@link FileRequestStatus#TO_DO} or
+     * {@link FileRequestStatus#DELAYED}.
+     */
+    public void retryBySession(List<FileStorageRequest> requestList, String sessionOwner, String session) {
+        int nbRequests = requestList.size();
+        for (FileStorageRequest request : requestList) {
+            // reset status
+            request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
+            request.setErrorCause(null);
+        }
+        // save changes in database
+        updateListRequests(requestList);
+        // decrement error requests
+        this.sessionNotifier.decrementErrorRequests(sessionOwner, session, nbRequests);
+        // notify running requests to the session agent
+        this.sessionNotifier.incrementRunningRequests(sessionOwner, session, nbRequests);
     }
 
     /**
@@ -411,6 +438,14 @@ public class FileStorageRequestService {
      */
     public FileStorageRequest update(FileStorageRequest fileStorageRequest) {
         return fileStorageRequestRepo.save(fileStorageRequest);
+    }
+
+    /**
+     * Update a list {@link FileStorageRequest}
+     * @param fileStorageRequestList to delete
+     */
+    public List<FileStorageRequest> updateListRequests(List<FileStorageRequest> fileStorageRequestList) {
+        return fileStorageRequestRepo.saveAll(fileStorageRequestList);
     }
 
     /**
@@ -446,7 +481,7 @@ public class FileStorageRequestService {
                 }
                 if (filesPage.hasContent()) {
                     maxId = filesPage.stream().max(Comparator.comparing(FileStorageRequest::getId)).get().getId();
-                    self.scheduleJobsByStorage(jobList, storage, filesPage.getContent());
+                    self.scheduleJobsByStorage(jobList, storage, filesPage.getContent(), status);
                 }
             } while (filesPage.hasContent());
         }
@@ -462,7 +497,19 @@ public class FileStorageRequestService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void scheduleJobsByStorage(Collection<JobInfo> jobList, String storage,
-            List<FileStorageRequest> fileStorageRequests) {
+            List<FileStorageRequest> fileStorageRequests, FileRequestStatus requestStatus) {
+        // SESSION HANDLING
+        // if status is in error state decrement the number of requests in error
+        if(requestStatus.equals(FileRequestStatus.ERROR)) {
+            fileStorageRequests.forEach(req -> {
+                String sessionOwner = req.getSessionOwner();
+                String session = req.getSession();
+                sessionNotifier.decrementErrorRequests(sessionOwner, session);
+                sessionNotifier.incrementRunningRequests(sessionOwner, session);
+            });
+        }
+
+        // SCHEDULER - schedule jobs by storage
         if (storageHandler.isConfigured(storage)) {
             jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
         } else {

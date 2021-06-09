@@ -159,8 +159,10 @@ public class FileCopyRequestService {
         if (request.isPresent()) {
             return Optional.of(handleAlreadyExists(requestDto, request.get(), groupId));
         } else {
+            String sessionOwner = requestDto.getSessionOwner();
+            String session = requestDto.getSession();
             // notify the copy request to the session agent
-            this.sessionNotifier.incrementCopyRequests(requestDto.getSessionOwner(), requestDto.getSession());
+            this.sessionNotifier.incrementCopyRequests(sessionOwner, session);
 
             // get file meta info to copy
             Set<FileReference> refs = fileRefService.search(requestDto.getChecksum());
@@ -172,7 +174,7 @@ public class FileCopyRequestService {
                 notificationClient.notify(message, "File copy request refused", NotificationLevel.WARNING,
                                           DefaultRole.PROJECT_ADMIN);
                 // notify denied request to the session agent
-                sessionNotifier.incrementDeniedRequests(requestDto.getSessionOwner(), requestDto.getSession());
+                this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
             } else {
                 // Check if destination file already exists
                 if (refs.stream().anyMatch(r -> r.getLocation().getStorage().equals(requestDto.getStorage()))) {
@@ -191,11 +193,10 @@ public class FileCopyRequestService {
                     FileCopyRequest newRequest = copyRepository
                             .save(new FileCopyRequest(groupId, refs.stream().findFirst().get().getMetaInfo(),
                                                       requestDto.getSubDirectory(), requestDto.getStorage(),
-                                                      requestDto.getSessionOwner(), requestDto.getSession()));
+                                                      sessionOwner, session));
                     request = Optional.of(newRequest);
                     // notify request is running
-                    this.sessionNotifier
-                            .incrementRunningRequests(requestDto.getSessionOwner(), requestDto.getSession());
+                    this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
                 }
             }
         }
@@ -213,7 +214,10 @@ public class FileCopyRequestService {
             String newGroupId) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
             // decrement the number of errors to the session agent
-            this.sessionNotifier.decrementErrorRequests(requestDto.getSessionOwner(), requestDto.getSession());
+            String sessionOwner = requestDto.getSessionOwner();
+            String session = requestDto.getSession();
+            this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
+            this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
             // set the new status
             request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
             request.setFileCacheGroupId(newGroupId);
@@ -274,6 +278,9 @@ public class FileCopyRequestService {
 
         // Delete the copy request
         copyRepository.delete(request);
+
+        // notify session agent of the request success
+        this.sessionNotifier.decrementRunningRequests(request.getSessionOwner(), request.getSession());
     }
 
     /**
@@ -292,6 +299,11 @@ public class FileCopyRequestService {
         publisher.copyError(request, errorCause);
         reqGrpService.requestError(request.getGroupId(), FileRequestType.COPY, request.getMetaInfo().getChecksum(),
                                    request.getStorage(), null, Sets.newHashSet(), errorCause);
+        // notify session agent of the error success
+        String sessionOwner = request.getSessionOwner();
+        String session = request.getSession();
+        this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+        this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
     }
 
     /**

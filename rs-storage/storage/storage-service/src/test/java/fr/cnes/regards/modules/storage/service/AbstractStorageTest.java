@@ -498,7 +498,6 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                 stepList.add((StepPropertyUpdateRequestEvent) e);
             }
         }
-        Assert.assertFalse("No step event found", stepList.isEmpty());
         // sort list to make sure it is sorted by creation date
         stepList.sort(Comparator.comparing(StepPropertyUpdateRequestEvent::getDate));
         return stepList;
@@ -506,10 +505,12 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
 
     protected void checkStepEvent(StepPropertyUpdateRequestEvent event,
             SessionNotifierPropertyEnum expectedEventProperty, StepPropertyEventTypeEnum expectedType,
-            String expectedSessionOwner, String expectedSession) {
+            String expectedSessionOwner, String expectedSession, String expectedValue) {
         StepProperty stepProperty = event.getStepProperty();
         Assert.assertEquals("This property was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
                             expectedEventProperty.getName(), stepProperty.getStepPropertyInfo().getProperty());
+        Assert.assertEquals("This session was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedValue, stepProperty.getStepPropertyInfo().getValue());
         Assert.assertEquals("This type was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
                             expectedType, event.getType());
         Assert.assertEquals("This session owner was not expected. Check the StepPropertyUpdateRequestEvent workflow.",

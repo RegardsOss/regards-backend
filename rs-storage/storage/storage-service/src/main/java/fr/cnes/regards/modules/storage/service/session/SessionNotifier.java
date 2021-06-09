@@ -75,9 +75,12 @@ public class SessionNotifier {
     }
 
     // running requests
-    // note : running requests are only implemented
     public void incrementRunningRequests(String sessionOwner, String session) {
         incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REQUESTS_RUNNING, 1);
+    }
+
+    public void incrementRunningRequests(String sessionOwner, String session, int nbProducts) {
+        incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REQUESTS_RUNNING, nbProducts);
     }
 
     public void decrementRunningRequests(String sessionOwner, String session) {
@@ -96,6 +99,10 @@ public class SessionNotifier {
 
     public void decrementErrorRequests(String sessionOwner, String session) {
         decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REQUESTS_ERRORS, 1);
+    }
+
+    public void decrementErrorRequests(String sessionOwner, String session, int nbProducts) {
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REQUESTS_ERRORS, nbProducts);
     }
 
     // ----------- FILES -----------

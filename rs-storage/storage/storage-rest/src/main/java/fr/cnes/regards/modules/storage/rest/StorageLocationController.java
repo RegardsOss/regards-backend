@@ -270,6 +270,24 @@ public class StorageLocationController implements IResourceController<StorageLoc
     }
 
     /**
+     * End-point to retry all files requests in error state for a given source and session
+     *
+     * @param source  name of the source
+     * @param session name of the session
+     * @return Void
+     */
+    @RequestMapping(method = RequestMethod.GET, path = ID_PATH + FILES + RETRY)
+    @ResourceAccess(description = "Retry all files requests in error state for a given source and session",
+            role = DefaultRole.ADMIN)
+    public ResponseEntity<Void> retryErrorsBySourceAndSession(@PathVariable(name = "source") String source,
+            @PathVariable(name = "session") String session) {
+        service.retryErrorsBySourceAndSession(source, session);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
+
+    /**
      * End-point to increase the priority of a storage location. Priority is used to select a storage location during file retrieving if files are
      * stored on multiple locations.
      * @param storageLocationId
