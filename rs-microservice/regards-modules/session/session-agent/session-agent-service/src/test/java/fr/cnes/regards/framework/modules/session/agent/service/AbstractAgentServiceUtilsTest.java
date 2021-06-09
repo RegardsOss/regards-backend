@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.framework.modules.session.agent.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -7,6 +25,7 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -18,7 +37,6 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepReposit
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.service.jobs.SnapshotJobEventHandler;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
@@ -35,10 +53,19 @@ import org.springframework.test.context.TestPropertySource;
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
-public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServiceTransactionalIT {
+public abstract class AbstractAgentServiceUtilsTest extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgentServiceUtilsTest.class);
 
+    /**
+     * Services
+     */
+
+    // JOBS
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    // AMQP
     @Autowired
     private IRabbitVirtualHostAdmin vhostAdmin;
 
@@ -49,6 +76,19 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
     protected IPublisher publisher;
 
     @Autowired
+    private ISubscriber subscriber;
+
+
+    /**
+     * Repositories
+     */
+
+    // JOBS
+    @Autowired
+    protected IJobInfoRepository jobInfoRepo;
+
+    // SESSION AGENT
+    @Autowired
     protected ISessionStepRepository sessionStepRepo;
 
     @Autowired
@@ -57,14 +97,9 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
     @Autowired
     protected ISnapshotProcessRepository snapshotProcessRepo;
 
-    @Autowired
-    protected IJobInfoRepository jobInfoRepo;
-
-    @Autowired
-    private ISubscriber subscriber;
-
-    @Autowired
-    private IJobInfoService jobInfoService;
+    /**
+     * Parameters
+     */
 
     protected static final String SOURCE_1 = "SOURCE 1";
 
@@ -76,24 +111,23 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
 
     protected static final String OWNER_2 = "OWNER 2";
 
+    // -------------
+    // BEFORE METHODS
+    // -------------
+
     @Before
     public void init() throws Exception {
-        this.stepPropertyRepo.deleteAll();
-        this.sessionStepRepo.deleteAll();
-        this.snapshotProcessRepo.deleteAll();
-        this.jobInfoRepo.deleteAll();
+        // simulate application started and ready
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        cleanRepositories();
+
+
         // override this method to custom action performed before
         doInit();
-    }
-
-    @After
-    public void after() throws Exception {
-        subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
-        subscriber.unsubscribeFrom(JobEvent.class);
-        cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(SnapshotJobEventHandler.class, Target.MICROSERVICE);
-        Thread.sleep(10000L);
-        doAfter();
     }
 
     /**
@@ -105,6 +139,15 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
         // Override to init something
     }
 
+    // -------------
+    // AFTER METHODS
+    // -------------
+    @After
+    public void after() throws Exception {
+        clearQueues();
+        doAfter();
+    }
+
     /**
      * Custom test cleaning to override
      *
@@ -113,6 +156,19 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
     protected void doAfter() throws Exception {
         // Override to init something
     }
+
+
+    // -------------
+    //     AMQP
+    // -------------
+
+    private void clearQueues() throws InterruptedException {
+        subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
+        subscriber.unsubscribeFrom(JobEvent.class);
+        cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(SnapshotJobEventHandler.class, Target.MICROSERVICE);
+        Thread.sleep(5000L);
+    };
 
     /**
      * Internal method to clean AMQP queues, if actives
@@ -130,6 +186,21 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
             }
         }
     }
+
+    // -------------
+    //     REPO
+    // -------------
+
+    private void cleanRepositories() {
+        this.stepPropertyRepo.deleteAll();
+        this.sessionStepRepo.deleteAll();
+        this.snapshotProcessRepo.deleteAll();
+        this.jobInfoRepo.deleteAll();
+    }
+
+    // --------------
+    //  SESSION UTILS
+    // --------------
 
     protected boolean waitForStepPropertyEventsStored(int nbEvents) throws InterruptedException {
         long count, now = System.currentTimeMillis(), end = now + 200000L;

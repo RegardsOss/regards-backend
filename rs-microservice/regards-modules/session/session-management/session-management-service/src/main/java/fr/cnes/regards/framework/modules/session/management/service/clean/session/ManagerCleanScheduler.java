@@ -96,15 +96,17 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CLEAN_SESSION);
-                boolean isSnapshotJobsFinished = waitUntilManagerSnapshotJobEnd();
+                long startTime = System.currentTimeMillis();
+                boolean isSnapshotJobsFinished = waitUntilManagerSnapshotJobEnd(startTime);
                 if (isSnapshotJobsFinished) {
                     lockingTaskExecutors.executeWithLock(snapshotProcessTask,
                                                          new LockConfiguration(microserviceName + "_clean-session",
                                                                                Instant.now()
                                                                                        .plusSeconds(MAX_TASK_DELAY)));
                 } else {
-                    LOGGER.warn("{} could not be executed because AgentSnapshotJobs did not finished on time",
-                                CLEAN_SESSION_TITLE);
+                    LOGGER.warn("[CLEAN SESSION SCHEDULER] - {} could not be executed because AgentSnapshotJobs did "
+                                        + "not finished on time. Waited for {}ms", CLEAN_SESSION_TITLE,
+                                System.currentTimeMillis() - startTime);
                 }
             } catch (Throwable e) {
                 handleSchedulingError(CLEAN_SESSION, CLEAN_SESSION_TITLE, e);
@@ -119,29 +121,33 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
         return LOGGER;
     }
 
-    private boolean waitUntilManagerSnapshotJobEnd() {
+    private boolean waitUntilManagerSnapshotJobEnd(long startTime) {
         // wait 5 minutes until all AgentSnapshotJobs end
         final long waitDuration = 300000L;
         final long sleepDuration = 45000L;
         long count;
-        long now = System.currentTimeMillis();
-        long end = now + waitDuration;
+        long currentWait;
+        long maxWait = startTime + waitDuration;
+        LOGGER.info("[CLEAN SESSION SCHEDULER] Waiting for ManagerSnapshotJobs ending to start ManagerCleanJob ...");
+
         do {
             count = this.jobService
                     .retrieveJobsCount(ManagerSnapshotJob.class.getName(), JobStatus.QUEUED, JobStatus.PENDING,
                                        JobStatus.RUNNING);
-            now = System.currentTimeMillis();
+            currentWait = System.currentTimeMillis();
             // wait 45s if jobs are currently running
             if (count != 0) {
                 try {
                     Thread.sleep(sleepDuration);
                 } catch (InterruptedException e) {
-                    LOGGER.warn("Warning - the thread was interrupted while waiting for AgentSnapshotJob ending", e);
+                    LOGGER.warn(
+                            "[CLEAN SESSION SCHEDULER] - the thread was interrupted while waiting for ManagerSnapshotJob ending",
+                            e);
                     // Restore interrupted state
                     Thread.currentThread().interrupt();
                 }
             }
-        } while (count != 0 && end < now);
+        } while (count != 0 && currentWait < maxWait);
         return count == 0;
     }
 }

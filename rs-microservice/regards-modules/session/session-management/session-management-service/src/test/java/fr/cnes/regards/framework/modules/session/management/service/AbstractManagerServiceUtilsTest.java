@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.framework.modules.session.management.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -7,9 +25,9 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
@@ -24,7 +42,7 @@ import fr.cnes.regards.framework.modules.session.management.dao.ISourceManagerRe
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import fr.cnes.regards.framework.modules.session.management.domain.Source;
 import fr.cnes.regards.framework.modules.session.management.service.handlers.SessionManagerHandler;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import java.util.List;
 import java.util.Optional;
 import org.junit.After;
@@ -42,10 +60,22 @@ import org.springframework.test.context.TestPropertySource;
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
-public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsServiceTransactionalIT {
+public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractManagerServiceUtilsTest.class);
 
+    /**
+     * Services
+     */
+
+    @Autowired
+    protected IRuntimeTenantResolver runtimeTenantResolver;
+
+    // JOBS
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    // AMQP
     @Autowired
     private IRabbitVirtualHostAdmin vhostAdmin;
 
@@ -55,6 +85,18 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
     @SpyBean
     protected IPublisher publisher;
 
+    @Autowired
+    private ISubscriber subscriber;
+
+    /**
+     * Repositories
+     */
+
+    // JOBS
+    @Autowired
+    protected IJobInfoRepository jobInfoRepo;
+
+    // SESSION MANAGER
     @Autowired
     protected ISessionStepRepository sessionStepRepo;
 
@@ -67,14 +109,9 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
     @Autowired
     protected ISnapshotProcessRepository snapshotProcessRepo;
 
-    @Autowired
-    protected IJobInfoRepository jobInfoRepo;
-
-    @Autowired
-    private ISubscriber subscriber;
-
-    @Autowired
-    private IJobInfoService jobInfoService;
+    /**
+     * Parameters
+     */
 
     protected static final String SOURCE_1 = "SOURCE 1";
 
@@ -88,32 +125,21 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
 
     protected static final String SESSION_3 = "SESSION 3";
 
+    // -------------
+    // BEFORE METHODS
+    // -------------
+
     @Before
     public void init() throws Exception {
-        this.sessionStepRepo.deleteAll();
-        this.sessionRepo.deleteAll();
-        this.sourceRepo.deleteAll();
-        this.snapshotProcessRepo.deleteAll();
-        this.jobInfoRepo.deleteAll();
+        // simulate application started and ready
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        cleanRepositories();
         // override this method to custom action performed before
         doInit();
-    }
-
-    @After
-    public void after() throws Exception {
-        subscriber.unsubscribeFrom(SessionStepEvent.class);
-        subscriber.unsubscribeFrom(JobEvent.class);
-        subscriber.unsubscribeFrom(SourceDeleteEvent.class);
-        subscriber.unsubscribeFrom(SessionDeleteEvent.class);
-        clearQueues();
-        doAfter();
-    }
-
-    private void clearQueues() throws InterruptedException {
-        cleanAMQPQueues(SessionManagerHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(SourceDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(SessionDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        Thread.sleep(10000L);
     }
 
     /**
@@ -125,6 +151,16 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
         // Override to init something
     }
 
+    // -------------
+    // AFTER METHODS
+    // -------------
+
+    @After
+    public void after() throws Exception {
+        clearQueues();
+        doAfter();
+    }
+
     /**
      * Custom test cleaning to override
      *
@@ -132,6 +168,21 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
      */
     protected void doAfter() throws Exception {
         // Override to init something
+    }
+
+    // -------------
+    //     AMQP
+    // -------------
+
+    private void clearQueues() throws InterruptedException {
+        subscriber.unsubscribeFrom(SessionStepEvent.class);
+        subscriber.unsubscribeFrom(SessionDeleteEvent.class);
+        subscriber.unsubscribeFrom(SourceDeleteEvent.class);
+
+        cleanAMQPQueues(SessionManagerHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(SourceDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(SessionDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        Thread.sleep(5000L);
     }
 
     /**
@@ -150,6 +201,21 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractRegardsSer
             }
         }
     }
+
+    // -------------
+    //     REPO
+    // -------------
+    private void cleanRepositories() {
+        this.sessionStepRepo.deleteAll();
+        this.sessionRepo.deleteAll();
+        this.sourceRepo.deleteAll();
+        this.snapshotProcessRepo.deleteAll();
+        this.jobInfoRepo.deleteAll();
+    }
+
+    // --------------
+    //  SESSION UTILS
+    // --------------
 
     protected boolean waitForSessionStepEventsStored(int nbEvents) throws InterruptedException {
         long count, now = System.currentTimeMillis(), end = now + 200000L;
