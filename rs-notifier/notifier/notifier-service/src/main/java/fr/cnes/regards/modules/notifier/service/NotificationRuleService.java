@@ -65,11 +65,13 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.plugins.service.PluginMetadataNotFoundRuntimeException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
@@ -397,7 +399,7 @@ public class NotificationRuleService extends AbstractCacheableRule
                     }
                     notificationRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
                     couldBeMatched.add(rule);
-                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                } catch (ModuleException | NotAvailablePluginConfigurationException | PluginMetadataNotFoundRuntimeException | PluginUtilsRuntimeException e) {
                     // exception from rule plugin instantiation
                     LOGGER.error(String.format("Error while get plugin with id %S",
                                                rule.getRulePlugin().getBusinessId()),
