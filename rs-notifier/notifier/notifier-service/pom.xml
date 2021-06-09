@@ -54,9 +54,15 @@
 			<artifactId>jobs-service</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>query-parser</artifactId>
+			<!-- FIXME set into bom -->
+			<version>1.4.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>
