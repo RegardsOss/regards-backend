@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
@@ -227,6 +228,7 @@ public abstract class AbstractRequest {
         dto.setId(request.getId());
         dto.setRegistrationDate(request.getRegistrationDate());
         dto.setState(request.getState());
+        dto.setStep(request.getStep());
         dto.setProcessing(request.getStep().isProcessing());
         dto.setErrors(request.getErrors());
         if (request instanceof FeatureCreationRequest) {

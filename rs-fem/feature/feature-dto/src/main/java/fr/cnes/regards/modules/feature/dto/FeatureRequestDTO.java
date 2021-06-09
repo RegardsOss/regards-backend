@@ -56,6 +56,8 @@ public class FeatureRequestDTO {
     @NotNull
     private RequestState state;
 
+    private FeatureRequestStep step;
+
     /**
      * Does the request currently processed ?
      */
@@ -165,6 +167,14 @@ public class FeatureRequestDTO {
 
     public void setErrors(Set<String> errors) {
         this.errors = errors;
+    }
+
+    public void setStep(FeatureRequestStep step) {
+        this.step = step;
+    }
+
+    public FeatureRequestStep getStep() {
+        return step;
     }
 
 }

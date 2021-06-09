@@ -2168,7 +2168,7 @@
 						<flattenMode>bom</flattenMode>
 						<pomElements>
 						    <pluginManagement>keep</pluginManagement>
-						    <dependencyManagement>resolve</dependencyManagement>
+						    <dependencyManagement>keep</dependencyManagement>
 						    <build>keep</build>
 						    <profiles>expand</profiles>
 						    <!--
