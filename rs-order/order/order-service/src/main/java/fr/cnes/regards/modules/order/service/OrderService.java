@@ -88,14 +88,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.util.UriUtils;
 import org.xml.sax.SAXException;
 
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
+import javax.annotation.PostConstruct;;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -234,6 +234,7 @@ public class OrderService implements IOrderService {
      * Method called at creation AND after a resfresh
      */
     @PostConstruct
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void init() {
         proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
                 : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
@@ -243,6 +244,7 @@ public class OrderService implements IOrderService {
     }
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void init(ApplicationReadyEvent event) {
         LOGGER.info("OrderService created with : userOrderParameters: {}, appSubOrderDuration: {}",
                     orderSettingsService.getUserOrderParameters(), orderSettingsService.getAppSubOrderDuration()
@@ -296,7 +298,7 @@ public class OrderService implements IOrderService {
 
     @Override
     @Async
-    @Transactional(value = Transactional.TxType.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void asyncCompleteOrderCreation(Basket basket, Order order, int subOrderDuration, String role, String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
         self.completeOrderCreation(basket, order, subOrderDuration, role, tenant);
@@ -549,7 +551,7 @@ public class OrderService implements IOrderService {
      * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
     @Override
-    @Transactional(value = TxType.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, int subOrderDuration, String role, int priority) {
         String owner = order.getOwner();
         LOGGER.info("Creating storage sub-order of {} files (owner={})", bucketFiles.size(), owner);
@@ -580,7 +582,7 @@ public class OrderService implements IOrderService {
      * Create an external sub-order ie a FilesTask, and add it to DatasetTask
      */
     @Override
-    @Transactional(value = TxType.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order) {
         LOGGER.info("Creating external sub-order of {} files", bucketFiles.size());
         dataFileService.create(bucketFiles);
@@ -597,7 +599,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Order loadComplete(Long id) {
         return repos.findCompleteById(id);
     }
@@ -987,7 +989,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Transactional(propagation = Propagation.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(fixedDelayString = "${regards.order.computation.update.rate.ms:1000}")
     public void updateCurrentOrdersComputations() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -1015,7 +1017,7 @@ public class OrderService implements IOrderService {
      * 0 0 7 * * MON-FRI : every working day at 7 AM
      */
     @Override
-    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Transactional(propagation = Propagation.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(cron = "${regards.order.periodic.files.availability.check.cron:0 0 7 * * MON-FRI}")
     public void sendPeriodicNotifications() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -1056,7 +1058,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Transactional(propagation = Propagation.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(fixedDelayString = "${regards.order.clean.expired.rate.ms:3600000}")
     public void cleanExpiredOrders() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -1083,7 +1085,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.NEVER)
+    @Transactional(propagation = Propagation.NEVER)
     // No transaction because :
     // - loadComplete use a new one and so when delete is called, order state is at start of transaction (so with state
     // EXPIRED)
