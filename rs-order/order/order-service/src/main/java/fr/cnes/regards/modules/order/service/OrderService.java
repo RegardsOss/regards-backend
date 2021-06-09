@@ -246,9 +246,16 @@ public class OrderService implements IOrderService {
     @EventListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void init(ApplicationReadyEvent event) {
-        LOGGER.info("OrderService created with : userOrderParameters: {}, appSubOrderDuration: {}",
-                    orderSettingsService.getUserOrderParameters(), orderSettingsService.getAppSubOrderDuration()
-        );
+        for(String tenant: tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                LOGGER.info("OrderService created with : userOrderParameters: {}, appSubOrderDuration: {}",
+                            orderSettingsService.getUserOrderParameters(),
+                            orderSettingsService.getAppSubOrderDuration());
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
     @Override
