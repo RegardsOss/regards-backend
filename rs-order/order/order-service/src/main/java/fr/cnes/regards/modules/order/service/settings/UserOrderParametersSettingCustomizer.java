@@ -27,8 +27,8 @@ public class UserOrderParametersSettingCustomizer implements IDynamicTenantSetti
             isProperValue = false;
         } else {
             int subOrderDuration = ((UserOrderParameters) value).getSubOrderDuration();
-            int daysBeforeEmailNotification = ((UserOrderParameters) value).getDelayBeforeEmailNotification();
-            isProperValue = daysBeforeEmailNotification > 0 && subOrderDuration >= daysBeforeEmailNotification;
+            int delayBeforeEmailNotification = ((UserOrderParameters) value).getDelayBeforeEmailNotification();
+            isProperValue = delayBeforeEmailNotification > 0 && delayBeforeEmailNotification <= subOrderDuration;
         }
         return isProperValue;
     }
