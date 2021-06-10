@@ -37,12 +37,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  **/
 public class ManagerSnapshotJob extends AbstractJob<Void> {
 
-    @Autowired
-    protected IJobInfoService jobInfoService;
-
-    @Autowired
-    private ManagerSnapshotService managerSnapshotService;
-
+    /**
+     * Job parameters
+     */
     public static final String FREEZE_DATE = "FREEZE_DATE";
 
     public static final String SNAPSHOT_PROCESS = "SNAPSHOT_PROCESS";
@@ -50,6 +47,15 @@ public class ManagerSnapshotJob extends AbstractJob<Void> {
     private SnapshotProcess snapshotProcess;
 
     private OffsetDateTime freezeDate;
+
+    /**
+     * Clean services
+     */
+    @Autowired
+    protected IJobInfoService jobInfoService;
+
+    @Autowired
+    private ManagerSnapshotService managerSnapshotService;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)

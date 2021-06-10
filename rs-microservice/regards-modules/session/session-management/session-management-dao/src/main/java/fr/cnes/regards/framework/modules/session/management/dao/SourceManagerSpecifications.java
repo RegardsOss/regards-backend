@@ -28,11 +28,10 @@ import org.springframework.data.jpa.domain.Specification;
 
 /**
  * Specifications to filter DAO search on {@link Source}
+ *
  * @author Iliana Ghazali
  **/
 public class SourceManagerSpecifications {
-
-    private static final String LIKE_CHAR = "%";
 
     private SourceManagerSpecifications(){
     }

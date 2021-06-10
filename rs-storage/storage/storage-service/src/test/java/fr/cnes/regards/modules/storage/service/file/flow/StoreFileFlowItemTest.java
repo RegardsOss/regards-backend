@@ -394,7 +394,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 21, stepEventList.size());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 24, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
                        SESSION_OWNER, SESSION, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
@@ -405,9 +405,11 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                        SESSION_OWNER, SESSION, "1");
         checkStepEvent(stepEventList.get(12), SessionNotifierPropertyEnum.REQUESTS_ERRORS,
                        StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
-        checkStepEvent(stepEventList.get(15), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+        checkStepEvent(stepEventList.get(13), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(18), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
                        StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
-        checkStepEvent(stepEventList.get(16), SessionNotifierPropertyEnum.REQUESTS_ERRORS,
+        checkStepEvent(stepEventList.get(19), SessionNotifierPropertyEnum.REQUESTS_ERRORS,
                        StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION, "1");
     }
 }

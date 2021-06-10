@@ -48,6 +48,8 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class AgentSnapshotJobService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotJobService.class);
+
     @Autowired
     private JobInfoService jobInfoService;
 
@@ -56,8 +58,6 @@ public class AgentSnapshotJobService {
 
     @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepo;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotJobService.class);
 
     public void scheduleJob() {
         long start = System.currentTimeMillis();

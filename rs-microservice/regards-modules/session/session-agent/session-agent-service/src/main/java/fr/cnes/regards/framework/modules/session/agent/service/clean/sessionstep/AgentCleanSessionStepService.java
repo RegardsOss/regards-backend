@@ -44,6 +44,8 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class AgentCleanSessionStepService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanSessionStepService.class);
+
     @Autowired
     private ISessionStepRepository sessionStepRepo;
 
@@ -56,13 +58,11 @@ public class AgentCleanSessionStepService {
     @Value("${regards.session.agent.clean.session.step.page:1000}")
     private int pageSize;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanSessionStepService.class);
-
     public int clean() {
         // Init startClean with the current date minus the limit of SessionStep save configured
         OffsetDateTime startClean = OffsetDateTime.now().minusDays(this.limitStoreSessionSteps);
         LOGGER.debug("Check old session steps before {}", startClean);
-
+        boolean interrupted = Thread.currentThread().isInterrupted();
         int nbSessionStepsDeleted = 0;
         Pageable page = PageRequest.of(0, pageSize, Sort.by("lastUpdateDate"));
         Page<SessionStep> sessionStepsToDelete;
@@ -75,7 +75,12 @@ public class AgentCleanSessionStepService {
             // Delete SessionSteps
             this.sessionStepRepo.deleteInBatch(sessionStepsToDelete);
             nbSessionStepsDeleted += sessionStepsToDelete.getNumberOfElements();
-        } while (sessionStepsToDelete.hasNext());
+        } while (!interrupted && sessionStepsToDelete.hasNext());
+
+        // log if thread was interrupted
+        if (interrupted) {
+            LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
+        }
         return nbSessionStepsDeleted;
     }
 }

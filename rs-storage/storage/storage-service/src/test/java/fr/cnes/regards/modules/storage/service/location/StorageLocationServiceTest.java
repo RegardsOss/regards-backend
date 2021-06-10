@@ -93,6 +93,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         fileRefRepo.deleteAll();
         storageLocationRepo.deleteAll();
         storageMonitorRepo.deleteAll();
+        Mockito.clearInvocations(publisher);
         super.init();
     }
 
@@ -302,7 +303,6 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
                        sessionOwner1, session1, String.valueOf(nbStorageReq));
         checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
                        StepPropertyEventTypeEnum.INC, sessionOwner1, session1, String.valueOf(nbStorageReq));
-
     }
 
     @Test

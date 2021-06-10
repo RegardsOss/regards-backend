@@ -121,4 +121,11 @@ public class StepPropertyUpdateRequestInfo {
     public void setOutputRelated(boolean outputRelated) {
         this.outputRelated = outputRelated;
     }
+
+    @Override
+    public String toString() {
+        return "StepPropertyUpdateRequestInfo{" + "stepType=" + stepType + ", state=" + state + ", property='"
+                + property + '\'' + ", value='" + value + '\'' + ", inputRelated=" + inputRelated + ", outputRelated="
+                + outputRelated + '}';
+    }
 }

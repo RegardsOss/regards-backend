@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import java.time.OffsetDateTime;
 
 /**
+ * POJO used to calculated differences between two updates of {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
+ *
  * @author Iliana Ghazali
  **/
 public class DeltaSessionStep {

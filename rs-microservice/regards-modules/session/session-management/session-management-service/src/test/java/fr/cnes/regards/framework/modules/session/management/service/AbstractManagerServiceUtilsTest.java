@@ -73,7 +73,7 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
 
     // JOBS
     @Autowired
-    private IJobInfoService jobInfoService;
+    protected IJobInfoService jobInfoService;
 
     // AMQP
     @Autowired

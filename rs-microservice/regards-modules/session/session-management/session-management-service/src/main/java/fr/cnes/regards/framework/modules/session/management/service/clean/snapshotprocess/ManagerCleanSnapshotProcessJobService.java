@@ -36,21 +36,21 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class ManagerCleanSnapshotProcessJobService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanSnapshotProcessJobService.class);
+
     @Autowired
     private JobInfoService jobInfoService;
 
     @Autowired
     private ISnapshotProcessRepository snapshotProcessRepo;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanSnapshotProcessJobService.class);
-
     public void scheduleJob() {
-        LOGGER.trace("[CLEAN SNAPSHOT PROCESS SCHEDULER] Scheduling job ...");
+        LOGGER.trace("[MANAGER CLEAN SNAPSHOT PROCESS SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
         JobInfo jobInfo = new JobInfo(false, 0, null, null, ManagerCleanSnapshotProcessJob.class.getName());
         // create job
         jobInfoService.createAsQueued(jobInfo);
-        LOGGER.trace("[CLEAN SNAPSHOT PROCESS ] AgentCleanSnapshotProcessJob scheduled in {}",
+        LOGGER.trace("[MANAGER CLEAN SNAPSHOT PROCESS ] AgentCleanSnapshotProcessJob scheduled in {}",
                      System.currentTimeMillis() - start);
     }
 }

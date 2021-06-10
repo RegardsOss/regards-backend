@@ -36,14 +36,13 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class ManagerCleanJobService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanJobService.class);
+
     @Autowired
     private JobInfoService jobInfoService;
 
     @Autowired
     private ISnapshotProcessRepository snapshotProcessRepo;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanJobService.class);
-
 
     public void scheduleJob() {
         LOGGER.trace("[CLEAN SESSION SCHEDULER] Scheduling job ...");

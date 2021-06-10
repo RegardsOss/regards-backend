@@ -21,6 +21,9 @@ package fr.cnes.regards.framework.modules.session.agent.domain.step;
 import java.util.Objects;
 
 /**
+ * Step sent to create new
+ * {@link fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest}s
+ *
  * @author Iliana Ghazali
  **/
 public class StepProperty {

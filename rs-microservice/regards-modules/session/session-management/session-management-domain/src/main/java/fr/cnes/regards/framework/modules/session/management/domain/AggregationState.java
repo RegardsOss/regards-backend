@@ -22,6 +22,8 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
+ * Current state of {@link SourceStepAggregation}
+ *
  * @author Iliana Ghazali
  **/
 @Embeddable
@@ -69,4 +71,8 @@ public class AggregationState {
         this.running = running;
     }
 
+    @Override
+    public String toString() {
+        return "AggregationState{" + "errors=" + errors + ", waiting=" + waiting + ", running=" + running + '}';
+    }
 }

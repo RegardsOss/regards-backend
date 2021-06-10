@@ -50,7 +50,7 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 public class ManagerCleanScheduler extends AbstractTaskScheduler {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanScheduler.class);
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -104,9 +104,9 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                                                                                Instant.now()
                                                                                        .plusSeconds(MAX_TASK_DELAY)));
                 } else {
-                    LOGGER.warn("[CLEAN SESSION SCHEDULER] - {} could not be executed because AgentSnapshotJobs did "
-                                        + "not finished on time. Waited for {}ms", CLEAN_SESSION_TITLE,
-                                System.currentTimeMillis() - startTime);
+                    LOGGER.warn("[MANAGER CLEAN SESSION SCHEDULER] - {} could not be executed because "
+                                        + "AgentSnapshotJobs did not finished on time. Waited for {}ms",
+                                CLEAN_SESSION_TITLE, System.currentTimeMillis() - startTime);
                 }
             } catch (Throwable e) {
                 handleSchedulingError(CLEAN_SESSION, CLEAN_SESSION_TITLE, e);
@@ -128,7 +128,8 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
         long count;
         long currentWait;
         long maxWait = startTime + waitDuration;
-        LOGGER.info("[CLEAN SESSION SCHEDULER] Waiting for ManagerSnapshotJobs ending to start ManagerCleanJob ...");
+        LOGGER.info("[MANAGER CLEAN SESSION SCHEDULER] Waiting for ManagerSnapshotJobs ending to start "
+                            + "ManagerCleanJob ...");
 
         do {
             count = this.jobService
@@ -140,9 +141,8 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                 try {
                     Thread.sleep(sleepDuration);
                 } catch (InterruptedException e) {
-                    LOGGER.warn(
-                            "[CLEAN SESSION SCHEDULER] - the thread was interrupted while waiting for ManagerSnapshotJob ending",
-                            e);
+                    LOGGER.warn("[MANAGER CLEAN SESSION SCHEDULER] - the thread was interrupted while waiting for "
+                                        + "ManagerSnapshotJob ending", e);
                     // Restore interrupted state
                     Thread.currentThread().interrupt();
                 }

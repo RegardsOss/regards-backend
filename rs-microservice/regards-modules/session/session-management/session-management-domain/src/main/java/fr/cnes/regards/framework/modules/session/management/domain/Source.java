@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.session.management.domain;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -123,5 +124,26 @@ public class Source {
 
     public void setManagerState(ManagerState managerState) {
         this.managerState = managerState;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Source source = (Source) o;
+        return name.equals(source.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return "Source{" + "name='" + name + '\'' + ", nbSessions=" + nbSessions + ", steps=" + steps
+                + ", lastUpdateDate=" + lastUpdateDate + ", managerState=" + managerState + '}';
     }
 }

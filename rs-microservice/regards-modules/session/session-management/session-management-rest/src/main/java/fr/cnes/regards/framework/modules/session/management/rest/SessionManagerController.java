@@ -38,10 +38,10 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,18 +55,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(SessionManagerController.ROOT_MAPPING)
 public class SessionManagerController implements IResourceController<Session> {
-
-    /**
-     * Hypermedia resource service
-     */
-    @Autowired
-    private IResourceService resourceService;
-
-    /**
-     * Source Repository
-     */
-    @Autowired
-    private SessionManagerService sessionManagerService;
 
     /**
      * Rest root path
@@ -83,6 +71,18 @@ public class SessionManagerController implements IResourceController<Session> {
      */
     public static final String ID_MAPPING = "/{id}";
 
+    /**
+     * Hypermedia resource service
+     */
+    @Autowired
+    private IResourceService resourceService;
+
+    /**
+     * Source Repository
+     */
+    @Autowired
+    private SessionManagerService sessionManagerService;
+
     @GetMapping
     @ResponseBody
     @ResourceAccess(description = "Endpoint to get sessions", role = DefaultRole.EXPLOIT)
@@ -94,13 +94,13 @@ public class SessionManagerController implements IResourceController<Session> {
         return ResponseEntity.ok(toPagedResources(sessions, assembler));
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = NAME_MAPPING)
+    @GetMapping(value = NAME_MAPPING)
     @ResourceAccess(description = "Retrieve a subset of session names", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Set<String>> getSessionNames(@RequestParam(value = "name", required = false) String name) {
         return ResponseEntity.ok(this.sessionManagerService.retrieveSessionsNames(name));
     }
 
-    @RequestMapping(value = ID_MAPPING, method = RequestMethod.GET)
+    @GetMapping(value = ID_MAPPING)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve a session by id", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<Session>> getSessionById(@PathVariable("id") final long id) {
@@ -112,7 +112,7 @@ public class SessionManagerController implements IResourceController<Session> {
         }
     }
 
-    @RequestMapping(value = ID_MAPPING, method = RequestMethod.DELETE)
+    @DeleteMapping(value = ID_MAPPING)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a session", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteSession(@PathVariable("id") final long id) {

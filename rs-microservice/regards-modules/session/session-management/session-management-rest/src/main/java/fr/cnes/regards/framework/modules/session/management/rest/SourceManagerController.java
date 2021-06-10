@@ -38,10 +38,10 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,18 +54,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(SourceManagerController.ROOT_MAPPING)
 public class SourceManagerController implements IResourceController<Source> {
-
-    /**
-     * Hypermedia resource service
-     */
-    @Autowired
-    private IResourceService resourceService;
-
-    /**
-     * Source Repository
-     */
-    @Autowired
-    private SourceManagerService sourceManagerService;
 
     /**
      * Rest root path
@@ -82,6 +70,18 @@ public class SourceManagerController implements IResourceController<Source> {
      */
     public static final String DELETE_SOURCE_MAPPING = "/{name}";
 
+    /**
+     * Hypermedia resource service
+     */
+    @Autowired
+    private IResourceService resourceService;
+
+    /**
+     * Source Repository
+     */
+    @Autowired
+    private SourceManagerService sourceManagerService;
+
     @GetMapping
     @ResponseBody
     @ResourceAccess(description = "Endpoint to get sources", role = DefaultRole.PUBLIC)
@@ -93,14 +93,14 @@ public class SourceManagerController implements IResourceController<Source> {
         return ResponseEntity.ok(toPagedResources(sources, assembler));
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = NAME_MAPPING)
+    @GetMapping(value = NAME_MAPPING)
     @ResourceAccess(description = "Retrieve a subset of sources names", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Set<String>> getSourcesNames(@RequestParam(value = "name", required = false) String name) {
         return ResponseEntity.ok(this.sourceManagerService.retrieveSourcesNames(name));
     }
 
 
-    @RequestMapping(value = DELETE_SOURCE_MAPPING, method = RequestMethod.DELETE)
+    @DeleteMapping(value = DELETE_SOURCE_MAPPING)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a source", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Void> deleteSource(@PathVariable("name") final String name) throws EntityNotFoundException {

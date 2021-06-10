@@ -34,7 +34,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
 /**
  * A {@link SessionStep} represents a step in which data are added or processed. Currently 4 steps mainly exist to
@@ -44,7 +43,7 @@ import org.hibernate.annotations.TypeDefs;
  * @author Iliana Ghazali
  **/
 @Entity
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Table(name = "t_session_step")
 @IdClass(SessionStepId.class)
 public class SessionStep {

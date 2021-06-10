@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -56,6 +58,8 @@ import org.springframework.stereotype.Service;
 @Service
 @MultitenantTransactional
 public class ManagerSnapshotService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSnapshotService.class);
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;
@@ -98,7 +102,7 @@ public class ManagerSnapshotService {
             this.sessionRepo.saveAll(sessionSet);
             this.sourceRepo.save(source);
         } else {
-            Thread.currentThread().interrupt();
+            LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
         }
     }
 

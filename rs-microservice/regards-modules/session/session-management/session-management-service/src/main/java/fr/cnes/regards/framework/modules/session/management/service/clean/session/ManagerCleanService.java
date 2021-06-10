@@ -55,6 +55,8 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class ManagerCleanService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanService.class);
+
     @Autowired
     private ISessionStepRepository sessionStepRepo;
 
@@ -70,8 +72,6 @@ public class ManagerCleanService {
     @Value("${regards.session.manager.clean.session.page:1000}")
     private int pageSize;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanService.class);
-
     /**
      * The clean method performs three actions :
      * - delete old session steps and sessions (all items with lastUpdateDates before a configured date)
@@ -83,15 +83,17 @@ public class ManagerCleanService {
         // Init startClean with the current date minus the limit of SessionStep save configured
         OffsetDateTime startClean = OffsetDateTime.now().minusDays(this.limitStoreSessionSteps);
         LOGGER.debug("Check old session steps and sessions before {}", startClean);
+        boolean interrupted = Thread.currentThread().isInterrupted();
 
-        // find all sessions to be deleted
+        // init parameters
         int nbSessions = 0;
         Pageable page = PageRequest.of(0, pageSize, Sort.by("id"));
         Page<Session> sessionPage;
-
         Map<String, Source> sourceMap = new HashMap<>();
 
+        // find all sessions to be deleted and update the source information (they are related to the sessions)
         do {
+            // find a list of sessions outdated
             sessionPage = this.sessionRepo.findByLastUpdateDateBefore(startClean, page);
             List<Session> sessionList = sessionPage.getContent();
             // update source aggregation information due to session removal
@@ -99,18 +101,19 @@ public class ManagerCleanService {
             // delete expired sessions
             this.sessionRepo.deleteInBatch(sessionPage);
             nbSessions += sessionList.size();
-        } while (sessionPage.hasNext());
-
+        } while (!interrupted && sessionPage.hasNext());
 
         // save all changes on sources
         this.sourceRepo.saveAll(sourceMap.values());
-
         // delete source not associated to any sessions
         this.sourceRepo.deleteByNbSessions(0L);
-
         // delete expired session steps
         this.sessionStepRepo.deleteByLastUpdateDateBefore(startClean);
 
+        // log if thread was interrupted
+        if (interrupted) {
+            LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
+        }
         return nbSessions;
     }
 
@@ -134,12 +137,14 @@ public class ManagerCleanService {
             if (source != null) {
                 List<Session> sessionListBySource = entry.getValue();
                 Map<StepTypeEnum, DeltaSessionStep> deltaByType = new EnumMap<>(StepTypeEnum.class);
+                // iterate on all sessions of a source and calculate parameters impacted by the session deletion
                 for (Session session : sessionListBySource) {
                     source.setNbSessions(source.getNbSessions() - 1);
                     updateDelta(session.getSteps(), deltaByType);
                 }
+                // update source with the updated parameters
                 updateSourceAgg(source, deltaByType);
-
+                // put updated source in map
                 sourceMap.put(sourceName, source);
             }
         }
@@ -181,7 +186,7 @@ public class ManagerCleanService {
      */
     private void updateSourceAgg(Source source, Map<StepTypeEnum, DeltaSessionStep> deltaByType) {
         Set<SourceStepAggregation> aggSet = source.getSteps();
-
+        // iterate on the aggregation steps of the source and update their corresponding values
         for (SourceStepAggregation agg : aggSet) {
             StepTypeEnum type = agg.getType();
             DeltaSessionStep delta = deltaByType.get(type);

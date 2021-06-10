@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -35,7 +36,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -86,17 +86,9 @@ public class StepPropertyUpdateRequest {
     private StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(
-                    name = "gen_step_id",
-                    referencedColumnName = "step_id"),
-            @JoinColumn(
-                    name = "gen_source",
-                    referencedColumnName = "source"),
-            @JoinColumn(
-                    name = "gen_session",
-                    referencedColumnName = "session")
-    })
+    @JoinColumn(name = "gen_step_id", referencedColumnName = "step_id")
+    @JoinColumn(name = "gen_source", referencedColumnName = "source")
+    @JoinColumn(name = "gen_session", referencedColumnName = "session")
     private SessionStep sessionStep;
 
     public StepPropertyUpdateRequest(@NotNull String stepId, @NotNull String source, @NotNull String session,
@@ -170,5 +162,28 @@ public class StepPropertyUpdateRequest {
 
     public void setSessionStep(SessionStep sessionStep) {
         this.sessionStep = sessionStep;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        StepPropertyUpdateRequest that = (StepPropertyUpdateRequest) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "StepPropertyUpdateRequest{" + "id=" + id + ", stepId='" + stepId + '\'' + ", source='" + source + '\''
+                + ", session='" + session + '\'' + ", date=" + date + ", type=" + type
+                + ", stepPropertyUpdateRequestInfo=" + stepPropertyUpdateRequestInfo + ", sessionStep=" + sessionStep
+                + '}';
     }
 }

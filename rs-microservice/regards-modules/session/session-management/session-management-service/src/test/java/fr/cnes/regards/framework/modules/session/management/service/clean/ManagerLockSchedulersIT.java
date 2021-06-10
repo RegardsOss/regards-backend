@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.session.management.service.clean;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
@@ -104,7 +105,13 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {
         // launch CleanJobs
         // if there is a snapshot job ongoing, make sure a clean job are not launched
         cleanScheduler.scheduleCleanSession();
-        Thread.sleep(100L);
+        long count = 0;
+        do {
+            count = jobInfoService.retrieveJobsCount(ManagerCleanJob.class.getName(), JobStatus.values());
+            if(count==0) {
+                Thread.sleep(10);
+            }
+        } while (count != 1L);
 
         // launch SnapshotJobs
         snapshotScheduler.scheduleManagerSnapshot();

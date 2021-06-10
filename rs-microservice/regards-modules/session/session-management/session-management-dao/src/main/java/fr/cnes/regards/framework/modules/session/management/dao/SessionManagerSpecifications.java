@@ -27,7 +27,7 @@ import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
- * Specifications for {@link Session}
+ * Specifications to filter DAO search on {@link Session}
  *
  * @author Iliana Ghazali
  **/

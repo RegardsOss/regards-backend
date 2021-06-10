@@ -42,6 +42,8 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class ManagerSnapshotJobService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSnapshotJobService.class);
+
     @Autowired
     private JobInfoService jobInfoService;
 
@@ -50,8 +52,6 @@ public class ManagerSnapshotJobService {
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSnapshotJobService.class);
 
     public void scheduleJob() {
         long start = System.currentTimeMillis();

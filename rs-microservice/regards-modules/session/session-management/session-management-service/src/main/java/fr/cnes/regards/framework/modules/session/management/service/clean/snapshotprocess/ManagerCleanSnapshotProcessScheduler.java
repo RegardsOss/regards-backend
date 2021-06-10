@@ -45,7 +45,7 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 public class ManagerCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanSnapshotProcessScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanSnapshotProcessScheduler.class);
 
     @Autowired
     private ITenantResolver tenantResolver;

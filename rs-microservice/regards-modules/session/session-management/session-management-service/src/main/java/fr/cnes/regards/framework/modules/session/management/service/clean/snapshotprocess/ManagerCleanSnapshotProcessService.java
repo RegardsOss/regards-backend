@@ -36,13 +36,13 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class ManagerCleanSnapshotProcessService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanSnapshotProcessService.class);
+
     @Autowired
     private ISnapshotProcessRepository snapshotProcessRepo;
 
     @Value("${regards.session.manager.limit.store.snapshot.process:30}")
     private int limitStoreSnapshotProcess;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanSnapshotProcessService.class);
 
     public int clean() {
         // Init startClean with the current date minus the limit of SnapshotProcess save configured

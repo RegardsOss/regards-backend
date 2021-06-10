@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -39,7 +40,6 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 
 /**
  * A session is an aggregation of {@link SessionStep}
@@ -48,7 +48,7 @@ import org.hibernate.annotations.TypeDefs;
  */
 @Entity
 @Table(name = "t_session_manager")
-@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Session {
 
     /**
@@ -164,5 +164,27 @@ public class Session {
 
     public void setManagerState(ManagerState managerState) {
         this.managerState = managerState;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Session session = (Session) o;
+        return id.equals(session.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Session{" + "id=" + id + ", name='" + name + '\'' + ", source='" + source + '\'' + ", creationDate="
+                + creationDate + ", lastUpdateDate=" + lastUpdateDate + ", steps=" + steps + ", managerState="
+                + managerState + '}';
     }
 }

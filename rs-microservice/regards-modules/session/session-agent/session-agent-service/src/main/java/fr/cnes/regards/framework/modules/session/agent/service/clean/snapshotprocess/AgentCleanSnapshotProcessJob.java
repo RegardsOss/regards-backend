@@ -33,7 +33,7 @@ public class AgentCleanSnapshotProcessJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.debug("[{}] AgentCleanSnapshotProcessJob starts for source {}", jobInfoId);
+        logger.debug("[{}] AgentCleanSnapshotProcessJob starts...", jobInfoId);
         long start = System.currentTimeMillis();
         int nbSnapshotProcessDeleted = agentCleanSnapshotProcessService.clean();
         logger.debug("[{}] AgentCleanSnapshotProcessJob ends in {} ms. {} snapshot process deleted", jobInfoId,

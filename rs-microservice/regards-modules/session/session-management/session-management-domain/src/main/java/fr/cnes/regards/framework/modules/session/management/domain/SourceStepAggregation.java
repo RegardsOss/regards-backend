@@ -32,6 +32,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Corresponding steps of a source. Each source has X step among {@link StepTypeEnum} types.
  *
  * @author Iliana Ghazali
  **/
@@ -116,5 +117,11 @@ public class SourceStepAggregation {
 
     public void setState(AggregationState state) {
         this.state = state;
+    }
+
+    @Override
+    public String toString() {
+        return "SourceStepAggregation{" + "id=" + id + ", type=" + type + ", totalIn=" + totalIn + ", totalOut="
+                + totalOut + ", state=" + state + '}';
     }
 }

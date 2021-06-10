@@ -51,9 +51,6 @@ public class ManagerState {
     @NotNull
     private boolean waiting = false;
 
-    public ManagerState() {
-    }
-
     public boolean isRunning() {
         return running;
     }
@@ -76,5 +73,10 @@ public class ManagerState {
 
     public void setWaiting(boolean waiting) {
         this.waiting = waiting;
+    }
+
+    @Override
+    public String toString() {
+        return "ManagerState{" + "running=" + running + ", errors=" + errors + ", waiting=" + waiting + '}';
     }
 }

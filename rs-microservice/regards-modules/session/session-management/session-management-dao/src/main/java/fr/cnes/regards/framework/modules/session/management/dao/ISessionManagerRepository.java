@@ -31,6 +31,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Repository for {@link Session}
+ *
  * @author Iliana Ghazali
  */
 @Repository

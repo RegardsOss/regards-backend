@@ -21,10 +21,10 @@ package fr.cnes.regards.framework.modules.session.agent.service.update;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -55,6 +57,8 @@ import org.springframework.stereotype.Service;
 @Service
 @MultitenantTransactional
 public class AgentSnapshotService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotService.class);
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;
@@ -114,7 +118,7 @@ public class AgentSnapshotService {
                         .publish(sessionStepsUpdated.stream().map(SessionStepEvent::new).collect(Collectors.toList()));
             }
         } else {
-            Thread.currentThread().interrupt();
+            LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
         }
 
         return sessionUpdatedSize;

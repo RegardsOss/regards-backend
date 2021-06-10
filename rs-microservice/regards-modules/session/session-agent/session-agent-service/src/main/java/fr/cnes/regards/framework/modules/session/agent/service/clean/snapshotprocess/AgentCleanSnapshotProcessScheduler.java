@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotpr
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
-import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import java.time.Instant;
@@ -46,7 +45,7 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanSnapshotProcessScheduler.class);
 
     @Autowired
     private ITenantResolver tenantResolver;
