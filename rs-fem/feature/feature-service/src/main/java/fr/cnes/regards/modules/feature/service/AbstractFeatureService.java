@@ -93,33 +93,32 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<R> requestsPage;
         String message;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
-                && (selection.getFilters().getState() != RequestState.ERROR)) {
-            message = String.format("Requests in state %s are not deletable", selection.getFilters().getState());
-        } else {
-            int cpt = 0;
-            boolean stop = false;
-            // Delete only error requests
-            selection.getFilters().setState(RequestState.ERROR);
-            do {
-                requestsPage = findRequests(selection, page);
-                if (total == 0) {
-                    total = requestsPage.getTotalElements();
-                }
-                getRequestsRepository().deleteAll(requestsPage);
-                nbHandled += requestsPage.getNumberOfElements();
-                if (!requestsPage.hasNext() || (cpt >= MAX_PAGE_TO_DELETE)) {
-                    stop = true;
-                } else {
-                    cpt++;
-                }
-            } while (!stop);
-            if (nbHandled < total) {
-                message = String.format("All requests has not been handled. Limit of deletable requests (%d) exceeded",
-                                        MAX_PAGE_TO_DELETE * MAX_ENTITY_PER_PAGE);
-            } else {
-                message = "All deletable requested handled";
+        int cpt = 0;
+        boolean stop = false;
+        // Delete only deletable requests
+        for (FeatureRequestStep step : FeatureRequestStep.values()) {
+            if (!step.isProcessing()) {
+                selection.withStep(step);
             }
+        }
+        do {
+            requestsPage = findRequests(selection, page);
+            if (total == 0) {
+                total = requestsPage.getTotalElements();
+            }
+            getRequestsRepository().deleteAll(requestsPage);
+            nbHandled += requestsPage.getNumberOfElements();
+            if (!requestsPage.hasNext() || (cpt >= MAX_PAGE_TO_DELETE)) {
+                stop = true;
+            } else {
+                cpt++;
+            }
+        } while (!stop);
+        if (nbHandled < total) {
+            message = String.format("All requests has not been handled. Limit of deletable requests (%d) exceeded",
+                                    MAX_PAGE_TO_DELETE * MAX_ENTITY_PER_PAGE);
+        } else {
+            message = "All deletable requested handled";
         }
         return RequestHandledResponse.build(total, nbHandled, message);
     }
