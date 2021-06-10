@@ -41,7 +41,7 @@ public class AgentCleanSnapshotProcessService {
     @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
 
-    @Value("${regards.session.agent.limit.store.snapshot.process:30}")
+    @Value("${regards.session.agent.clean.snapshot.process.limit.store:30}")
     private int limitStoreSnapshotProcess;
 
     public int clean() {

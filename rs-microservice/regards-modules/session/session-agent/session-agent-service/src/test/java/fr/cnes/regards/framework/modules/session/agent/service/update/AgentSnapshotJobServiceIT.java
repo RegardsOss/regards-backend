@@ -53,7 +53,6 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
 
     @Test
     @Purpose("Test the generation of session steps from step request events")
-    @Order(1)
     public void generateSessionStepTest1() throws InterruptedException {
         // ---- RUN 1 ----
         // create stepPropertyUpdateRequestEvents

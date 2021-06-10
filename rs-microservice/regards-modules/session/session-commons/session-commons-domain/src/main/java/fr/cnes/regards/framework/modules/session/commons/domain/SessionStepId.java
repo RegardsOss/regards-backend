@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
+ * Composite keys for {@link SessionStep}
+ *
  * @author Iliana Ghazali
  **/
 public class SessionStepId implements Serializable {

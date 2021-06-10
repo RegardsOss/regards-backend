@@ -52,7 +52,7 @@ public class AgentCleanSessionStepService {
     @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
 
-    @Value("${regards.session.agent.clean.session.step.limit.store.session.steps:30}")
+    @Value("${regards.session.agent.clean.session.step.limit.store:30}")
     private int limitStoreSessionSteps;
 
     @Value("${regards.session.agent.clean.session.step.page:1000}")

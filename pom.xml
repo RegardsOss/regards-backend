@@ -156,7 +156,6 @@
 
 		<!-- MODULES -->
 		<modules.project.version>${regards.version}</modules.project.version>
-		<modules.session-manager.version>${regards.version}</modules.session-manager.version>
 		<modules.crawler.version>${regards.version}</modules.crawler.version>
 		<modules.indexer.version>${regards.version}</modules.indexer.version>
 		<modules.accessrights-instance.version>${regards.version}</modules.accessrights-instance.version>
@@ -752,7 +751,7 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.session</groupId>
-				<artifactId>session-management</artifactId>
+				<artifactId>session-manager</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
 			<!-- Session agent -->
@@ -781,30 +780,30 @@
 				<artifactId>session-agent-client</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
-			<!-- Session management -->
+			<!-- Session manager -->
 			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
-				<artifactId>session-management-dao</artifactId>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-dao</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
-				<artifactId>session-management-domain</artifactId>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-domain</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
-				<artifactId>session-management-rest</artifactId>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-rest</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
-				<artifactId>session-management-service</artifactId>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-service</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
-				<artifactId>session-management-client</artifactId>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-client</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
 			<!-- Session commons -->
@@ -839,33 +838,6 @@
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-client</artifactId>
 				<version>${modules.project.version}</version>
-			</dependency>
-
-			<!-- Session manager -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-rest</artifactId>
-				<version>${modules.session-manager.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-client</artifactId>
-				<version>${modules.session-manager.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-service</artifactId>
-				<version>${modules.session-manager.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-domain</artifactId>
-				<version>${modules.session-manager.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-dao</artifactId>
-				<version>${modules.session-manager.version}</version>
 			</dependency>
 
 			<!-- Datasource plugins -->

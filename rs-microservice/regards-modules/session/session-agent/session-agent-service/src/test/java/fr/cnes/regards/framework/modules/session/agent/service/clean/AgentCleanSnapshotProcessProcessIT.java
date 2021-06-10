@@ -48,7 +48,7 @@ import org.springframework.test.context.TestPropertySource;
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_process_it",
         "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678",
-        "regards" + ".session.agent.limit.store.snapshot.process=30" })
+        "regards.session.agent.clean.snapshot.process.limit.store=30" })
 @ActiveProfiles(value = { "noscheduler" })
 public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTransactionalIT {
 
@@ -61,7 +61,7 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
     @Autowired
     private AgentCleanSnapshotProcessService agentCleanSnapshotProcessService;
 
-    @Value("${regards.session.agent.limit.store.snapshot.process}")
+    @Value("${regards.session.agent.clean.snapshot.process.limit.store}")
     private int limitStoreSnapshotProcess;
 
     private static final String SOURCE_1 = "SOURCE_1";

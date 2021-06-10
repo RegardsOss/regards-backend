@@ -1,3 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.modules.session.management.rest.SourceManagerController,\
-fr.cnes.regards.framework.modules.session.management.rest.SessionManagerController

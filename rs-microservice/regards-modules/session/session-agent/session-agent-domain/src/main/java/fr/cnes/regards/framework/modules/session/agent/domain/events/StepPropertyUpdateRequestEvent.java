@@ -82,21 +82,6 @@ public class StepPropertyUpdateRequestEvent implements ISubscribable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        StepPropertyUpdateRequestEvent that = (StepPropertyUpdateRequestEvent) o;
-        return date.equals(that.date) && type == that.type && stepProperty.equals(that.stepProperty);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(date, type, stepProperty);
-    }
-
-    @Override
     public String toString() {
         return "StepPropertyUpdateRequestEvent{" + "date=" + date + ", type=" + type + ", stepProperty=" + stepProperty
                 + '}';
