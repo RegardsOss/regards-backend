@@ -66,5 +66,9 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-domain</artifactId>
+        </dependency>
+    </dependencies>
 </project>

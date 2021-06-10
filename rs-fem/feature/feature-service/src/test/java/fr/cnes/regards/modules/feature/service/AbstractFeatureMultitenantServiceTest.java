@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
@@ -150,9 +149,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
 
     @Autowired
-    private IFeatureNotificationSettingsRepository featureNotificationSettingsRepo;
-
-    @Autowired
     protected IFeatureNotificationService featureNotificationService;
 
     @Autowired
@@ -206,7 +202,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         this.featureRepo.deleteAllInBatch();
         this.notificationRequestRepo.deleteAllInBatch();
         this.jobInfoRepository.deleteAll();
-        this.featureNotificationSettingsRepo.deleteAll();
     }
 
     public void cleanQueues() {
@@ -456,7 +451,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     }
 
     public boolean initDefaultNotificationSettings() {
-        return featureSettingsNotificationService.retrieve().isActiveNotification();
+        return featureSettingsNotificationService.isActiveNotification();
     }
 
     public IComputationPluginService getCps() {

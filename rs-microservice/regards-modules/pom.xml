@@ -60,6 +60,7 @@
         <module>templates</module>
         <module>workspace</module>
         <module>dump</module>
+        <module>tenant-settings</module>
     </modules>
 
 </project>

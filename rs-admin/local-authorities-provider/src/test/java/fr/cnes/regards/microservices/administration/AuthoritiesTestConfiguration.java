@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.emails.service.IEmailService;
@@ -134,8 +133,4 @@ public class AuthoritiesTestConfiguration {
         return Mockito.mock(IEmailService.class);
     }
 
-    @Bean
-    public IAccountSettingsClient accountSettingsClient() {
-        return Mockito.mock(IAccountSettingsClient.class);
-    }
 }

@@ -18,23 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.persistence.EntityManager;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -48,6 +31,7 @@ import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDeletedEntityRepository;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -61,6 +45,21 @@ import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.persistence.EntityManager;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -103,6 +102,8 @@ public class DatasetServiceTest {
 
     private EntityManager emMocked;
 
+    private IDamSettingsService damSettingsService;
+
     /**
      * initialize the repo before each test
      *
@@ -111,6 +112,10 @@ public class DatasetServiceTest {
     @SuppressWarnings({ "unchecked" })
     @Before
     public void init() throws ModuleException {
+
+        damSettingsService = Mockito.mock(IDamSettingsService.class);
+        Mockito.when(damSettingsService.isStoreFiles()).thenReturn(false);
+
         JWTService jwtService = new JWTService();
         jwtService.injectMockToken("Tenant", "PUBLIC");
         dataSetRepositoryMocked = Mockito.mock(IDatasetRepository.class);
@@ -161,7 +166,7 @@ public class DatasetServiceTest {
                 pAttributeModelService, pModelAttributeService, entitiesRepositoryMocked, modelService,
                 deletedEntityRepositoryMocked, null, emMocked, publisherMocked, runtimeTenantResolver,
                 Mockito.mock(IOpenSearchService.class), Mockito.mock(IPluginService.class),
-                Mockito.mock(IAbstractEntityRequestRepository.class));
+                Mockito.mock(IAbstractEntityRequestRepository.class), damSettingsService);
 
     }
 

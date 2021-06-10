@@ -26,13 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -55,12 +49,6 @@ import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.test.IngestServiceTest;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -73,11 +61,14 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomCategories;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSession;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSessionOwner;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomStorage;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomTags;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static fr.cnes.regards.modules.ingest.service.TestData.*;
 
 /**
  * Overlay of the default class to manage context cleaning in non transactional testing
@@ -130,8 +121,6 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     @Autowired
     protected IAIPNotificationService notificationService;
 
-    @Autowired IAIPNotificationSettingsRepository notificationSettingsRepository;
-
     @Autowired
     protected IAbstractRequestRepository abstractRequestRepository;
 
@@ -139,7 +128,6 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     public void init() throws Exception {
         // clear AMQP queues and repositories
         ingestServiceTest.init();
-        notificationSettingsRepository.deleteAll();
         ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
 
         // simulate application started and ready
@@ -166,7 +154,6 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         ingestServiceTest.clear();
         // clean AMQP queues and repositories
         ingestServiceTest.init();
-        notificationSettingsRepository.deleteAll();
         ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         // override this method to custom action performed after
         doAfter();
@@ -249,7 +236,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     }
 
     public boolean initDefaultNotificationSettings() {
-        return notificationSettingsService.retrieve().isActiveNotification();
+        return notificationSettingsService.isActiveNotification();
     }
 
     public void initRandomData(int nbSIP) {

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import static org.junit.Assert.fail;
 
 import java.time.OffsetDateTime;
@@ -126,6 +127,11 @@ public class FeatureExtractionServiceIT extends AbstractMultitenantServiceTest {
         @Bean
         public IToponymsClient toponymsClient() {
             return Mockito.mock(IToponymsClient.class);
+        }
+
+        @Bean
+        public IStorageRestClient storageRestClient() {
+            return Mockito.mock(IStorageRestClient.class);
         }
 
     }

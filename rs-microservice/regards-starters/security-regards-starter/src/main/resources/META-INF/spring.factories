@@ -5,4 +5,3 @@ fr.cnes.regards.framework.security.autoconfigure.MethodAuthorizationServiceAutoC
 fr.cnes.regards.framework.security.autoconfigure.MethodSecurityAutoConfiguration,\
 fr.cnes.regards.framework.security.utils.SpringBeanHelper,\
 fr.cnes.regards.framework.security.controller.SecurityControllerAdvice
-

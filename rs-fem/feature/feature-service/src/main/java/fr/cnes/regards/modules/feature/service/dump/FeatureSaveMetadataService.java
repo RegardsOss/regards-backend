@@ -20,18 +20,10 @@
 
 package fr.cnes.regards.modules.feature.service.dump;
 
-import java.time.OffsetDateTime;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -42,6 +34,12 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.job.FeatureSaveMetadataJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.OffsetDateTime;
 
 /**
  * Service to handle {@link FeatureSaveMetadataJob}
@@ -66,34 +64,42 @@ public class FeatureSaveMetadataService {
     /**
      * Schedule Jobs
      */
-    public JobInfo scheduleJobs() {
+    public JobInfo scheduleJobs() throws EntityException {
         LOGGER.trace("[DUMP SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
         JobInfo jobInfo = null;
 
         // Update lastDumpReqDate
-        DumpSettings lastDump = dumpSettingsService.retrieve();
-        OffsetDateTime lastDumpDate = lastDump.getLastDumpReqDate();
-        lastDump.setLastDumpReqDate(OffsetDateTime.now());
-
-        dumpSettingsService.update(lastDump);
+        OffsetDateTime lastDumpDate = dumpSettingsService.lastDumpReqDate();
+        dumpSettingsService.setLastDumpReqDate(OffsetDateTime.now());
 
         // Create request
-        FeatureSaveMetadataRequest requestToSchedule = FeatureSaveMetadataRequest
-                .build(AbstractRequestEvent.generateRequestId(), "NONE", OffsetDateTime.now(), RequestState.GRANTED,
-                       null, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL, lastDumpDate,
-                       lastDump.getDumpLocation());
+        FeatureSaveMetadataRequest requestToSchedule = FeatureSaveMetadataRequest.build(
+                AbstractRequestEvent.generateRequestId(),
+                "NONE",
+                OffsetDateTime.now(),
+                RequestState.GRANTED,
+                null,
+                FeatureRequestStep.LOCAL_SCHEDULED,
+                PriorityLevel.NORMAL,
+                lastDumpDate,
+                dumpSettingsService.getDumpParameters().getDumpLocation()
+        );
 
         metadataRequestRepository.save(requestToSchedule);
 
         // Schedule save metadata job
-        jobInfo = new JobInfo(false, requestToSchedule.getPriority().getPriorityLevel(),
-                              Sets.newHashSet(new JobParameter(FeatureSaveMetadataJob.SAVE_METADATA_REQUEST,
-                                                               requestToSchedule)), null,
-                              FeatureSaveMetadataJob.class.getName());
+        jobInfo = new JobInfo(
+                false,
+                requestToSchedule.getPriority().getPriorityLevel(),
+                Sets.newHashSet(new JobParameter(FeatureSaveMetadataJob.SAVE_METADATA_REQUEST, requestToSchedule)),
+                null,
+                FeatureSaveMetadataJob.class.getName()
+        );
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 FeatureSaveMetaDataRequest(s) in {} ms",
-                     System.currentTimeMillis() - start);
+                     System.currentTimeMillis() - start
+        );
         return jobInfo;
     }
 

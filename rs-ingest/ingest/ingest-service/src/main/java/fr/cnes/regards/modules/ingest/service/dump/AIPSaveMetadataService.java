@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.service.dump;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -30,11 +30,12 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetadataJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import java.time.OffsetDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.OffsetDateTime;
 
 /**
  * Service to handle {@link AIPSaveMetadataJob}. Create {@link AIPSaveMetadataRequest} to dump aips between two dates.
@@ -60,31 +61,32 @@ public class AIPSaveMetadataService {
     /**
      * Schedule Jobs
      */
-    public JobInfo scheduleJobs() {
+    public JobInfo scheduleJobs() throws EntityException {
         LOGGER.trace("[SAVE METADATA SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
         JobInfo jobInfo = null;
 
         // Update lastDumpReqDate
-        DumpSettings lastDump = dumpSettingsService.retrieve();
-        OffsetDateTime lastDumpDate = lastDump.getLastDumpReqDate();
-        lastDump.setLastDumpReqDate(OffsetDateTime.now());
-        dumpSettingsService.update(lastDump);
+        OffsetDateTime lastDumpDate = dumpSettingsService.lastDumpReqDate();
+        dumpSettingsService.setLastDumpReqDate(OffsetDateTime.now());
 
         // Create request
-        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(lastDumpDate,
-                                                                                   lastDump.getDumpLocation());
+        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(lastDumpDate, dumpSettingsService.getDumpParameters().getDumpLocation());
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         metadataRequestRepository.save(aipSaveMetadataRequest);
 
         // Schedule save metadata job
-        jobInfo = new JobInfo(false, IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
-                                      Sets.newHashSet(new JobParameter(AIPSaveMetadataJob.SAVE_METADATA_REQUEST,
-                                                                       aipSaveMetadataRequest)), null,
-                                      AIPSaveMetadataJob.class.getName());
+        jobInfo = new JobInfo(
+                false,
+                IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
+                Sets.newHashSet(new JobParameter(AIPSaveMetadataJob.SAVE_METADATA_REQUEST, aipSaveMetadataRequest)),
+                null,
+                AIPSaveMetadataJob.class.getName()
+        );
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 AIPSaveMetaDataRequest(s) in {} ms",
-                     System.currentTimeMillis() - start);
+                     System.currentTimeMillis() - start
+        );
         return jobInfo;
     }
 }

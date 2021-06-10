@@ -248,7 +248,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         }
 
         // Manage dispatched requests
-        boolean isToNotify = notificationSettingsService.retrieve().isActiveNotification();
+        boolean isToNotify = notificationSettingsService.isActiveNotification();
         manageRequestsAlreadyDeleted(requestsAlreadyDeleted, isToNotify, featureDeletionJob);
         manageRequestsWithFiles(requestsWithFiles, featureDeletionJob);
         manageRequestsWithoutFile(requestsWithoutFiles, isToNotify, featureDeletionJob);
@@ -388,7 +388,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         for (FeatureDeletionRequest fdr : requests) {
             sucessfullRequests.put(fdr, featureByUrn.get(fdr.getUrn()));
         }
-        sendFeedbacksAndClean(sucessfullRequests, notificationSettingsService.retrieve().isActiveNotification(), null);
+        sendFeedbacksAndClean(sucessfullRequests, notificationSettingsService.isActiveNotification(), null);
     }
 
     @Override

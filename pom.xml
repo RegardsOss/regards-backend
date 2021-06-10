@@ -153,6 +153,7 @@
 		<framework.modules.plugins.version>${regards.version}</framework.modules.plugins.version>
 		<framework.modules.locks.version>${regards.version}</framework.modules.locks.version>
 		<framework.modules.templates.version>${regards.version}</framework.modules.templates.version>
+		<framework.modules.tenant.settings.version>${regards.version}</framework.modules.tenant.settings.version>
 
 		<!-- MODULES -->
 		<modules.project.version>${regards.version}</modules.project.version>
@@ -757,6 +758,32 @@
 				<groupId>fr.cnes.regards.modules.templates</groupId>
 				<artifactId>templates-dao</artifactId>
 				<version>${framework.modules.templates.version}</version>
+			</dependency>
+			<!-- Tenant Setting -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-client</artifactId>
+				<version>${framework.modules.tenant.settings.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-dao</artifactId>
+				<version>${framework.modules.tenant.settings.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-domain</artifactId>
+				<version>${framework.modules.tenant.settings.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-rest</artifactId>
+				<version>${framework.modules.tenant.settings.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-service</artifactId>
+				<version>${framework.modules.tenant.settings.version}</version>
 			</dependency>
 
 			<!-- Project -->

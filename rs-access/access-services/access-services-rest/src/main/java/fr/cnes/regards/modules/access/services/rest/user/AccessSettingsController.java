@@ -20,38 +20,40 @@ package fr.cnes.regards.modules.access.services.rest.user;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.modules.access.services.domain.user.AccessSettingsDto;
 import fr.cnes.regards.modules.access.services.rest.user.utils.ComposableClientException;
-import static fr.cnes.regards.modules.access.services.rest.user.utils.Try.handleClientFailure;
-import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
+import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
+import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.springframework.hateoas.EntityModel;
+
+import static fr.cnes.regards.modules.access.services.rest.user.utils.Try.handleClientFailure;
 
 /**
  * Class AccountSettingsController
@@ -62,7 +64,7 @@ import io.vavr.control.Validation;
  */
 @RestController
 @RequestMapping(path = AccessSettingsController.REQUEST_MAPPING_ROOT)
-public class AccessSettingsController implements IResourceController<AccessSettingsDto> {
+public class AccessSettingsController implements IResourceController<DynamicTenantSettingDto> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessSettingsController.class);
 
@@ -71,17 +73,21 @@ public class AccessSettingsController implements IResourceController<AccessSetti
      */
     public static final String REQUEST_MAPPING_ROOT = "/accesses/settings";
 
+    private static final Set<String> STORAGE_PARAMETER_NAMES = Sets.newHashSet(StorageSetting.MAX_QUOTA_NAME, StorageSetting.RATE_LIMIT_NAME);
+
+    public static final String NAME_PATH = "/{name}";
+
     /**
      * Client handling CRUD operation on {@link AccessSettings}. Autowired by Spring. Must no be <code>null</code>.
      */
     @Autowired
-    private IAccessSettingsClient accessSettingsClient;
+    private IAccessRightSettingClient accessSettingsClient;
 
     /**
      * Client handling storage quotas
      */
     @Autowired
-    private IStorageRestClient storageClient;
+    private IStorageSettingClient storageSettingClient;
 
     /**
      * Resource service to manage visibles hateoas links
@@ -95,96 +101,52 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @Value("${spring.application.name}")
     private String appName;
 
-    /**
-     * Retrieve the {@link AccessSettingsDto}.
-     * @return The {@link AccessSettingsDto}
-     */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the settings managing the access requests", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<EntityModel<AccessSettingsDto>> retrieveAccessSettings() throws ModuleException {
+    public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAccessSettings() throws ModuleException {
         return toResponse(
             Validation
                 .combine(
-                    Try.run(() -> FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName)))
-                       .map(unused -> accessSettingsClient.retrieveAccessSettings())
+                    Try.run(() -> FeignSecurityManager
+                            .asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName)))
+                       .map(unused -> accessSettingsClient.retrieveAll())
                        .andFinally(FeignSecurityManager::reset)
                        .transform(handleClientFailure("accessrights-client"))
-                       .map(EntityModel::getContent),
+                       .map(HateoasUtils::unwrapCollection),
                     Try.run(() -> FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName)))
-                       .map(unused -> storageClient.getDefaultDownloadQuotaLimits())
+                       .map(unused -> storageSettingClient.retrieveAll(STORAGE_PARAMETER_NAMES))
                        .andFinally(FeignSecurityManager::reset)
                        .map(ResponseEntity::getBody)
+                       .map(HateoasUtils::unwrapCollection)
                        // special value for frontend if any error on storage or storage not deploy
                        .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
-                       .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
+                       .orElse(() -> Try.success(new ArrayList<>()))
                        .toValidation(ComposableClientException::make)
                 )
-                .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
-                    accessSettings.getId(),
-                    accessSettings.getMode(),
-                    accessSettings.getDefaultRole(),
-                    accessSettings.getDefaultGroups(),
-                    defaultLimits.getMaxQuota(),
-                    defaultLimits.getRateLimit()
-                ))
+                .ap((accessSettings, defaultLimits) -> {
+                    List<DynamicTenantSettingDto> result = new ArrayList<>(accessSettings);
+                    result.addAll(defaultLimits);
+                    return result;
+                })
                 .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
-                .map(this::toResource)
+                .map(this::toResources)
                 .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
         );
     }
 
-    /**
-     * Update the {@link AccessSettings}.
-     * @param accessSettingsDto The {@link AccessSettingsDto}
-     * @return The updated access settings
-     */
     @ResponseBody
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT, path = NAME_PATH)
     @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<EntityModel<AccessSettingsDto>> updateAccessSettings(@Valid @RequestBody AccessSettingsDto accessSettingsDto) throws ModuleException {
-        return toResponse(
-            Validation
-                .combine(
-                    Try.of(() -> {
-                        AccessSettings accessSettings = new AccessSettings();
-                        accessSettings.setId(accessSettingsDto.getId());
-                        accessSettings.setMode(accessSettingsDto.getMode());
-                        accessSettings.setDefaultRole(accessSettingsDto.getRole());
-                        accessSettings.setDefaultGroups(accessSettingsDto.getGroups());
-                        return accessSettings;
-                    })
-                        .map(setting->{
-                                    FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName));
-                                    return accessSettingsClient.updateAccessSettings(setting);
-                            })
-                        .andFinally(FeignSecurityManager::reset)
-                        .transform(handleClientFailure("accessrights-client"))
-                        .map(EntityModel::getContent),
-                    Try.of(() -> new DefaultDownloadQuotaLimits(accessSettingsDto.getMaxQuota(), accessSettingsDto.getRateLimit()))
-                        .map(defaultQuota->{
-                                    FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName));
-                                    return storageClient.changeDefaultDownloadQuotaLimits(defaultQuota);
-                            })
-                        .andFinally(FeignSecurityManager::reset)
-                        .map(ResponseEntity::getBody)
-                        // special value for frontend if any error on storage or storage not deploy
-                        .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
-                        .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
-                        .toValidation(ComposableClientException::make)
-                )
-                .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
-                    accessSettings.getId(),
-                    accessSettings.getMode(),
-                    accessSettings.getDefaultRole(),
-                    accessSettings.getDefaultGroups(),
-                    defaultLimits.getMaxQuota(),
-                    defaultLimits.getRateLimit()
-                ))
-                .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
-                .map(this::toResource)
-                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-        );
+    public ResponseEntity<EntityModel<DynamicTenantSettingDto>> updateAccessSettings(@PathVariable(name = "name") String name, @Valid @RequestBody DynamicTenantSettingDto dynamicTenantSettingDto) {
+        if(STORAGE_PARAMETER_NAMES.contains(name)) {
+            ResponseEntity<EntityModel<DynamicTenantSettingDto>> storageResponse = storageSettingClient
+                    .update(name, dynamicTenantSettingDto);
+            return new ResponseEntity<>(toResource(storageResponse.getBody().getContent()), storageResponse.getStatusCode());
+        } else {
+            ResponseEntity<EntityModel<DynamicTenantSettingDto>> adminResponse = accessSettingsClient.update(dynamicTenantSettingDto.getName(), dynamicTenantSettingDto);
+            return new ResponseEntity<>(toResource(adminResponse.getBody().getContent()), adminResponse.getStatusCode());
+        }
     }
 
     private <V> V toResponse(
@@ -198,11 +160,11 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     }
 
     @Override
-    public EntityModel<AccessSettingsDto> toResource(final AccessSettingsDto element, final Object... extras) {
-        EntityModel<AccessSettingsDto> resource = resourceService.toResource(element);
+    public EntityModel<DynamicTenantSettingDto> toResource(final DynamicTenantSettingDto element, final Object... extras) {
+        EntityModel<DynamicTenantSettingDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAccessSettings", LinkRels.SELF);
         resourceService.addLink(resource, this.getClass(), "updateAccessSettings", LinkRels.UPDATE,
-                                MethodParamFactory.build(AccessSettingsDto.class));
+                                MethodParamFactory.build(DynamicTenantSettingDto.class));
 
         return resource;
     }

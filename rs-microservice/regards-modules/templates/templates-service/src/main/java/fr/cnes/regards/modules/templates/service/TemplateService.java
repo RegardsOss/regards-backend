@@ -85,13 +85,13 @@ public class TemplateService implements ITemplateService {
     /**
      * Tenant resolver to access all configured tenant
      */
-    @Autowired
+    @Autowired(required = false)
     private ITenantResolver tenantResolver;
 
     /**
      * Runtime tenant resolver
      */
-    @Autowired
+    @Autowired(required = false)
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired

@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -33,9 +34,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import io.vavr.control.Try;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -59,14 +65,20 @@ import io.vavr.control.Try;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests" }, locations = { "classpath:application-test.properties" })
 public class FileDownloadServiceTest extends AbstractStorageTest {
+
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
 
     @Before
     @Override
     public void init() throws ModuleException {
         super.init();
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
+        // we override cache setting values for tests
+        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME, Paths.get("target", "cache", getDefaultTenant()));
     }
 
     @Test
@@ -83,13 +95,12 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
 
     @Test
     public void downloadFileReferenceOnline()
-            throws ModuleException, InterruptedException, ExecutionException, FileNotFoundException {
+            throws ModuleException, InterruptedException, ExecutionException {
         downloadService.downloadFile(this.generateRandomStoredOnlineFileReference().getMetaInfo().getChecksum());
     }
 
     @Test
-    public void downloadFileReferenceOffLine()
-            throws ModuleException, InterruptedException, ExecutionException, FileNotFoundException {
+    public void downloadFileReferenceOffLine() {
         FileReference fileRef = this
                 .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere").get();
         Try<Callable<DownloadableFile>> result = Try
@@ -101,7 +112,7 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
 
     @Test
     public void downloadFileReferenceNearline()
-            throws ModuleException, InterruptedException, ExecutionException, IOException {
+            throws InterruptedException, ExecutionException, IOException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
 
         Try<DownloadableFile> result = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
@@ -121,8 +132,9 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
 
         Optional<CacheFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File should be present in cache", oCf.isPresent());
-        assertEquals("File should be present in cache", cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),
-                     oCf.get().getLocation().getPath().toString());
+        assertEquals("File should be present in cache",
+            cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),
+            oCf.get().getLocation().getPath());
 
         // Now the file is available in cache try to download it again.
         result = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum())).mapTry(Callable::call);
@@ -176,18 +188,28 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     public void downloadFileTypeDependsOnFileReferenceType() {
         Random r = new Random();
         DataType[] typesCache = DataType.values();
-        IntStream.range(0, 100).forEach(i -> Try.run(() -> {
-            DataType type = typesCache[r.nextInt(typesCache.length)];
-            FileReference fileRef = generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test",
-                                                                ONLINE_CONF_LABEL, Optional.empty(),
-                                                                Optional.of(type.name()));
+        IntStream.range(0, 100)
+            .forEach(i -> Try.run(() -> {
+                DataType type = typesCache[r.nextInt(typesCache.length)];
+                FileReference fileRef = generateStoredFileReference(
+                    UUID.randomUUID().toString(),
+                    "someone",
+                    "file.test",
+                    ONLINE_CONF_LABEL,
+                    Optional.empty(),
+                    Optional.of(type.name())
+                );
 
-            DownloadableFile dlFile = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
-                    .mapTry(Callable::call).get();
+                DownloadableFile dlFile =
+                    Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
+                        .mapTry(Callable::call)
+                        .get();
 
-            assertTrue(type.equals(DataType.RAWDATA)
-                    ? dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile
-                    : dlFile instanceof FileDownloadService.StandardDownloadableFile);
-        }));
+                assertTrue(
+                    type.equals(DataType.RAWDATA)
+                        ? dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile
+                        : dlFile instanceof FileDownloadService.StandardDownloadableFile
+                );
+            }));
     }
 }

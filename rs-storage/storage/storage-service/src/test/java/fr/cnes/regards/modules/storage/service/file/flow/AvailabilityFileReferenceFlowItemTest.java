@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.flow;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.urn.DataType;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,6 +54,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
@@ -87,8 +90,7 @@ import java.util.concurrent.ExecutionException;
  *
  */
 @ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests" }, locations = { "classpath:application-test.properties" })
 public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AvailabilityFileReferenceFlowItemTest.class);
@@ -108,10 +110,17 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
+
     @Before
     public void initialize() throws ModuleException {
         Mockito.clearInvocations(publisher);
         super.init();
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
+        // we override cache setting values for tests
+        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME, Paths.get("target", "cache", getDefaultTenant()));
     }
 
     @Test

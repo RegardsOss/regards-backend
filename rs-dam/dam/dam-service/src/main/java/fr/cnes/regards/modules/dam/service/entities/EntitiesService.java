@@ -18,19 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -47,6 +34,13 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Unparameterized entity service. This service is used when the entity type is unknown (ex. CrawlerService)
@@ -74,18 +68,6 @@ public class EntitiesService implements IEntitiesService {
 
     @Autowired
     private ICollectionRepository collectionRepository;
-
-    /**
-     * If true the AIP entities are send to Storage module to be stored
-     */
-    @Value("${regards.dam.post.aip.entities.to.storage:true}")
-    private Boolean postAipEntitiesToStorage;
-
-    /**
-     * The plugin's class name of type {@link IStorageService} used to store AIP entities
-     */
-    @Value("${regards.dam.post.aip.entities.to.storage.plugins:fr.cnes.regards.modules.dam.service.entities.plugins.AipStoragePlugin}")
-    private String postAipEntitiesToStoragePlugin;
 
     public EntitiesService() {
         super();

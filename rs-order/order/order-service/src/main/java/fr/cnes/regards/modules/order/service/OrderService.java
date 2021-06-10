@@ -18,76 +18,9 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.util.UriUtils;
-import org.xml.sax.SAXException;
-
 import com.google.common.base.Strings;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Sets;
-import com.google.common.collect.TreeMultimap;
+import com.google.common.collect.*;
 import com.google.common.io.ByteStreams;
-
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -112,26 +45,12 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.dao.OrderSpecifications;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
-import fr.cnes.regards.modules.order.metalink.schema.FileType;
-import fr.cnes.regards.modules.order.metalink.schema.FilesType;
-import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
-import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
-import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
+import fr.cnes.regards.modules.order.domain.exception.*;
+import fr.cnes.regards.modules.order.metalink.schema.*;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
 import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
@@ -139,6 +58,7 @@ import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
 import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
+import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
@@ -147,6 +67,52 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.util.UriUtils;
+import org.xml.sax.SAXException;
+
+import javax.annotation.PostConstruct;;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+import java.io.*;
+import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -228,11 +194,8 @@ public class OrderService implements IOrderService {
     @Autowired
     private INotificationClient notificationClient;
 
-    @Value("${regards.order.validation.period.days:3}")
-    private int orderValidationPeriodDays;
-
-    @Value("${regards.order.days.before.considering.order.as.aside:7}")
-    private int daysBeforeSendingNotifEmail;
+    @Autowired
+    private IOrderSettingsService orderSettingsService;
 
     @Value("${spring.application.name}")
     private String microserviceName;
@@ -271,15 +234,28 @@ public class OrderService implements IOrderService {
      * Method called at creation AND after a resfresh
      */
     @PostConstruct
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void init() {
-        LOGGER.info("OrderService created/refreshed with, orderValidationPeriodDays: {}"
-                + ", daysBeforeSendingNotifEmail: {}...", orderValidationPeriodDays, daysBeforeSendingNotifEmail);
         proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
                 : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         if (noProxyHostsString != null) {
             Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));
         }
+    }
 
+    @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void init(ApplicationReadyEvent event) {
+        for(String tenant: tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                LOGGER.info("OrderService created with : userOrderParameters: {}, appSubOrderDuration: {}",
+                            orderSettingsService.getUserOrderParameters(),
+                            orderSettingsService.getAppSubOrderDuration());
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
     @Override
@@ -288,7 +264,8 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public Order createOrder(Basket basket, String label, String url) throws EntityInvalidException {
+    public Order createOrder(Basket basket, String label, String url, int subOrderDuration) throws EntityInvalidException {
+
         LOGGER.info("Generate and / or check label is unique for owner before creating back");
         // generate label when none is provided
         String basketOwner = basket.getOwner();
@@ -297,7 +274,8 @@ public class OrderService implements IOrderService {
 
         if (Strings.isNullOrEmpty(orderLabel)) {
             orderLabel = String.format(OrderService.ORDER_GENERATED_LABEL_FORMAT,
-                                       OrderService.ORDER_GENERATED_LABEL_DATE_FORMAT.format(OffsetDateTime.now()));
+                                       OrderService.ORDER_GENERATED_LABEL_DATE_FORMAT.format(OffsetDateTime.now())
+            );
         }
         // check length (>0 is already checked above)
 
@@ -321,20 +299,20 @@ public class OrderService implements IOrderService {
         // To generate orderId
         order = repos.save(order);
         // Asynchronous operation
-        self.asyncCompleteOrderCreation(basket, order, authResolver.getRole(), runtimeTenantResolver.getTenant());
+        self.asyncCompleteOrderCreation(basket, order, subOrderDuration, authResolver.getRole(), runtimeTenantResolver.getTenant());
         return order;
     }
 
     @Override
     @Async
-    @Transactional(value = Transactional.TxType.NOT_SUPPORTED)
-    public void asyncCompleteOrderCreation(Basket basket, Order order, String role, String tenant) {
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void asyncCompleteOrderCreation(Basket basket, Order order, int subOrderDuration, String role, String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
-        self.completeOrderCreation(basket, order, role, tenant);
+        self.completeOrderCreation(basket, order, subOrderDuration, role, tenant);
     }
 
     @Override
-    public void completeOrderCreation(Basket basket, Order order, String role, String tenant) {
+    public void completeOrderCreation(Basket basket, Order order, int subOrderDuration, String role, String tenant) {
         boolean hasProcessing = false;
         try {
             String owner = order.getOwner();
@@ -350,19 +328,16 @@ public class OrderService implements IOrderService {
             Set<OrderDataFile> alreadyHandledFiles = new HashSet<>();
             for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
                 if (dsSel.hasProcessing()) {
-                    orderCounts = orderProcessingService.manageProcessedDatasetSelection(order, dsSel, tenant, owner,
-                                                                                         role, orderCounts);
+                    orderCounts = orderProcessingService.manageProcessedDatasetSelection(order, dsSel, tenant, owner, role, orderCounts, subOrderDuration);
                     hasProcessing = true;
                 } else {
-                    orderCounts = manageDatasetSelection(order, role, priority, orderCounts, dsSel,
-                                                         alreadyHandledFiles);
+                    orderCounts = manageDatasetSelection(order, subOrderDuration, role, priority, orderCounts, dsSel, alreadyHandledFiles);
                 }
             }
 
-            // Compute order expiration date using number of sub order created + 2,
+            // Compute order expiration date using number of sub order created + 2 days (48 hours),
             // that gives time to users to download there last suborders
-            order.setExpirationDate(OffsetDateTime.now()
-                    .plusDays((orderCounts.getSubOrderCount() + 2) * orderValidationPeriodDays));
+            order.setExpirationDate(OffsetDateTime.now().plusHours((long) (orderCounts.getSubOrderCount() + 48) * subOrderDuration));
 
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
@@ -379,7 +354,7 @@ public class OrderService implements IOrderService {
         } catch (ModuleException e) {
             LOGGER.error("Error while completing order creation", e);
             order.setStatus(OrderStatus.FAILED);
-            order.setExpirationDate(OffsetDateTime.now().plusDays(orderValidationPeriodDays));
+            order.setExpirationDate(OffsetDateTime.now().plusHours(subOrderDuration));
         }
         // Be careful to not unset FAILED status
         if (order.getStatus() != OrderStatus.FAILED) {
@@ -430,8 +405,9 @@ public class OrderService implements IOrderService {
         }
     }
 
-    private OrderCounts manageDatasetSelection(Order order, String role, int priority, OrderCounts orderCounts,
-            BasketDatasetSelection dsSel, Set<OrderDataFile> alreadyHandledFiles) {
+    private OrderCounts manageDatasetSelection(Order order, int subOrderDuration, String role, int priority, OrderCounts orderCounts,
+                                               BasketDatasetSelection dsSel, Set<OrderDataFile> alreadyHandledFiles
+    ) {
 
         DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, DataTypeSelection.ALL.getFileTypes());
 
@@ -451,7 +427,7 @@ public class OrderService implements IOrderService {
                 if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT)
                         || suborderSizeCounter.storageBucketTooBig(storageBucketFiles)) {
                     orderCounts.addToInternalFilesCount(storageBucketFiles.size());
-                    self.createStorageSubOrder(dsTask, storageBucketFiles, order, role, priority);
+                    self.createStorageSubOrder(dsTask, storageBucketFiles, order, subOrderDuration, role, priority);
                     orderCounts.incrSubOrderCount();
                     storageBucketFiles.clear();
                 }
@@ -467,7 +443,7 @@ public class OrderService implements IOrderService {
         // Manage remaining files on each type of buckets
         if (!storageBucketFiles.isEmpty()) {
             orderCounts.addToInternalFilesCount(storageBucketFiles.size());
-            self.createStorageSubOrder(dsTask, storageBucketFiles, order, role, priority);
+            self.createStorageSubOrder(dsTask, storageBucketFiles, order, subOrderDuration, role, priority);
             orderCounts.incrSubOrderCount();
         }
         if (!externalBucketFiles.isEmpty()) {
@@ -582,9 +558,8 @@ public class OrderService implements IOrderService {
      * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
     @Override
-    @Transactional(value = TxType.REQUIRES_NEW)
-    public void createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, String role,
-            int priority) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, int subOrderDuration, String role, int priority) {
         String owner = order.getOwner();
         LOGGER.info("Creating storage sub-order of {} files (owner={})", bucketFiles.size(), owner);
         dataFileService.create(bucketFiles);
@@ -597,10 +572,10 @@ public class OrderService implements IOrderService {
         // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
         JobInfo storageJobInfo = new JobInfo(true);
         storageJobInfo.setParameters(
-                                     new FilesJobParameter(
-                                             bucketFiles.stream().map(OrderDataFile::getId).toArray(Long[]::new)),
-                                     new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
-                                     new UserJobParameter(owner), new UserRoleJobParameter(role));
+                new FilesJobParameter(bucketFiles.stream().map(OrderDataFile::getId).toArray(Long[]::new)),
+                new SubOrderAvailabilityPeriodJobParameter(subOrderDuration),
+                new UserJobParameter(owner), new UserRoleJobParameter(role)
+        );
         storageJobInfo.setOwner(owner);
         storageJobInfo.setClassName(StorageFilesJob.class.getName());
         storageJobInfo.setPriority(priority);
@@ -614,7 +589,7 @@ public class OrderService implements IOrderService {
      * Create an external sub-order ie a FilesTask, and add it to DatasetTask
      */
     @Override
-    @Transactional(value = TxType.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order) {
         LOGGER.info("Creating external sub-order of {} files", bucketFiles.size());
         dataFileService.create(bucketFiles);
@@ -631,7 +606,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Order loadComplete(Long id) {
         return repos.findCompleteById(id);
     }
@@ -1021,7 +996,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Transactional(propagation = Propagation.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(fixedDelayString = "${regards.order.computation.update.rate.ms:1000}")
     public void updateCurrentOrdersComputations() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -1049,7 +1024,7 @@ public class OrderService implements IOrderService {
      * 0 0 7 * * MON-FRI : every working day at 7 AM
      */
     @Override
-    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Transactional(propagation = Propagation.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(cron = "${regards.order.periodic.files.availability.check.cron:0 0 7 * * MON-FRI}")
     public void sendPeriodicNotifications() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -1060,10 +1035,9 @@ public class OrderService implements IOrderService {
 
     @Override
     public void sendTenantPeriodicNotifications() {
-        List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
 
-        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(),
-                                                                    Comparator.comparing(Order::getCreationDate));
+        List<Order> asideOrders = repos.findAsideOrders(orderSettingsService.getUserOrderParameters().getDelayBeforeEmailNotification());
+        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
         asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
 
         // For each owner
@@ -1091,7 +1065,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
+    @Transactional(propagation = Propagation.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(fixedDelayString = "${regards.order.clean.expired.rate.ms:3600000}")
     public void cleanExpiredOrders() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -1118,7 +1092,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.NEVER)
+    @Transactional(propagation = Propagation.NEVER)
     // No transaction because :
     // - loadComplete use a new one and so when delete is called, order state is at start of transaction (so with state
     // EXPIRED)

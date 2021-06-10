@@ -4,7 +4,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
