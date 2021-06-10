@@ -63,6 +63,10 @@
 			<artifactId>notifier-dto</artifactId>
 			<groupId>fr.cnes.regards.modules.notifier</groupId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+			<artifactId>tenant-settings-domain</artifactId>
+		</dependency>
 		<!--<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-data-regards</artifactId>

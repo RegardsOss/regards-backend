@@ -17,12 +17,8 @@
 */
 package fr.cnes.regards.modules.order.dao;
 
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -33,8 +29,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Order repository
@@ -127,8 +126,8 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
      * days count
      * Orders are sorted by owner
      */
-    default List<Order> findAsideOrders(int daysBeforeConsideringAside) {
-        OffsetDateTime date = OffsetDateTime.now().minus(daysBeforeConsideringAside, ChronoUnit.DAYS);
+    default List<Order> findAsideOrders(int hoursBeforeConsideringAside) {
+        OffsetDateTime date = OffsetDateTime.now().minus(hoursBeforeConsideringAside, ChronoUnit.HOURS);
         return findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(0, date,
                                                                                                             OrderStatus.PENDING,
                                                                                                             OrderStatus.DELETED,

@@ -27,6 +27,9 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
+import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,6 +135,10 @@ public class AccountService implements IAccountService {
      */
     private final ITemplateService templateService;
 
+    private final IInstancePublisher instancePublisher;
+
+    private final AccountSettingsService accountSettingsService;
+
     @Autowired
     private MeterRegistry registry;
 
@@ -149,20 +156,25 @@ public class AccountService implements IAccountService {
      * @param rootAdminUserPassword root admin user password
      * @param thresholdFailedAuthentication threshold faild autentication
      * @param pRuntimeTenantResolver runtime tenant resolver
+     * @param instancePublisher
+     * @param accountSettingsService
      */
     public AccountService(IAccountRepository accountRepository, //NOSONAR
-            @Autowired ITemplateService templateService, @Autowired IEmailClient emailClient,
-            @Value("${regards.accounts.password.regex}") String passwordRegex,
-            @Value("${regards.accounts.password.rules}") String passwordRules,
-            @Value("${regards.accounts.password.validity.duration}") Long accountPasswordValidityDuration,
-            @Value("${regards.accounts.validity.duration}") Long accountValidityDuration,
-            @Value("${regards.accounts.root.user.login}") String rootAdminUserLogin,
-            @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
-            @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication,
-            @Autowired IRuntimeTenantResolver pRuntimeTenantResolver) {
-        super();
+                          @Autowired ITemplateService templateService, @Autowired IEmailClient emailClient,
+                          @Value("${regards.accounts.password.regex}") String passwordRegex,
+                          @Value("${regards.accounts.password.rules}") String passwordRules,
+                          @Value("${regards.accounts.password.validity.duration}") Long accountPasswordValidityDuration,
+                          @Value("${regards.accounts.validity.duration}") Long accountValidityDuration,
+                          @Value("${regards.accounts.root.user.login}") String rootAdminUserLogin,
+                          @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
+                          @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication,
+                          @Autowired IRuntimeTenantResolver pRuntimeTenantResolver,
+                          IInstancePublisher instancePublisher, AccountSettingsService accountSettingsService
+    ) {
         this.accountRepository = accountRepository;
         this.passwordRegex = passwordRegex;
+        this.instancePublisher = instancePublisher;
+        this.accountSettingsService = accountSettingsService;
         this.passwordRegexPattern = Pattern.compile(this.passwordRegex);
         this.passwordRules = passwordRules;
         this.accountPasswordValidityDuration = accountPasswordValidityDuration;
@@ -213,7 +225,17 @@ public class AccountService implements IAccountService {
             account.setPassword(EncryptionUtils.encryptPassword(account.getPassword()));
         }
         account.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
+        if (AccountStatus.PENDING.equals(account.getStatus()) && accountSettingsService.isAutoAccept()) {
+            activate(account);
+        }
         return accountRepository.save(account);
+    }
+
+    @Override
+    public void activate(Account account) {
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+        instancePublisher.publish(new AccountAcceptedEvent(account));
     }
 
     @Override
@@ -260,7 +282,7 @@ public class AccountService implements IAccountService {
         boolean activeAccount = !checkAccountValidity || accountToValidate.getStatus().equals(AccountStatus.ACTIVE);
         boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(password));
 
-        // If password is invalid
+        // If password is invalid and we are not trying to connect with one of instance account
         if (!validPassword && !runtimeTenantResolver.isInstance()) {
             // Increment password error counter and update account
             accountToValidate.setAuthenticationFailedCounter(accountToValidate.getAuthenticationFailedCounter() + 1);

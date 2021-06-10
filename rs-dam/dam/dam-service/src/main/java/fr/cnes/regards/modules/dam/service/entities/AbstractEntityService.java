@@ -18,41 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.util.Assert;
-import org.springframework.util.MimeTypeUtils;
-import org.springframework.validation.Validator;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriUtils;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -73,17 +40,9 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.dam.dao.entities.EntitySpecifications;
-import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRequestRepository;
-import fr.cnes.regards.modules.dam.dao.entities.ICollectionRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IDeletedEntityRepository;
-import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
-import fr.cnes.regards.modules.dam.domain.entities.AbstractEntityRequest;
+import fr.cnes.regards.modules.dam.dao.entities.*;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.DeletedEntity;
+import fr.cnes.regards.modules.dam.domain.entities.*;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.dam.domain.entities.event.DatasetEvent;
 import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
@@ -91,6 +50,7 @@ import fr.cnes.regards.modules.dam.domain.entities.event.NotDatasetEntityEvent;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFileLocation;
 import fr.cnes.regards.modules.dam.service.entities.validation.AbstractEntityValidationService;
+import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
@@ -107,6 +67,29 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.util.Assert;
+import org.springframework.util.MimeTypeUtils;
+import org.springframework.validation.Validator;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
+
+import javax.persistence.EntityManager;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Abstract parameterized entity service
@@ -140,6 +123,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Autowired
     private INotificationClient notificationClient;
+
+    protected final IDamSettingsService damSettingsService;
 
     /**
      * Parameterized entity repository
@@ -176,12 +161,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * If true the AIP entities are send to Storage module to be stored
-     */
-    @Value("${regards.dam.store.files:true}")
-    private Boolean storeEntityFiles;
-
-    /**
      * The plugin's class name of type {@link IStorageService} used to store AIP entities
      */
     @Value("${regards.dam.store.files.plugin:fr.cnes.regards.modules.dam.service.entities.plugins.StoragePlugin}")
@@ -193,14 +172,17 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     private final IAbstractEntityRequestRepository abstractEntityRequestRepo;
 
     public AbstractEntityService(IModelFinder modelFinder,
-            IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
-            IDeletedEntityRepository deletedEntityRepository, ICollectionRepository collectionRepository,
-            IDatasetRepository datasetRepository, IAbstractEntityRepository<U> repository, EntityManager em,
-            IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
-            IAbstractEntityRequestRepository abstractEntityRequestRepo) {
+                                 IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
+                                 IDamSettingsService damSettingsService, IDeletedEntityRepository deletedEntityRepository,
+                                 ICollectionRepository collectionRepository,
+                                 IDatasetRepository datasetRepository, IAbstractEntityRepository<U> repository, EntityManager em,
+                                 IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
+                                 IAbstractEntityRequestRepository abstractEntityRequestRepo
+    ) {
         super(modelFinder);
         this.entityRepository = entityRepository;
         this.modelService = modelService;
+        this.damSettingsService = damSettingsService;
         this.deletedEntityRepository = deletedEntityRepository;
         this.collectionRepository = collectionRepository;
         this.datasetRepository = datasetRepository;
@@ -384,17 +366,19 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         entity = repository.save(entity);
         updatedIpIds.add(entity.getIpId());
 
-        // call storage
-        try {
-            IStorageService storageService = getStorageService();
+        if (damSettingsService.isStoreFiles()) {
+            // call storage
+            try {
+                IStorageService storageService = getStorageService();
 
-            if (storageService != null) {
-                storageService.store(entity);
-            } else {
-                LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN);
+                if (storageService != null) {
+                    storageService.store(entity);
+                } else {
+                    LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN);
+                }
+            } catch (NotAvailablePluginConfigurationException e) {
+                LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
             }
-        } catch (NotAvailablePluginConfigurationException e) {
-            LOGGER.warn("Unable to access storage plugin", e);
         }
 
         // AMQP event publishing
@@ -565,16 +549,18 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             this.manageGroups(updated, updatedIpIds);
         }
 
-        // call storage
-        try {
-            IStorageService storageService = getStorageService();
-            if (storageService != null) {
-                storageService.update(updated, entityInDb);
-            } else {
-                LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN);
+        if (damSettingsService.isStoreFiles()) {
+            // call storage
+            try {
+                IStorageService storageService = getStorageService();
+                if (storageService != null) {
+                    storageService.update(updated, entityInDb);
+                } else {
+                    LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN);
+                }
+            } catch (NotAvailablePluginConfigurationException e) {
+                LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
             }
-        } catch (NotAvailablePluginConfigurationException e) {
-            LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
         }
 
         // AMQP event publishing
@@ -778,15 +764,11 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
      * @throws NotAvailablePluginConfigurationException
      */
     private IStorageService getStorageService() throws NotAvailablePluginConfigurationException {
-        if (storeEntityFiles == null) {
-            return null;
-        }
 
         Class<?> ttt;
         try {
             ttt = Class.forName(storeEntityFilesPlugin);
-            return (IStorageService) PluginUtils.getPlugin(PluginConfiguration.build(ttt, null, IPluginParam.set()),
-                                                           new HashMap<>());
+            return PluginUtils.getPlugin(PluginConfiguration.build(ttt, null, IPluginParam.set()), new HashMap<>());
         } catch (ClassNotFoundException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -795,12 +777,11 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     }
 
     private void deleteAipStorage(U entity) throws NotAvailablePluginConfigurationException {
-        if ((storeEntityFiles == null) || !storeEntityFiles) {
-            return;
-        }
-        IStorageService storageService = getStorageService();
-        if (storageService != null) {
-            storageService.delete(entity);
+        if (damSettingsService.isStoreFiles()) {
+            IStorageService storageService = getStorageService();
+            if (storageService != null) {
+                storageService.delete(entity);
+            }
         }
     }
 

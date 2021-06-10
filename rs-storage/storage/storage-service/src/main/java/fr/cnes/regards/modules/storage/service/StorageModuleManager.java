@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 
@@ -46,7 +48,10 @@ public class StorageModuleManager extends AbstractModuleManager<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageModuleManager.class);
 
     @Autowired
-    StorageLocationConfigurationService storageConfService;
+    private StorageLocationConfigurationService storageConfService;
+
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
 
     @Override
     public ModuleConfiguration exportConfiguration() throws ModuleException {
@@ -54,6 +59,8 @@ public class StorageModuleManager extends AbstractModuleManager<Void> {
         for (StorageLocationConfiguration conf : storageConfService.searchAll()) {
             configuration.add(ModuleConfigurationItem.build(conf));
         }
+        dynamicTenantSettingService.readAll()
+                .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
         return ModuleConfiguration.build(info, configuration);
     }
 
@@ -67,13 +74,25 @@ public class StorageModuleManager extends AbstractModuleManager<Void> {
                     importErrors.add(String.format("Storage location %s is already defined.", conf.getName()));
                 } else {
                     try {
-                        storageConfService.create(conf.getName(), conf.getPluginConfiguration(),
-                                                  conf.getAllocatedSizeInKo());
+                        storageConfService
+                                .create(conf.getName(), conf.getPluginConfiguration(), conf.getAllocatedSizeInKo());
                     } catch (ModuleException e) {
                         importErrors.add(String.format("Skipping import of StorageLocationConfiguration %s: %s",
-                                                       conf.getName(), e.getMessage()));
+                                                       conf.getName(),
+                                                       e.getMessage()));
                         LOGGER.error(e.getMessage(), e);
                     }
+                }
+            }
+            if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
+                DynamicTenantSetting conf = item.getTypedValue();
+                try {
+                    dynamicTenantSettingService.update(conf.getName(), conf.getValue());
+                } catch (ModuleException e) {
+                    importErrors.add(String.format("Skipping import of DynamicTenantSetting %s: %s",
+                                                   conf.getName(),
+                                                   e.getMessage()));
+                    LOGGER.error(e.getMessage(), e);
                 }
             }
         }

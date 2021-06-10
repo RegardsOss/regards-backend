@@ -1,6 +1,8 @@
 package fr.cnes.regards.modules.access.services.client;
 
-import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
+import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -8,20 +10,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Make Spring DI happy.
  */
 @Primary
 @Component
-public class AccessSettingsClientMock implements IAccessSettingsClient {
+public class AccessSettingsClientMock implements IAccessRightSettingClient {
+
     @Override
-    public ResponseEntity<EntityModel<AccessSettings>> retrieveAccessSettings() {
+    public ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(String name, DynamicTenantSettingDto setting) {
         return null;
     }
 
     @Override
-    public ResponseEntity<EntityModel<AccessSettings>> updateAccessSettings(@Valid AccessSettings accessSettings) {
+    public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll(Set<String> names) {
         return null;
     }
 }

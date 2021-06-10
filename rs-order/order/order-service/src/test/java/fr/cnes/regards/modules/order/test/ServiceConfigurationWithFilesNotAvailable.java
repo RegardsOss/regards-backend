@@ -29,6 +29,8 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
+
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
@@ -70,6 +72,11 @@ public class ServiceConfigurationWithFilesNotAvailable {
     @Primary
     public IStorageClient storageClient(IStorageFileListener listener) {
         return new StorageClientMock(listener, false);
+    }
+
+    @Bean
+    public IStorageSettingClient storageSettingClient() {
+        return Mockito.mock(IStorageSettingClient.class);
     }
 
     @Bean

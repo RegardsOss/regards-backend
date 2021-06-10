@@ -63,18 +63,22 @@
 			<artifactId>feign-regards-starter</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-client</artifactId>
+        </dependency>
         <!-- TEST dependencies -->
-		<dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
         </dependency>
-		<dependency>
+        <dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+        <dependency>
 			<groupId>fr.cnes.regards.modules.storage</groupId>
 			<artifactId>storage-rest</artifactId>
 			<scope>test</scope>

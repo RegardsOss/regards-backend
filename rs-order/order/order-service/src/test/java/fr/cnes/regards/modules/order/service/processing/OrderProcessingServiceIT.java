@@ -117,7 +117,7 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
         //########################
         //######## WHEN
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
         LOGGER.info("Order has been created !!");
 
         //########################
@@ -176,7 +176,7 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
         //########################
         //######## WHEN
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
         LOGGER.info("Order has been created !!");
 
         //########################
@@ -235,7 +235,7 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
         //########################
         //######## WHEN
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
         LOGGER.info("Order has been created !!");
 
         //########################

@@ -390,7 +390,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         if (!requests.isEmpty()) {
             // See if notifications are required
-            if (notificationSettingsService.retrieve().isActiveNotification()) {
+                if (notificationSettingsService.isActiveNotification()) {
                 // notify creation of feature
                 for (FeatureCreationRequest request : requests) {
                     request.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);

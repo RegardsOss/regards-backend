@@ -146,7 +146,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
 
         LOGGER.info("Order has been created !!");
         // Wait order ends.
@@ -195,7 +195,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
         LOGGER.info("Order has been created !!");
 
         //Wait order in waiting user status
@@ -251,7 +251,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
         LOGGER.info("Order has been created !!");
 
         // Wait order ends.
@@ -314,7 +314,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
@@ -396,7 +396,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner,"http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner,"http://frontend.com", 240);
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status

@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
@@ -12,6 +13,7 @@ import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
+import fr.cnes.regards.modules.storage.service.settings.StorageSettingService;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import io.vavr.collection.HashMap;
@@ -62,6 +64,10 @@ public class DownloadQuotaServiceTest {
 
     @Mock private ApplicationContext applicationContext;
 
+    @Mock private IDynamicTenantSettingService dynamicTenantSettingService;
+
+    @Mock private StorageSettingService storageSettinService;
+
     private DownloadQuotaService<Unit> quotaService;
 
     private final Random random = new Random();
@@ -84,8 +90,7 @@ public class DownloadQuotaServiceTest {
                 tenantResolver,
                 runtimeTenantResolver,
                 subscriber,
-                applicationContext
-            )
+                applicationContext, dynamicTenantSettingService, storageSettinService)
         );
         quotaService.setSelf(quotaService);
         quotaService.setCache(Caffeine.newBuilder().build());
@@ -468,37 +473,6 @@ public class DownloadQuotaServiceTest {
         DownloadQuotaLimits cachedValue = cache.getIfPresent(key);
         assertEquals(maxQuota, cachedValue.getMaxQuota().longValue());
         assertEquals(rateLimit, cachedValue.getRateLimit().longValue());
-    }
-
-    @Test
-    public void getDefaultDownloadQuotaLimits_should_get_the_default_entry() {
-        DefaultDownloadQuotaLimits stub = new DefaultDownloadQuotaLimits(DEFAULT_QUOTA, DEFAULT_RATE);
-        doReturn(stub)
-            .when(quotaRepository)
-            .getDefaultDownloadQuotaLimits();
-        Try<DefaultDownloadQuotaLimits> result = quotaService.getDefaultDownloadQuotaLimits();
-        assertEquals(stub, result.get());
-    }
-
-    @Test
-    public void changeDefaultDownloadQuotaLimits_should_change_default_limits_and_update_cache() {
-        AtomicReference<Map<String, DefaultDownloadQuotaLimits>> cache =
-            new AtomicReference<>(HashMap.empty());
-        quotaService.setDefaultLimits(cache);
-
-        long maxQuota = random.nextInt(Integer.MAX_VALUE);
-        long rateLimit = random.nextInt(Integer.MAX_VALUE);
-        DefaultDownloadQuotaLimits newDefaultLimits = new DefaultDownloadQuotaLimits(maxQuota, rateLimit);
-
-        doReturn(newDefaultLimits)
-            .when(quotaRepository)
-            .changeDefaultDownloadQuotaLimits(maxQuota, rateLimit);
-
-        Try<DefaultDownloadQuotaLimits> result = quotaService.changeDefaultDownloadQuotaLimits(newDefaultLimits);
-
-        assertEquals(newDefaultLimits, result.get());
-        assertEquals(maxQuota, cache.get().get(TENANT).get().getMaxQuota().longValue());
-        assertEquals(rateLimit, cache.get().get(TENANT).get().getRateLimit().longValue());
     }
 
     @Test

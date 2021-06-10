@@ -189,7 +189,7 @@ public class BasketServiceIT {
             }
         }
 
-        orderService.createOrder(basket, "perdu", "http://perdu.com");
+        orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
 
         // manage periodic email notifications
         orderService.sendPeriodicNotifications();

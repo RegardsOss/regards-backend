@@ -19,30 +19,13 @@
 
 package fr.cnes.regards.modules.feature.service.settings;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 
-/**
- * Service to handle optional notifications
- * @author Iliana Ghazali
- */
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 
 public interface IFeatureNotificationSettingsService {
 
-    /**
-     * Initialize new {@link FeatureNotificationSettings} in the repository
-     */
-    void initNotificationSettings();
+    boolean isActiveNotification();
 
-    /**
-     * Retrieve {@link FeatureNotificationSettings}. If they do not exist, new settings are created.
-     */
-    FeatureNotificationSettings retrieve();
+    void setActiveNotification(Boolean isActiveNotification) throws EntityException;
 
-    /**
-     * Update {@link FeatureNotificationSettings}
-     */
-    void update(FeatureNotificationSettings pFeatureNotificationSettings);
-
-    void resetSettings();
 }

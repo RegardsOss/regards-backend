@@ -16,74 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package fr.cnes.regards.modules.feature.domain.settings;
 
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.util.Objects;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
-/**
- * Model to handle optional notifications
- * @author Iliana Ghazali
- */
+import java.util.Collections;
+import java.util.List;
 
-@Entity
-@Table(name = "t_feature_notification_settings")
-public class FeatureNotificationSettings {
 
-    // only one setting per tenant
-    private static final long FEM_NOTIFICATION_SETTINGS_ID = 0L;
+public final class FeatureNotificationSettings {
 
-    @ConfigIgnore
-    @Id
-    @Column(name = "id", unique = true)
-    private Long id;
-
-    /**
-     * To activate notifications on feature requests
-     */
-    @Column(name = "active_notifications", nullable = false)
-    private boolean activeNotification = true;
-
-    public boolean isActiveNotification() {
-        return activeNotification;
+    private FeatureNotificationSettings() {
     }
 
-    public void setActiveNotification(boolean activeNotification) {
-        this.activeNotification = activeNotification;
-    }
+    public static final String ACTIVE_NOTIFICATION = "active_notifications";
 
-    public FeatureNotificationSettings() {
-        this.id = FEM_NOTIFICATION_SETTINGS_ID;
-    }
+    public static final boolean DEFAULT_ACTIVE_NOTIFICATION = true;
 
-    public Long getId() {
-        return id;
-    }
+    public static final DynamicTenantSetting ACTIVE_NOTIFICATION_SETTINGS = new DynamicTenantSetting(
+            ACTIVE_NOTIFICATION,
+            "Activate notifications on feature request",
+            DEFAULT_ACTIVE_NOTIFICATION
+    );
 
-    public void setId() {
-        this.id = FEM_NOTIFICATION_SETTINGS_ID;
-    }
+    public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(
+            ACTIVE_NOTIFICATION_SETTINGS
+    );
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        FeatureNotificationSettings that = (FeatureNotificationSettings) o;
-        return activeNotification == that.activeNotification && Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, activeNotification);
-    }
 }

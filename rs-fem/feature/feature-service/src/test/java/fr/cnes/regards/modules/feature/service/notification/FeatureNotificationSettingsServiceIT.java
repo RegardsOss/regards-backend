@@ -20,22 +20,22 @@
 
 package fr.cnes.regards.modules.feature.service.notification;
 
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Before;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.settings.FeatureNotificationSettingsService;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
-import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
-import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test for {@link FeatureNotificationSettings}
@@ -44,42 +44,37 @@ import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSett
 
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_notification_settings_service_it",
-                "regards.amqp.enabled=true" })
-@ActiveProfiles(value = { "testAmqp", "nohandler", "noscheduler" })
+                "regards.amqp.enabled=true"})
+@ActiveProfiles(value = {"testAmqp", "nohandler", "noscheduler"})
 public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
-    IFeatureNotificationSettingsService notificationSettingsService;
-
-    @Autowired
-    IFeatureNotificationSettingsRepository notificationSettingsRepository;
+    FeatureNotificationSettingsService notificationSettingsService;
 
     @Autowired
     IRuntimeTenantResolver runtimeTenantResolver;
 
+    @BeforeEach
+    public void reset() throws EntityException {
+        notificationSettingsService.resetSettings();
+    }
+
     @Test
     @Purpose("Check notification settings are retrieved")
     public void testRetrieve() {
-        // init new configuration
-        FeatureNotificationSettings notificationSettings = notificationSettingsService.retrieve();
-
-        // check configuration was saved in db
-        Optional<FeatureNotificationSettings> settingsOpt = notificationSettingsRepository.findFirstBy();
-        Assert.assertTrue("Settings were not initialized properly",
-                          settingsOpt.isPresent() && notificationSettings.getId().equals(settingsOpt.get().getId()));
-        Assert.assertEquals("active_notifications was initialized with default value", notificationSettings.isActiveNotification(),
-                            settingsOpt.get().isActiveNotification());
+        Set<DynamicTenantSetting> notificationSettings = notificationSettingsService.retrieve();
+        assertEquals(1, notificationSettings.size());
+        DynamicTenantSetting setting = notificationSettings.stream().findFirst().get();
+        assertEquals(FeatureNotificationSettings.ACTIVE_NOTIFICATION, setting.getName());
+        assertEquals(FeatureNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, setting.getDefaultValue());
+        assertEquals(FeatureNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, setting.getValue());
     }
 
     @Test
     @Purpose("Check the update of existing notification settings")
-    public void testUpdate() throws EntityNotFoundException {
-        // init new configuration
-        FeatureNotificationSettings notificationSettings = notificationSettingsService.retrieve();
-
-        // Change notification to false
-        notificationSettings.setActiveNotification(false);
-        notificationSettingsService.update(notificationSettings);
-        Assert.assertEquals(false, notificationSettingsRepository.findFirstBy().get().isActiveNotification());
+    public void testUpdate() throws EntityException {
+        notificationSettingsService.setActiveNotification(false);
+        assertEquals(false, notificationSettingsService.isActiveNotification());
     }
+
 }

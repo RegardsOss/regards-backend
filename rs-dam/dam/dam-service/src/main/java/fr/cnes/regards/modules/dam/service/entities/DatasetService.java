@@ -18,26 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.web.util.UriUtils;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -51,11 +33,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRequestRepository;
-import fr.cnes.regards.modules.dam.dao.entities.ICollectionRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IDeletedEntityRepository;
+import fr.cnes.regards.modules.dam.dao.entities.*;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -63,6 +41,7 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.service.entities.visitor.SubsettingCoherenceVisitor;
+import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
@@ -72,6 +51,21 @@ import fr.cnes.regards.modules.model.service.IModelService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.web.util.UriUtils;
+
+import javax.persistence.EntityManager;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Specific EntityService for Datasets
@@ -104,13 +98,14 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
     private IModelAttrAssocService modelAttributeService;
 
     public DatasetService(IModelFinder modelFinder, IDatasetRepository repository,
-            IAttributeModelService attributeService, IModelAttrAssocService modelAttributeService,
-            IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
-            IDeletedEntityRepository deletedEntityRepository, ICollectionRepository collectionRepository,
-            EntityManager em, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
-            IOpenSearchService openSearchService, IPluginService pluginService,
-            IAbstractEntityRequestRepository abstractEntityRequestRepo) {
-        super(modelFinder, entityRepository, modelService, deletedEntityRepository, collectionRepository, repository,
+                          IAttributeModelService attributeService, IModelAttrAssocService modelAttributeService,
+                          IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
+                          IDeletedEntityRepository deletedEntityRepository, ICollectionRepository collectionRepository,
+                          EntityManager em, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
+                          IOpenSearchService openSearchService, IPluginService pluginService,
+                          IAbstractEntityRequestRepository abstractEntityRequestRepo, IDamSettingsService damSettingsService
+                          ) {
+        super(modelFinder, entityRepository, modelService, damSettingsService, deletedEntityRepository, collectionRepository, repository,
               repository, em, publisher, runtimeTenantResolver, abstractEntityRequestRepo);
         this.openSearchService = openSearchService;
         this.pluginService = pluginService;

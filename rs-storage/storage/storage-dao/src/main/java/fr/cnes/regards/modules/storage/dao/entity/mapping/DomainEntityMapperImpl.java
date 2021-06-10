@@ -1,11 +1,9 @@
 package fr.cnes.regards.modules.storage.dao.entity.mapping;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.dao.entity.download.DefaultDownloadQuotaLimitsEntity;
 import fr.cnes.regards.modules.storage.dao.entity.download.DownloadQuotaLimitsEntity;
 import fr.cnes.regards.modules.storage.dao.entity.download.UserDownloadQuotaEntity;
 import fr.cnes.regards.modules.storage.dao.entity.download.UserDownloadRateEntity;
-import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserDownloadQuota;
 import fr.cnes.regards.modules.storage.domain.database.UserDownloadRate;
@@ -59,22 +57,6 @@ public class DomainEntityMapperImpl implements DomainEntityMapper {
             limits.getId(),
             runtimeTenantResolver.getTenant(),
             limits.getEmail(),
-            limits.getMaxQuota(),
-            limits.getRateLimit()
-        );
-    }
-
-    @Override
-    public DefaultDownloadQuotaLimitsEntity toEntity(DefaultDownloadQuotaLimits limits) {
-        return new DefaultDownloadQuotaLimitsEntity(
-            limits.getMaxQuota(),
-            limits.getRateLimit()
-        );
-    }
-
-    @Override
-    public DefaultDownloadQuotaLimits toDomain(DefaultDownloadQuotaLimitsEntity limits) {
-        return new DefaultDownloadQuotaLimits(
             limits.getMaxQuota(),
             limits.getRateLimit()
         );

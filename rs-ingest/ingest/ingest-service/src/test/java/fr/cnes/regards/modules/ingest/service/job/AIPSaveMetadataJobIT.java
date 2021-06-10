@@ -20,27 +20,8 @@
 
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -49,11 +30,26 @@ import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Test for {@link AIPSaveMetadataJob}
@@ -78,7 +74,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
     private IAIPSaveMetadataRequestRepository metadataRequestRepository;
 
     @Autowired
-    private IDumpSettingsRepository dumpConfRepo;
+    private DumpSettingsService dumpSettingsService;
 
     @Autowired
     private AIPSaveMetadataService saveMetadataService;
@@ -90,9 +86,9 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
     private StorageClientMock storageClient;
 
     @Override
-    public void doInit() {
+    public void doInit() throws EntityException {
         // clear before test
-        dumpConfRepo.deleteAll();
+        dumpSettingsService.resetSettings();
 
         // dump location is in microservice workspace by default
         try {
@@ -104,7 +100,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
 
     @Test
     @Purpose("Check if the dump of AIPs is successfully created")
-    public void checkDumpSuccess() throws ExecutionException, InterruptedException {
+    public void checkDumpSuccess() throws ExecutionException, InterruptedException, EntityException {
         // add aip to db
         int nbSIP = 6;
         storageClient.setBehavior(true, true);
@@ -131,7 +127,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
                           Files.exists(this.dumpLocation) && this.dumpLocation.toFile().listFiles().length == 1);
     }
 
-    private JobInfo runSaveMetadataJob() throws ExecutionException, InterruptedException {
+    private JobInfo runSaveMetadataJob() throws ExecutionException, InterruptedException, EntityException {
         // Run Job and wait for end
         JobInfo saveMetadataJobInfo = saveMetadataService.scheduleJobs();
         if (saveMetadataJobInfo != null) {
@@ -152,8 +148,8 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
     }
 
     @Override
-    protected void doAfter() throws IOException {
-        dumpConfRepo.deleteAll();
+    protected void doAfter() throws IOException, EntityException {
+        dumpSettingsService.resetSettings();
         //clear dump location
         FileUtils.deleteDirectory(this.dumpLocation.toFile());
     }

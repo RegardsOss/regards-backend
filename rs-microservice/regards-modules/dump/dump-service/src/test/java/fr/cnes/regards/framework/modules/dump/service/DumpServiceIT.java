@@ -19,6 +19,22 @@
 
 package fr.cnes.regards.framework.modules.dump.service;
 
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.modules.dump.service.scheduler.AbstractDumpScheduler;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,21 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
 
 /**
  *
@@ -56,6 +57,9 @@ public class DumpServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private DumpService dumpService;
+
+    @MockBean
+    private AbstractDumpScheduler abstractDumpScheduler;
 
     @Value("${regards.json.dump.max.per.sub.zip}")
     private int maxFilesPerSubZip;

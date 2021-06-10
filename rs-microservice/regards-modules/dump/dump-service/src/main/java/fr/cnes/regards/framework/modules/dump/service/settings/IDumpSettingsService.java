@@ -17,35 +17,24 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.framework.modules.dump.service.settings;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
 
-/**
- * Service to handle {@link DumpSettings}
- * @author Iliana Ghazali
- */
+import java.time.OffsetDateTime;
+
+
 public interface IDumpSettingsService {
-    /**
-     * Retrieve {@link DumpSettings} from database. If they do not exist, new ones are created by default and saved in database.
-     * @return DumpSettings
-     */
-    DumpSettings retrieve();
 
-    /**
-     * Update {@link DumpSettings} with the new settings provided. If DumpSettings are not already in the database,
-     * {@link EntityNotFoundException} is thrown.
-     * @param dumpSettings new DumpSettings
-     * @return boolean if dumpSettings were updated
-     */
-    boolean update(DumpSettings dumpSettings);
+    DumpParameters getDumpParameters();
 
-    /**
-     * Reset the last dump request date by putting a null value. It is useful to recreate a complete dump.
-     */
-    void resetLastDumpDate();
+    OffsetDateTime lastDumpReqDate();
 
-    void resetSettings();
+    void setLastDumpReqDate(OffsetDateTime lastDumpReqDate) throws EntityException;
+
+    void setDumpParameters(DumpParameters dumpParameters) throws EntityException;
+
+    void resetLastDumpDate() throws EntityException;
+
 }

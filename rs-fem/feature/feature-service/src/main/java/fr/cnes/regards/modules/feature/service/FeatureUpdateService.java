@@ -360,9 +360,10 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         featureUpdateRequestRepo.saveAll(errorRequests);
 
         // if notifications are required
-        if (notificationSettingsService.retrieve().isActiveNotification()) {
-            featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequest.stream()
-                    .map(AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+        if (notificationSettingsService.isActiveNotification()) {
+            featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                successfulRequest.stream().map(AbstractFeatureRequest::getId)
+                                                        .collect(Collectors.toSet()));
         } else {
             featureUpdateRequestRepo.deleteInBatch(successfulRequest);
         }

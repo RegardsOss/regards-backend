@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.mail.internet.MimeMessage;
-
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import javax.mail.internet.MimeMessage;
 
 /**
  * @author Marc Sordi
@@ -56,11 +54,6 @@ public class FeignClientConfiguration {
     }
 
     @Bean
-    public IAccountSettingsClient accountSettingsClient() {
-        return Mockito.mock(IAccountSettingsClient.class);
-    }
-
-    @Bean
     public IProjectsClient projectsClient() {
         return Mockito.mock(IProjectsClient.class);
     }
@@ -69,5 +62,4 @@ public class FeignClientConfiguration {
     public IUserClient userClient() {
         return Mockito.mock(IUserClient.class);
     }
-
 }
