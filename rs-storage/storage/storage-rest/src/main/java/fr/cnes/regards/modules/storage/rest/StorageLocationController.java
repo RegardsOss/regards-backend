@@ -80,6 +80,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     public static final String RETRY = "/retry/{type}";
 
+    public static final String RETRY_SESSION = "/retry/{source}/{session}";
+
     private static final String REQUESTS_PATH = "/requests/{type}";
 
     public static final String UP_PATH = ID_PATH + "/up";
@@ -276,7 +278,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @param session name of the session
      * @return Void
      */
-    @RequestMapping(method = RequestMethod.GET, path = ID_PATH + FILES + RETRY)
+    @RequestMapping(method = RequestMethod.GET, path = RETRY_SESSION)
     @ResourceAccess(description = "Retry all files requests in error state for a given source and session",
             role = DefaultRole.ADMIN)
     public ResponseEntity<Void> retryErrorsBySourceAndSession(@PathVariable(name = "source") String source,
