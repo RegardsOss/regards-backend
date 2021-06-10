@@ -722,6 +722,12 @@
 				<artifactId>plugin-client</artifactId>
 				<version>${fr.cnes.regards.microservices.catalog.plugin-client.version}</version>
 			</dependency>
+			<!-- query parser utils -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.utils</groupId>
+				<artifactId>query-parser</artifactId>
+				<version>${query.parser.utils.version}</version>
+			</dependency>
 			<!-- Templates -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.templates</groupId>
