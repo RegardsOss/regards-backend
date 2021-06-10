@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -163,7 +162,7 @@ public class FileCopyRequestService {
                 notificationClient.notify(message, "File copy request refused", NotificationLevel.WARNING,
                                           DefaultRole.PROJECT_ADMIN);
             } else {
-                // Check if destination file already ecists
+                // Check if destination file already exists
                 if (refs.stream().anyMatch(r -> r.getLocation().getStorage().equals(requestDto.getStorage()))) {
                     FileReference existingfileRef = refs.stream()
                             .filter(r -> r.getLocation().getStorage().equals(requestDto.getStorage())).findFirst()
@@ -171,7 +170,7 @@ public class FileCopyRequestService {
                     String message = String.format("File to copy %s already exists for destination storage %s",
                                                    requestDto.getChecksum(), requestDto.getStorage());
                     LOGGER.debug("[COPY REQUEST] {}", message);
-                    publisher.copySuccess(existingfileRef, message, groupId, existingfileRef.getLazzyOwners());
+                    publisher.copySuccess(existingfileRef, message, groupId);
                     reqGrpService.requestSuccess(groupId, FileRequestType.COPY, requestDto.getChecksum(),
                                                  requestDto.getStorage(), requestDto.getSubDirectory(),
                                                  existingfileRef.getLazzyOwners(), existingfileRef);
@@ -249,10 +248,10 @@ public class FileCopyRequestService {
                 cacheService.delete(oCf.get());
             }
         }
-        publisher.copySuccess(newFileRef, successMessage, request.getGroupId(), Lists.newArrayList());
+        publisher.copySuccess(newFileRef, successMessage, request.getGroupId());
         reqGrpService.requestSuccess(request.getGroupId(), FileRequestType.COPY, request.getMetaInfo().getChecksum(),
-                                     request.getStorage(), request.getStorageSubDirectory(), Lists.newArrayList(),
-                                     newFileRef);
+                                     request.getStorage(), request.getStorageSubDirectory(),
+                                     newFileRef.getLazzyOwners(), newFileRef);
 
         // Delete the copy request
         copyRepository.delete(request);

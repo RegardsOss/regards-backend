@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -44,5 +46,8 @@ public interface IFileReferenceWithOwnersRepository
 
     @EntityGraph("graph.filereference.owners")
     FileReference findOneById(Long id);
+
+    @EntityGraph("graph.filereference.owners")
+    Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
 
 }
