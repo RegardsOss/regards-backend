@@ -74,7 +74,7 @@ public class ServiceManagerTest {
         final PluginMetaData fakePluginMeta = new PluginMetaData();
         fakePluginMeta.setPluginClassName("FakePlugin");
         PluginConfiguration fakePluginConf = new PluginConfiguration("First configuration", "FakePluginId");
-        fakePluginConf.setMetaData(fakePluginMeta);
+        fakePluginConf.setMetaDataAndPluginId(fakePluginMeta);
         PLUGIN_CONFIGURATIONS_WRONG_PLUGIN.add(fakePluginConf);
 
         // Thanks to mockito, we have to put plugin metadata ourselves and call PluginUtils.setup
@@ -84,7 +84,7 @@ public class ServiceManagerTest {
                 .get(ExampleOneManyPlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration exampleOneManyConf = new PluginConfiguration("First configuration",
                 exampleOneManyMeta.getPluginId());
-        exampleOneManyConf.setMetaData(exampleOneManyMeta);
+        exampleOneManyConf.setMetaDataAndPluginId(exampleOneManyMeta);
 
         PLUGIN_CONFIGURATIONS.add(exampleOneManyConf);
         ALL_VALID_PLUGIN_CONFS.add(exampleOneManyConf);
@@ -92,7 +92,7 @@ public class ServiceManagerTest {
                 .get(ExampleManyPlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration exampleManyConf = new PluginConfiguration("Second configuration",
                 exampleManyMeta.getPluginId());
-        exampleManyConf.setMetaData(exampleManyMeta);
+        exampleManyConf.setMetaDataAndPluginId(exampleManyMeta);
         PLUGIN_CONFIGURATIONS.add(exampleManyConf);
         ALL_VALID_PLUGIN_CONFS.add(exampleManyConf);
 
@@ -100,7 +100,7 @@ public class ServiceManagerTest {
                 .get(ExampleOnePlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration exampleOneConf = new PluginConfiguration("Third configuration",
                 exampleOneMeta.getPluginId());
-        exampleOneConf.setMetaData(exampleOneMeta);
+        exampleOneConf.setMetaDataAndPluginId(exampleOneMeta);
         PLUGIN_CONFIGURATIONS.add(exampleOneConf);
         ALL_VALID_PLUGIN_CONFS.add(exampleOneConf);
 
@@ -108,7 +108,7 @@ public class ServiceManagerTest {
         EXAMPLE_ONE_MANY_CONF_ALL_DS = new PluginConfiguration("First configuration",
                 Sets.newHashSet(IPluginParam.build(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM, true)),
                 exampleOneManyMeta.getPluginId());
-        EXAMPLE_ONE_MANY_CONF_ALL_DS.setMetaData(exampleOneManyMeta);
+        EXAMPLE_ONE_MANY_CONF_ALL_DS.setMetaDataAndPluginId(exampleOneManyMeta);
         ALL_VALID_PLUGIN_CONFS.add(EXAMPLE_ONE_MANY_CONF_ALL_DS);
     }
 

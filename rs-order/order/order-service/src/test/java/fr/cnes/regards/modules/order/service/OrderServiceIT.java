@@ -323,7 +323,7 @@ public class OrderServiceIT {
         FilesTask ds1SubOrder1Task = new FilesTask();
         ds1SubOrder1Task.setOwner(USER_EMAIL);
         DataFile dataFile1 = new DataFile();
-        dataFile1.setUri(new URI("staff://toto/titi/tutu"));
+        dataFile1.setUri(new URI("staff://toto/titi/tutu").toString());
         dataFile1.setDataType(DataType.RAWDATA);
         dataFile1.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
         dataFile1.setOnline(true);
@@ -338,7 +338,7 @@ public class OrderServiceIT {
         ds1SubOrder1Task.addFile(df1);
 
         DataFile dataFile2 = new DataFile();
-        dataFile2.setUri(new URI("staff://toto2/titi2/tutu2"));
+        dataFile2.setUri(new URI("staff://toto2/titi2/tutu2").toString());
         dataFile2.setOnline(false);
         dataFile2.setFilesize(1l);
         dataFile2.setFilename("tutu2");

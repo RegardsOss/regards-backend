@@ -60,7 +60,7 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGro
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupDissociationEvent;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupEvent;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupPublicEvent;
-import fr.cnes.regards.modules.model.gson.ModelGsonReadyEvent;
+import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 
 /**
  *
@@ -72,7 +72,7 @@ import fr.cnes.regards.modules.model.gson.ModelGsonReadyEvent;
  */
 @Service
 @MultitenantTransactional
-public class AccessGroupService implements ApplicationListener<ModelGsonReadyEvent>, IAccessGroupService {
+public class AccessGroupService implements ApplicationListener<ModelJsonReadyEvent>, IAccessGroupService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessGroupService.class);
 
@@ -308,7 +308,7 @@ public class AccessGroupService implements ApplicationListener<ModelGsonReadyEve
     @Override
     @Transactional(propagation = Propagation.NEVER)
     // this method is called out of context on microservice initialization
-    public void onApplicationEvent(ModelGsonReadyEvent event) {
+    public void onApplicationEvent(ModelJsonReadyEvent event) {
         subscriber.subscribeTo(ProjectUserEvent.class, new ProjectUserEventHandler());
     }
 

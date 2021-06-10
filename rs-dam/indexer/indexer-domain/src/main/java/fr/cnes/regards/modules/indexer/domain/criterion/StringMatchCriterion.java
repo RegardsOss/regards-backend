@@ -24,7 +24,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
  */
 public class StringMatchCriterion extends AbstractMatchCriterion<String> {
 
-    protected StringMatchCriterion(String name, MatchType type, String value) {
+    public StringMatchCriterion(String name, MatchType type, String value) {
         super(name, type, value);
     }
 

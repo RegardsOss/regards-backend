@@ -253,7 +253,7 @@ public interface IEsRepository {
      * @deprecated {@link #searchAllLimited(String, Class, Pageable)}
      */
     @Deprecated
-    default <T> Page<T> searchAllLimited(final String index, final Class<T> clazz, final int pageSize) {
+    default <T extends IIndexable> Page<T> searchAllLimited(final String index, final Class<T> clazz, final int pageSize) {
         return this.searchAllLimited(index, clazz, PageRequest.of(0, pageSize));
     }
 
@@ -269,7 +269,7 @@ public interface IEsRepository {
      * @deprecated indices are all single type from ES6
      */
     @Deprecated
-    <T> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest);
+    <T extends IIndexable> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest);
 
     /**
      * Searching first page of elements from index giving page size with facets.
@@ -470,7 +470,7 @@ public interface IEsRepository {
      * @param <T> document type
      * @return first result page containing max page size documents
      */
-    default <T> Page<T> multiFieldsSearch(final SearchKey<T, T> searchKey, final int pageSize, final Object value,
+    default <T extends IIndexable> Page<T> multiFieldsSearch(final SearchKey<T, T> searchKey, final int pageSize, final Object value,
             final String... fields) {
         return this.multiFieldsSearch(searchKey, PageRequest.of(0, pageSize), value, fields);
     }
@@ -485,7 +485,7 @@ public interface IEsRepository {
      * @param <T> document type
      * @return specified result page
      */
-    <T> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object value, String... fields);
+    <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object value, String... fields);
 
     /**
      * Execute specified action for all search results<br/>

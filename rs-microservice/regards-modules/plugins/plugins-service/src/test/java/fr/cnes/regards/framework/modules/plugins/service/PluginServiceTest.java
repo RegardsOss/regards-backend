@@ -188,7 +188,7 @@ public class PluginServiceTest extends PluginServiceUtility {
             final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
             aPluginConfiguration.setId(AN_ID);
             //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
-            aPluginConfiguration.setMetaData(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
+            aPluginConfiguration.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
             Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                     .thenReturn(aPluginConfiguration);
             pluginServiceMocked.deletePluginConfiguration(aPluginConfiguration.getBusinessId());
@@ -221,7 +221,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
         aPluginConfigurationWithId.setId(AN_ID);
         //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
-        aPluginConfigurationWithId.setMetaData(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
+        aPluginConfigurationWithId.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
         try {
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
 
@@ -250,7 +250,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         aPluginConfigurationWithId.setBusinessId(aPluginConfiguration.getBusinessId());
         aPluginConfigurationWithId.setId(AN_ID);
         //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
-        aPluginConfigurationWithId.setMetaData(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
+        aPluginConfigurationWithId.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
 
         final PluginConfiguration theSamePluginConfiguration = getPluginConfigurationWithParameters();
         theSamePluginConfiguration.setBusinessId(aPluginConfiguration.getBusinessId());
@@ -278,7 +278,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
         aPluginConfigurationWithId.setId(AN_ID);
         //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
-        aPluginConfigurationWithId.setMetaData(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
+        aPluginConfigurationWithId.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
 
         final PluginConfiguration theSamePluginConfiguration = getPluginConfigurationWithParameters();
 
@@ -322,7 +322,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         PluginMetaData metaData = PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID);
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
         Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                 .thenReturn(aPluginConfiguration);
@@ -351,7 +351,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
         aPluginConfiguration.setIsActive(false);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
         Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                 .thenReturn(aPluginConfiguration);
@@ -360,7 +360,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         toBeUpdated.setIsActive(true);
         toBeUpdated.setId(AN_ID);
         //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
-        toBeUpdated.setMetaData(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
+        toBeUpdated.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
         Mockito.when(pluginConfRepositoryMocked.save(toBeUpdated)).thenReturn(toBeUpdated);
 
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
@@ -435,7 +435,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
 
         pluginConfs.add(aPluginConfiguration);
@@ -464,7 +464,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
@@ -500,7 +500,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
 
         pluginConfs.add(aPluginConfiguration);
@@ -538,13 +538,13 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
         pluginConfs.add(aPluginConfiguration);
 
         PluginConfiguration conf2 = getPluginConfigurationWithParameters();
         //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
-        conf2.setMetaData(metaData);
+        conf2.setMetaDataAndPluginId(metaData);
         conf2.setVersion(metaData.getVersion());
         pluginConfs.add(conf2);
 
@@ -581,7 +581,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
 
         pluginConfs.add(aPluginConfiguration);
@@ -623,7 +623,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
 
         pluginConfs.add(aPluginConfiguration);
@@ -667,7 +667,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
@@ -701,7 +701,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithParameters());
@@ -762,13 +762,13 @@ public class PluginServiceTest extends PluginServiceUtility {
         // this conf is the most priority
         aPluginConfiguration.setPriorityOrder(1);
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
 
         final PluginConfiguration bPluginConfiguration = getPluginConfigurationWithParameters();
         bPluginConfiguration.setPriorityOrder(2);
         bPluginConfiguration.setId(1 + AN_ID);
-        bPluginConfiguration.setMetaData(metaData);
+        bPluginConfiguration.setMetaDataAndPluginId(metaData);
         bPluginConfiguration.setVersion(metaData.getVersion());
 
         pluginConfs.add(aPluginConfiguration);

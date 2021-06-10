@@ -68,7 +68,6 @@ public class FeatureEntitySpecification {
                     predicates.add(cb.equal(root.get("session"), filters.getSession()));
                 }
                 if (filters.getProviderId() != null) {
-                    predicates.add(cb.equal(root.get("providerId"), filters.getProviderId()));
                     predicates.add(cb.like(cb.lower(root.get("providerId")),
                                            selection.getFilters().getProviderId().toLowerCase() + "%"));
                 }

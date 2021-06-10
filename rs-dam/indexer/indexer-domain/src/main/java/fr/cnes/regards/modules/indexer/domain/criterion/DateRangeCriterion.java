@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public class DateRangeCriterion extends RangeCriterion<OffsetDateTime> implements ICriterion {
 
-    protected DateRangeCriterion(String name) {
+    public DateRangeCriterion(String name) {
         super(name);
     }
 

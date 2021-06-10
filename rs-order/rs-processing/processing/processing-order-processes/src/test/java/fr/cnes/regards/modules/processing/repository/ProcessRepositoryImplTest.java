@@ -77,7 +77,7 @@ public class ProcessRepositoryImplTest extends AbstractProcessingTest {
         Map<String, PluginMetaData> plugins = PluginUtils.getPlugins();
         LOGGER.info("plugins: {}", plugins);
 
-        pc.setMetaData(plugins.get("UselessProcessPlugin"));
+        pc.setMetaDataAndPluginId(plugins.get("UselessProcessPlugin"));
 
         RightsPluginConfiguration rpc = new RightsPluginConfiguration(null, pc, processBusinessId, "ADMIN", new String[]{}, true);
         rpcRepo.save(rpc);

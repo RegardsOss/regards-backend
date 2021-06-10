@@ -1,0 +1,35 @@
+{
+  "type": "COLLECTION",
+  "id": 352,
+  "ipId": "URN:AIP:COLLECTION:perf:7c310022-609a-4716-b5c7-6c3321f60bc9:V1",
+  "creationDate": "2021-04-06T07:12:19.424Z",
+  "lastUpdate": "2021-04-06T07:16:40.14Z",
+  "model": {
+    "id": 453,
+    "name": "STAC_COLLECTION_LEVEL1",
+    "description": "STAC COLLECTION LEVEL1",
+    "type": "COLLECTION"
+  },
+  "tags": [
+    "URN:AIP:COLLECTION:perf:569ee718-92ac-4f63-8a6c-c5184a39bbdd:V1"
+  ],
+  "groups": [
+    "Public"
+  ],
+  "feature": {
+    "virtualId": "URN:AIP:COLLECTION:perf:7c310022-609a-4716-b5c7-6c3321f60bc9:LAST",
+    "providerId": "STAC_COLLECTION_LEVEL1",
+    "entityType": "COLLECTION",
+    "label": "STAC COLLECTION LEVEL1",
+    "model": "STAC_COLLECTION_LEVEL1",
+    "files": {},
+    "tags": [
+      "URN:AIP:COLLECTION:perf:569ee718-92ac-4f63-8a6c-c5184a39bbdd:V1"
+    ],
+    "last": true,
+    "version": 0,
+    "id": "URN:AIP:COLLECTION:perf:7c310022-609a-4716-b5c7-6c3321f60bc9:V1",
+    "properties": {},
+    "type": "Feature"
+  }
+}

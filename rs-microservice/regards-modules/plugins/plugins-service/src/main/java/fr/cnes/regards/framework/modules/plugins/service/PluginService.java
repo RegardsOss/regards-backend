@@ -175,7 +175,7 @@ public class PluginService implements IPluginService {
         }
 
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(plgConf.getPluginId());
-        plgConf.setMetaData(pluginMeta);
+        plgConf.setMetaDataAndPluginId(pluginMeta);
         plgConf.setVersion(pluginMeta.getVersion());
 
         // Generate business id
@@ -298,7 +298,7 @@ public class PluginService implements IPluginService {
                                        plgConf.getPluginId()));
             throw new EntityNotFoundException(plgConf.getPluginId(), PluginMetaData.class);
         }
-        plgConf.setMetaData(meta);
+        plgConf.setMetaDataAndPluginId(meta);
         return plgConf;
     }
 
@@ -338,7 +338,7 @@ public class PluginService implements IPluginService {
         // Now that generic concerns on PluginConfiguration are dealt with, lets encrypt updated sensitive plugin parameter
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
-        pluginConf.setMetaData(pluginMeta);
+        pluginConf.setMetaDataAndPluginId(pluginMeta);
         for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
             IPluginParam newParam = pluginConf.getParameter(paramMeta.getName());
             IPluginParam oldParam = oldConf.getParameter(paramMeta.getName());
@@ -353,7 +353,7 @@ public class PluginService implements IPluginService {
         ensureOnlyOneConfIsActive(pluginConf);
 
         PluginConfiguration newConf = repos.save(pluginConf);
-        newConf.setMetaData(pluginMeta);
+        newConf.setMetaDataAndPluginId(pluginMeta);
 
         if (oldConfActive != newConf.isActive()) {
             // For CATALOG
@@ -449,7 +449,7 @@ public class PluginService implements IPluginService {
             if (pluginMeta == null) {
                 LOGGER.error("The pluggin {} is not provided", conf.getPluginId());
             } else if (pluginMeta.getInterfaceNames().contains(interfacePluginType.getName())) {
-                conf.setMetaData(pluginMeta);
+                conf.setMetaDataAndPluginId(pluginMeta);
                 result.add(conf);
             }
         }

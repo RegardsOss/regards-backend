@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.event.DatasetEvent;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
-import fr.cnes.regards.modules.model.gson.ModelGsonReadyEvent;
+import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 import fr.cnes.regards.modules.model.service.event.ComputedAttributeModelEvent;
 
 /**
@@ -65,7 +65,7 @@ public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
 
     @Override
     @EventListener
-    public void onApplicationReadyEvent(ModelGsonReadyEvent event) {
+    public void onApplicationReadyEvent(ModelJsonReadyEvent event) {
         subscriber.subscribeTo(AccessRightEvent.class, this);
     }
 

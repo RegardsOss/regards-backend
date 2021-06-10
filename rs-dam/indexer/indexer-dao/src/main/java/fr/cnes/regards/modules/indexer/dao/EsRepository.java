@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
 import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
+import fr.cnes.regards.modules.indexer.dao.deser.JsonDeserializeStrategy;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
@@ -64,6 +65,7 @@ import fr.cnes.regards.modules.indexer.domain.spatial.ILocalizable;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
+import io.vavr.control.Try;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -330,6 +332,8 @@ public class EsRepository implements IEsRepository {
                 }
             });
 
+    private final JsonDeserializeStrategy<IIndexable> deserializeHitsStrategy;
+
     /**
      * Constructor
      * @param gson JSon mapper bean
@@ -339,6 +343,7 @@ public class EsRepository implements IEsRepository {
             @Value("${regards.elasticsearch.address:}") String inEsAddress,
             @Value("${regards.elasticsearch.http.port}") int esPort,
             @Value("${regards.elasticsearch.http.buffer.limit:104857600}") int elasticClientBufferLimit,
+            @Autowired JsonDeserializeStrategy<IIndexable> deserStrategy,
             AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor, AttrDescToJsonMapping toMapping) {
         this.toMapping = toMapping;
         this.gson = gson;
@@ -371,6 +376,8 @@ public class EsRepository implements IEsRepository {
         } catch (IOException | RuntimeException e) {
             throw new NoNodeAvailableException("Error while pinging Elasticsearch (" + connectionInfoMessage + ")", e);
         }
+
+        this.deserializeHitsStrategy = deserStrategy;
     }
 
     /**
@@ -826,7 +833,8 @@ public class EsRepository implements IEsRepository {
             if (!response.isExists()) {
                 return null;
             }
-            return gson.fromJson(response.getSourceAsString(), clazz);
+            String sourceAsString = response.getSourceAsString();
+            return deserializeHitsStrategy.deserializeJson(sourceAsString, clazz);
         } catch (final JsonSyntaxException | IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new RsRuntimeException(e);
@@ -994,7 +1002,7 @@ public class EsRepository implements IEsRepository {
             // Scroll until no hits are returned
             do {
                 for (final SearchHit hit : scrollResp.getHits().getHits()) {
-                    action.accept(gson.fromJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
+                    action.accept(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
                 }
 
                 SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollResp.getScrollId());
@@ -1048,7 +1056,7 @@ public class EsRepository implements IEsRepository {
 
     @Override
     @Deprecated
-    public <T> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest) {
+    public <T extends IIndexable> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest) {
         try {
             final List<T> results = new ArrayList<>();
             SearchRequest request = new SearchRequest(index.toLowerCase());
@@ -1060,7 +1068,7 @@ public class EsRepository implements IEsRepository {
             SearchResponse response = client.search(request, options);
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
-                results.add(gson.fromJson(hit.getSourceAsString(), clazz));
+                results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), clazz));
             }
             return new PageImpl<>(results, pageRequest, response.getHits().getTotalHits());
         } catch (final JsonSyntaxException | IOException e) {
@@ -1236,7 +1244,7 @@ public class EsRepository implements IEsRepository {
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
                 try {
-                    results.add(gson.fromJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
+                    results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
                 } catch (JsonParseException e) {
                     LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"", hit.getId(),
                                  hit.getSourceAsString());
@@ -1976,7 +1984,7 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public <T> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object inValue,
+    public <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object inValue,
             String... fields) {
         try {
             final List<T> results = new ArrayList<>();
@@ -1999,7 +2007,7 @@ public class EsRepository implements IEsRepository {
             SearchResponse response = getSearchResponse(request);
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
-                results.add(gson.fromJson(hit.getSourceAsString(), searchKey.fromType(hit.getType())));
+                results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), searchKey.fromType(hit.getType())));
             }
             return new PageImpl<>(results, pageRequest, response.getHits().getTotalHits());
         } catch (final JsonSyntaxException | IOException e) {

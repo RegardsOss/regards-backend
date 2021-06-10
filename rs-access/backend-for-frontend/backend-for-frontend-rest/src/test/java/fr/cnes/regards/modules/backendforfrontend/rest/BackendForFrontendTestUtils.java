@@ -237,7 +237,7 @@ public class BackendForFrontendTestUtils {
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         metaData.setPluginId(SampleServicePlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration pluginConfiguration = new PluginConfiguration("conf0", metaData.getPluginId());
-        pluginConfiguration.setMetaData(metaData);
+        pluginConfiguration.setMetaDataAndPluginId(metaData);
         pluginConfiguration.setId(1L);
         PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
         PLUGIN_SERVICE_DTO_A = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
@@ -249,7 +249,7 @@ public class BackendForFrontendTestUtils {
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         metaData.setPluginId(SampleServicePlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration pluginConfiguration = new PluginConfiguration("conf1", metaData.getPluginId());
-        pluginConfiguration.setMetaData(metaData);
+        pluginConfiguration.setMetaDataAndPluginId(metaData);
         pluginConfiguration.setId(2L);
         PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
         PLUGIN_SERVICE_DTO_B = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);

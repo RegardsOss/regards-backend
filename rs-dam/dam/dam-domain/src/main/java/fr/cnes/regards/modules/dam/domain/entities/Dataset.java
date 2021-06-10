@@ -27,6 +27,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import io.vavr.control.Option;
 import org.hibernate.annotations.Type;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -34,6 +35,9 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.springframework.util.Assert;
+
+import java.util.Set;
 
 /**
  * Dataset feature decorator
@@ -98,6 +102,23 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
 
     public Dataset(Model model, String tenant, String providerId, String label) {
         super(model, new DatasetFeature(tenant, providerId, label));
+    }
+
+    public Dataset(
+            Model model,
+            DatasetFeature feature,
+            PluginConfiguration plgConfDataSource,
+            String dataModel,
+            ICriterion subsettingClause,
+            String openSearchSubsettingClause,
+            DatasetMetadata metadata
+    ) {
+        super(model, feature);
+        this.plgConfDataSource = plgConfDataSource;
+        this.dataModel = dataModel;
+        this.subsettingClause = subsettingClause;
+        this.openSearchSubsettingClause = openSearchSubsettingClause;
+        this.metadata = metadata;
     }
 
     /**
@@ -188,6 +209,6 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
     }
 
     public void setLicence(String licence) {
-        feature.setLicence(licence);
+        Option.of(feature).peek(f -> f.setLicence(licence));
     }
 }

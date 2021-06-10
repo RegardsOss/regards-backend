@@ -75,7 +75,7 @@ public class PluginServiceDtoTest {
         pluginConfiguration.setBusinessId(BUSINESS_ID);
         pluginConfiguration.setIconUrl(ICON_URL);
 
-        pluginConfiguration.setMetaData(pluginMetaData);
+        pluginConfiguration.setMetaDataAndPluginId(pluginMetaData);
 
         PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
 

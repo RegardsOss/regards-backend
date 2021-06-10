@@ -23,6 +23,7 @@ import java.util.UUID;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Specific feature properties for datasets
@@ -46,6 +47,11 @@ public class DatasetFeature extends EntityFeature {
     public DatasetFeature(String tenant, String providerId, String label) {
         super(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, tenant, UUID.randomUUID(), 1, null, null),
               providerId, EntityType.DATASET, label);
+    }
+
+    public DatasetFeature(UniformResourceName id, String providerId, String label, String licence) {
+        super(id, providerId, EntityType.DATASET, label);
+        this.licence = licence;
     }
 
     public String getLicence() {
