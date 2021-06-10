@@ -46,6 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
@@ -86,7 +87,7 @@ public class CacheService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
 
     @Value("${regards.storage.cache.schedule.purge.bulk.size:500}")
-    private static int BULK_SIZE = 500;
+    private final int BULK_SIZE = 500;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
