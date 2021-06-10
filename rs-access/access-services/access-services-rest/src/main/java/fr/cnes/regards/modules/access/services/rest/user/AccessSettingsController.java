@@ -75,6 +75,8 @@ public class AccessSettingsController implements IResourceController<DynamicTena
 
     private static final Set<String> STORAGE_PARAMETER_NAMES = Sets.newHashSet(StorageSetting.MAX_QUOTA_NAME, StorageSetting.RATE_LIMIT_NAME);
 
+    public static final String NAME_PATH = "/{name}";
+
     /**
      * Client handling CRUD operation on {@link AccessSettings}. Autowired by Spring. Must no be <code>null</code>.
      */
@@ -134,12 +136,12 @@ public class AccessSettingsController implements IResourceController<DynamicTena
     }
 
     @ResponseBody
-    @RequestMapping(method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT, path = NAME_PATH)
     @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<EntityModel<DynamicTenantSettingDto>> updateAccessSettings(@Valid @RequestBody DynamicTenantSettingDto dynamicTenantSettingDto) {
-        if(STORAGE_PARAMETER_NAMES.contains(dynamicTenantSettingDto.getName())) {
+    public ResponseEntity<EntityModel<DynamicTenantSettingDto>> updateAccessSettings(@PathVariable(name = "name") String name, @Valid @RequestBody DynamicTenantSettingDto dynamicTenantSettingDto) {
+        if(STORAGE_PARAMETER_NAMES.contains(name)) {
             ResponseEntity<EntityModel<DynamicTenantSettingDto>> storageResponse = storageSettingClient
-                    .update(dynamicTenantSettingDto.getName(), dynamicTenantSettingDto);
+                    .update(name, dynamicTenantSettingDto);
             return new ResponseEntity<>(toResource(storageResponse.getBody().getContent()), storageResponse.getStatusCode());
         } else {
             ResponseEntity<EntityModel<DynamicTenantSettingDto>> adminResponse = accessSettingsClient.update(dynamicTenantSettingDto.getName(), dynamicTenantSettingDto);

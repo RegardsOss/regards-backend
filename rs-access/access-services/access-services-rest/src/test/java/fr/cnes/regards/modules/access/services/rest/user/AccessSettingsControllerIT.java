@@ -59,7 +59,7 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void updateAccessSettings() {
-        String api = AccessSettingsController.REQUEST_MAPPING_ROOT;
+        String api = AccessSettingsController.REQUEST_MAPPING_ROOT + AccessSettingsController.NAME_PATH;
 
         DynamicTenantSettingDto dto = new DynamicTenantSettingDto<>(AccessSettings.MODE_SETTING);
 
@@ -68,6 +68,6 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
                 .expectStatusOk()
             ;
 
-        performDefaultPut(api, dto, customizer, "Failed to update access settings");
+        performDefaultPut(api, dto, customizer, "Failed to update access settings", dto.getName());
     }
 }
