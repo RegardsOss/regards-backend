@@ -64,8 +64,9 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests" }, locations = { "classpath:application-test.properties" })
+@ActiveProfiles({ "noschedule", "nojobs" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests" },
+        locations = { "classpath:application-test.properties" })
 public class FileCopyRequestServiceTest extends AbstractStorageTest {
 
     @Autowired
@@ -81,7 +82,8 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
         // we override cache setting values for tests
-        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME, Paths.get("target", "cache", getDefaultTenant()));
+        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME,
+                                           Paths.get("target", "cache", getDefaultTenant()));
     }
 
     @Test
