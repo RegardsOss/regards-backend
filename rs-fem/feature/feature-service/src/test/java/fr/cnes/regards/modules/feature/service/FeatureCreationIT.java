@@ -225,6 +225,13 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true);
         this.featureCreationService.registerRequests(events);
 
+        // Simulate all requests to scheduled
+        this.featureCreationService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+                .forEach(r -> {
+                    r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
+                    this.featureCreationRequestRepo.save(r);
+                });
+
         // Try delete all requests.
         RequestHandledResponse response = this.featureCreationService
                 .deleteRequests(FeatureRequestsSelectionDTO.build());
@@ -242,6 +249,18 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
                             response.getTotalRequested());
 
+        // Simulate all requests to error
+        this.featureCreationService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+                .forEach(r -> {
+                    r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                    this.featureCreationRequestRepo.save(r);
+                });
+
+        response = this.featureCreationService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 20 requests deleted", 20, response.getTotalHandled());
+        Assert.assertEquals("There should be 20 requests to delete", 20, response.getTotalRequested());
+
     }
 
     @Test
@@ -254,7 +273,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         // Try delete all requests.
         RequestHandledResponse response = this.featureCreationService
-                .deleteRequests(FeatureRequestsSelectionDTO.build());
+                .retryRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
                             response.getTotalHandled());
@@ -262,7 +281,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
                             response.getTotalRequested());
 
         response = this.featureCreationService
-                .deleteRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+                .retryRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests", 0,
                             response.getTotalHandled());

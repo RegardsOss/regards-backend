@@ -335,6 +335,13 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                 .registerRequests(prepareUpdateRequests(urns));
         Assert.assertFalse(results.getGranted().isEmpty());
 
+        // Simulate all requests to scheduled
+        this.featureUpdateService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+                .forEach(r -> {
+                    r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
+                    this.featureUpdateRequestRepo.save(r);
+                });
+
         // Try delete all requests.
         RequestHandledResponse response = this.featureUpdateService.deleteRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
@@ -350,6 +357,18 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                             response.getTotalHandled());
         Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
                             response.getTotalRequested());
+
+        // Simulate all requests to scheduled
+        this.featureUpdateService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+                .forEach(r -> {
+                    r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                    this.featureUpdateRequestRepo.save(r);
+                });
+
+        response = this.featureUpdateService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 20 requests deleted", 20, response.getTotalHandled());
+        Assert.assertEquals("There should be 20 requests to delete", 20, response.getTotalRequested());
 
     }
 
