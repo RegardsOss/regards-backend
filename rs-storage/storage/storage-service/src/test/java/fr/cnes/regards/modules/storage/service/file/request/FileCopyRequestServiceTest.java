@@ -64,7 +64,7 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule", "nojobs" })
+@ActiveProfiles({ "noscheduler", "nojobs" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests" },
         locations = { "classpath:application-test.properties" })
 public class FileCopyRequestServiceTest extends AbstractStorageTest {

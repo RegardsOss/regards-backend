@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.storage.domain.database.CacheFile;
  * Test class for cache service.
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests" },
         locations = { "classpath:application-test.properties" })

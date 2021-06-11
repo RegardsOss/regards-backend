@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-@Profile("!noschedule")
+@Profile("!noscheduler")
 @EnableScheduling
 public class TemporaryToponymsCleanScheduler {
 

@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
                 "regards.storage.cache.path=target/cache", "regards.storage.cache.size.limit.ko.per.tenant:10" },

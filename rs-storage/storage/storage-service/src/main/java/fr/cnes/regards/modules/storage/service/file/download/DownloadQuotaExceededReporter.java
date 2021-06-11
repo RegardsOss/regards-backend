@@ -97,11 +97,11 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
     public void init() {
         self = applicationContext.getBean(DownloadQuotaExceededReporter.class);
 
-        // start schedulers only if not in "noschedule" profile (i.e. disable schedulers for tests)
+        // start schedulers only if not in "noscheduler" profile (i.e. disable schedulers for tests)
         boolean shouldStartSchedulers =
             Arrays.stream(env.getActiveProfiles())
                 .distinct() // maybe useless but I don't trust
-                .noneMatch(profile -> profile.equals("noschedule"));
+                .noneMatch(profile -> profile.equals("noscheduler"));
         if (shouldStartSchedulers) {
             startReportSyncScheduler();
         }

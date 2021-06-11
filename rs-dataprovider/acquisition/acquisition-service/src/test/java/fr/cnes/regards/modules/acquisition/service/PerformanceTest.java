@@ -69,7 +69,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_perf_tests" })
 // locations = { "classpath:application-local.properties" })
 //@Ignore("Performances tests")

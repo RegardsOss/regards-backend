@@ -133,6 +133,16 @@ public class ParserTest {
                   Boolean.FALSE);
     }
 
+    @Test
+    public void matchingNotRulesString() throws QueryNodeException {
+        parseRule(RULE_PARSER,
+                  String.format("NOT %s.%s:\"%s\"",
+                                DATA, DATA_STRING,
+                                null),
+                  example1(),
+                  Boolean.TRUE);
+    }
+
     private void parseRule(RuleParser parser, String ruleExpression, JsonObject target, Boolean match)
             throws QueryNodeException {
         // Parse rule(s)

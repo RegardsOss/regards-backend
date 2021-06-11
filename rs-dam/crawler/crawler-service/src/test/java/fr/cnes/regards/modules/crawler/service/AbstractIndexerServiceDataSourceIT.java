@@ -77,7 +77,7 @@ import java.util.Set;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles("noschedule") // Disable scheduling, this will activate IngesterService during all tests
+@ActiveProfiles("noscheduler") // Disable scheduling, this will activate IngesterService during all tests
 @TestPropertySource(locations = { "classpath:test.properties" },
  properties = {
         //"regards.elasticsearch.deserialize.hits.strategy=GSON"
