@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.utils.parser.builder;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.AndQueryNode;
+import org.apache.lucene.queryparser.flexible.core.nodes.BooleanQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.FieldQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.ModifierQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.OrQueryNode;
@@ -48,7 +49,7 @@ public class RuleQueryTreeBuilder extends QueryTreeBuilder implements IRuleBuild
         //        setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder(finder));
         //        setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
         //        setBuilder(FuzzyQueryNode.class, new UnsupportedQueryNodeBuilder());
-        //        setBuilder(BooleanQueryNode.class, new BooleanNodeQueryBuilder());
+        setBuilder(BooleanQueryNode.class, new BooleanNodeQueryBuilder());
         setBuilder(RegexpQueryNode.class, new RegexpQueryNodeBuilder());
     }
 
