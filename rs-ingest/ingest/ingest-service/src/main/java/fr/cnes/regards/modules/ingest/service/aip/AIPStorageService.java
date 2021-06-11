@@ -109,7 +109,8 @@ public class AIPStorageService implements IAIPStorageService {
         }
         // Send reference request
         if (!filesToRefer.isEmpty()) {
-            Collection<RequestInfo> infos = storageClient.reference(filesToRefer);
+            Collection<RequestInfo> infos = storageClient
+                    .reference(filesToRefer);
             remoteStepGroupIds.addAll(infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList()));
         }
         return remoteStepGroupIds;
@@ -155,13 +156,14 @@ public class AIPStorageService implements IAIPStorageService {
                     for (StorageMetadata storage : requestedStorages) {
                         // Check if this storage contains this target type or is empty, which means
                         // this storage accepts everything
-                        if (storage.getTargetTypes().isEmpty()
-                                || storage.getTargetTypes().contains(dataObject.getRegardsDataType())) {
+                        if (storage.getTargetTypes().isEmpty() || storage.getTargetTypes()
+                                .contains(dataObject.getRegardsDataType())) {
                             FileStorageRequestDTO storageRequest = FileStorageRequestDTO
                                     .build(dataObject.getFilename(), dataObject.getChecksum(),
                                            dataObject.getAlgorithm(),
                                            representationInformation.getSyntax().getMimeType().toString(),
-                                           aip.getId().toString(), l.getUrl(), storage.getPluginBusinessId(),
+                                           aip.getId().toString(), aipEntity.getSessionOwner(), aipEntity.getSession(),
+                                           l.getUrl(), storage.getPluginBusinessId(),
                                            Optional.ofNullable(storage.getStorePath()));
                             storageRequest.withType(dataObject.getRegardsDataType().toString());
                             filesToStore.add(storageRequest);
@@ -173,7 +175,8 @@ public class AIPStorageService implements IAIPStorageService {
                     FileReferenceRequestDTO referenceRequest = FileReferenceRequestDTO
                             .build(dataObject.getFilename(), dataObject.getChecksum(), dataObject.getAlgorithm(),
                                    representationInformation.getSyntax().getMimeType().toString(),
-                                   dataObject.getFileSize(), aip.getId().toString(), l.getStorage(), l.getUrl());
+                                   dataObject.getFileSize(), aip.getId().toString(), l.getStorage(), l.getUrl(),
+                                   aipEntity.getSessionOwner(), aipEntity.getSession());
                     referenceRequest.withType(dataObject.getRegardsDataType().toString());
                     filesToRefer.add(referenceRequest);
                 }
@@ -385,13 +388,14 @@ public class AIPStorageService implements IAIPStorageService {
                     OAISDataObjectLocation loc = locationToRemove.get();
                     LOGGER.debug("Removing location {} from dataObject {} of AIP provider id {}", loc.getStorage(),
                                  dataObject.getFilename(), aip.getProviderId());
-                    filesToRemove.add(FileDeletionRequestDTO.build(dataObject.getChecksum(), loc.getStorage(),
-                                                                   aip.getAipId(), false));
+                    filesToRemove.add(FileDeletionRequestDTO
+                                              .build(dataObject.getChecksum(), loc.getStorage(), aip.getAipId(),
+                                                     aip.getSessionOwner(), aip.getSession(), false));
                     // Remove location from AIPs.
                     // If storage deletion fails, the deletion can be rerun manually from storage interface.
                     dataObject.getLocations().remove(loc);
-                    aip.getAip().withEvent(EventType.STORAGE.toString(), String
-                            .format("All files stored on location %s have been removed", loc.getStorage()));
+                    aip.getAip().withEvent(EventType.STORAGE.toString(),
+                                           String.format("All files stored on location %s have been removed", loc.getStorage()));
                 }
             }
         }

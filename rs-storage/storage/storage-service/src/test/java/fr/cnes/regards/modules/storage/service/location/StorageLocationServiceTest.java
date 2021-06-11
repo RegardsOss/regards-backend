@@ -18,30 +18,45 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storage.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeType;
 
 /**
  * Test class
@@ -78,18 +93,21 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         fileRefRepo.deleteAll();
         storageLocationRepo.deleteAll();
         storageMonitorRepo.deleteAll();
+        Mockito.clearInvocations(publisher);
         super.init();
     }
 
-    private void createFileReference(String storage, Long fileSize) {
+    private FileReference createFileReference(String storage, Long fileSize) {
         String checksum = UUID.randomUUID().toString();
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "file.test", fileSize,
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
         try {
-            fileRefService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            return fileRefService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString())
+                    ,"defaultSessionOwner", "defaultSession");
         } catch (ModuleException e) {
             Assert.fail(e.getMessage());
+            return null;
         }
     }
 
@@ -240,5 +258,129 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
         } catch (EntityNotFoundException e) {
             // Nothing to do
         }
+    }
+
+    @Test
+    @Transactional
+    @Purpose("Test if ERROR requests are to be processed after a retry. Check associated events sent.")
+    public void retryBySessionTest() {
+        String sessionOwner1 = "SOURCE 1";
+        String session1 = "SESSION 1";
+        int nbDeletionReq = 12;
+        int nbStorageReq = 10;
+        // --- INIT ---
+        // create deletion requests
+        createFileDeletionRequests(nbDeletionReq, FileRequestStatus.ERROR, sessionOwner1, session1);
+        // create storage requests
+        createFileStorageRequests(nbStorageReq, FileRequestStatus.ERROR, sessionOwner1, session1);
+
+        // --- LAUNCH RETRY ---
+        storageLocationService.retryErrorsBySourceAndSession(sessionOwner1, session1);
+
+        // --- CHECK RESULTS ---
+        // assert all requests states have changed
+        // deletion requests
+        List<FileDeletionRequest> updatedDeletionRequests = this.fileDeletionRequestRepo.findAll();
+        updatedDeletionRequests.forEach(req -> Assert
+                .assertEquals("Request state should have been updated for retry", FileRequestStatus.TO_DO,
+                              req.getStatus()));
+        // storage requests
+        List<FileStorageRequest> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
+        updatedStorageRequests.forEach(req -> Assert
+                .assertEquals("Request state should have been updated for retry", FileRequestStatus.TO_DO,
+                              req.getStatus()));
+
+        // Simulate events and check if they are correctly sent
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 4, stepEventList.size());
+        checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REQUESTS_ERRORS, StepPropertyEventTypeEnum.DEC,
+                       sessionOwner1, session1, String.valueOf(nbDeletionReq));
+        checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, sessionOwner1, session1, String.valueOf(nbDeletionReq));
+        checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.REQUESTS_ERRORS, StepPropertyEventTypeEnum.DEC,
+                       sessionOwner1, session1, String.valueOf(nbStorageReq));
+        checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, sessionOwner1, session1, String.valueOf(nbStorageReq));
+    }
+
+    @Test
+    @Transactional
+    @Purpose("Test if requests not in ERROR state are unchanged after a retry.")
+    public void retryBySessionTestNoChange() {
+        String sessionOwner1 = "SOURCE 1";
+        String session1 = "SESSION 1";
+        int nbDeletionReq = 12;
+        int nbStorageReq = 10;
+        // --- INIT ---
+        // create deletion requests
+        createFileDeletionRequests(nbDeletionReq, FileRequestStatus.DELAYED, sessionOwner1, session1);
+        // create storage requests
+        createFileStorageRequests(nbStorageReq, FileRequestStatus.PENDING, sessionOwner1, session1);
+
+        // --- LAUNCH RETRY ---
+        storageLocationService.retryErrorsBySourceAndSession(sessionOwner1, session1);
+
+        // --- CHECK RESULTS ---
+        // assert all requests states are not changed
+        // deletion requests
+        List<FileDeletionRequest> updatedDeletionRequests = this.fileDeletionRequestRepo.findAll();
+        updatedDeletionRequests.forEach(req -> Assert
+                .assertEquals("Request state should be in the same state", FileRequestStatus.DELAYED,
+                              req.getStatus()));
+        // storage requests
+        List<FileStorageRequest> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
+        updatedStorageRequests.forEach(req -> Assert
+                .assertEquals("Request state should be in the same state", FileRequestStatus.PENDING,
+                              req.getStatus()));
+
+        // Simulate events and check if they no StepPropertyUpdateRequestEvents were sent as requests are unchanged
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertTrue("Unexpected number of StepPropertyUpdateRequestEvents", stepEventList.isEmpty());
+    }
+
+
+    private List<FileDeletionRequest> createFileDeletionRequests(int nbRequests, FileRequestStatus requestStatus,
+            String sessionOwner, String session) {
+        List<FileDeletionRequest> createdDeletionRequests = new ArrayList<>();
+        // init parameters
+        // create requests
+        for (int i = 0; i < nbRequests; i++) {
+            // create file reference
+            FileDeletionRequest request = new FileDeletionRequest(createFileReference("LOCAL", 1024L),
+                                                                  true, UUID.randomUUID().toString(), requestStatus,
+                                                                  sessionOwner, session);
+            createdDeletionRequests.add(request);
+        }
+        return this.fileDeletionRequestRepo.saveAll(createdDeletionRequests);
+    }
+
+    /**
+     * Method to create FileStorageRequests for test
+     */
+    private List<FileStorageRequest> createFileStorageRequests(int nbRequests, FileRequestStatus requestStatus,
+            String sessionOwner, String session) {
+        List<FileStorageRequest> createdStorageRequests = new ArrayList<>();
+        // init parameters
+        String owner = "test";
+        String checksum = "2468";
+        String algorithm = "dynamic";
+        String fileName = "randomFile.test";
+        Long fileSize = 20L;
+        MimeType mimeType = MediaType.IMAGE_PNG;
+        FileReferenceMetaInfo metaInfos = new FileReferenceMetaInfo(checksum, algorithm, fileName, fileSize, mimeType);
+        String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath().toString();
+        // create requests
+        for (int i = 0; i < nbRequests; i++) {
+            FileStorageRequest request = new FileStorageRequest(owner, metaInfos, originUrl, "storage-" + i,
+                                                                Optional.empty(),
+                                                                UUID.randomUUID().toString(), sessionOwner, session);
+            request.setStatus(requestStatus);
+            createdStorageRequests.add(request);
+        }
+        return this.fileStorageRequestRepo.saveAll(createdStorageRequests);
     }
 }

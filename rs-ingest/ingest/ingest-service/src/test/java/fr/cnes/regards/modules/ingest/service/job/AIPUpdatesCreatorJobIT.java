@@ -18,28 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
@@ -53,8 +34,20 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.sessionmanager.client.SessionNotificationPublisher;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Léo Mieulet
@@ -69,9 +62,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateRunnerJobTest.class);
-
-    @Autowired
-    private SessionNotificationPublisher sessionNotifier;
 
     @Autowired
     private StorageClientMock storageClient;
@@ -108,11 +98,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     private static final String SESSION_0 = OffsetDateTime.now().toString();
 
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
-
-    @Override
-    protected void doAfter() throws Exception {
-        sessionNotifier.debugSession();
-    }
 
     public void initData() {
 

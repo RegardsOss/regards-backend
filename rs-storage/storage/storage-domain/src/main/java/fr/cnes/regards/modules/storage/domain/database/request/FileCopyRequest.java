@@ -70,12 +70,19 @@ public class FileCopyRequest {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private final OffsetDateTime creationDate;
 
+    @Column(name = "session_owner")
+    private String sessionOwner;
+
+    @Column(name = "session_name")
+    private String session;
+
     public FileCopyRequest() {
         super();
         this.creationDate = OffsetDateTime.now();
     }
 
-    public FileCopyRequest(String groupId, FileReferenceMetaInfo metaInfo, String storageSubDirectory, String storage) {
+    public FileCopyRequest(String groupId, FileReferenceMetaInfo metaInfo, String storageSubDirectory, String storage,
+            String sessionOwner, String session) {
         super();
         this.groupId = groupId;
         this.metaInfo = metaInfo;
@@ -83,6 +90,8 @@ public class FileCopyRequest {
         this.storage = storage;
         this.status = FileRequestStatus.TO_DO;
         this.creationDate = OffsetDateTime.now();
+        this.sessionOwner = sessionOwner;
+        this.session = session;
     }
 
     public Long getId() {
@@ -145,4 +154,19 @@ public class FileCopyRequest {
         this.metaInfo = metaInfo;
     }
 
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public void setSessionOwner(String sessionOwner) {
+        this.sessionOwner = sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
+    }
 }

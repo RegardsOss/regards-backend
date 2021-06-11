@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
+import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
+import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -32,7 +34,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
@@ -114,6 +118,12 @@ public class StorageLocationService {
     private StorageLocationConfigurationService pLocationConfService;
 
     @Autowired
+    private IFileDeletetionRequestRepository deletionReqRepo;
+
+    @Autowired
+    private IFileStorageRequestRepository storageReqRepo;
+
+    @Autowired
     private CacheScheduler cacheScheduler;
 
     @Value("${regards.storage.data.storage.threshold.percent:70}")
@@ -121,6 +131,9 @@ public class StorageLocationService {
 
     @Value("${regards.storage.data.storage.critical.threshold.percent:90}")
     private Integer criticalThreshold;
+
+    @Value("${regards.storage.requests.retry.page:1000}")
+    private int pageRetrySize;
 
     public Optional<StorageLocation> search(String storage) {
         return storageLocationRepo.findByName(storage);
@@ -303,7 +316,7 @@ public class StorageLocationService {
 
     /**
      * Delete the given storage location informations. <br/>
-     * Files reference are not deleted, to do so, use {@link #deleteFiles(String, Boolean)}
+     * Files reference are not deleted, to do so, use {@link #deleteFiles(String, Boolean, String, String)}
      * @param storageLocationId
      * @throws EntityNotFoundException
      */
@@ -327,13 +340,15 @@ public class StorageLocationService {
      * Delete all referenced files of the give storage location
      * @param storageLocationId
      * @param forceDelete remove reference if physical file deletion fails.
+     * @param sessionOwner the user who has requested the deletion of files
+     * @param session tags the deletion files requests with a session name
      * @throws ModuleException
      */
-    public void deleteFiles(String storageLocationId, Boolean forceDelete) throws ModuleException {
+    public void deleteFiles(String storageLocationId, Boolean forceDelete, String sessionOwner, String session) throws ModuleException {
         if (storageLocationId.equals(CacheService.CACHE_NAME)) {
             cacheScheduler.cleanCache();
         } else {
-            deletionService.scheduleJob(storageLocationId, forceDelete);
+            deletionService.scheduleJob(storageLocationId, forceDelete, sessionOwner, session);
         }
     }
 
@@ -345,8 +360,10 @@ public class StorageLocationService {
      * @param destinationPath
      */
     public void copyFiles(String storageLocationId, String sourcePath, String destinationStorageId,
-            Optional<String> destinationPath, Collection<String> types) {
-        copyService.scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath, types);
+            Optional<String> destinationPath, Collection<String> types, String sessionOwner, String session) {
+        copyService
+                .scheduleJob(storageLocationId, sourcePath, destinationStorageId, destinationPath, types, sessionOwner,
+                             session);
     }
 
     /**
@@ -371,6 +388,40 @@ public class StorageLocationService {
                 throw new EntityOperationForbiddenException(storageLocationId, StorageLocation.class,
                         String.format("Retry for type %s is forbidden", type));
         }
+    }
+
+    /**
+     * Retry requests in error for a given source and session. Only requests of type
+     * {@link FileRequestType#DELETION} and {@link FileRequestType#STORAGE} are retried.
+     *
+     * @param source  origin of the requests, also called sessionOwner
+     * @param session group name which was given during the processing of the requests
+     */
+    public void retryErrorsBySourceAndSession(String source, String session) {
+        // CASE DELETION REQUESTS, retry them all
+        Pageable pageToRequest = PageRequest.of(0, pageRetrySize, Sort.by("id"));
+        Page<FileDeletionRequest> deletionReqPage;
+        do {
+            deletionReqPage = this.deletionReqRepo
+                    .findByStatusAndSessionOwnerAndSession(FileRequestStatus.ERROR, source, session, pageToRequest);
+            List<FileDeletionRequest> deletionReqList = deletionReqPage.getContent();
+            // update all requests status and decrement errors to the session agent
+            if (!deletionReqList.isEmpty()) {
+                this.deletionReqService.retryBySession(deletionReqList, source, session);
+            }
+        } while (deletionReqPage.hasNext());
+
+        // CASE STORAGE REQUESTS, retry them all
+        Page<FileStorageRequest> storageReqPage;
+        do {
+            storageReqPage = this.storageReqRepo
+                    .findByStatusAndSessionOwnerAndSession(FileRequestStatus.ERROR, source, session, pageToRequest);
+            List<FileStorageRequest> storageReqList = storageReqPage.getContent();
+            // update all requests status and decrement errors to the session agent
+            if (!storageReqList.isEmpty()) {
+                this.storageService.retryBySession(storageReqList, source, session);
+            }
+        } while (deletionReqPage.hasNext());
     }
 
     /**
@@ -485,5 +536,4 @@ public class StorageLocationService {
         return FileRequestInfoDTO.build(request.getId(), fileName, FileRequestType.DELETION, request.getStatus(),
                                         request.getErrorCause());
     }
-
 }

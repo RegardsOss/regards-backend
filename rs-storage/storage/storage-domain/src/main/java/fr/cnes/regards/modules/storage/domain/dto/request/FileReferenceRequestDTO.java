@@ -75,6 +75,10 @@ public class FileReferenceRequestDTO {
 
     private String type;
 
+    private String sessionOwner;
+
+    private String session;
+
     public String getFileName() {
         return fileName;
     }
@@ -119,8 +123,16 @@ public class FileReferenceRequestDTO {
         return width;
     }
 
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
     public static FileReferenceRequestDTO build(String fileName, String checksum, String algorithm, String mimeType,
-            Long fileSize, String owner, String storage, String url) {
+            Long fileSize, String owner, String storage, String url, String sessionOwner, String session) {
 
         Assert.notNull(fileName, "File name is mandatory.");
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -140,6 +152,8 @@ public class FileReferenceRequestDTO {
         request.owner = owner;
         request.storage = storage;
         request.url = url;
+        request.sessionOwner = sessionOwner;
+        request.session = session;
         return request;
     }
 
@@ -184,7 +198,9 @@ public class FileReferenceRequestDTO {
         String sto = (storage != null ? "storage=" + storage + ", " : "");
         String u = (url != null ? "url=" + url + ", " : "");
         String t = (type != null ? "type=" + type : "");
-        return "FileReferenceRequestDTO [" + fn + cs + algo + mt + fs + h + w + ow + sto + u + t + "]";
+        String so = (sessionOwner != null ? "sessionOwner=" + sessionOwner : "");
+        String s = (session != null ? "session=" + session : "");
+        return "FileReferenceRequestDTO [" + fn + cs + algo + mt + fs + h + w + ow + sto + u + t + so + s + "]";
     }
 
 }

@@ -156,6 +156,8 @@ public class StoragePlugin implements IStorageService {
                 file.getDigestAlgorithm(),
                 file.getMimeType().toString(),
                 urn.toString(),
+                null, 
+                null,
                 String.format(URI_TEMPLATE, file.getUri(), this.tenantResolver.getTenant()),
                 damSettingsService.getStorageLocation(),
                 Optional.ofNullable(damSettingsService.getStorageSubDirectory())
@@ -167,6 +169,8 @@ public class StoragePlugin implements IStorageService {
                 file.getChecksum(),
                 damSettingsService.getStorageLocation(),
                 urn,
+                null,
+                null,
                 false
         );
     }

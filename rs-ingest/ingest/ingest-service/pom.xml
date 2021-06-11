@@ -44,10 +44,6 @@
 			<artifactId>dam-dto</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.session-manager</groupId>
-			<artifactId>session-manager-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>module-regards</artifactId>
 		</dependency>
@@ -93,6 +89,16 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.notifier</groupId>
 			<artifactId>notifier-client</artifactId>
+		</dependency>
+
+		<!-- session handling -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+			<artifactId>session-agent-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+			<artifactId>session-agent-service</artifactId>
 		</dependency>
 		<!-- dump dependency -->
 		<dependency>

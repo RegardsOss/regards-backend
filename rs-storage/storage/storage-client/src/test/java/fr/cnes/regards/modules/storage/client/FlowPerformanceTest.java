@@ -146,23 +146,26 @@ public class FlowPerformanceTest extends AbstractRegardsTransactionalIT {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 5000; i++) {
             String newOwner = "owner-" + UUID.randomUUID().toString();
+            String sessionOwner = "source-" + i;
+            String session = "session-" + i;
+
             Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
             requests.add(FileReferenceRequestDTO.build("quicklook.1-" + i, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.2-" + i, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.3-" + i, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.4-" + i, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             // Create a new bus message File reference request
             requests.add(FileReferenceRequestDTO.build("file.name-" + i, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/file.name"));
+                                                       "file://storage/location/file.name", sessionOwner, session));
             nbRrequests++;
             client.reference(requests);
             LOGGER.info(" {} requests sent ....", nbRrequests);

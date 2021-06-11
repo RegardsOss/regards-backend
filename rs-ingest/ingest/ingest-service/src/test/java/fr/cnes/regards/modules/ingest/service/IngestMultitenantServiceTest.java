@@ -24,6 +24,9 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.SessionDeleteEventHandler;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.SourceDeleteEventHandler;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.*;
@@ -42,6 +45,11 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomCategories;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSession;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSessionOwner;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomStorage;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomTags;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 import fr.cnes.regards.modules.ingest.service.flow.IngestRequestFlowHandler;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
@@ -152,13 +160,18 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     public void after() throws Exception {
         // unsubscribe from AMQP queues
         ingestServiceTest.clear();
-        // clean AMQP queues and repositories
-        ingestServiceTest.init();
-        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        clearQueues();
+
         // override this method to custom action performed after
         doAfter();
     }
 
+    private void clearQueues() {
+        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        ingestServiceTest.cleanAMQPQueues(SourceDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        ingestServiceTest.cleanAMQPQueues(SessionDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        ingestServiceTest.cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+    }
     /**
      * Custom test cleaning to override
      * @throws Exception

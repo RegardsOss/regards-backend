@@ -69,6 +69,14 @@ public final class FeatureRequestSpecificationsHelper {
             if (selection.getFilters().getState() != null) {
                 predicates.add(cb.equal(root.get("state"), selection.getFilters().getState()));
             }
+            if ((selection.getFilters().getSteps() != null) && !selection.getFilters().getSteps().isEmpty()) {
+                Set<Predicate> stepsPredicates = Sets.newHashSet();
+                selection.getFilters().getSteps()
+                        .forEach(step -> stepsPredicates.add(cb.equal(root.get("step"), step)));
+                if (!stepsPredicates.isEmpty()) {
+                    predicates.add(cb.or(stepsPredicates.toArray(new Predicate[stepsPredicates.size()])));
+                }
+            }
             // Some filters are not provided on request itself, we have to join with assocciated feature by urn if present
             if (searchFiltersFromAssociatedFeature) {
                 if ((selection.getFilters().getProviderId() != null)) {
@@ -94,16 +102,15 @@ public final class FeatureRequestSpecificationsHelper {
                     case EXCLUDE:
                         selection.getRequestIds()
                                 .forEach(requestId -> idsPredicates.add(cb.notEqual(root.get("id"), requestId)));
+                        predicates.add(cb.and(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
                         break;
                     case INCLUDE:
                         selection.getRequestIds()
                                 .forEach(requestId -> idsPredicates.add(cb.equal(root.get("id"), requestId)));
+                        predicates.add(cb.or(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
                         break;
                     default:
                         break;
-                }
-                if (!idsPredicates.isEmpty()) {
-                    predicates.add(cb.and(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
                 }
             }
         }

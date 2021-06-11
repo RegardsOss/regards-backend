@@ -148,6 +148,10 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
     private final Set<String> referenceFileChecksums = Sets.newHashSet();
 
+    private static final  String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
+
     @Before
     public void init() throws IOException, ModuleException {
         // simulateApplicationReadyEvent();
@@ -212,9 +216,10 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
         for (int i = 0; i < (StorageFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
             files.add(FileStorageRequestDTO
-                    .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                           new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF,
-                           null));
+                              .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream",
+                                     "owner", SESSION_OWNER, SESSION,
+                                     new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
+                                     ONLINE_CONF, null));
         }
         Collection<RequestInfo> infos = client.store(files);
         // Wait for storage ends
@@ -249,15 +254,19 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         for (Path file : filesToStore) {
             cpt++;
             String owner = "owner-" + cpt;
+            String sessionOwner = "SOURCE " + cpt;
             Set<FileStorageRequestDTO> files = Sets.newHashSet();
             String cs = ChecksumUtils.computeHexChecksum(file, "MD5");
             files.add(FileStorageRequestDTO
-                    .build(file.getFileName().toString(), cs, "MD5", "application/octet-stream", owner,
-                           (new URL("file", null, file.toAbsolutePath().toString())).toString(), ONLINE_CONF, null));
+                              .build(file.getFileName().toString(), cs, "MD5", "application/octet-stream", owner,
+                                     sessionOwner, SESSION,
+                                     (new URL("file", null, file.toAbsolutePath().toString())).toString(), ONLINE_CONF,
+                                     null));
             files.add(FileStorageRequestDTO
-                    .build(fileCommon.getFileName().toString(), csCommon, "MD5", "application/octet-stream", owner,
-                           (new URL("file", null, fileCommon.toAbsolutePath().toString())).toString(), ONLINE_CONF,
-                           null));
+                              .build(fileCommon.getFileName().toString(), csCommon, "MD5", "application/octet-stream",
+                                     owner, sessionOwner, SESSION,
+                                     (new URL("file", null, fileCommon.toAbsolutePath().toString())).toString(),
+                                     ONLINE_CONF, null));
             client.store(files);
         }
 
@@ -275,22 +284,26 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         String cs3 = UUID.randomUUID().toString();
         String cs4 = UUID.randomUUID().toString();
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
-        files.add(FileStorageRequestDTO.build("file.test", cs1, "UUID", "application/octet-stream", "owner",
-                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
-                                              ONLINE_CONF, null));
-        files.add(FileStorageRequestDTO.build("file2.test", cs2, "UUID", "application/octet-stream", "owner",
-                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
-                                              ONLINE_CONF, null));
+        files.add(FileStorageRequestDTO
+                          .build("file.test", cs1, "UUID", "application/octet-stream", "owner", SESSION_OWNER, SESSION,
+                                 new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF,
+                                 null));
+        files.add(FileStorageRequestDTO
+                          .build("file2.test", cs2, "UUID", "application/octet-stream", "owner", SESSION_OWNER, SESSION,
+                                 new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF,
+                                 null));
         files.add(FileStorageRequestDTO.build("restoError.file3.test", cs3, "UUID", "application/octet-stream", "owner",
+                                              SESSION_OWNER, SESSION,
                                               new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               NEARLINE_CONF, null));
-        files.add(FileStorageRequestDTO.build("file4.test", cs4, "UUID", "application/octet-stream", "owner",
-                                              new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
-                                              NEARLINE_CONF, null));
+        files.add(FileStorageRequestDTO
+                          .build("file4.test", cs4, "UUID", "application/octet-stream", "owner", SESSION_OWNER, SESSION,
+                                 new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
+                                 NEARLINE_CONF, null));
 
         files.add(FileStorageRequestDTO.build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_NAME,
                                               AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM, "UUID",
-                                              "application/octet-stream", "owner",
+                                              "application/octet-stream", "owner", SESSION_OWNER, SESSION,
                                               new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(),
                                               NEARLINE_CONF, null));
 
@@ -322,9 +335,10 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     @Test
     public void storeError_unknownStorage() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        RequestInfo info = client.store(FileStorageRequestDTO
-                .build("file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), "somewhere", null));
+        RequestInfo info = client.store(FileStorageRequestDTO.build("file.test", UUID.randomUUID().toString(), "UUID",
+                                                                    "application/octet-stream", "owner", SESSION_OWNER,
+                                                                    SESSION, new URL("file", null, fileToStore.toFile()
+                        .getAbsolutePath()).toString(), "somewhere", null));
 
         waitRequestEnds(1, 60);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
@@ -336,8 +350,10 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     public void storeError_storagePluginError() throws MalformedURLException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(FileStorageRequestDTO
-                .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
+                                                .build("error.file.test", UUID.randomUUID().toString(), "UUID",
+                                                       "application/octet-stream", "owner", SESSION_OWNER, SESSION,
+                                                       new URL("file", null, fileToStore.toFile().getAbsolutePath())
+                                                               .toString(), ONLINE_CONF, null));
 
         waitRequestEnds(1, 60);
         Assert.assertTrue("Request should be successful", listener.getGranted().contains(info));
@@ -350,11 +366,15 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         // Test a request with one file success and one file error
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
         files.add(FileStorageRequestDTO
-                .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
+                          .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream",
+                                 "owner", SESSION_OWNER, SESSION,
+                                 new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF,
+                                 null));
         files.add(FileStorageRequestDTO
-                .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
+                          .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream",
+                                 "owner", SESSION_OWNER, SESSION,
+                                 new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF,
+                                 null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Collection<RequestInfo> infos = client.store(files);
         Assert.assertEquals(1, infos.size());
@@ -371,11 +391,15 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     public void storeRetry() throws MalformedURLException, InterruptedException {
         Set<FileStorageRequestDTO> files = Sets.newHashSet();
         files.add(FileStorageRequestDTO
-                .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
+                          .build("error.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream",
+                                 "owner", SESSION_OWNER, SESSION,
+                                 new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF,
+                                 null));
         files.add(FileStorageRequestDTO
-                .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream", "owner",
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
+                          .build("ok.file.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream",
+                                 "owner", SESSION_OWNER, SESSION,
+                                 new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF,
+                                 null));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Collection<RequestInfo> infos = client.store(files);
         Assert.assertEquals(1, infos.size());
@@ -402,9 +426,9 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     public void referenceWithMultipleGroups() throws InterruptedException {
         Set<FileReferenceRequestDTO> files = Sets.newHashSet();
         for (int i = 0; i < (ReferenceFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
-            files.add(FileReferenceRequestDTO.build("file1.test", UUID.randomUUID().toString(), "UUID",
-                                                    "application/octet-stream", 10L, "owner", "somewhere",
-                                                    "file://here/file1.test"));
+            files.add(FileReferenceRequestDTO
+                              .build("file1.test", UUID.randomUUID().toString(), "UUID", "application/octet-stream",
+                                     10L, "owner", "somewhere", "file://here/file1.test", "source1", "session1"));
         }
         Collection<RequestInfo> infos = client.reference(files);
         Assert.assertEquals("There should be two requests groups", 2, infos.size());
@@ -432,18 +456,23 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     @Test
     public void referenceFile() throws InterruptedException {
         String owner = "refe-test";
+        String sessionOwner = "source1";
+        String session = "session1";
         String storage = "somewhere";
         String baseURl = "file://here/it/is/";
         String cs1 = UUID.randomUUID().toString();
         String cs2 = UUID.randomUUID().toString();
         String cs3 = UUID.randomUUID().toString();
         Set<FileReferenceRequestDTO> files = Sets.newHashSet();
-        files.add(FileReferenceRequestDTO.build("file1.test", cs1, "UUID", "application/octet-stream", 10L, owner,
-                                                storage, baseURl + "file1.test"));
-        files.add(FileReferenceRequestDTO.build("file2.test", cs2, "UUID", "application/octet-stream", 10L, owner,
-                                                storage, baseURl + "file2.test"));
-        files.add(FileReferenceRequestDTO.build("file3.test", cs3, "UUID", "application/octet-stream", 10L, owner,
-                                                storage, baseURl + "file3.test"));
+        files.add(FileReferenceRequestDTO
+                          .build("file1.test", cs1, "UUID", "application/octet-stream", 10L, owner, storage,
+                                 baseURl + "file1.test",sessionOwner, session));
+        files.add(FileReferenceRequestDTO
+                          .build("file2.test", cs2, "UUID", "application/octet-stream", 10L, owner, storage,
+                                 baseURl + "file2.test", sessionOwner, session));
+        files.add(FileReferenceRequestDTO
+                          .build("file3.test", cs3, "UUID", "application/octet-stream", 10L, owner, storage,
+                                 baseURl + "file3.test", sessionOwner, session));
 
         Collection<RequestInfo> infos = client.reference(files);
         Assert.assertEquals(1, infos.size());
@@ -466,8 +495,10 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         String owner = "delete-test";
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         RequestInfo info = client.store(FileStorageRequestDTO
-                .build("ok.file.test", checksum, "UUID", "application/octet-stream", owner,
-                       new URL("file", null, fileToStore.toFile().getAbsolutePath()).toString(), ONLINE_CONF, null));
+                                                .build("ok.file.test", checksum, "UUID", "application/octet-stream",
+                                                       owner, SESSION_OWNER, SESSION,
+                                                       new URL("file", null, fileToStore.toFile().getAbsolutePath())
+                                                               .toString(), ONLINE_CONF, null));
         waitRequestEnds(1, 60);
 
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(info));
@@ -477,7 +508,8 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         listener.reset();
 
         // Delete it
-        RequestInfo deleteInfo = client.delete(FileDeletionRequestDTO.build(checksum, ONLINE_CONF, owner, false));
+        RequestInfo deleteInfo = client
+                .delete(FileDeletionRequestDTO.build(checksum, ONLINE_CONF, owner, SESSION_OWNER, SESSION, false));
 
         waitRequestEnds(1, 60);
         Assert.assertTrue("Request should be granted", listener.getGranted().contains(deleteInfo));
@@ -490,7 +522,8 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
     public void deleteWithMultipleGroups() throws InterruptedException {
         Set<FileDeletionRequestDTO> files = Sets.newHashSet();
         for (int i = 0; i < (DeletionFlowItem.MAX_REQUEST_PER_GROUP + 1); i++) {
-            files.add(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), ONLINE_CONF, "owner", false));
+            files.add(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), ONLINE_CONF, "owner",
+                                                   SESSION_OWNER, SESSION, false));
         }
         Collection<RequestInfo> infos = client.delete(files);
         Assert.assertEquals("There should be two requests groups", 2, infos.size());
@@ -643,7 +676,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         listener.reset();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileCopyRequestDTO> requests = restorableFileChecksums.stream()
-                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
+                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2, SESSION_OWNER, SESSION)).collect(Collectors.toSet());
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -669,7 +702,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO
-                .build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM, ONLINE_CONF));
+                .build(AvailabilityUpdateCustomTestAction.FILE_TO_UPDATE_CHECKSUM, ONLINE_CONF, SESSION_OWNER, SESSION));
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();
@@ -689,7 +722,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
         listener.reset();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<FileCopyRequestDTO> requests = storedFileChecksums.stream()
-                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2)).collect(Collectors.toSet());
+                .map(f -> FileCopyRequestDTO.build(f, NEARLINE_CONF_2, SESSION_OWNER, SESSION)).collect(Collectors.toSet());
         Collection<RequestInfo> infos = client.copy(requests);
         Assert.assertEquals(1, infos.size());
         RequestInfo info = infos.stream().findFirst().get();

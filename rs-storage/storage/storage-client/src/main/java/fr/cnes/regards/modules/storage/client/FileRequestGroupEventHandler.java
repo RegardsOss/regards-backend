@@ -197,6 +197,7 @@ public class FileRequestGroupEventHandler
             listener.onAvailabilityError(availableErrors);
         }
         if (!deleted.isEmpty()) {
+            //TODO :
             listener.onDeletionSuccess(deleted);
         }
         if (!deletionErrors.isEmpty()) {

@@ -68,6 +68,10 @@ import io.vavr.control.Try;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests" }, locations = { "classpath:application-test.properties" })
 public class FileDownloadServiceTest extends AbstractStorageTest {
 
+    private static final  String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
+
     @Autowired
     private IDynamicTenantSettingService dynamicTenantSettingService;
 
@@ -88,7 +92,7 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
                                                    fileRef.getLazzyOwners().stream().findFirst().get(),
                                                    fileRef.getMetaInfo().getFileName(),
                                                    ONLINE_CONF_LABEL_WITHOUT_DELETE, Optional.empty(),
-                                                   Optional.empty());
+                                                   Optional.empty(), SESSION_OWNER, SESSION);
         downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
         // there should not be any exception as the file is at the same time online and nearline
     }
@@ -102,7 +106,8 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     @Test
     public void downloadFileReferenceOffLine() {
         FileReference fileRef = this
-                .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere").get();
+                .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere", "source1",
+                               "session1").get();
         Try<Callable<DownloadableFile>> result = Try
                 .of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()));
         assertTrue("File should not be available for download as it is not handled by a known storage location plugin",
@@ -188,6 +193,11 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     public void downloadFileTypeDependsOnFileReferenceType() {
         Random r = new Random();
         DataType[] typesCache = DataType.values();
+        IntStream.range(0, 100).forEach(i -> Try.run(() -> {
+            DataType type = typesCache[r.nextInt(typesCache.length)];
+            FileReference fileRef = generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test",
+                                                                ONLINE_CONF_LABEL, Optional.empty(),
+                                                                Optional.of(type.name()), SESSION_OWNER, SESSION);
         IntStream.range(0, 100)
             .forEach(i -> Try.run(() -> {
                 DataType type = typesCache[r.nextInt(typesCache.length)];

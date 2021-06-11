@@ -77,8 +77,12 @@ public class FileStorageRequestDTO {
     @Nullable
     private String subDirectory;
 
+    private String sessionOwner;
+
+    private String session;
+
     public static FileStorageRequestDTO build(String fileName, String checksum, String algorithm, String mimeType,
-            String owner, String originUrl, String storage, Optional<String> subDirectory) {
+            String owner, String sessionOwner, String session, String originUrl, String storage, Optional<String> subDirectory) {
 
         Assert.notNull(fileName, "File name is mandatory.");
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -96,6 +100,9 @@ public class FileStorageRequestDTO {
         request.owner = owner;
         request.originUrl = originUrl;
         request.storage = storage;
+        request.sessionOwner = sessionOwner;
+        request.session = session;
+
         if (subDirectory != null) {
             request.subDirectory = subDirectory.orElse(null);
         }
@@ -157,6 +164,14 @@ public class FileStorageRequestDTO {
         return type;
     }
 
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
     /**
      * Add optional type to current {@link FileStorageRequestDTO}
      * @param type
@@ -174,11 +189,13 @@ public class FileStorageRequestDTO {
         String algo = (algorithm != null ? "algorithm=" + algorithm + ", " : "");
         String mt = (mimeType != null ? "mimeType=" + mimeType + ", " : "");
         String ow = (owner != null ? "owner=" + owner + ", " : "");
+        String so = (sessionOwner != null ? "sessionOwner=" + sessionOwner + ", " : "");
+        String s = (session != null ? "session=" + session + ", " : "");
         String t = (type != null ? "type=" + type + ", " : "");
         String url = (originUrl != null ? "originUrl=" + originUrl + ", " : "");
         String sto = (storage != null ? "storage=" + storage + ", " : "");
         String sd = (subDirectory != null ? "subDirectory=" + subDirectory : "");
-        return "FileStorageRequestDTO [" + fn + cs + algo + mt + ow + t + url + sto + sd + "]";
+        return "FileStorageRequestDTO [" + fn + cs + algo + mt + ow + so + s + t + url + sto + sd + "]";
     }
 
 }

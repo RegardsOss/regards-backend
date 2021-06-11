@@ -66,7 +66,6 @@
 		<module>local-authorities-provider</module>
 		<module>remote-tenant-resolver</module>
 		<module>remote-authorities-provider</module>
-		<module>session-manager</module>
 	</modules>
 
 </project>

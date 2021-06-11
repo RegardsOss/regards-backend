@@ -70,7 +70,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 @TestPropertySource(properties = { "spring.jpa.show-sql=true",
         "spring.jpa.properties.hibernate.default_schema=ingest_request_tests" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest {
 
     @Autowired

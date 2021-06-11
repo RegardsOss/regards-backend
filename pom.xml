@@ -153,11 +153,11 @@
 		<framework.modules.plugins.version>${regards.version}</framework.modules.plugins.version>
 		<framework.modules.locks.version>${regards.version}</framework.modules.locks.version>
 		<framework.modules.templates.version>${regards.version}</framework.modules.templates.version>
+		<framework.modules.session.version>${regards.version}</framework.modules.session.version>
 		<framework.modules.tenant.settings.version>${regards.version}</framework.modules.tenant.settings.version>
 
 		<!-- MODULES -->
 		<modules.project.version>${regards.version}</modules.project.version>
-		<modules.session-manager.version>${regards.version}</modules.session-manager.version>
 		<modules.crawler.version>${regards.version}</modules.crawler.version>
 		<modules.indexer.version>${regards.version}</modules.indexer.version>
 		<modules.accessrights-instance.version>${regards.version}</modules.accessrights-instance.version>
@@ -786,6 +786,91 @@
 				<version>${framework.modules.tenant.settings.version}</version>
 			</dependency>
 
+			<!-- Session -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session</groupId>
+				<artifactId>session-agent</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session</groupId>
+				<artifactId>session-commons</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session</groupId>
+				<artifactId>session-manager</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<!-- Session agent -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-dao</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-domain</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-rest</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-service</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-client</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<!-- Session manager -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-dao</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-domain</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-rest</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-service</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+				<artifactId>session-manager-client</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<!-- Session commons -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+				<artifactId>session-commons-dao</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+				<artifactId>session-commons-domain</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+				<artifactId>session-commons-service</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+
 			<!-- Project -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.project</groupId>
@@ -801,33 +886,6 @@
 				<groupId>fr.cnes.regards.modules.project</groupId>
 				<artifactId>project-client</artifactId>
 				<version>${modules.project.version}</version>
-			</dependency>
-
-			<!-- Session manager -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-rest</artifactId>
-				<version>${modules.session-manager.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-client</artifactId>
-				<version>${modules.session-manager.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-service</artifactId>
-				<version>${modules.session-manager.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-domain</artifactId>
-				<version>${modules.session-manager.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.session-manager</groupId>
-				<artifactId>session-manager-dao</artifactId>
-				<version>${modules.session-manager.version}</version>
 			</dependency>
 
 			<!-- Datasource plugins -->

@@ -75,7 +75,7 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
         "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
         "spring.jpa.show-sql=false",
         "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp" , "noschedule"})
+@ActiveProfiles(value = { "testAmqp" , "noscheduler"})
 public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");

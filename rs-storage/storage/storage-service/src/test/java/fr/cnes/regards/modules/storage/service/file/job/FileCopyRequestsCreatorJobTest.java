@@ -96,6 +96,8 @@ public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID, copyTo));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, "target/storage-online/files"));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, "from_online"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER, "source1"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION, "session1"));
         JobInfo jobInfo = new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(), jobParameters, null,
                 FileCopyRequestsCreatorJob.class.getName());
         jobInfoService.createAsPending(jobInfo);

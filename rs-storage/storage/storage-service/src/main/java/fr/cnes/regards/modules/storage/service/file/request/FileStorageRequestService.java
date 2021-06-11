@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
@@ -124,6 +125,9 @@ public class FileStorageRequestService {
     @Autowired
     private RequestStatusService reqStatusService;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Value("${regards.storage.storage.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
@@ -195,6 +199,8 @@ public class FileStorageRequestService {
     /**
      * Store a new file to a given storage destination
      * @param owner Owner of the new file
+     * @param sessionOwner
+     * @param session
      * @param metaInfo information about file
      * @param originUrl current location of file. This URL must be locally accessible to be copied.
      * @param storage name of the storage destination. Must be a existing plugin configuration of a {@link IStorageLocation}
@@ -202,14 +208,16 @@ public class FileStorageRequestService {
      * @param groupId business request identifier
      * @return {@link FileReference} if the file is already referenced.
      */
-    public Optional<FileReference> handleRequest(String owner, FileReferenceMetaInfo metaInfo, String originUrl,
-            String storage, Optional<String> subDirectory, String groupId) {
+    public Optional<FileReference> handleRequest(String owner, String sessionOwner, String session,
+            FileReferenceMetaInfo metaInfo, String originUrl, String storage, Optional<String> subDirectory,
+            String groupId) {
         Optional<FileReference> oFileRef = fileRefService.search(storage, metaInfo.getChecksum());
         Optional<FileStorageRequest> oReq = fileStorageRequestRepo.findByMetaInfoChecksum(metaInfo.getChecksum());
         Optional<FileDeletionRequest> oDeletionReq = fileDelReqService.search(metaInfo.getChecksum(), storage);
         FileStorageRequestDTO request = FileStorageRequestDTO
                 .build(metaInfo.getFileName(), metaInfo.getChecksum(), metaInfo.getAlgorithm(),
-                       metaInfo.getMimeType().toString(), owner, originUrl, storage, subDirectory);
+                       metaInfo.getMimeType().toString(), owner, sessionOwner, session, originUrl, storage,
+                       subDirectory);
         request.withType(metaInfo.getType());
         return handleRequest(request, oFileRef, oReq, oDeletionReq, groupId).getFileReference();
     }
@@ -253,14 +261,21 @@ public class FileStorageRequestService {
      * Store a new file to a given storage destination
      * @param request {@link FileStorageRequestDTO} info about file to store
      * @param fileRef {@link FileReference} of associated file if already exists
-     * @param oRequest {@link FileStorageRequest} associated to given {@link FileStorageRequestDTO} if already exists
+     * @param oReq {@link FileStorageRequest} associated to given {@link FileStorageRequestDTO} if already exists
      * @param groupId business request identifier
      * @return {@link FileReference} if the file is already referenced.
      * @throws MalformedURLException
      */
     private RequestResult handleRequest(FileStorageRequestDTO request, Optional<FileReference> fileRef,
             Optional<FileStorageRequest> oReq, Optional<FileDeletionRequest> oDeletionReq, String groupId) {
+        // init storage requester
+        String sessionOwner = request.getSessionOwner();
+        String session = request.getSession();
+        // Check if fileReference is present
         if (fileRef.isPresent()) {
+            // increment store request to the session agent
+            this.sessionNotifier.incrementStoreRequests(sessionOwner, session);
+            // handle file
             return handleFileToStoreAlreadyExists(fileRef.get(), request, oDeletionReq, groupId);
         } else if (oReq.isPresent()) {
             FileStorageRequest existingReq = oReq.get();
@@ -268,6 +283,9 @@ public class FileStorageRequestService {
             if (existingReq.getStatus() == FileRequestStatus.ERROR) {
                 // Allow retry of error requests when the same request is sent
                 existingReq.setStatus(FileRequestStatus.TO_DO);
+                // decrement errors to the session agent
+                this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
+                this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
             }
             LOGGER.trace("[STORAGE REQUESTS] Existing request ({}) updated to handle same file of request ({})",
                          existingReq.getMetaInfo().getFileName(), request.getFileName());
@@ -275,8 +293,10 @@ public class FileStorageRequestService {
         } else {
             Optional<String> cause = Optional.empty();
             Optional<FileRequestStatus> status = Optional.empty();
+            // increment store request to the session agent
+            this.sessionNotifier.incrementStoreRequests(sessionOwner, session);
+            // Check that URL is a valid
             try {
-                // Check that URL is a valid
                 new URL(request.getOriginUrl());
             } catch (MalformedURLException e) {
                 String errorMessage = "Invalid URL for file " + request.getFileName() + "storage. Cause : "
@@ -288,7 +308,8 @@ public class FileStorageRequestService {
             return RequestResult
                     .build(createNewFileStorageRequest(Sets.newHashSet(request.getOwner()), request.buildMetaInfo(),
                                                        request.getOriginUrl(), request.getStorage(),
-                                                       request.getOptionalSubDirectory(), groupId, cause, status));
+                                                       request.getOptionalSubDirectory(), groupId, cause, status,
+                                                       sessionOwner, session));
         }
     }
 
@@ -360,6 +381,13 @@ public class FileStorageRequestService {
             request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
             request.setErrorCause(null);
             update(request);
+            // Session handling
+            String sessionOwner = request.getSessionOwner();
+            String session = request.getSession();
+            // decrement number of errors to the session agent
+            this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
+            // increment number of running to the session agent
+            this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
         }
     }
 
@@ -375,10 +403,33 @@ public class FileStorageRequestService {
                 request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
                 request.setErrorCause(null);
                 update(request);
+                // decrement number of errors to the session agent
+                this.sessionNotifier.decrementErrorRequests(request.getSessionOwner(), request.getSession());
+                // increment number of running to the session agent
+                this.sessionNotifier.incrementRunningRequests(request.getSessionOwner(), request.getSession());
             }
             // Always retrieve the first page has we modify each element of the results.
             // All element are handled when result is empty.
         } while (results.hasNext());
+    }
+
+    /**
+     * Update all {@link FileStorageRequest} in error status to change status to {@link FileRequestStatus#TO_DO} or
+     * {@link FileRequestStatus#DELAYED}.
+     */
+    public void retryBySession(List<FileStorageRequest> requestList, String sessionOwner, String session) {
+        int nbRequests = requestList.size();
+        for (FileStorageRequest request : requestList) {
+            // reset status
+            request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
+            request.setErrorCause(null);
+        }
+        // save changes in database
+        updateListRequests(requestList);
+        // decrement error requests
+        this.sessionNotifier.decrementErrorRequests(sessionOwner, session, nbRequests);
+        // notify running requests to the session agent
+        this.sessionNotifier.incrementRunningRequests(sessionOwner, session, nbRequests);
     }
 
     /**
@@ -387,6 +438,14 @@ public class FileStorageRequestService {
      */
     public FileStorageRequest update(FileStorageRequest fileStorageRequest) {
         return fileStorageRequestRepo.save(fileStorageRequest);
+    }
+
+    /**
+     * Update a list {@link FileStorageRequest}
+     * @param fileStorageRequestList to delete
+     */
+    public List<FileStorageRequest> updateListRequests(List<FileStorageRequest> fileStorageRequestList) {
+        return fileStorageRequestRepo.saveAll(fileStorageRequestList);
     }
 
     /**
@@ -422,7 +481,7 @@ public class FileStorageRequestService {
                 }
                 if (filesPage.hasContent()) {
                     maxId = filesPage.stream().max(Comparator.comparing(FileStorageRequest::getId)).get().getId();
-                    self.scheduleJobsByStorage(jobList, storage, filesPage.getContent());
+                    self.scheduleJobsByStorage(jobList, storage, filesPage.getContent(), status);
                 }
             } while (filesPage.hasContent());
         }
@@ -438,7 +497,19 @@ public class FileStorageRequestService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void scheduleJobsByStorage(Collection<JobInfo> jobList, String storage,
-            List<FileStorageRequest> fileStorageRequests) {
+            List<FileStorageRequest> fileStorageRequests, FileRequestStatus requestStatus) {
+        // SESSION HANDLING
+        // if status is in error state decrement the number of requests in error
+        if(requestStatus.equals(FileRequestStatus.ERROR)) {
+            fileStorageRequests.forEach(req -> {
+                String sessionOwner = req.getSessionOwner();
+                String session = req.getSession();
+                sessionNotifier.decrementErrorRequests(sessionOwner, session);
+                sessionNotifier.incrementRunningRequests(sessionOwner, session);
+            });
+        }
+
+        // SCHEDULER - schedule jobs by storage
         if (storageHandler.isConfigured(storage)) {
             jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
         } else {
@@ -510,22 +581,29 @@ public class FileStorageRequestService {
      * @param originUrl file origin location
      * @param storage storage destination location
      * @param storageSubDirectory Optional sub directory where to store file in the storage destination location
-     * @param status
      * @param groupId Business identifier of the deletion request
+     * @param status
+     * @param sessionOwner
+     * @param session
      */
     public FileStorageRequest createNewFileStorageRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             String originUrl, String storage, Optional<String> storageSubDirectory, String groupId,
-            Optional<String> errorCause, Optional<FileRequestStatus> status) {
+            Optional<String> errorCause, Optional<FileRequestStatus> status, String sessionOwner, String session) {
         long start = System.currentTimeMillis();
         FileStorageRequest fileStorageRequest = new FileStorageRequest(owners, fileMetaInfo, originUrl, storage,
-                storageSubDirectory, groupId);
+                storageSubDirectory, groupId, sessionOwner, session);
         fileStorageRequest.setStatus(reqStatusService.getNewStatus(fileStorageRequest, status));
         fileStorageRequest.setErrorCause(errorCause.orElse(null));
+        // notify request is running to the session agent
+        this.sessionNotifier.incrementRunningRequests(fileStorageRequest.getSessionOwner(), fileStorageRequest.getSession());
+        // check if a storage is configured
         if (!storageHandler.isConfigured(storage)) {
             // The storage destination is unknown, we can already set the request in error status
             handleStorageNotAvailable(fileStorageRequest, Optional.empty());
         } else {
+            // save request
             fileStorageRequestRepo.save(fileStorageRequest);
+
             LOGGER.trace("[STORAGE REQUESTS] New file storage request created for file <{}> to store to {} with status {} in {}ms",
                          fileStorageRequest.getMetaInfo().getFileName(), fileStorageRequest.getStorage(),
                          fileStorageRequest.getStatus(), System.currentTimeMillis() - start);
@@ -564,6 +642,11 @@ public class FileStorageRequestService {
         fileStorageRequest.setErrorCause(lErrorCause);
         update(fileStorageRequest);
         LOGGER.error(fileStorageRequest.getErrorCause());
+        // increment error requests to the session agent
+        String sessionOwner = fileStorageRequest.getSessionOwner();
+        String session = fileStorageRequest.getSession();
+        this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+        sessionNotifier.incrementErrorRequests(sessionOwner, session);
         // Send notification for file storage error
         eventPublisher.storeError(fileStorageRequest.getMetaInfo().getChecksum(), fileStorageRequest.getOwners(),
                                   fileStorageRequest.getStorage(), fileStorageRequest.getErrorCause(),
@@ -584,6 +667,11 @@ public class FileStorageRequestService {
             FileStorageRequest request = result.getRequest();
             FileReferenceMetaInfo reqMetaInfos = request.getMetaInfo();
             Set<FileReference> fileRefs = Sets.newHashSet();
+            // parameters for session notification
+            String sessionOwner = request.getSessionOwner();
+            String session = request.getSession();
+            int nbFilesStored = 0;
+
             for (String owner : result.getRequest().getOwners()) {
                 try {
                     FileReferenceMetaInfo fileMeta = new FileReferenceMetaInfo(reqMetaInfos.getChecksum(),
@@ -594,7 +682,8 @@ public class FileStorageRequestService {
                     fileMeta.setType(reqMetaInfos.getType());
                     fileRefs.add(fileRefReqService
                             .reference(owner, fileMeta, new FileLocation(request.getStorage(), result.getStoredUrl()),
-                                       request.getGroupIds()));
+                                       request.getGroupIds(), sessionOwner, session));
+                    nbFilesStored++;
                 } catch (ModuleException e) {
                     LOGGER.error(e.getMessage(), e);
                     handleError(request, e.getMessage());
@@ -609,6 +698,12 @@ public class FileStorageRequestService {
                                                    request.getOwners(), fileRef);
                 }
             }
+
+            // Session handling
+            // decrement the number of running requests
+            this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+            // notify the number of successful created files
+            this.sessionNotifier.incrementStoredFiles(sessionOwner, session, nbFilesStored);
 
             // Delete the FileRefRequest as it has been handled
             delete(request);
@@ -641,6 +736,11 @@ public class FileStorageRequestService {
                                          request.getStorage(), request.getStorageSubDirectory(), request.getOwners(),
                                          errorCause);
         }
+        // notify error to the session agent
+        String sessionOwner = request.getSessionOwner();
+        String session = request.getSession();
+        this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+        this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
     }
 
     /**
@@ -664,7 +764,8 @@ public class FileStorageRequestService {
             return RequestResult.build(createNewFileStorageRequest(Sets.newHashSet(request.getOwner()), newMetaInfo,
                                                                    request.getOriginUrl(), request.getStorage(),
                                                                    request.getOptionalSubDirectory(), groupId,
-                                                                   Optional.empty(), Optional.empty()));
+                                                                   Optional.empty(), Optional.empty(),
+                                                                   request.getSessionOwner(), request.getSession()));
         } else {
             String message = String
                     .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",

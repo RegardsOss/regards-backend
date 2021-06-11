@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -98,6 +99,9 @@ public class IngestService implements IIngestService {
 
     @Autowired
     private IIngestRequestService ingestRequestService;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     /**
      * Middleware method extracted for test simulation and also used by operational code.
@@ -180,8 +184,11 @@ public class IngestService implements IIngestService {
             IngestRequest ingestRequest = registerIngestRequest(item);
             if (ingestRequest != null) {
                 requestPerChain.put(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
+                // monitoring
+                sessionNotifier.incrementRequestCount(ingestRequest);
             }
         }
+
         // Schedule job per chain
         for (String chainName : requestPerChain.keySet()) {
             ingestRequestService.scheduleIngestProcessingJobByChain(chainName, requestPerChain.get(chainName));
@@ -203,8 +210,9 @@ public class IngestService implements IIngestService {
 
         // Register requests
         Collection<IngestRequest> grantedRequests = new ArrayList<>();
-        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(),
-                                                   "SIP Collection ingestion scheduled");
+        String source = ingestMetadata.getSessionOwner();
+        String session = ingestMetadata.getSession();
+        RequestInfoDto info = RequestInfoDto.build(source, session, "SIP Collection ingestion scheduled");
 
         int count = 1;
         for (SIP sip : sips.getFeatures()) {
@@ -213,6 +221,9 @@ public class IngestService implements IIngestService {
             registerIngestRequest(null, sip, ingestMetadata, info, grantedRequests, sipId);
             count++;
         }
+
+        // Monitoring
+        sessionNotifier.incrementRequestCount(source, session,grantedRequests.size());
 
         ingestRequestService.scheduleIngestProcessingJobByChain(ingestMetadata.getIngestChain(), grantedRequests);
 

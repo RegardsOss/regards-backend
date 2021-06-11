@@ -50,6 +50,16 @@ public class FileCopyRequestDTO {
      */
     private String subDirectory;
 
+    /**
+     * Source of the request
+     */
+    private String sessionOwner;
+
+    /**
+     * Session of the request
+     */
+    private String session;
+
     public String getChecksum() {
         return checksum;
     }
@@ -62,7 +72,15 @@ public class FileCopyRequestDTO {
         return subDirectory;
     }
 
-    public static FileCopyRequestDTO build(String checksum, String storage) {
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public static FileCopyRequestDTO build(String checksum, String storage, String sessionOwner, String session) {
         FileCopyRequestDTO request = new FileCopyRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -70,10 +88,13 @@ public class FileCopyRequestDTO {
 
         request.checksum = checksum;
         request.storage = storage;
+        request.sessionOwner = sessionOwner;
+        request.session = session;
         return request;
     }
 
-    public static FileCopyRequestDTO build(String checksum, String storage, String subDirectory) {
+    public static FileCopyRequestDTO build(String checksum, String storage, String subDirectory, String sessionOwner,
+            String session) {
         FileCopyRequestDTO request = new FileCopyRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -82,7 +103,8 @@ public class FileCopyRequestDTO {
         request.checksum = checksum;
         request.storage = storage;
         request.subDirectory = subDirectory;
+        request.sessionOwner = sessionOwner;
+        request.session = session;
         return request;
     }
-
 }

@@ -266,13 +266,20 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
         this.featureDeletionService.registerRequests(events);
 
+        // Simulate all requests to scheduled
+        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+                .forEach(r -> {
+                    r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
+                    this.featureDeletionRequestRepo.save(r);
+                });
+
         // Try delete all requests.
         RequestHandledResponse response = this.featureDeletionService
                 .deleteRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests deleted as all request are processing", 0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to delete as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests to delete as all request are processing", 0,
                             response.getTotalRequested());
 
         response = this.featureDeletionService
@@ -282,6 +289,18 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
                             response.getTotalHandled());
         Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
                             response.getTotalRequested());
+
+        // Simulate all requests to scheduled
+        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+                .forEach(r -> {
+                    r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                    this.featureDeletionRequestRepo.save(r);
+                });
+
+        response = this.featureDeletionService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 20 requests deleted", 20, response.getTotalHandled());
+        Assert.assertEquals("There should be 20 requests to delete", 20, response.getTotalRequested());
 
     }
 

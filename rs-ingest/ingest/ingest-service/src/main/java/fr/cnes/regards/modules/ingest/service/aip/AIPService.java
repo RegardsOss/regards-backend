@@ -315,7 +315,8 @@ public class AIPService implements IAIPService {
             // Retrieve all linked files
             for (ContentInformation ci : aipEntity.getAip().getProperties().getContentInformations()) {
                 OAISDataObject dataObject = ci.getDataObject();
-                filesToDelete.addAll(getFileDeletionEvents(aipId, dataObject.getChecksum(), dataObject.getLocations()));
+                filesToDelete.addAll(getFileDeletionEvents(aipId, aipEntity.getSessionOwner(), aipEntity.getSession(),
+                                                           dataObject.getChecksum(), dataObject.getLocations()));
             }
         }
 
@@ -330,14 +331,15 @@ public class AIPService implements IAIPService {
         oaisDeletionRequestService.update(request);
     }
 
-    private List<FileDeletionRequestDTO> getFileDeletionEvents(String owner, String fileChecksum,
-            Set<OAISDataObjectLocation> locations) {
+    private List<FileDeletionRequestDTO> getFileDeletionEvents(String owner, String sessionOwner, String session,
+            String fileChecksum, Set<OAISDataObjectLocation> locations) {
         List<FileDeletionRequestDTO> events = new ArrayList<>();
         for (OAISDataObjectLocation location : locations) {
             // Ignore if the file is yet stored
             if (location.getStorage() != null) {
                 // Create the storage delete event
-                events.add(FileDeletionRequestDTO.build(fileChecksum, location.getStorage(), owner, false));
+                events.add(FileDeletionRequestDTO
+                                   .build(fileChecksum, location.getStorage(), owner, sessionOwner, session, false));
             }
         }
         return events;

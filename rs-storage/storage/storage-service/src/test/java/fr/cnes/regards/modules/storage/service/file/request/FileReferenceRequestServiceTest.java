@@ -67,6 +67,12 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestServiceTest.class);
 
+    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+
+    private static final  String SESSION_OWNER_2 = "SOURCE 2";
+
+    private static final String SESSION_1 = "SESSION 1";
+
     @Before
     @Override
     public void init() throws ModuleException {
@@ -81,13 +87,14 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         String fileRefChecksum = "file-ref-1";
         String fileRefOwner = "first-owner";
         FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner, "file.test",
-                                                                 ONLINE_CONF_LABEL, Optional.empty(), Optional.empty());
+                                                                 ONLINE_CONF_LABEL, Optional.empty(),
+                                                                 Optional.empty(), SESSION_OWNER_1, SESSION_1);
         String fileRefStorage = fileRef.getLocation().getStorage();
 
         // Remove all his owners
         String deletionReqId = UUID.randomUUID().toString();
-        FileDeletionRequestDTO request = FileDeletionRequestDTO.build(fileRefChecksum, fileRefStorage, fileRefOwner,
-                                                                      false);
+        FileDeletionRequestDTO request = FileDeletionRequestDTO
+                .build(fileRefChecksum, fileRefStorage, fileRefOwner, SESSION_OWNER_1, SESSION_1, false);
         fileDeletionRequestService.handle(Sets.newHashSet(request), deletionReqId);
 
         Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
@@ -101,7 +108,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
 
         // Reference the same file for a new owner
         String fileRefNewOwner = "new-owner";
-        this.generateStoredFileReferenceAlreadyReferenced(fileRefChecksum, fileRefStorage, fileRefNewOwner);
+        this.generateStoredFileReferenceAlreadyReferenced(fileRefChecksum, fileRefStorage, fileRefNewOwner,
+                                                          SESSION_OWNER_2, SESSION_1);
 
         // check that there is always a deletion request in pending state
         Optional<FileDeletionRequest> ofdr = fileDeletionRequestRepo.findByFileReferenceId(fdr.getId());
@@ -160,7 +168,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
     @Test
     public void referenceFileWithoutStorage() {
         String owner = "someone";
-        Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", ONLINE_CONF_LABEL);
+        Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", ONLINE_CONF_LABEL,
+                                                               SESSION_OWNER_1, SESSION_1);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
                                                                           oFileRef.get().getMetaInfo().getChecksum());
@@ -174,7 +183,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
                 1024L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(OFFLINE_CONF_LABEL, "anywhere://in/this/directory/file.test");
         try {
-            fileReqService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            fileReqService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()),
+                                     SESSION_OWNER_1, SESSION_1);
             Assert.fail("Module exception should be thrown here as url is not valid");
         } catch (ModuleException e) {
             // Expected exception
