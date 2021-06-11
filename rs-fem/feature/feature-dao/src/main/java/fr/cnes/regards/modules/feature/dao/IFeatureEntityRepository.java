@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
-import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import java.time.OffsetDateTime;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,12 +29,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 @Repository
-public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
+public interface IFeatureEntityRepository
+        extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
 
     FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
 
@@ -57,9 +57,4 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
     Page<FeatureEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now, Pageable pageable);
 
     Page<FeatureEntity> findByLastUpdateLessThan(OffsetDateTime now, Pageable pageable);
-
-    List<ILightFeatureEntity> findByUrnIn(Collection<FeatureUniformResourceName> uniformResourceNames);
-
-    void deleteAllByUrnIn(Collection<FeatureUniformResourceName> urns);
-
 }
