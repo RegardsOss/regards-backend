@@ -16,7 +16,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureCopyService extends IAbstractFeatureService {
+public interface IFeatureCopyService extends IAbstractFeatureService<FeatureCopyRequest> {
 
     /**
      * Register copy requests in database for further processing from incoming request events

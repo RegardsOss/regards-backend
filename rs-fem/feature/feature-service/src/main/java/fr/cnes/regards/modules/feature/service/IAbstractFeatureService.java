@@ -2,14 +2,20 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.amqp.event.IRequestValidation;
+import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public interface IAbstractFeatureService extends IRequestDeniedService, IRequestValidation {
+public interface IAbstractFeatureService<R extends AbstractFeatureRequest> extends IRequestDeniedService, IRequestValidation {
 
     /**
      * Schedule a job to process a batch of requests<br/>
@@ -41,5 +47,11 @@ public interface IAbstractFeatureService extends IRequestDeniedService, IRequest
      * @return {@link RequestHandledResponse}
      */
     RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection);
+
+    Map<FeatureUniformResourceName, ILightFeatureEntity> getSessionInfoByUrn(Collection<FeatureUniformResourceName> uniformResourceNames);
+
+    void doOnSuccess(Collection<R> requests);
+
+    void doOnError(Collection<R> requests);
 
 }
