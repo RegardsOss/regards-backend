@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -38,7 +39,8 @@ import org.springframework.test.context.TestPropertySource;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_session_service_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_session_service_it"})
+@ActiveProfiles({ "testAmqp", "noscheduler" })
 public class SessionManagerHandlerIT extends AbstractManagerServiceUtilsTest {
 
     private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC);
@@ -73,8 +75,7 @@ public class SessionManagerHandlerIT extends AbstractManagerServiceUtilsTest {
         Assert.assertNotEquals("Wrong lastUpdateDate", sessionStep1.getLastUpdateDate(),
                                sessionStep1Updated.getLastUpdateDate());
         // check values of second event are not changed
-        sessionStep2Opt = this.sessionStepRepo
-                .findBySourceAndSessionAndStepId(SOURCE_2, SESSION_1, "scan");
+        sessionStep2Opt = this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_2, SESSION_1, "scan");
         Assert.assertTrue("Session step should have been present", sessionStep2Opt.isPresent());
         SessionStep sessionStep2 = sessionStep2Opt.get();
         Assert.assertEquals("Wrong property", 2L, sessionStep2.getState().getRunning());

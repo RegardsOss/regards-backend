@@ -18,21 +18,17 @@
  */
 package fr.cnes.regards.framework.modules.session.manager.service.clean;
 
-import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
-import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.domain.AggregationState;
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
+import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanService;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -41,7 +37,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,48 +49,24 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
-        "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678",
         "regards.session.manager.clean.session.limit.store=30" })
-@ActiveProfiles(value = { "noscheduler" })
-public class ManagerCleanServiceIT extends AbstractRegardsServiceTransactionalIT {
-
+@ActiveProfiles({ "noscheduler" })
+public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsTest {
+    
+    private static OffsetDateTime UPDATE_DATE;
+    
     @Autowired
     private ManagerCleanService managerCleanService;
-
-    @Autowired
-    private ISessionStepRepository sessionStepRepo;
-
-    @Autowired
-    private ISessionManagerRepository sessionManagerRepo;
-
-    @Autowired
-    private ISourceManagerRepository sourceManagerRepo;
-
-    @Autowired
-    private ISnapshotProcessRepository snapshotProcessRepo;
-
+    
     @Autowired
     private ManagerSnapshotService managerSnapshotService;
 
     @Value("${regards.session.manager.clean.session.limit.store}")
     private int limitStoreSessionSteps;
 
-    private static final String SOURCE_1 = "SOURCE 1";
-
-    private static final String SOURCE_2 = "SOURCE 2";
-
-    private static final String SESSION_1 = "SESSION 1";
-
-    private static final String SESSION_2 = "SESSION 2";
-
-    private static OffsetDateTime UPDATE_DATE;
-
-    @Before
-    public void init() {
+    @Override
+    public void doInit() {
         UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSessionSteps);
-        this.sessionStepRepo.deleteAll();
-        this.sessionManagerRepo.deleteAll();
-        this.sourceManagerRepo.deleteAll();
     }
 
     @Test
@@ -150,7 +121,7 @@ public class ManagerCleanServiceIT extends AbstractRegardsServiceTransactionalIT
                 String.format("There should be 2 sessions deleted (with lastUpdateDate before %s)", UPDATE_DATE), 2,
                 nbSessionDeleted);
 
-        Optional<Session> session1Opt = this.sessionManagerRepo.findBySourceAndName(SOURCE_1, SESSION_1);
+        Optional<Session> session1Opt = this.sessionRepo.findBySourceAndName(SOURCE_1, SESSION_1);
         Assert.assertTrue(
                 String.format("Session \"%s\" of source \"%s\" should have been present", SESSION_1, SOURCE_1),
                 session1Opt.isPresent());
@@ -177,13 +148,13 @@ public class ManagerCleanServiceIT extends AbstractRegardsServiceTransactionalIT
         }
 
         // CHECK SESSION 2/SOURCE 1 was correctly deleted
-        Optional<Session> session2Opt = this.sessionManagerRepo.findBySourceAndName(SOURCE_1, SESSION_2);
+        Optional<Session> session2Opt = this.sessionRepo.findBySourceAndName(SOURCE_1, SESSION_2);
         Assert.assertFalse(
                 String.format("Session \"%s\" of source \"%s\" should have been deleted", SESSION_2, SOURCE_1),
                 session2Opt.isPresent());
 
         // CHECK SOURCE 1 was created and updated after the cleaning process
-        Optional<Source> source1Opt = this.sourceManagerRepo.findByName(SOURCE_1);
+        Optional<Source> source1Opt = this.sourceRepo.findByName(SOURCE_1);
         Assert.assertTrue(String.format("Source \"%s\" should have been present", SOURCE_1), source1Opt.isPresent());
         Source source1 = source1Opt.get();
         Assert.assertEquals("Wrong number of sessions expected", 1L, source1.getNbSessions());
@@ -219,13 +190,13 @@ public class ManagerCleanServiceIT extends AbstractRegardsServiceTransactionalIT
 
         // --- SOURCE 2 ---
         // CHECK SESSION 1/SOURCE 2 was correctly deleted
-        Optional<Session> session3Opt = this.sessionManagerRepo.findBySourceAndName(SOURCE_2, SESSION_1);
+        Optional<Session> session3Opt = this.sessionRepo.findBySourceAndName(SOURCE_2, SESSION_1);
         Assert.assertFalse(
                 String.format("Session \"%s\" of source \"%s\" should have been deleted", SESSION_1, SOURCE_2),
                 session3Opt.isPresent());
 
         // CHECK SOURCE 2 was correctly deleted
-        Optional<Source> source2Opt = this.sourceManagerRepo.findByName(SOURCE_2);
+        Optional<Source> source2Opt = this.sourceRepo.findByName(SOURCE_2);
         Assert.assertFalse(
                 String.format("Source \"%s\" should have been deleted because there is no session is " + "related",
                               SOURCE_2), source2Opt.isPresent());

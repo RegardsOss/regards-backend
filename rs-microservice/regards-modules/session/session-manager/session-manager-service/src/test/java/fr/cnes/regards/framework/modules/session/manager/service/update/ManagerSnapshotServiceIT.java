@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepos
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
@@ -49,10 +48,11 @@ import org.springframework.test.context.TestPropertySource;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_snapshot_service_it",
-        "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_snapshot_service_it" })
 @ActiveProfiles(value = { "noscheduler" })
-public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactionalIT {
+public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsTest {
+
+    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC);
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;
@@ -68,25 +68,6 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
 
     @Autowired
     private ManagerSnapshotService managerSnapshotService;
-
-    private static final String SOURCE_1 = "SOURCE 1";
-
-    private static final String SESSION_1 = "SESSION 1";
-
-    private static final String SESSION_2 = "SESSION 2";
-
-    private static final String SESSION_3 = "SESSION 3";
-
-    private static final String SESSION_4 = "SESSION 4";
-
-    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC);
-
-    @Before
-    public void init() {
-        this.sessionStepRepo.deleteAll();
-        this.sessionRepo.deleteAll();
-        this.sourceRepo.deleteAll();
-    }
 
     @Test
     @Purpose("Test the generation of session and source snapshots")

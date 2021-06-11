@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-SessionManagementServiceAutoConfiguration
+fr.cnes.regards.framework.modules.session.manager.service.SessionManagerServiceAutoConfiguration

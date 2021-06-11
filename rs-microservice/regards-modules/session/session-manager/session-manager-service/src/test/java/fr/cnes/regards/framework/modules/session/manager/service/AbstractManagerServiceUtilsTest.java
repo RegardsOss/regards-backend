@@ -39,30 +39,28 @@ import fr.cnes.regards.framework.modules.session.commons.service.delete.SessionD
 import fr.cnes.regards.framework.modules.session.commons.service.delete.SourceDeleteEventHandler;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
-import fr.cnes.regards.framework.modules.session.manager.domain.Session;
-import fr.cnes.regards.framework.modules.session.manager.domain.Source;
+import fr.cnes.regards.framework.modules.session.manager.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
 import fr.cnes.regards.framework.modules.session.manager.service.handlers.SessionManagerHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Iliana Ghazali
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" })
-@ActiveProfiles({ "testAmqp", "noscheduler" })
 public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenantServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractManagerServiceUtilsTest.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractManagerServiceUtilsTest.class);
 
     /**
      * Services
@@ -87,6 +85,10 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
 
     @Autowired
     private ISubscriber subscriber;
+
+    // SESSION
+    @Autowired
+    protected ManagerCleanSnapshotProcessService managerCleanService;
 
     /**
      * Repositories
@@ -119,11 +121,19 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
 
     protected static final String SOURCE_3 = "SOURCE 3";
 
+    protected static final String SOURCE_4 = "SOURCE_4";
+
+    protected static final String SOURCE_5 = "SOURCE_5";
+
+    protected static final String SOURCE_6 = "SOURCE_6";
+
     protected static final String SESSION_1 = "SESSION 1";
 
     protected static final String SESSION_2 = "SESSION 2";
 
     protected static final String SESSION_3 = "SESSION 3";
+
+    protected static final String SESSION_4 = "SESSION 4";
 
     // -------------
     // BEFORE METHODS
@@ -217,7 +227,7 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
     //  SESSION UTILS
     // --------------
 
-    protected boolean waitForSessionStepEventsStored(int nbEvents) throws InterruptedException {
+    protected void waitForSessionStepEventsStored(int nbEvents) throws InterruptedException {
         long count, now = System.currentTimeMillis(), end = now + 200000L;
         LOGGER.info("Waiting for session steps to be saved ...");
         do {
@@ -227,10 +237,14 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
                 Thread.sleep(5000L);
             }
         } while (count != nbEvents && now <= end);
-        return count == nbEvents;
+
+        if (count != nbEvents) {
+            Assert.fail(String.format("Events were not stored in database. Expected %d events but was %d.", nbEvents,
+                                      count));
+        }
     }
 
-    protected boolean waitForSnapshotUpdateSuccesses() throws InterruptedException {
+    protected void waitForSnapshotUpdateSuccesses() throws InterruptedException {
         long count = 0;
         long now = System.currentTimeMillis(), end = now + 200000L;
         List<SnapshotProcess> snapshotProcessList = this.snapshotProcessRepo.findAll();
@@ -248,48 +262,31 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
                 Thread.sleep(5000L);
             }
         } while (count != processSize && now <= end);
-        return count == processSize;
+
+        if (count != processSize) {
+            Assert.fail("Snapshot processes were not updated correctly. Check in the snapshot that the "
+                                + "lastUpdateDate is not null and jobId is null");
+        }
+
     }
 
-    protected boolean waitForJobSuccesses(String jobName, int nbJobs, long timeout) throws InterruptedException {
+    protected void waitForJobStates(String jobName, int nbJobs, long timeout, JobStatus[] jobStatuses)
+            throws InterruptedException {
         long count, now = System.currentTimeMillis(), end = now + timeout;
-        LOGGER.info("Waiting for jobs to be in success state ...");
+        LOGGER.info("Waiting for {} jobs of type {} to be in at least one of the following states {} ...", nbJobs,
+                    jobName, Arrays.toString(jobStatuses));
         do {
-            count = jobInfoService.retrieveJobsCount(jobName, JobStatus.SUCCEEDED);
+            count = jobInfoService.retrieveJobsCount(jobName, jobStatuses);
             now = System.currentTimeMillis();
             if (count != nbJobs) {
-                Thread.sleep(5000L);
+                Thread.sleep(100L);
             }
         } while (count != nbJobs && now <= end);
-        return count == nbJobs;
-    }
 
-    protected boolean waitForSourceDeleted(String sourceName, long timeout) throws InterruptedException {
-        long now = System.currentTimeMillis(), end = now + timeout;
-        Optional<Source> source;
-        LOGGER.info("Waiting for source deletion ...");
-        do {
-            source = this.sourceRepo.findByName(sourceName);
-            if (source.isPresent()) {
-                Thread.sleep(10000L);
-            }
-            now = System.currentTimeMillis();
-        } while (source.isPresent() && now <= end);
-
-        return !source.isPresent();
-    }
-
-    protected boolean waitForSessionDeleted(String sourceName, String sessionName) throws InterruptedException {
-        long now = System.currentTimeMillis(), end = now + 200000L;
-        Optional<Session> session;
-        LOGGER.info("Waiting for session deletion ...");
-        do {
-            session = this.sessionRepo.findBySourceAndName(sourceName, sessionName);
-            if (session.isPresent()) {
-                Thread.sleep(10000L);
-            }
-            now = System.currentTimeMillis();
-        } while (session.isPresent() && now <= end);
-        return !session.isPresent();
+        if (count != nbJobs) {
+            Assert.fail(
+                    String.format("Unexpected number of snapshot jobs created. Expected %d jobs but was %d.", nbJobs,
+                                  this.jobInfoRepo.countByClassNameAndStatusStatusIn(jobName, jobStatuses)));
+        }
     }
 }

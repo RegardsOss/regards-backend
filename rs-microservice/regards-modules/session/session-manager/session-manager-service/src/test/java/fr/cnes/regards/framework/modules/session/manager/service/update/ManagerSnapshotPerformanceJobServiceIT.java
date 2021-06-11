@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.session.manager.service.update;
 
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
@@ -35,6 +36,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -42,7 +44,8 @@ import org.springframework.test.context.TestPropertySource;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_performance_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_performance_it"})
+@ActiveProfiles({ "testAmqp", "noscheduler" })
 public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServiceUtilsTest {
 
     /**
@@ -69,10 +72,7 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
         createSessionStepEvents(nbSessionSteps);
 
         // wait for sessionSteps to be stored in database
-        boolean isEventRegistered = waitForSessionStepEventsStored(nbSessionSteps);
-        if (!isEventRegistered) {
-            Assert.fail("Events were not stored in database");
-        }
+        waitForSessionStepEventsStored(nbSessionSteps);
 
         // Schedule jobs
         long start = System.currentTimeMillis();
@@ -82,14 +82,11 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
         managerSnapshotJobService.scheduleJob();
 
         // wait for job to be in success state
-        boolean isJobSuccess = waitForJobSuccesses(ManagerSnapshotJob.class.getName(), nbSessionSteps, timeout);
+        waitForJobStates(ManagerSnapshotJob.class.getName(), nbSessionSteps, timeout,
+                         new JobStatus[] { JobStatus.SUCCEEDED });
         LOGGER.info(
                 "Performance test handled in {}ms to create Sessions and Sources Aggregations from {} SessionSteps from {} different "
                         + "sources", System.currentTimeMillis() - start, nbSessionSteps, nbSessionSteps);
-        if (!isJobSuccess) {
-            Assert.fail(String.format("The number of jobs in success state is not expected. Check if all jobs were "
-                                              + "created in the required amount of time (max. %d ms)", timeout));
-        }
         checkResult(nbSessionSteps);
 
     }
@@ -109,7 +106,8 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
         for (int i = 0; i < nbSessionSteps; i++) {
             String source = "SOURCE_" + i;
             // ACQUISITION - scan event SOURCE 0-nbSources / SESSION 1
-            SessionStep sessionStep = new SessionStep("scan", source, SESSION_1, StepTypeEnum.ACQUISITION, new StepState(0, 0, 1));
+            SessionStep sessionStep = new SessionStep("scan", source, SESSION_1, StepTypeEnum.ACQUISITION,
+                                                      new StepState(0, 0, 1));
             sessionStep.setLastUpdateDate(UPDATE_DATE);
             stepEvents.add(new SessionStepEvent(sessionStep));
         }

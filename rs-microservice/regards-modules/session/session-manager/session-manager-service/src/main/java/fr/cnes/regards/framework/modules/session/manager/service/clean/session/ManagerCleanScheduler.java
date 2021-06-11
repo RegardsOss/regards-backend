@@ -22,9 +22,9 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotJob;
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
+import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotJob;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import java.time.Instant;
@@ -92,6 +92,13 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
      */
     @Scheduled(cron = "${regards.session.manager.clean.session.cron:0 0 0 1-7 * SUN}")
     public void scheduleCleanSession() {
+       scheduleJob();
+    }
+
+    /**
+     * Schedule {@link ManagerCleanJob}
+     */
+    public void scheduleJob() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -115,21 +122,24 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
             }
         }
     }
-
     @Override
     protected Logger getLogger() {
         return LOGGER;
     }
 
+    /**
+     * Wait for {@link ManagerSnapshotJob}s in states {@link JobStatus#QUEUED}, {@link JobStatus#PENDING} or
+     * {@link JobStatus#RUNNING} to end
+     * @param startTime beginning of the wait
+     * @return if {@link ManagerSnapshotJob}s have ended before the end of the wait
+     */
     private boolean waitUntilManagerSnapshotJobEnd(long startTime) {
         // wait 5 minutes until all AgentSnapshotJobs end
-        final long waitDuration = 30000L;
+        final long waitDuration = 300000L;
         final long sleepDuration = 45000L;
         long count;
         long currentWait;
         long maxWait = startTime + waitDuration;
-        LOGGER.info("[MANAGER CLEAN SESSION SCHEDULER] Waiting for ManagerSnapshotJobs ending to start "
-                            + "ManagerCleanJob ...");
 
         do {
             count = this.jobService
@@ -137,7 +147,10 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                                        JobStatus.RUNNING);
             currentWait = System.currentTimeMillis();
             // wait 45s if jobs are currently running
-            if (count != 0) {
+            if (count != 0L) {
+                LOGGER.info("[MANAGER CLEAN SESSION SCHEDULER] Waiting for ManagerSnapshotJobs ending to start "
+                                    + "ManagerCleanJob ... Current number of {} in running, pending or queued "
+                                    + "states {}.", ManagerSnapshotJob.class.getName(), count);
                 try {
                     Thread.sleep(sleepDuration);
                 } catch (InterruptedException e) {
@@ -147,7 +160,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                     Thread.currentThread().interrupt();
                 }
             }
-        } while (count != 0 && currentWait < maxWait && !Thread.currentThread().isInterrupted());
-        return count == 0;
+        } while (count != 0L && currentWait < maxWait && !Thread.currentThread().isInterrupted());
+        return count == 0L;
     }
 }

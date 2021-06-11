@@ -215,4 +215,11 @@ public class SessionStep {
     public int hashCode() {
         return Objects.hash(stepId, source, session);
     }
+
+    @Override
+    public String toString() {
+        return "SessionStep{" + "stepId='" + stepId + '\'' + ", source='" + source + '\'' + ", session='" + session
+                + '\'' + ", type=" + type + ", inputRelated=" + inputRelated + ", outputRelated=" + outputRelated
+                + ", state=" + state + ", properties=" + properties + ", lastUpdateDate=" + lastUpdateDate + '}';
+    }
 }

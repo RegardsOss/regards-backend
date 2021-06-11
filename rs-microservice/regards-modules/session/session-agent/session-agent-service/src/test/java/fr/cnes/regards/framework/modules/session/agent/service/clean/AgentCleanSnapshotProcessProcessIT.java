@@ -18,23 +18,20 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
-import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
+import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessService;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,16 +44,11 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_process_it",
-        "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678",
         "regards.session.agent.clean.snapshot.process.limit.store=30" })
-@ActiveProfiles(value = { "noscheduler" })
-public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTransactionalIT {
+@ActiveProfiles({ "noscheduler" })
+public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtilsTest {
 
-    @Autowired
-    private IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepo;
-
-    @Autowired
-    private ISnapshotProcessRepository snapshotProcessRepo;
+    private static OffsetDateTime UPDATE_DATE;
 
     @Autowired
     private AgentCleanSnapshotProcessService agentCleanSnapshotProcessService;
@@ -64,25 +56,9 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
     @Value("${regards.session.agent.clean.snapshot.process.limit.store}")
     private int limitStoreSnapshotProcess;
 
-    private static final String SOURCE_1 = "SOURCE_1";
-
-    private static final String SOURCE_2 = "SOURCE_2";
-
-    private static final String SOURCE_3 = "SOURCE_3";
-
-    private static final String SOURCE_4 = "SOURCE_4";
-
-    private static final String SOURCE_5 = "SOURCE_5";
-
-    private static final String SOURCE_6 = "SOURCE_6";
-
-    private static OffsetDateTime UPDATE_DATE;
-
-    @Before
-    public void init() {
+    @Override
+    public void doInit() {
         UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSnapshotProcess);
-        this.snapshotProcessRepo.deleteAll();
-        this.stepPropertyUpdateRequestRepo.deleteAll();
     }
 
     @Test
@@ -155,6 +131,6 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
                                                                                          StepPropertyStateEnum.SUCCESS,
                                                                                          "gen.products", "1", true, false)));
         // SAVE
-        this.stepPropertyUpdateRequestRepo.saveAll(stepRequests);
+        this.stepPropertyRepo.saveAll(stepRequests);
     }
 }

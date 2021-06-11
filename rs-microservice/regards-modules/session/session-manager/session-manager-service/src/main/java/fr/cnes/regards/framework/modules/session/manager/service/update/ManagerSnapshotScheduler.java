@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanJob;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import java.time.Instant;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
@@ -37,8 +38,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-
 /**
  * Scheduler to launch {@link ManagerSnapshotJob}
  *
@@ -49,7 +48,17 @@ import java.time.Instant;
 @EnableScheduling
 public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(ManagerSnapshotScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSnapshotScheduler.class);
+
+    public static final Long MAX_TASK_DELAY = 60L; // In second
+
+    public static final String DEFAULT_INITIAL_DELAY = "10000";
+
+    public static final String DEFAULT_SCHEDULING_DELAY = "30000"; // every 30 seconds
+
+    public static final String MANAGER_SNAPSHOT_PROCESS = "Session manager snapshot";
+
+    public static final String MANAGER_SNAPSHOT_PROCESS_TITLE = "Session manager snapshot scheduling";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -69,16 +78,6 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
     @Value("${spring.application.name}")
     private String microserviceName;
 
-    public static final Long MAX_TASK_DELAY = 60L; // In second
-
-    public static final String DEFAULT_INITIAL_DELAY = "10000";
-
-    public static final String DEFAULT_SCHEDULING_DELAY = "30000"; // every 30 seconds
-
-    public static final String MANAGER_SNAPSHOT_PROCESS = "Session manager snapshot";
-
-    public static final String MANAGER_SNAPSHOT_PROCESS_TITLE = "Session manager snapshot scheduling";
-
     /**
      * Snapshot task
      */
@@ -88,13 +87,20 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
     };
 
     /**
-     * Schedule {@link ManagerSnapshotJob} every 30s to generate sessions and sources
+     * Schedule {@link ManagerSnapshotJob} every 30s to generate sessions and sources from session steps
      */
     @Scheduled(initialDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.initial.delay:"
             + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
                     + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleManagerSnapshot() {
+        scheduleJob();
+    }
+
+    /**
+     * Schedule {@link ManagerSnapshotJob}
+     */
+    public void scheduleJob() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

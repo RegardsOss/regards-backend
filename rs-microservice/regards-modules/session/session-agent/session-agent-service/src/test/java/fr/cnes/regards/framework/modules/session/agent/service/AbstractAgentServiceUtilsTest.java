@@ -32,7 +32,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepService;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
+import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
@@ -45,14 +47,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
+ * Utils for tests
+ *
  * @author Iliana Ghazali
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" })
-@ActiveProfiles({ "testAmqp", "noscheduler" })
 public abstract class AbstractAgentServiceUtilsTest extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgentServiceUtilsTest.class);
@@ -77,6 +79,14 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractMultitenantS
 
     @Autowired
     private ISubscriber subscriber;
+
+    // SESSION AGENT
+
+    @Autowired
+    protected AgentSnapshotService agentSnapshotService;
+
+    @Autowired
+    protected AgentCleanSessionStepService agentCleanSessionStepService;
 
 
     /**
@@ -107,9 +117,18 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractMultitenantS
 
     protected static final String SOURCE_3 = "SOURCE 3";
 
+    protected static final String SOURCE_4 = "SOURCE_4";
+
+    protected static final String SOURCE_5 = "SOURCE_5";
+
+    protected static final String SOURCE_6 = "SOURCE_6";
+
     protected static final String OWNER_1 = "OWNER 1";
 
     protected static final String OWNER_2 = "OWNER 2";
+
+    protected static final String OWNER_3 = "OWNER 3";
+
 
     // -------------
     // BEFORE METHODS

@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @AutoConfigureBefore({ SessionCommonsServiceAutoConfiguration.class })
-public class SessionManagementServiceAutoConfiguration {
+public class SessionManagerServiceAutoConfiguration {
 
     /**
      * Update

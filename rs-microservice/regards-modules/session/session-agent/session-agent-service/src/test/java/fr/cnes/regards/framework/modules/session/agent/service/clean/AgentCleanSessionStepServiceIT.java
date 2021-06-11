@@ -18,26 +18,21 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
-import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
+import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepService;
-import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -48,40 +43,17 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_service_it",
-        "regards.session-agent.limit.store.session-steps=30", "regards.cipher.key-location=src/test/resources/testKey",
-        "regards.cipher.iv=1234567812345678" })
-@ActiveProfiles(value = { "noscheduler" })
-public class AgentCleanSessionStepServiceIT extends AbstractRegardsServiceTransactionalIT {
+        "regards.session-agent.limit.store.session-steps=30"})
+@ActiveProfiles({ "noscheduler" })
+public class AgentCleanSessionStepServiceIT extends AbstractAgentServiceUtilsTest {
 
-    @Autowired
-    private AgentSnapshotService agentSnapshotService;
-
-    @Autowired
-    private AgentCleanSessionStepService agentCleanSessionStepService;
-
-    @Autowired
-    private IStepPropertyUpdateRequestRepository stepPropertyRepo;
-
-    @Autowired
-    private ISessionStepRepository sessionStepRepo;
+    private static OffsetDateTime CREATION_DATE;
 
     @Value("${regards.session-agent.limit.store.session-steps}")
     private int limitStore;
 
-    private static final String SOURCE_1 = "SOURCE 1";
-
-    private static final String SOURCE_2 = "SOURCE 2";
-
-    private static final String OWNER_1 = "OWNER 1";
-
-    private static final String OWNER_2 = "OWNER 2";
-
-    private static OffsetDateTime CREATION_DATE;
-
-    @Before
-    public void init() {
-        this.stepPropertyRepo.deleteAll();
-        this.sessionStepRepo.deleteAll();
+    @Override
+    public void doInit() {
         CREATION_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(2 * limitStore);
     }
 

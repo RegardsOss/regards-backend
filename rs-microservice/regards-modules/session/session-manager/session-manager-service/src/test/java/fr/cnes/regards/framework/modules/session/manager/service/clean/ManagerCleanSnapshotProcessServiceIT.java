@@ -18,23 +18,19 @@
  */
 package fr.cnes.regards.framework.modules.session.manager.service.clean;
 
-import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -45,42 +41,18 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
-        "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678",
         "regards.session.manager.clean.snapshot.process.limit.store=30" })
-@ActiveProfiles(value = { "noscheduler" })
-public class ManagerCleanSnapshotProcessServiceIT extends AbstractRegardsServiceTransactionalIT {
+@ActiveProfiles({ "noscheduler" })
+public class ManagerCleanSnapshotProcessServiceIT extends AbstractManagerServiceUtilsTest {
 
-    @Autowired
-    private ISessionStepRepository sessionStepRepo;
-
-    @Autowired
-    private ISnapshotProcessRepository snapshotProcessRepo;
-
-    @Autowired
-    private ManagerCleanSnapshotProcessService managerCleanService;
+    private static OffsetDateTime UPDATE_DATE;
 
     @Value("${regards.session.manager.clean.snapshot.process.limit.store}")
     private int limitStoreSnapshotProcess;
 
-    private static final String SOURCE_1 = "SOURCE_1";
-
-    private static final String SOURCE_2 = "SOURCE_2";
-
-    private static final String SOURCE_3 = "SOURCE_3";
-
-    private static final String SOURCE_4 = "SOURCE_4";
-
-    private static final String SOURCE_5 = "SOURCE_5";
-
-    private static final String SOURCE_6 = "SOURCE_6";
-
-    private static OffsetDateTime UPDATE_DATE;
-
-    @Before
-    public void init() {
+    @Override
+    public void doInit() {
         UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSnapshotProcess);
-        this.snapshotProcessRepo.deleteAll();
-        this.sessionStepRepo.deleteAll();
     }
 
     @Test
@@ -131,17 +103,17 @@ public class ManagerCleanSnapshotProcessServiceIT extends AbstractRegardsService
         List<SessionStep> stepRequests = new ArrayList<>();
 
         // ACQUISITION
-        SessionStep step1 = new SessionStep("scan", SOURCE_1, "SESSION_1", StepTypeEnum.ACQUISITION, new StepState());
+        SessionStep step1 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION, new StepState());
         step1.setLastUpdateDate(UPDATE_DATE.minusMinutes(10L));
         stepRequests.add(step1);
 
         // REFERENCING
-        SessionStep step2 = new SessionStep("oais", SOURCE_2, "SESSION_2", StepTypeEnum.REFERENCING, new StepState());
+        SessionStep step2 = new SessionStep("oais", SOURCE_2, SESSION_2, StepTypeEnum.REFERENCING, new StepState());
         step2.setLastUpdateDate(UPDATE_DATE.minusMinutes(9L));
         stepRequests.add(step2);
 
         // STORAGE
-        SessionStep step3 = new SessionStep("storage", SOURCE_3, "SESSION_3", StepTypeEnum.STORAGE, new StepState());
+        SessionStep step3 = new SessionStep("storage", SOURCE_3, SESSION_3, StepTypeEnum.STORAGE, new StepState());
         step3.setLastUpdateDate(UPDATE_DATE.minusMinutes(8L));
         stepRequests.add(step3);
 

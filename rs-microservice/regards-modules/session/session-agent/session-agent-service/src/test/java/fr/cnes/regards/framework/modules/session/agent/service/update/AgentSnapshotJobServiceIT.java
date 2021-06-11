@@ -35,9 +35,9 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.Order;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -46,6 +46,7 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_job_service_it" })
+@ActiveProfiles({ "testAmqp", "noscheduler" })
 public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
 
     @Autowired
@@ -89,7 +90,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
         snapshotProcessesCreated = this.snapshotProcessRepo.findAll();
 
         // create stepPropertyUpdateRequestEvents
-        nbEvents+= createRun2StepEvents();
+        nbEvents += createRun2StepEvents();
         isEventRegistered = waitForStepPropertyEventsStored(nbEvents);
         if (!isEventRegistered) {
             Assert.fail("Events were not stored in database");
@@ -112,7 +113,6 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(SessionStepEvent.class));
         checkResult2(snapshotProcessesCreated);
     }
-
 
     private int createRun1StepEvents() {
         List<StepPropertyUpdateRequestEvent> stepRequests = new ArrayList<>();

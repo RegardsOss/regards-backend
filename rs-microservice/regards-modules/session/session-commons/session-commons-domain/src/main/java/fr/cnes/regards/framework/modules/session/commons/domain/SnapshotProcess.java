@@ -103,4 +103,10 @@ public class SnapshotProcess {
     public int hashCode() {
         return Objects.hash(source);
     }
+
+    @Override
+    public String toString() {
+        return "SnapshotProcess{" + "source='" + source + '\'' + ", lastUpdateDate=" + lastUpdateDate + ", jobId="
+                + jobId + '}';
+    }
 }

@@ -21,9 +21,9 @@ package fr.cnes.regards.framework.modules.session.manager.service.clean;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
+import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
 import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanJob;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanScheduler;
@@ -40,15 +40,20 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Test mutual blocking of {@link ManagerCleanJob} and {@link ManagerSnapshotJob}
+ * Test blocking of {@link ManagerCleanJob} and {@link ManagerSnapshotJob}
  *
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_lock_jobs_it",
         "regards.session.manager.clean.session.limit.store=30" })
+@ActiveProfiles({ "testAMQP", "noscheduler" })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS,
+        hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {
 
     /**
@@ -67,27 +72,21 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {
 
     @Test
     @Purpose("Test if a ManagerCleanJob is queued after all ManagerSnapshotJobs queued, pending or running")
-    public void testBlockedCleanProcess() throws InterruptedException {
+    public void testBlockedCleanProcessBySnapshot() throws InterruptedException {
         int nbSessionSteps = 50;
-        createSessionStepEvents(nbSessionSteps);
+        createSessionSteps(nbSessionSteps);
 
         // --- LAUNCH JOBS ---
         // launch SnapshotJobs
-        snapshotScheduler.scheduleManagerSnapshot();
-        Thread.sleep(100L);
-
+        snapshotScheduler.scheduleJob();
+        waitForJobStates(ManagerSnapshotJob.class.getName(), nbSessionSteps, 60000L, JobStatus.values());
         // launch CleanJobs
-        // if there is a snapshot job ongoing, make sure a clean job are not launched
-        cleanScheduler.scheduleCleanSession();
-        Thread.sleep(100L);
-
+        // if there is a snapshot job ongoing, make sure a clean job are not launched until the end of all snapshot jobs
+        cleanScheduler.scheduleJob();
+        waitForJobStates(ManagerCleanJob.class.getName(), 1, 60000L, new JobStatus[] { JobStatus.SUCCEEDED });
         // --- CHECK RESULTS ---
         // Check results, Snapshot jobs should have been created, Clean jobs should be blocked
         List<JobInfo> createdJobList = (List<JobInfo>) this.jobInfoRepo.findAll();
-        long nbSnapshotJobs = createdJobList.stream()
-                .filter(job -> job.getClassName().equals(ManagerSnapshotJob.class.getName())).count();
-        Assert.assertEquals(String.format("%s snapshot jobs should have been created", nbSessionSteps), nbSessionSteps,
-                            nbSnapshotJobs);
         Optional<JobInfo> managerCleanJob = createdJobList.stream()
                 .max(Comparator.comparing(job -> job.getStatus().getQueuedDate()));
         Assert.assertTrue("CleanJobs should have been queued in last position",
@@ -97,25 +96,18 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {
 
     @Test
     @Purpose("Test if a ManagerSnapshotJob is blocked by a ManagerCleanJob queued, pending or running")
-    public void testBlockedSnapshot() throws InterruptedException {
-        int nbSessionSteps = 50;
-        createSessionStepEvents(nbSessionSteps);
+    public void testBlockedSnapshotByCleanProcess() throws InterruptedException {
+        int nbSessionSteps = 100;
+        createSessionSteps(nbSessionSteps);
 
         // --- LAUNCH JOBS ---
         // launch CleanJobs
         // if there is a snapshot job ongoing, make sure a clean job are not launched
-        cleanScheduler.scheduleCleanSession();
-        long count = 0;
-        do {
-            count = jobInfoService.retrieveJobsCount(ManagerCleanJob.class.getName(), JobStatus.values());
-            if(count==0) {
-                Thread.sleep(10);
-            }
-        } while (count != 1L);
+        cleanScheduler.scheduleJob();
+        waitForJobStates(ManagerCleanJob.class.getName(), 1, 60000L, JobStatus.values());
 
         // launch SnapshotJobs
-        snapshotScheduler.scheduleManagerSnapshot();
-        Thread.sleep(100L);
+        snapshotScheduler.scheduleJob();
 
         // --- CHECK RESULTS ---
         // Check results, snapshot jobs should not be created because there was a clean process ongoing
@@ -124,32 +116,40 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {
                 .filter(job -> job.getClassName().equals(ManagerSnapshotJob.class.getName())).count();
         Assert.assertEquals("SnapshotJobs should not have been created because there was a clean process ongoing", 0L,
                             nbSnapshotJobs);
-        long nbCleanJobs = createdJobList.stream()
-                .filter(job -> job.getClassName().equals(ManagerCleanJob.class.getName())).count();
-        Assert.assertEquals("One clean job should have been created", 1L, nbCleanJobs);
-
     }
 
-    private void createSessionStepEvents(int nbSessionSteps) throws InterruptedException {
-        List<SessionStepEvent> stepEvents = new ArrayList<>();
+    @Test
+    @Purpose("Test if a ManagerSnapshotJob is blocked if one is already running for the same source")
+    public void testBlockedSnapshotBySameSource() throws InterruptedException {
+        int nbSessionSteps = 20;
+        createSessionSteps(nbSessionSteps);
 
-        // create list of session step events
+        // --- LAUNCH JOBS ---
+        // launch job for the first time
+        snapshotScheduler.scheduleJob();
+        // launch the same jobs for the second time
+        snapshotScheduler.scheduleJob();
+        // assert the correct number of jobs are created (not duplicated)
+        waitForJobStates(ManagerSnapshotJob.class.getName(), nbSessionSteps, 60000L, JobStatus.values());
+    }
+
+    private void createSessionSteps(int nbSessionSteps) {
+        List<SessionStep> stepList = new ArrayList<>();
+        List<SnapshotProcess> snapshotProcessList = new ArrayList<>();
+
+        // create list of session step events and snapshot
         for (int i = 0; i < nbSessionSteps; i++) {
             String source = "SOURCE_" + i;
             // ACQUISITION - scan event SOURCE 0-nbSources / SESSION 1
-            SessionStep sessionStep = new SessionStep("scan", source, SESSION_1, StepTypeEnum.ACQUISITION,
+            SessionStep sessionStep = new SessionStep("scan", source, "SESSION_1", StepTypeEnum.ACQUISITION,
                                                       new StepState(0, 0, 1));
             sessionStep.setLastUpdateDate(UPDATE_DATE.minusDays(limitStoreSessionSteps + 1));
-            stepEvents.add(new SessionStepEvent(sessionStep));
-        }
+            stepList.add(sessionStep);
 
-        // Publish events
-        this.publisher.publish(stepEvents);
-
-        // wait for sessionSteps to be stored in database
-        boolean isEventRegistered = waitForSessionStepEventsStored(nbSessionSteps);
-        if (!isEventRegistered) {
-            Assert.fail("Events were not stored in database");
+            // snapshot
+            snapshotProcessList.add(new SnapshotProcess(source, null, null));
         }
+        this.sessionStepRepo.saveAll(stepList);
+        this.snapshotProcessRepo.saveAll(snapshotProcessList);
     }
 }

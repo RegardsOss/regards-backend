@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -44,6 +45,7 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_performance_it" })
+@ActiveProfiles({ "testAmqp", "noscheduler" })
 public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUtilsTest {
 
     /**

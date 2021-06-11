@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.session.manager.service.update;
 
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
@@ -37,6 +38,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
@@ -45,7 +47,8 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_snapshot_job_service_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_snapshot_job_service_it"})
+@ActiveProfiles({ "testAmqp", "noscheduler" })
 public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest {
 
     @Autowired
@@ -61,10 +64,7 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
         int nbEvents = createRunStepEvents();
 
         // wait for sessionStepEvent to be stored in database
-        boolean isEventRegistered = waitForSessionStepEventsStored(nbEvents);
-        if (!isEventRegistered) {
-            Assert.fail("Events were not stored in database");
-        }
+        waitForSessionStepEventsStored(nbEvents);
 
         // retrieve associated snapshot processes
         List<SnapshotProcess> snapshotProcessesCreated = this.snapshotProcessRepo.findAll();
@@ -72,11 +72,7 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
 
         // launch snapshot jobs
         this.managerSnapshotJobService.scheduleJob();
-
-        boolean isJobManagerSuccess = waitForJobSuccesses(ManagerSnapshotJob.class.getName(), 2, 20000L);
-        if (!isJobManagerSuccess) {
-            Assert.fail("ManagerSnapshotJob was not launched or was not in success state");
-        }
+        waitForJobStates(ManagerSnapshotJob.class.getName(), 2, 20000L, new JobStatus[] { JobStatus.SUCCEEDED });
         waitForSnapshotUpdateSuccesses();
         checkResults();
 
@@ -87,12 +83,7 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
 
         // launch snapshot jobs
         this.managerSnapshotJobService.scheduleJob();
-
-        isJobManagerSuccess = waitForJobSuccesses(ManagerSnapshotJob.class.getName(), 3, 20000L);
-        if (!isJobManagerSuccess) {
-            Assert.fail("ManagerSnapshotJob was not launched or was not in success state");
-        }
-
+        waitForJobStates(ManagerSnapshotJob.class.getName(), 3, 20000L, new JobStatus[] { JobStatus.SUCCEEDED });
         waitForSnapshotUpdateSuccesses();
         // check snapshot process was updated
         Optional<SnapshotProcess> snapshotProcessOpt = this.snapshotProcessRepo.findBySource(SOURCE_2);
