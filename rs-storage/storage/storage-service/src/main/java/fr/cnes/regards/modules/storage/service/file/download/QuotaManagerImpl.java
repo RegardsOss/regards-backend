@@ -116,9 +116,9 @@ public class QuotaManagerImpl implements IQuotaManager {
             diffsAccumulatorByTenant.put(tenant, new java.util.HashMap<>());
         });
 
-        // start schedulers only if not in "noschedule" profile (i.e. disable schedulers for tests)
+        // start schedulers only if not in "noscheduler" profile (i.e. disable schedulers for tests)
         boolean shouldStartSchedulers = Arrays.stream(env.getActiveProfiles()).distinct() // maybe useless but I don't trust
-                .noneMatch(profile -> profile.equals("noschedule"));
+                .noneMatch(profile -> profile.equals("noscheduler"));
         if (shouldStartSchedulers) {
             startGaugeExpirationScheduler();
             startDiffSyncScheduler();

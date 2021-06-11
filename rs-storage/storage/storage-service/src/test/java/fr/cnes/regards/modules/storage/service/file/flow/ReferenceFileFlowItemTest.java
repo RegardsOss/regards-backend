@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
  *
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class ReferenceFileFlowItemTest extends AbstractStorageTest {

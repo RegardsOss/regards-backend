@@ -53,7 +53,7 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 public class StorageLocationConfigurationServiceTest extends AbstractMultitenantServiceTest {
 
     private static final String PDS_LABEL = "PrioritizedDataStorageServiceIT";

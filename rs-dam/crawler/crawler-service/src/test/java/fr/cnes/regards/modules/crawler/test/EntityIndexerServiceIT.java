@@ -102,7 +102,7 @@ import org.springframework.test.context.TestPropertySource;
  * @author Sébastien Binda
  */
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@ActiveProfiles({ "indexer-service", "noschedule" })
+@ActiveProfiles({ "indexer-service", "noscheduler" })
 @TestPropertySource(
     locations = { "classpath:test-indexer.properties" },
     properties = {

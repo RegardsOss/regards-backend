@@ -32,6 +32,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableScheduling
 @EnableAsync
-@Profile("!noschedule")
+@Profile("!noscheduler")
 public class CrawlerServiceSchedulingConfiguration {
 }

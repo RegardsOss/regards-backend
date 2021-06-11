@@ -50,7 +50,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  *
  */
 @Component
-@Profile({ "!noschedule" })
+@Profile({ "!noscheduler" })
 @EnableScheduling
 public class StorageLocationScheduler extends AbstractTaskScheduler {
 

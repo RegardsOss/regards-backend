@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFa
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles("noschedule") // Disable scheduling, this will activate IngesterService during all tests
+@ActiveProfiles("noscheduler") // Disable scheduling, this will activate IngesterService during all tests
 @TestPropertySource(locations = { "classpath:test.properties" })
 public class IndexerServiceIT {
 

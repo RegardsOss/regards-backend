@@ -64,7 +64,7 @@ import io.vavr.control.Try;
  *
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests" }, locations = { "classpath:application-test.properties" })
 public class FileDownloadServiceTest extends AbstractStorageTest {
 

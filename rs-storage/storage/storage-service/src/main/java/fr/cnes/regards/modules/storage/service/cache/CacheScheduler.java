@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.storage.service.cache.job.CacheVerificationJob;
  *
  */
 @Component
-@Profile("!noschedule")
+@Profile("!noscheduler")
 @EnableScheduling
 public class CacheScheduler {
 

@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_deletion_tests" }, locations = { "classpath:application-test.properties" })
 public class FileDeletionRequestServiceTest extends AbstractStorageTest {
 
