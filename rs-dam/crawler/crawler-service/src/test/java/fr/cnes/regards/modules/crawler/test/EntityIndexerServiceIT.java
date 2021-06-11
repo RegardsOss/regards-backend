@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.crawler.test;
 
 import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
@@ -30,22 +32,39 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandlerService;
+import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.crawler.plugins.TestDataAccessRightPlugin;
 import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePlugin;
 import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
+import fr.cnes.regards.modules.crawler.service.session.SessionNotifierPropertyEnum;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.*;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityFilter;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityLevel;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.plugin.dataaccess.accessright.NewDataObjectsAccessPlugin;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
@@ -59,21 +78,24 @@ import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Test class.
@@ -88,6 +110,10 @@ import java.util.Set;
         "spring.jpa.properties.hibernate.default_schema=entity_indexer"
     })
 public class EntityIndexerServiceIT extends AbstractRegardsIT {
+
+    private static final String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
 
     private static String TENANT = "entity_indexer";
 
@@ -134,6 +160,22 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     @Autowired
     private IPluginConfigurationRepository pluginRepo;
+
+    @SpyBean
+    private IPublisher publisher;
+
+    @Autowired
+    private SessionAgentHandlerService stepHandlerService;
+
+    @Autowired
+    private ISessionStepRepository sessionStepRepo;
+
+    @Autowired
+    private IStepPropertyUpdateRequestRepository stepRepo;
+
+    @Autowired
+    private AgentSnapshotService agentSnapshotService;
+
 
 //    @Autowired
 //    private Gson gson;
@@ -184,6 +226,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         dsRepo.deleteAll();
         modelRepo.deleteAll();
         pluginRepo.deleteAll();
+        stepRepo.deleteAll();
+        sessionStepRepo.deleteAll();
     }
 
     @Before
@@ -191,6 +235,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         clear();
 
         runtimeTenantResolver.forceTenant(TENANT);
+        Mockito.clearInvocations(publisher);
         initIndex(TENANT);
         createModels();
         datasource = createDataSource();
@@ -267,7 +312,16 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     }
 
     private DataObject createObject(String id, String label) {
-        DataObject dataObject = new DataObject(model, TENANT, id, label);
+        // create dataObjectFeature
+        DataObjectFeature dataObjectFeature =
+                new DataObjectFeature(OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                                        EntityType.DATA, TENANT, 1), id, label);
+        dataObjectFeature.setSessionOwner(SESSION_OWNER);
+        dataObjectFeature.setSession(SESSION);
+
+        // create dataObject with dataObjectFeature
+        DataObject dataObject = new DataObject(model, dataObjectFeature);
+
         // for this test, lets assume that there is only 1 version of dataobjects
         dataObject.setLast(true);
         return dataObject;
@@ -561,5 +615,88 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     }
 
 
+    @Test
+    @Purpose("Test the deletion of an object and the correct sending of StepPropertyUpdateRequestEvents")
+    public void deleteDatasetTest() {
+        // check object to delete exists
+        UniformResourceName objectId = objects.get(0).getIpId();
+        Assert.assertNotNull("Object should exist", searchService.get(objectId));
 
+        // check the stepEvents indexation were correctly sent
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        List<StepPropertyUpdateRequestEvent> stepEvents = argumentCaptor.getAllValues().stream()
+                .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
+                .map(event -> (StepPropertyUpdateRequestEvent) event).collect(Collectors.toList());
+        Assert.assertEquals("Unexpected number of step events created. Check the workflow of "
+                                    + "StepPropertyUpdateRequestEvent sent.", 2, stepEvents.size());
+        checkStepEvent(stepEvents.get(0), SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(), "3",
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION);
+        checkStepEvent(stepEvents.get(1), SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(), "3",
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION);
+        Mockito.clearInvocations(publisher);
+
+        // delete object
+        indexerService.deleteDataObject(TENANT, objectId.toString());
+
+        // check the deletion of the first object and event sent
+        Assert.assertNull("Object should have been deleted", searchService.get(objectId));
+        argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        stepEvents = argumentCaptor.getAllValues().stream()
+                .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
+                .map(event -> (StepPropertyUpdateRequestEvent) event).collect(Collectors.toList());
+        Assert.assertEquals("Unexpected number of step events created. Check the workflow of "
+                                    + "StepPropertyUpdateRequestEvent sent.", 1, stepEvents.size());
+        checkStepEvent(stepEvents.get(0), SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(), "1",
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION);
+    }
+
+    @Test
+    @Purpose("Check a reset event was sent following a deleteIndexNRecreateEntities")
+    public void deleteIndexNRecreateEntitiesTest() throws ModuleException {
+        // --- PREPARE TEST ---
+        // Generate the process of creating sessionSteps manually
+        // first save steps to database by capturing them
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        List<StepPropertyUpdateRequestEvent> stepEventsInit = argumentCaptor.getAllValues().stream()
+                .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
+                .map(event -> (StepPropertyUpdateRequestEvent) event).collect(Collectors.toList());
+        stepHandlerService.createStepRequests(stepEventsInit);
+        // then generate sessionSteps from steps
+        agentSnapshotService.generateSessionStep(new SnapshotProcess(SESSION_OWNER, null, null), OffsetDateTime.now());
+
+        // --- DELETE AND RECREATE ENTITIES ---
+        Mockito.clearInvocations(publisher);
+        indexerService.deleteIndexNRecreateEntities(TENANT);
+        // check step events were sent to reset all session step properties following the deletion of entities
+        ArgumentCaptor<List< ? extends ISubscribable>> argumentCaptor2 = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor2.capture());
+        List<List<StepPropertyUpdateRequestEvent>> stepEvents = argumentCaptor2.getAllValues().stream()
+                .filter(eventList -> !eventList.isEmpty() && eventList.get(0) instanceof StepPropertyUpdateRequestEvent)
+                .map(eventList -> (List<StepPropertyUpdateRequestEvent>) eventList).collect(Collectors.toList());
+        Assert.assertTrue("Step list should contains one event. Check if stepEventList was correctly sent",
+                           !stepEvents.isEmpty() && stepEvents.get(0).size() == 1);
+        checkStepEvent(stepEvents.get(0).get(0), SessionNotifierPropertyEnum.RESET.getName(), "0",
+                       StepPropertyEventTypeEnum.VALUE, SESSION_OWNER, SESSION);
+    }
+
+    /**
+     * Method to check properties of StepPropertyUpdateRequestEvents
+     */
+    private void checkStepEvent(StepPropertyUpdateRequestEvent step, String expectedProperty, String expectedValue,
+            StepPropertyEventTypeEnum expectedType, String expectedSessionOwner, String expectedSession) {
+        StepProperty stepProperty = step.getStepProperty();
+        Assert.assertEquals("This property was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedProperty, stepProperty.getStepPropertyInfo().getProperty());
+        Assert.assertEquals("This value was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedValue, stepProperty.getStepPropertyInfo().getValue());
+        Assert.assertEquals("This type was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedType, step.getType());
+        Assert.assertEquals("This sessionOwner was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedSessionOwner, stepProperty.getSource());
+        Assert.assertEquals("This session was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedSession, stepProperty.getSession());
+    }
 }

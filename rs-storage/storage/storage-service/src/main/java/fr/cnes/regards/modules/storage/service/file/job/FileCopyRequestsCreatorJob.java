@@ -80,6 +80,10 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     public static final String FILE_TYPES = "types";
 
+    public static final String SESSION_OWNER = "sessionOwner";
+
+    public static final String SESSION = "session" ;
+
     @Autowired
     private IPublisher publisher;
 
@@ -104,6 +108,10 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     private int totalPages = 0;
 
+    private String sessionOwner;
+
+    private String session;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -111,6 +119,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
         sourcePath = parameters.get(SOURCE_PATH).getValue();
         destinationPath = parameters.get(DESTINATION_PATH).getValue();
+        sessionOwner = parameters.get(SESSION_OWNER).getValue();
+        session = parameters.get(SESSION).getValue();
         if (parameters.get(FILE_TYPES) != null) {
             types = parameters.get(FILE_TYPES).getValue();
         }
@@ -144,15 +154,14 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                     if (desinationFilePath.isPresent()) {
                         nbFilesToCopy++;
                         // For each file reference located in the given path, send a copy request to the destination storage location.
-                        requests.add(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
-                                                              storageLocationDestinationId,
-                                                              desinationFilePath.get().toString()));
+                        requests.add(FileCopyRequestDTO
+                                             .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
+                                                    desinationFilePath.get().toString(), sessionOwner, session));
                     }
                 } catch (MalformedURLException | ModuleException e) {
                     logger.error(String.format("Unable to handle file reference %s for copy from %s to %s. Cause:",
                                                fileRef.getLocation().getUrl(), storageLocationSourceId,
-                                               storageLocationDestinationId),
-                                 e);
+                                               storageLocationDestinationId), e);
                 }
                 this.advanceCompletion();
             }

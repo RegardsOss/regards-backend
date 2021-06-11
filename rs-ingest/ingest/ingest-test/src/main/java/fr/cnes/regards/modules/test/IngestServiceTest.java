@@ -18,20 +18,7 @@
  */
 package fr.cnes.regards.modules.test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -41,6 +28,13 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
@@ -57,6 +51,16 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Component;
 
 @Component
 public class IngestServiceTest {
@@ -84,7 +88,16 @@ public class IngestServiceTest {
     protected IAbstractRequestRepository requestRepository;
 
     @Autowired
-    private IJobInfoRepository jobInfoRepo;
+    private IJobInfoRepository jobInfoRepository;
+
+    @Autowired
+    private ISnapshotProcessRepository snapshotProcessRepository;
+
+    @Autowired
+    private ISessionStepRepository sessionStepRepository;
+
+    @Autowired
+    private IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepository;
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
@@ -122,8 +135,11 @@ public class IngestServiceTest {
                 aipRepository.deleteAllInBatch();
                 lastSipRepository.deleteAllInBatch();
                 sipRepository.deleteAllInBatch();
-                jobInfoRepo.deleteAll();
+                jobInfoRepository.deleteAll();
                 pluginConfRepo.deleteAllInBatch();
+                snapshotProcessRepository.deleteAllInBatch();
+                stepPropertyUpdateRequestRepository.deleteAllInBatch();
+                sessionStepRepository.deleteAllInBatch();
                 cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
                 done = waitAllRequestsFinished();
             } catch (DataAccessException e) {
@@ -138,6 +154,10 @@ public class IngestServiceTest {
         subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
         subscriber.unsubscribeFrom(IngestRequestEvent.class);
         subscriber.unsubscribeFrom(FileRequestsGroupEvent.class);
+        subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
+        subscriber.unsubscribeFrom(SessionDeleteEvent.class);
+        subscriber.unsubscribeFrom(SourceDeleteEvent.class);
+        subscriber.unsubscribeFrom(SessionStepEvent.class);
     }
 
     /**

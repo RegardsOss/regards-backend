@@ -26,6 +26,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepLight;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
@@ -36,7 +38,11 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
-import fr.cnes.regards.modules.crawler.service.consumer.*;
+import fr.cnes.regards.modules.crawler.service.consumer.DataObjectAssocRemover;
+import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocRemover;
+import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocUpdater;
+import fr.cnes.regards.modules.crawler.service.consumer.DataObjectUpdater;
+import fr.cnes.regards.modules.crawler.service.consumer.SaveDataObjectsCallable;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.session.SessionNotifier;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
@@ -63,6 +69,30 @@ import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
@@ -77,28 +107,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.ObjectError;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.io.IOException;
-import java.text.ParseException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -169,11 +186,17 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Value("${regards.crawler.max.bulk.size:10000}")
     private Integer maxBulkSize;
 
+    @Value("${regards.crawler.max.session.step.size:10000}")
+    private int sessionStepBulkSize;
+
     @Autowired
     private IMappingService esMappingService;
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private ISessionStepRepository sessionStepRepository;
 
     private static List<String> toErrors(Errors errorsObject) {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
@@ -748,7 +771,13 @@ public class EntityIndexerService implements IEntityIndexerService {
     public void deleteIndexNRecreateEntities(String tenant) throws ModuleException {
         //1. Delete existing index
         deleteIndex(tenant);
-        sessionNotifier.notifyIndexDeletion();
+        // get all sessions to notify
+        Pageable pageToRequest = PageRequest.of(0, sessionStepBulkSize, Sort.by(Sort.Order.asc("source")));
+        Page<ISessionStepLight> pageSessionStep;
+        do {
+            pageSessionStep = this.sessionStepRepository.findBy(pageToRequest);
+            sessionNotifier.notifyGlobalIndexDeletion(pageSessionStep.getContent());
+        } while (pageSessionStep.hasNext());
         //2. Then re-create all entities
         createIndexIfNeeded(tenant);
         OffsetDateTime updateDate = OffsetDateTime.now();
@@ -1019,6 +1048,11 @@ public class EntityIndexerService implements IEntityIndexerService {
 
     @Override
     public boolean deleteDataObject(String tenant, String ipId) {
+        // get object deleted
+        DataObject obj = esRepos.get(tenant, EntityType.DATA.toString(), ipId, DataObject.class);
+        // decrement the related session
+        sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());
+        // delete object
         return esRepos.delete(tenant, EntityType.DATA.toString(), ipId);
     }
 

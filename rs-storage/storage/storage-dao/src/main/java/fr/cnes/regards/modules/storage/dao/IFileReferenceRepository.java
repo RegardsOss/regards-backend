@@ -80,4 +80,5 @@ public interface IFileReferenceRepository
     @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id)", nativeQuery = true)
     boolean hasOwner(@Param("id") Long id);
 
+    FileReference findOneById(Long id);
 }

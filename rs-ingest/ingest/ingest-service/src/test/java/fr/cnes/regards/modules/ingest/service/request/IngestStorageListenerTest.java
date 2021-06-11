@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  *
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request" },
         locations = { "classpath:application-test.properties" })
 public class IngestStorageListenerTest extends AbstractIngestRequestTest {

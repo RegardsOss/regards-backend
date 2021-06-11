@@ -18,37 +18,9 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -82,8 +54,35 @@ import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepo
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionResponseEvent;
+import fr.cnes.regards.modules.featureprovider.domain.IFeatureExtractionRequestLight;
 import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
+import fr.cnes.regards.modules.featureprovider.service.session.SessionNotifier;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 /**
  * Feature reference service management
@@ -142,6 +141,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
     @Autowired
     private FeatureClient featureClient;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Override
     public void validateRequest(AbstractRequestEvent event, Errors errors) {
         if (!event.hasRequestId()) {
@@ -157,18 +159,24 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
     @Override
     public boolean denyMessage(Message message, String errorMessage) {
+        MessageProperties messageProperties = message.getMessageProperties();
 
-        String requestId = AbstractRequestEvent.getRequestId(message.getMessageProperties());
+        String requestId = AbstractRequestEvent.getRequestId(messageProperties);
         if (requestId == null) {
             return false;
         }
 
-        String requestOwner = AbstractRequestEvent.getRequestOwner(message.getMessageProperties());
+        String requestOwner = AbstractRequestEvent.getRequestOwner(messageProperties);
+        String sessionOwner = AbstractRequestEvent.getSessionOwner(messageProperties);
+        String session = AbstractRequestEvent.getSession(messageProperties);
+
         // Monitoring log
         LOGGER.error(String.format(REFERENCE_DENIED_FORMAT, requestOwner, requestId, errorMessage));
         // Publish DENIED request
         publisher.publish(new FeatureExtractionResponseEvent(requestId, requestOwner, RequestState.DENIED,
                 Sets.newHashSet(errorMessage)));
+        // Notify denied request to the session agent
+        this.sessionNotifier.incrementRequestRefused(sessionOwner, session);
         return true;
     }
 
@@ -202,6 +210,13 @@ public class FeatureExtractionService implements IFeatureExtractionService {
     private void prepareFeatureReferenceRequest(FeatureExtractionRequestEvent item,
             List<FeatureExtractionRequest> grantedRequests, RequestInfo<String> requestInfo,
             Set<String> existingRequestIds) {
+        // init
+        String sessionOwner = item.getMetadata().getSessionOwner();
+        String session = item.getMetadata().getSession();
+
+        // notify extract request to the session agent
+        sessionNotifier.incrementRequestCount(sessionOwner, session);
+
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureExtractionRequestEvent.class.getName());
         validator.validate(item, errors);
@@ -222,6 +237,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             // Publish DENIED request (do not persist it in DB)
             publisher.publish(new FeatureExtractionResponseEvent(item.getRequestId(), item.getRequestOwner(),
                     RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            // publish request denied to the session agent
+            sessionNotifier.incrementRequestRefused(sessionOwner, session);
             return;
         }
         // Monitoring log
@@ -275,12 +292,12 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
     @Override
     public void processRequests(List<FeatureExtractionRequest> requests) {
-
         long processStart = System.currentTimeMillis();
 
         int successCreationRequestGenerationCount = 0;
         List<FeatureCreationRequestEvent> creationRequestsToRegister = new ArrayList<>();
 
+        // process requests
         for (FeatureExtractionRequest request : requests) {
             try {
                 creationRequestsToRegister.add(initFeatureCreationRequest(request));
@@ -296,6 +313,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                 request.addError(e.getMessage());
                 publisher.publish(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
                         RequestState.ERROR, errors));
+                // Notify error request to the session agent
+                this.sessionNotifier.incrementRequestErrors(request.getMetadata().getSessionOwner(),
+                                                            request.getMetadata().getSession());
             }
         }
 
@@ -377,19 +397,25 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             Map<String, FeatureRequestEvent> deniedRequestPerRequestId = denied.stream()
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
             // Filter requests associated to an existing FeatureExtractionResponseEvent
-            Set<String> extractRequestIds = featureExtractionRequestRepo
-                    .findByRequestIdIn(deniedRequestPerRequestId.keySet());
+            Set<IFeatureExtractionRequestLight> extractRequestsLightSet =
+                    featureExtractionRequestRepo.findByRequestIdIn(deniedRequestPerRequestId.keySet());
 
-            if (!extractRequestIds.isEmpty()) {
+            if (!extractRequestsLightSet.isEmpty()) {
                 List<FeatureExtractionResponseEvent> events = new ArrayList<>();
                 // For each, send an extraction error event
-                for (String extractRequestId : extractRequestIds) {
+                for (IFeatureExtractionRequestLight extractRequestLight : extractRequestsLightSet) {
+                    String extractRequestId = extractRequestLight.getRequestId();
                     FeatureRequestEvent extractRequest = deniedRequestPerRequestId.get(extractRequestId);
                     events.add(new FeatureExtractionResponseEvent(extractRequestId, extractRequest.getRequestOwner(),
                             RequestState.ERROR, extractRequest.getErrors()));
+                    // send request error to session agent
+                    this.sessionNotifier.incrementRequestErrors(extractRequestLight.getMetadata().getSessionOwner(),
+                                                                extractRequestLight.getMetadata().getSession());
                 }
                 publisher.publish(events);
                 // Update FeatureExtractionResponseEvent with error state
+                Set<String> extractRequestIds = extractRequestsLightSet.stream()
+                        .map(IFeatureExtractionRequestLight::getRequestId).collect(Collectors.toSet());
                 featureExtractionRequestRepo.updateStepByRequestIdIn(FeatureRequestStep.REMOTE_CREATION_ERROR,
                                                                      extractRequestIds);
                 featureExtractionRequestRepo.updateState(RequestState.ERROR, extractRequestIds);
@@ -404,19 +430,25 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             Map<String, FeatureRequestEvent> grantedRequestPerRequestId = granted.stream()
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
             // Filter requests associated to an existing FeatureExtractionResponseEvent
-            Set<String> extractRequestIds = featureExtractionRequestRepo
+            Set<IFeatureExtractionRequestLight> extractRequestsLightSet = featureExtractionRequestRepo
                     .findByRequestIdIn(grantedRequestPerRequestId.keySet());
 
-            if (!extractRequestIds.isEmpty()) {
+            if (!extractRequestsLightSet.isEmpty()) {
                 List<FeatureExtractionResponseEvent> events = new ArrayList<>();
                 // For each, send an extraction success event
-                for (String extractRequestId : extractRequestIds) {
+                for (IFeatureExtractionRequestLight extractRequestLight : extractRequestsLightSet) {
+                    String extractRequestId = extractRequestLight.getRequestId();
                     events.add(new FeatureExtractionResponseEvent(extractRequestId,
                             grantedRequestPerRequestId.get(extractRequestId).getRequestOwner(), RequestState.SUCCESS,
                             new HashSet<>()));
+                    // notify request success
+                    this.sessionNotifier.incrementGeneratedProducts(extractRequestLight.getMetadata().getSessionOwner(),
+                                                                    extractRequestLight.getMetadata().getSession());
                 }
                 publisher.publish(events);
                 // Delete all success FeatureExtractionResponseEvent
+                Set<String> extractRequestIds = extractRequestsLightSet.stream()
+                        .map(IFeatureExtractionRequestLight::getRequestId).collect(Collectors.toSet());
                 featureExtractionRequestRepo.deleteAllByRequestIdIn(extractRequestIds);
             }
         }
@@ -431,6 +463,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             request.setState(RequestState.ERROR);
             errorResponses.add(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
                     RequestState.ERROR, errorMessages));
+            // notify error to the session agent
+            this.sessionNotifier.incrementRequestErrors(request.getMetadata().getSessionOwner(),
+                                                        request.getMetadata().getSession());
         }
         featureExtractionRequestRepo.saveAll(featureExtractionRequests);
         publisher.publish(errorResponses);

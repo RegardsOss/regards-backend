@@ -367,10 +367,12 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         fdr.setStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED);
         for (FeatureFile file : feature.getFeature().getFiles()) {
             FeatureFileAttributes attribute = file.getAttributes();
-            fdr.setGroupId(this.storageClient
-                    .delete(FileDeletionRequestDTO.build(attribute.getChecksum(), ONLINE_CONF,
-                                                         feature.getFeature().getUrn().toString(), false))
-                    .getGroupId());
+            fdr.setGroupId(this.storageClient.delete(FileDeletionRequestDTO.build(attribute.getChecksum(), ONLINE_CONF,
+                                                                                  feature.getFeature().getUrn()
+                                                                                          .toString(),
+                                                                                  feature.getSessionOwner(),
+                                                                                  feature.getSessionOwner(), false))
+                                   .getGroupId());
         }
         return fdr;
     }

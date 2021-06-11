@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -121,6 +122,9 @@ public class FileDeletionRequestService {
     @Autowired
     private FileCacheRequestService fileCacheReqService;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
@@ -137,29 +141,40 @@ public class FileDeletionRequestService {
      * @param groupId Business identifier of the deletion request
      */
     public FileDeletionRequest create(FileReference fileReferenceToDelete, boolean forceDelete, String groupId,
-            Collection<FileDeletionRequest> existingRequests, FileRequestStatus status) {
+            Collection<FileDeletionRequest> existingRequests, FileRequestStatus status, String sessionOwner,
+            String session) {
         Optional<FileDeletionRequest> existingOne = existingRequests.stream()
                 .filter(r -> r.getFileReference().getId().equals(fileReferenceToDelete.getId())).findFirst();
         FileDeletionRequest request;
         if (!existingOne.isPresent()) {
             // Create new deletion request
             FileDeletionRequest newDelRequest = new FileDeletionRequest(fileReferenceToDelete, forceDelete, groupId,
-                    status);
+                                                                        status, sessionOwner, session);
             newDelRequest.setStatus(reqStatusService.getNewStatus(newDelRequest, Optional.of(status)));
             request = fileDeletionRequestRepo.save(newDelRequest);
             existingRequests.add(request);
+            // notify deletion requests to the session agent
+            this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
+            // notify running request to the session agent
+            this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
         } else {
             // Retry deletion if error
             request = retry(existingOne.get(), forceDelete);
         }
         return request;
     }
-
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
      */
     private FileDeletionRequest retry(FileDeletionRequest request, boolean forceDelete) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
+            String sessionOwner = request.getSessionOwner();
+            String session = request.getSession();
+            // decrement error request
+            this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
+            // notify running request to the session agent
+            this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
+            // reset status
             request.setStatus(FileRequestStatus.TO_DO);
             request.setErrorCause(null);
             request.setForceDelete(forceDelete);
@@ -167,6 +182,24 @@ public class FileDeletionRequestService {
         } else {
             return request;
         }
+    }
+
+    /**
+     * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
+     */
+    public void retryBySession(List<FileDeletionRequest> requestList, String sessionOwner, String session) {
+        int nbRequests = requestList.size();
+        for (FileDeletionRequest request : requestList) {
+            // reset status
+            request.setStatus(FileRequestStatus.TO_DO);
+            request.setErrorCause(null);
+        }
+        // save changes in database
+        updateFileDeletionRequestList(requestList);
+        // decrement error requests
+        this.sessionNotifier.decrementErrorRequests(sessionOwner, session, nbRequests);
+        // notify running requests to the session agent
+        this.sessionNotifier.incrementRunningRequests(sessionOwner, session, nbRequests);
     }
 
     /**
@@ -196,18 +229,31 @@ public class FileDeletionRequestService {
 
     /**
      * Schedule jobs for deletion requests by using a new transaction
-     * @param jobList
      * @param storage
      * @param deletionRequestPage
+     * @param requestStatus
      * @return scheduled {@link JobInfo}
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
-            Page<FileDeletionRequest> deletionRequestPage) {
+            Page<FileDeletionRequest> deletionRequestPage, FileRequestStatus requestStatus) {
         LOGGER.debug("[DELETION REQUESTS] scheduling {} deletion jobs for storage {} ... ", deletionRequestPage.get(),
                      storage);
+        // SESSION HANDLING
+        List<FileDeletionRequest> storageReqList = deletionRequestPage.getContent();
+        // if status is in error state decrement the number of requests in error
+        if(requestStatus.equals(FileRequestStatus.ERROR)) {
+            storageReqList.forEach(req -> {
+                String sessionOwner = req.getSessionOwner();
+                String session = req.getSession();
+                sessionNotifier.decrementErrorRequests(sessionOwner, session);
+                sessionNotifier.incrementRunningRequests(sessionOwner, session);
+            });
+        }
+
+        // SCHEDULER - schedule jobs by storage
         if (storageHandler.isConfigured(storage)) {
-            return scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
+            return scheduleDeletionJobsByStorage(storage, storageReqList);
         } else {
             handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
         }
@@ -267,7 +313,7 @@ public class FileDeletionRequestService {
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
      * @return {@link JobInfo} scheduled.
      */
-    private JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, String pluginConfBusinessId) {
+    public JobInfo scheduleJob(FileDeletionWorkingSubset workingSubset, String pluginConfBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
@@ -307,6 +353,12 @@ public class FileDeletionRequestService {
         // The storage destination is unknown, we can already set the request in error status
         fileDeletionRequest.setStatus(FileRequestStatus.ERROR);
         fileDeletionRequest.setErrorCause(lErrorCause);
+        // notify request error to the session agent
+        String sessionOwner = fileDeletionRequest.getSessionOwner();
+        String session = fileDeletionRequest.getSession();
+        this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+        this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
+        // update status
         updateFileDeletionRequest(fileDeletionRequest);
     }
 
@@ -336,14 +388,27 @@ public class FileDeletionRequestService {
         Set<FileDeletionRequest> fileDeletionRequests = fileDeletionRequestRepo
                 .findByFileReferenceMetaInfoChecksumIn(checksums);
         for (DeletionFlowItem item : list) {
-            if (fileCopyReqService.isFileCopyRunning(item.getFiles().stream().map(i -> i.getChecksum())
-                    .collect(Collectors.toSet()))) {
+            // files to store
+            Set<FileDeletionRequestDTO> files = item.getFiles();
+            // if a copy process is already running on files, refuse file deletions
+            if (fileCopyReqService
+                    .isFileCopyRunning(files.stream().map(i -> i.getChecksum()).collect(Collectors.toSet()))) {
                 reqGroupService.denied(item.getGroupId(), FileRequestType.DELETION,
                                        "Cannot delete files has a copy process is running");
-                LOGGER.warn("Refused {} file deletion", item.getFiles().size());
+                LOGGER.warn("Refused {} file deletion", files.size());
+
+                // send refused requests to session notifier
+                files.forEach(file -> {
+                    String sessionOwner = file.getSessionOwner();
+                    String session = file.getSession();
+                    // notify a request has been taken into account but was rejected
+                    this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
+                    this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
+                });
             } else {
-                reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
-                                        getRequestExpirationDate());
+                // grant file deletions
+                reqGroupService
+                        .granted(item.getGroupId(), FileRequestType.DELETION, files.size(), getRequestExpirationDate());
                 handle(item.getFiles(), item.getGroupId(), existingOnes, fileDeletionRequests);
             }
         }
@@ -378,7 +443,11 @@ public class FileDeletionRequestService {
                     .findFirst();
             if (oFileRef.isPresent()) {
                 FileReference fileRef = oFileRef.get();
-                removeOwner(fileRef, request.getOwner(), request.isForceDelete(), existingRequests, groupId);
+                removeOwner(fileRef, request.getOwner(), request.getSessionOwner(), request.getSession(),
+                            request.isForceDelete(), existingRequests, groupId);
+            } else {
+                // notify deletion requests to session agent
+                this.sessionNotifier.incrementDeleteRequests(request.getSessionOwner(), request.getSession());
             }
             // In all case, inform caller that deletion request is success.
             reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, request.getChecksum(),
@@ -392,20 +461,30 @@ public class FileDeletionRequestService {
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      * @param groupId Business identifier of the deletion request
      */
-    private void removeOwner(FileReference fileReference, String owner, boolean forceDelete,
+    private void removeOwner(FileReference fileReference, String owner, String sessionOwner,
+            String session, boolean forceDelete,
             Collection<FileDeletionRequest> existingRequests, String groupId) {
         fileRefService.removeOwner(fileReference, owner, groupId);
         // If file reference does not belongs to anyone anymore, delete file reference
         if (!fileRefService.hasOwner(fileReference.getId())) {
+            // check if storage accessibility
             if (storageHandler.isConfigured(fileReference.getLocation().getStorage())) {
                 // If the file is stored on an accessible storage, create a new deletion request
-                create(fileReference, forceDelete, groupId, existingRequests, FileRequestStatus.TO_DO);
+                create(fileReference, forceDelete, groupId, existingRequests, FileRequestStatus.TO_DO, sessionOwner,
+                       session);
             } else {
+                // notify deletion requests to the session agent
+                this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
+                // notify running request to the session agent
+                this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
                 // Delete associated cache request if any
                 fileCacheReqService.delete(fileReference);
                 // Else, directly delete the file reference
-                fileRefService.delete(fileReference, groupId);
+                fileRefService.delete(fileReference, groupId, sessionOwner, session);
             }
+        } else {
+            // notify deletion requests to the session agent
+            this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
         }
     }
 
@@ -417,6 +496,18 @@ public class FileDeletionRequestService {
         Assert.notNull(fileDeletionRequest, "File deletion request to update cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to update identifier cannot be null");
         return fileDeletionRequestRepo.save(fileDeletionRequest);
+    }
+
+    /**
+     * Update a list {@link FileDeletionRequest}s
+     * @param fileDeletionRequestList
+     */
+    public List<FileDeletionRequest> updateFileDeletionRequestList(List<FileDeletionRequest> fileDeletionRequestList) {
+        fileDeletionRequestList.forEach(req -> {
+            Assert.notNull(req, "File deletion request to update cannot be null");
+            Assert.notNull(req.getId(), "File deletion request to update identifier cannot be null");
+        });
+        return fileDeletionRequestRepo.saveAll(fileDeletionRequestList);
     }
 
     /**
@@ -474,13 +565,17 @@ public class FileDeletionRequestService {
             reqGroupService.requestError(fileDeletionRequest.getGroupId(), FileRequestType.DELETION,
                                          fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), null,
                                          fileRef.getLazzyOwners(), errorCause);
+            // notify request error to the session agent
+            String sessionOwner = fileDeletionRequest.getSessionOwner();
+            String session = fileDeletionRequest.getSession();
+            this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+            this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
         } else {
             // Force delete option.
             handleSuccess(fileDeletionRequest);
             // NOTE : The file reference event is published by the fileReferenceService
             LOGGER.warn(String
-                    .format("File %s from %s (checksum: %s) has been removed by force from referenced files. (File may still exists on storage).",
-                            fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
+                    .format("File %s from %s (checksum: %s) has been removed by force from referenced files. (File may still exists on storage).",                            fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
                             fileRef.getMetaInfo().getChecksum()));
         }
     }
@@ -496,16 +591,19 @@ public class FileDeletionRequestService {
         // 2. Delete cache request if any
         fileCacheReqService.delete(deletedFileRef);
         // 3. Delete the file reference in database
-        fileRefService.delete(deletedFileRef, fileDeletionRequest.getGroupId());
+        fileRefService.delete(deletedFileRef, fileDeletionRequest.getGroupId(),
+                              fileDeletionRequest.getSessionOwner(), fileDeletionRequest.getSession());
     }
 
     /**
      * Schedule a job to create deletion requests for all files matching the given criterion.
      * @param storageLocationId
      * @param forceDelete
+     * @param sessionOwner
+     * @param session
      * @throws ModuleException
      */
-    public JobInfo scheduleJob(String storageLocationId, Boolean forceDelete) throws ModuleException {
+    public JobInfo scheduleJob(String storageLocationId, Boolean forceDelete, String sessionOwner, String session) throws ModuleException {
         // Check if a job of deletion already exists
         if (jobInfoService.retrieveJobsCount(FileDeletionRequestsCreatorJob.class.getName(), JobStatus.RUNNING) > 0) {
             throw new ModuleException("Impossible to run a files deletion process as a previous one is still running");
@@ -513,6 +611,8 @@ public class FileDeletionRequestService {
             Set<JobParameter> parameters = Sets.newHashSet();
             parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.STORAGE_LOCATION_ID, storageLocationId));
             parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.FORCE_DELETE, forceDelete));
+            parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.SESSION_OWNER, sessionOwner));
+            parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.SESSION, session));
             JobInfo jobInfo = jobInfoService
                     .createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(), parameters,
                             authResolver.getUser(), FileDeletionRequestsCreatorJob.class.getName()));

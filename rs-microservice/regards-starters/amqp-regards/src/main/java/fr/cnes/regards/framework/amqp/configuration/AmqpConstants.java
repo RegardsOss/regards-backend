@@ -53,6 +53,10 @@ public final class AmqpConstants {
 
     public static final String REGARDS_REQUEST_OWNER_HEADER = REGARDS_HEADER_NS + "request.owner";
 
+    public static final String REGARDS_REQUEST_SESSION_OWNER_HEADER = REGARDS_HEADER_NS + "request.sessionOwner";
+
+    public static final String REGARDS_REQUEST_SESSION_HEADER = REGARDS_HEADER_NS + "request.session";
+
     private AmqpConstants() {
     }
 }

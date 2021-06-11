@@ -90,7 +90,8 @@ public class FileDeletionTask implements TaskWithResult<Collection<JobInfo>> {
                 if (deletionRequestPage.hasContent()) {
                     maxId = deletionRequestPage.stream().max(Comparator.comparing(FileDeletionRequest::getId)).get()
                             .getId();
-                    jobList.addAll(deletionRequestService.scheduleDeletionJobsByStorage(storage, deletionRequestPage));
+                    jobList.addAll(deletionRequestService.scheduleDeletionJobsByStorage(storage, deletionRequestPage,
+                     status));
                 }
                 loop++;
             } while (deletionRequestPage.hasContent() && (loop < 10));

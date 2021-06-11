@@ -61,6 +61,7 @@
         <module>workspace</module>
         <module>dump</module>
         <module>tenant-settings</module>
+        <module>session</module>
     </modules>
 
 </project>

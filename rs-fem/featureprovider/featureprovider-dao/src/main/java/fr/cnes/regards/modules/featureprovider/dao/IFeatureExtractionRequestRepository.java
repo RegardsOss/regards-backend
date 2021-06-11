@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -34,6 +35,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
+import fr.cnes.regards.modules.featureprovider.domain.IFeatureExtractionRequestLight;
 
 /**
  * @author Kevin Marchois
@@ -52,8 +54,7 @@ public interface IFeatureExtractionRequestRepository
     List<FeatureExtractionRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed,
             @Param("now") OffsetDateTime now, Pageable page);
 
-    @Query("select frr.requestId from FeatureExtractionRequest frr where frr.requestId in :requestIds")
-    Set<String> findByRequestIdIn(@Param("requestIds") Set<String> requestIds);
+    Set<IFeatureExtractionRequestLight> findByRequestIdIn(@Param("requestIds") Set<String> requestIds);
 
     /**
      * Update {@link FeatureRequestStep} step
@@ -79,4 +80,11 @@ public interface IFeatureExtractionRequestRepository
     @Modifying(clearAutomatically = true)
     @Query("delete from FeatureExtractionRequest frr where frr.requestId in :requestIds")
     void deleteAllByRequestIdIn(@Param("requestIds") Set<String> requestIds);
+
+    Page<FeatureExtractionRequest> findByMetadataSessionOwnerAndStateIn(String sessionOwner, Set<RequestState> states,
+            Pageable pageToRequest);
+
+    Page<FeatureExtractionRequest> findByMetadataSessionOwnerAndMetadataSessionAndStateIn(String sessionOwner,
+            String session, Set<RequestState> states, Pageable pageToRequest);
+
 }

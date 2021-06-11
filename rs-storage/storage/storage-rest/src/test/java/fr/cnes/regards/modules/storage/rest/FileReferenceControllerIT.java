@@ -181,7 +181,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
             );
         metaInfo.setType(DataType.RAWDATA.name());
         tenantResolver.forceTenant(getDefaultTenant());
-        storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
+        storeReqService.handleRequest("rest-test", "source1", "session1", metaInfo,
+                                      filePath.toAbsolutePath().toUri().toURL().toString(),
                                       TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
         // Wait for storage file referenced
         boolean found = false;

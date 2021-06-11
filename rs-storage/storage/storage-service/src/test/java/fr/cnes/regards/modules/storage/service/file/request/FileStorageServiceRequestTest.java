@@ -67,6 +67,12 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileStorageServiceRequestTest extends AbstractStorageTest {
 
+    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+
+    private static final String SESSION_1 = "SESSION 1";
+
+    private static final  String SESSION_OWNER_2 = "SOURCE 2";
+
     @Before
     @Override
     public void init() throws ModuleException {
@@ -75,9 +81,10 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
 
     @Test
     public void retryMultipleStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
-        FileStorageRequest fileRefReq = this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
-        this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
-        this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
+        FileStorageRequest fileRefReq = this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1,
+                                                                    SESSION_1);
+        this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
+        this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -94,15 +101,18 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
                                                              PageRequest.of(0, 1000, Direction.ASC, "id"));
         Assert.assertEquals("File references should have been created.", 3, fileRefs.getContent().size());
         Assert.assertTrue("File reference requests should not exists anymore", fileRefReqs.getContent().isEmpty());
+
     }
 
     @Test
     public void retryMultipleStoreErrorsByOwner() throws InterruptedException, ExecutionException, ModuleException {
-        this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
-        this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
-        this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
-        FileStorageRequest fileRefReq1 = this.generateStoreFileError("someone-else", ONLINE_CONF_LABEL);
-        FileStorageRequest fileRefReq2 = this.generateStoreFileError("someone-else", ONLINE_CONF_LABEL);
+        this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
+        this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
+        this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
+        FileStorageRequest fileRefReq1 = this.generateStoreFileError("someone-else", ONLINE_CONF_LABEL,
+                                                                     SESSION_OWNER_2, SESSION_1);
+        FileStorageRequest fileRefReq2 = this.generateStoreFileError("someone-else", ONLINE_CONF_LABEL,
+                                                                     SESSION_OWNER_2, SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -132,9 +142,10 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
 
     @Test
     public void retryMultipleStoreErrorsByStorage() throws InterruptedException, ExecutionException, ModuleException {
-        this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
-        this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
-        FileStorageRequest fileRefReqOther = this.generateStoreFileError("someone", "other-target");
+        this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
+        this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
+        FileStorageRequest fileRefReqOther = this.generateStoreFileError("someone", "other-target", SESSION_OWNER_1,
+                                                                         SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -158,7 +169,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
 
     @Test
     public void retryStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
-        FileStorageRequest fileRefReq = this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
+        FileStorageRequest fileRefReq = this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -186,7 +197,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, errorUrl, storageDestination,
+        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, errorUrl, storageDestination,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
@@ -205,7 +216,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "ok.file.test", 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storageDestination,
+        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, originUrl, storageDestination,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
 
         fileRefReqs = stoReqService.search(destination.getStorage(), fileMetaInfo.getChecksum());
@@ -232,7 +243,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         URL origin = new URL("file", "localhost", inputImage.getAbsolutePath());
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, origin.toString(), ONLINE_CONF_LABEL,
+        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, origin.toString(), ONLINE_CONF_LABEL,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
@@ -257,7 +268,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
 
     @Test
     public void storeWithNearlinePluginError() throws InterruptedException, ExecutionException {
-        this.generateStoreFileError("someone", NEARLINE_CONF_LABEL);
+        this.generateStoreFileError("someone", NEARLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
     }
 
     @Test
@@ -269,14 +280,14 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         String fileNameNotHandled = "doNotHandle.file.test";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled, "MD5", fileNameNotHandled,
                 132L, MediaType.APPLICATION_OCTET_STREAM);
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL,
+        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, originUrl, ONLINE_CONF_LABEL,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // Add a valid one for storage
         String fileNameHandled = "file.test";
         String checksumHandled = UUID.randomUUID().toString();
         fileMetaInfo = new FileReferenceMetaInfo(checksumHandled, "MD5", fileNameHandled, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, ONLINE_CONF_LABEL,
+        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, originUrl, ONLINE_CONF_LABEL,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
 
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
@@ -312,7 +323,8 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "invalid.test", 1024L,
                 MediaType.APPLICATION_OCTET_STREAM);
         // Run file reference creation.
-        stoReqService.handleRequest("someone", fileMetaInfo, "invalid:/plop/file@.file", ONLINE_CONF_LABEL,
+        stoReqService.handleRequest("someone", SESSION_OWNER_1, SESSION_1, fileMetaInfo, "invalid:/plop/file@.file",
+                                    ONLINE_CONF_LABEL,
                                     Optional.empty(), UUID.randomUUID().toString());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
                                                                           fileMetaInfo.getChecksum());
@@ -322,7 +334,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
 
     @Test
     public void storeWithOnlinePluginError() throws InterruptedException, ExecutionException {
-        this.generateStoreFileError("someone", ONLINE_CONF_LABEL);
+        this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
     }
 
     @Test
@@ -332,7 +344,7 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
                 MediaType.APPLICATION_OCTET_STREAM);
         URL originUrl = new URL("file://in/this/directory/file.test");
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl.toString(), "elsewhere",
+        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, originUrl.toString(), "elsewhere",
                                     Optional.of("elsewhere://in/this/directory/file.test"),
                                     UUID.randomUUID().toString());
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
