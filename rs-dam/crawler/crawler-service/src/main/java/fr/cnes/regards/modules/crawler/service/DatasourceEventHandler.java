@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.datasources.event.DatasourceEvent;
 import fr.cnes.regards.modules.dam.domain.datasources.event.DatasourceEventType;
-import fr.cnes.regards.modules.model.gson.ModelGsonReadyEvent;
+import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 
 /**
  * Handler to handle {@link DatasourceEvent} events. Those events are sent when a datasource is deleted.
@@ -49,7 +49,7 @@ public class DatasourceEventHandler implements IHandler<DatasourceEvent> {
     private ISubscriber subscriber;
 
     @EventListener
-    public void handleApplicationReady(ModelGsonReadyEvent event) {
+    public void handleApplicationReady(ModelJsonReadyEvent event) {
         subscriber.subscribeTo(DatasourceEvent.class, this);
     }
 

@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -54,6 +33,7 @@ import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.service.settings.DamSettingsService;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -64,9 +44,27 @@ import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cdgroups",
-        "regards.dam.post.aip.entities.to.storage=false" }, locations = "classpath:es.properties")
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cdgroups" }, locations = "classpath:es.properties")
 @MultitenantTransactional
 public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceTest {
 
@@ -115,6 +113,9 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceTest {
     @Autowired
     private IProjectsClient projectClient;
 
+    @Autowired
+    private DamSettingsService damSettingsService;
+
     @Before
     public void setUp() throws Exception {
         entityRequestRepos.deleteAll();
@@ -122,6 +123,11 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceTest {
         datasetRepository.deleteAll();
         entityRepos.deleteAll();
         modelRepository.deleteAll();
+
+        damSettingsService.init();
+        damSettingsService.setStorageLocation("Local");
+        damSettingsService.setStorageSubDirectory("dir");
+        damSettingsService.setStoreFiles(true);
     }
 
     @After

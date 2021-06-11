@@ -347,7 +347,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Multimap<DataType, DataFile> fileMultimapF1 = ArrayListMultimap.create();
         DataFile feat1File1 = new DataFile();
         feat1File1.setOnline(true);
-        feat1File1.setUri(new URI("file:///test/feat1_file1.txt"));
+        feat1File1.setUri(new URI("file:///test/feat1_file1.txt").toString());
         feat1File1.setFilename("feat1_file1");
         feat1File1.setFilesize(42000L);
         feat1File1.setReference(false);
@@ -363,7 +363,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Multimap<DataType, DataFile> fileMultimapF2 = ArrayListMultimap.create();
         DataFile feat2File2 = new DataFile();
         feat2File2.setOnline(true);
-        feat2File2.setUri(new URI("file:///test/feat2_file2.txt"));
+        feat2File2.setUri(new URI("file:///test/feat2_file2.txt").toString());
         feat2File2.setFilename("feat2_file2");
         feat2File2.setFilesize(3050L);
         feat2File2.setReference(false);

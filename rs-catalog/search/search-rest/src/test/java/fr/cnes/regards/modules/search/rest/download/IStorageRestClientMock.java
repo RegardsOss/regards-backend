@@ -89,16 +89,6 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid DefaultDownloadQuotaLimits newDefaults) {
-        return null;
-    }
-
-    @Override
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(String userEmail) {
         return null;
     }

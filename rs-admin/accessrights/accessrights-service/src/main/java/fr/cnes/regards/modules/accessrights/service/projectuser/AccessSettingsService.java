@@ -18,95 +18,83 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettingsEvent;
-import io.vavr.collection.List;
-import io.vavr.control.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-/**
- * {@link IAccessSettingsService} implementation
- * @author Xavier-Alexandre Brochard
- */
+import java.util.List;
+
 @Service
-@MultitenantTransactional
-public class AccessSettingsService implements IAccessSettingsService {
+@RegardsTransactional
+public class AccessSettingsService extends AbstractSettingService {
 
-    /**
-     * CRUD repository managing access settings. Autowired by Spring.
-     */
-    private final IAccessSettingsRepository accessSettingsRepository;
+    @Autowired
+    private AccessSettingsService self;
 
-    private final IRoleRepository roleRepository;
+    private final ITenantResolver tenantsResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private final IPublisher publisher;
-
-    /**
-     * Creates an {@link AccessSettingsService} wired to the given {@link IProjectUserRepository}.
-     * @param pAccessSettingsRepository Autowired by Spring. Must not be {@literal null}.
-     */
-    public AccessSettingsService(IAccessSettingsRepository pAccessSettingsRepository, IRoleRepository pRoleRepository, IPublisher pPublisher) {
-        super();
-        accessSettingsRepository = pAccessSettingsRepository;
-        roleRepository = pRoleRepository;
-        publisher = pPublisher;
+    public AccessSettingsService(IDynamicTenantSettingService dynamicTenantSettingService, ITenantResolver tenantsResolver,
+                                 IRuntimeTenantResolver runtimeTenantResolver
+    ) {
+        super(dynamicTenantSettingService);
+        this.tenantsResolver = tenantsResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public AccessSettings retrieve() {
-        return List.ofAll(accessSettingsRepository.findAll())
-            .headOption()
-            .orElse(() -> {
-                AccessSettings alt = new AccessSettings();
-                alt.setId(0L);
-                return Option.some(alt);
-            })
-            .map(result -> {
-                if (result.getDefaultRole() != null && result.getDefaultGroups() != null) {
-                    return result;
-                } else {
-                    if (result.getDefaultRole() == null) {
-                        roleRepository
-                            .findOneByName(DefaultRole.REGISTERED_USER.toString())
-                            .ifPresent(result::setDefaultRole);
-                    }
-                    if (result.getDefaultGroups() == null) {
-                        result.setDefaultGroups(Lists.newArrayList());
-                    }
-                    return accessSettingsRepository.save(result);
-                }
-            })
-            .get();
+    protected List<DynamicTenantSetting> getSettingList() {
+        return AccessSettings.SETTING_LIST;
     }
 
-    @Override
-    public AccessSettings update(AccessSettings accessSettings) throws EntityNotFoundException {
-        if (!accessSettingsRepository.existsById(accessSettings.getId())) {
-            throw new EntityNotFoundException(accessSettings.getId().toString(), AccessSettings.class);
+    @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) throws EntityException {
+        for (String tenant : tenantsResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                self.init();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
         }
-        if (accessSettings.getDefaultRole() == null) {
-            roleRepository
-                .findOneByName(DefaultRole.REGISTERED_USER.toString())
-                .ifPresent(accessSettings::setDefaultRole);
+    }
+
+    @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void onTenantConnectionReady(TenantConnectionReady event) throws EntityException {
+        runtimeTenantResolver.forceTenant(event.getTenant());
+        try {
+            self.init();
+        } finally {
+            runtimeTenantResolver.clearTenant();
         }
-        if (accessSettings.getDefaultGroups() == null) {
-            accessSettings.setDefaultGroups(Lists.newArrayList());
-        }
-        AccessSettings result = accessSettingsRepository.save(accessSettings);
-        publisher.publish(new AccessSettingsEvent(
-            accessSettings.getMode(),
-            accessSettings.getDefaultRole().getName(),
-            accessSettings.getDefaultGroups()
-        ));
-        return result;
+    }
+
+    public String defaultRole() {
+        return getValue(AccessSettings.DEFAULT_ROLE);
+    }
+
+    public List<String> defaultGroups() {
+        return getValue(AccessSettings.DEFAULT_GROUPS);
+    }
+
+    public boolean isAutoAccept() {
+        return AccessSettings.AcceptanceMode.AUTO_ACCEPT.equals(AccessSettings.AcceptanceMode.fromName(getValue(AccessSettings.MODE)));
     }
 
 }

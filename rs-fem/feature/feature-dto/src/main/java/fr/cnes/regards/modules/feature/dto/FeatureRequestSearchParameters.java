@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
@@ -41,6 +44,8 @@ public class FeatureRequestSearchParameters {
     private OffsetDateTime to;
 
     private RequestState state;
+
+    private final Collection<FeatureRequestStep> steps = Sets.newHashSet();
 
     public static FeatureRequestSearchParameters build() {
         return new FeatureRequestSearchParameters();
@@ -73,6 +78,11 @@ public class FeatureRequestSearchParameters {
 
     public FeatureRequestSearchParameters withState(RequestState state) {
         this.setState(state);
+        return this;
+    }
+
+    public FeatureRequestSearchParameters withStep(FeatureRequestStep step) {
+        this.steps.add(step);
         return this;
     }
 
@@ -122,6 +132,10 @@ public class FeatureRequestSearchParameters {
 
     public void setState(RequestState state) {
         this.state = state;
+    }
+
+    public Collection<FeatureRequestStep> getSteps() {
+        return steps;
     }
 
 }

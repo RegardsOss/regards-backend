@@ -19,71 +19,28 @@
 
 package fr.cnes.regards.modules.ingest.domain.settings;
 
-import java.util.Objects;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.util.Collections;
+import java.util.List;
 
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+public final class AIPNotificationSettings {
 
-/**
- * Model to handle optional notifications
- * @author Iliana Ghazali
- */
-@Entity
-@Table(name = "t_aip_notification_settings")
-public class AIPNotificationSettings {
-
-    // only one setting per tenant
-    private static final long INGEST_NOTIFICATION_SETTING_ID = 0L;
-
-    @ConfigIgnore
-    @Id
-    @Column(name = "id", unique = true)
-    private Long id;
-
-    /**
-     * To activate notifications on aip requests
-     */
-    @Column(name = "active_notifications", nullable = false)
-    private boolean activeNotification = false;
-
-    public boolean isActiveNotification() {
-        return activeNotification;
+    private AIPNotificationSettings() {
     }
 
-    public void setActiveNotification(boolean activeNotification) {
-        this.activeNotification = activeNotification;
-    }
+    public static final String ACTIVE_NOTIFICATION = "active_notifications";
 
-    public AIPNotificationSettings() {
-        this.id = INGEST_NOTIFICATION_SETTING_ID;
-    }
+    public static final boolean DEFAULT_ACTIVE_NOTIFICATION = false;
 
-    public Long getId() {
-        return id;
-    }
+    public static final DynamicTenantSetting ACTIVE_NOTIFICATION_SETTING = new DynamicTenantSetting(
+            ACTIVE_NOTIFICATION,
+            "Activate notifications on AIP request",
+            DEFAULT_ACTIVE_NOTIFICATION
+    );
 
-    public void setId() {
-        this.id = INGEST_NOTIFICATION_SETTING_ID;
-    }
+    public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(
+            ACTIVE_NOTIFICATION_SETTING
+    );
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if ((o == null) || (getClass() != o.getClass())) {
-            return false;
-        }
-        AIPNotificationSettings that = (AIPNotificationSettings) o;
-        return (activeNotification == that.activeNotification) && Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, activeNotification);
-    }
 }

@@ -81,6 +81,10 @@
 			<artifactId>gson-regards-starter</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jsoniter-regards-starter</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 		</dependency>
@@ -183,6 +187,11 @@
 			<version>1.14.3</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>geojson-starter</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 </project>

@@ -80,9 +80,10 @@ public class RequestResultInfoDTO {
             dto.requestOwners.addAll(owners);
         }
         if (fileReference != null) {
+            // Do not add in fileReferenceDTO all owners of the file but only the requested ones. The number of global owners can be huge.
             dto.resultFile = FileReferenceDTO
                     .build(fileReference.getStorageDate(), FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
-                           FileLocationDTO.build(fileReference.getLocation()), fileReference.getLazzyOwners());
+                           FileLocationDTO.build(fileReference.getLocation()), dto.getRequestOwners());
         }
         dto.errorCause = errorCause;
         return dto;

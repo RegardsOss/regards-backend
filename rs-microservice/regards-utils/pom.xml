@@ -61,5 +61,6 @@
         <module>encryption-standalone</module>
         <module>spring-utils</module>
         <module>metalink-utils</module>
+        <module>query-parser</module>
     </modules>
 </project>

@@ -23,6 +23,7 @@ import java.util.UUID;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Specific feature properties for collections
@@ -41,5 +42,9 @@ public class CollectionFeature extends EntityFeature {
     public CollectionFeature(String tenant, String providerId, String label) {
         super(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, tenant, UUID.randomUUID(), 1, null, null),
               providerId, EntityType.COLLECTION, label);
+    }
+
+    public CollectionFeature(UniformResourceName id, String providerId, String label) {
+        super(id, providerId, EntityType.COLLECTION, label);
     }
 }

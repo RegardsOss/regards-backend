@@ -20,16 +20,16 @@
 
 package fr.cnes.regards.modules.ingest.service.dump;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
+import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,15 +38,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Test for {@link AIPMetadataService}
@@ -62,8 +65,6 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     private Path tmpZipLocation;
 
-    private DumpSettings conf;
-
     @Value("${regards.aip.dump.zip-limit}")
     private int zipLimit;
 
@@ -71,17 +72,17 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
     private IAIPMetadataService metadataService;
 
     @Autowired
-    private IDumpSettingsRepository dumpConf;
+    private DumpSettingsService dumpSettingsService;
 
     @Autowired
     private StorageClientMock storageClient;
 
     @Override
-    public void doInit() {
+    public void doInit() throws EntityException {
         // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
-        conf = new DumpSettings(true, "* * * 1-7 * SUN", "target/dump", null);
-        dumpConf.save(conf);
+        DumpParameters dumpParameters = new DumpParameters().setActiveModule(true).setCronTrigger("* * * 1-7 * SUN").setDumpLocation("target/dump");
+        dumpSettingsService.setDumpParameters(dumpParameters);
     }
 
     @Test
@@ -148,7 +149,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
         // CHECK RESULTS
         // Number of dump created
-        File[] dumpFolder = Paths.get(this.conf.getDumpLocation()).toFile().listFiles();
+        File[] dumpFolder = Paths.get(dumpSettingsService.getDumpParameters().getDumpLocation()).toFile().listFiles();
         Assert.assertEquals("Only one dump was expected" , 1, dumpFolder.length);
 
         // Number of zips in dump
@@ -163,7 +164,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
     private AIPSaveMetadataRequest createSaveMetadataRequest() {
         // Create request
         AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate,
-                                                                                   this.conf.getDumpLocation());
+                                                                                   dumpSettingsService.getDumpParameters().getDumpLocation());
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         return aipSaveMetadataRequest;
     }
@@ -207,9 +208,10 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
     }
 
     @Override
-    protected void doAfter() throws IOException {
+    protected void doAfter() throws IOException, EntityException {
         //clear dump location
-        FileUtils.deleteDirectory(Paths.get(conf.getDumpLocation()).toFile());
+        FileUtils.deleteDirectory(Paths.get(dumpSettingsService.getDumpParameters().getDumpLocation()).toFile());
         FileUtils.deleteDirectory(this.tmpZipLocation.toFile());
+        dumpSettingsService.resetSettings();
     }
 }

@@ -133,7 +133,7 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
                         Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
                         DataFile dataFile = new DataFile();
                         dataFile.setOnline(false);
-                        dataFile.setUri(new URI("file:///test/" + id));
+                        dataFile.setUri(new URI("file:///test/" + id).toString());
                         dataFile.setFilename(id);
                         dataFile.setFilesize(10L);
                         dataFile.setReference(false);
@@ -187,7 +187,7 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
         // To generate orderId
         order = orderRepo.save(order);
 
-        orderService.completeOrderCreation(basket, order, DefaultRole.REGISTERED_USER.toString(), getDefaultTenant());
+        orderService.completeOrderCreation(basket, order, 240, DefaultRole.REGISTERED_USER.toString(), getDefaultTenant());
 
         // working code here
         long usedMemoryAfter = runtime.totalMemory() - runtime.freeMemory();

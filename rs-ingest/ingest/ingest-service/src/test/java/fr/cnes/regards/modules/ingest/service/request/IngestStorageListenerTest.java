@@ -73,9 +73,9 @@ public class IngestStorageListenerTest extends AbstractIngestRequestTest {
         initSipAndAip(checksum, providerId);
         Set<RequestInfo> requests = Sets.newHashSet();
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests
-                .add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null, Sets.newHashSet("someone"),
-                                                simulatefileReference(checksum, aipEntity.getAipId()), null));
+        successRequests.add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null,
+                                                       Sets.newHashSet(aipEntity.getAipId()),
+                                                       simulatefileReference(checksum, aipEntity.getAipId()), null));
         successRequests.add(RequestResultInfoDTO.build("groupId", "other-file-checksum", "somewhere", null,
                                                        Sets.newHashSet("someone"),
                                                        simulatefileReference(checksum, "someone"), null));

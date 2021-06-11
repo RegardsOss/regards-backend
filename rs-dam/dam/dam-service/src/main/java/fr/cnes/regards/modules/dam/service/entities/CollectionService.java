@@ -18,23 +18,19 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import javax.persistence.EntityManager;
-
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRequestRepository;
-import fr.cnes.regards.modules.dam.dao.entities.ICollectionRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IDeletedEntityRepository;
+import fr.cnes.regards.modules.dam.dao.entities.*;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.feature.CollectionFeature;
+import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.model.service.IModelService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
 
 /**
  * Specific EntityService for collections
@@ -47,11 +43,11 @@ public class CollectionService extends AbstractEntityService<CollectionFeature, 
         implements ICollectionService {
 
     public CollectionService(IModelFinder modelFinder, IAbstractEntityRepository<AbstractEntity<?>> pEntityRepository,
-            IModelService pModelService, IDeletedEntityRepository pDeletedEntityRepository,
-            ICollectionRepository pCollectionRepository, IDatasetRepository pDatasetRepository, EntityManager pEm,
-            IPublisher pPublisher, IRuntimeTenantResolver runtimeTenantResolver,
-            IAbstractEntityRequestRepository abstractEntityRequestRepo) {
-        super(modelFinder, pEntityRepository, pModelService, pDeletedEntityRepository, pCollectionRepository,
+                             IModelService pModelService, IDamSettingsService damSettingsService, IDeletedEntityRepository pDeletedEntityRepository,
+                             ICollectionRepository pCollectionRepository, IDatasetRepository pDatasetRepository, EntityManager pEm,
+                             IPublisher pPublisher, IRuntimeTenantResolver runtimeTenantResolver,
+                             IAbstractEntityRequestRepository abstractEntityRequestRepo) {
+        super(modelFinder, pEntityRepository, pModelService, damSettingsService, pDeletedEntityRepository, pCollectionRepository,
               pDatasetRepository, pCollectionRepository, pEm, pPublisher, runtimeTenantResolver,
               abstractEntityRequestRepo);
     }

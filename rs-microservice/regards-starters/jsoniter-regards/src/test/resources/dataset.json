@@ -1,0 +1,68 @@
+{
+  "type": "DATASET",
+  "plgConfDataSource": {
+    "id": 402,
+    "pluginId": "feature-datasource",
+    "label": "EtatsUnis",
+    "businessId": "eba11b43-447a-42c0-a841-e98d57426881",
+    "version": "1.0-SNAPSHOT",
+    "priorityOrder": 0,
+    "active": true,
+    "parameters": []
+  },
+  "dataModel": "Etat",
+  "subsettingClause": {
+    "@type@": "fr.cnes.regards.modules.indexer.domain.criterion.AndCriterion",
+    "criterions": [
+      {
+        "@type@": "fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion"
+      },
+      {
+        "@type@": "fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion",
+        "type": "EQUALS",
+        "value": 402,
+        "name": "dataSourceId"
+      }
+    ]
+  },
+  "openSearchSubsettingClause": "",
+  "metadata": {
+    "dataObjectsGroups": {
+      "Public": {
+        "groupName": "Public",
+        "dataObjectAccess": true,
+        "datasetAccess": true
+      }
+    }
+  },
+  "id": 402,
+  "ipId": "URN:AIP:DATASET:perf:249a033b-2b61-44a8-b903-9805c2170654:V1",
+  "creationDate": "2021-04-20T12:56:00.926Z",
+  "lastUpdate": "2021-04-20T12:56:35.181Z",
+  "model": {
+    "id": 53,
+    "name": "Pays",
+    "description": "Pays",
+    "type": "DATASET"
+  },
+  "tags": [],
+  "groups": [
+    "Public"
+  ],
+  "feature": {
+    "virtualId": "URN:AIP:DATASET:perf:249a033b-2b61-44a8-b903-9805c2170654:LAST",
+    "providerId": "DS_STATES",
+    "entityType": "DATASET",
+    "label": "Etats Unis",
+    "model": "Pays",
+    "files": {},
+    "tags": [],
+    "last": true,
+    "version": 0,
+    "id": "URN:AIP:DATASET:perf:249a033b-2b61-44a8-b903-9805c2170654:V1",
+    "properties": {
+      "count": 2
+    },
+    "type": "Feature"
+  }
+}

@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -40,6 +28,17 @@ import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Order service
@@ -55,12 +54,14 @@ public interface IOrderService {
 
     /**
      * Create an order
-     * @param basket basket from which order is created
-     * @param label label, generated when null
-     * @param url frontent URL
+     *
+     * @param basket                 basket from which order is created
+     * @param label                  label, generated when null
+     * @param url                    frontent URL
+     * @param subOrderDuration validity period in hours
      * @return copletely loaded order
      */
-    Order createOrder(Basket basket, String label, String url) throws EntityInvalidException;
+    Order createOrder(Basket basket, String label, String url, int subOrderDuration) throws EntityInvalidException;
 
     /**
      *
@@ -72,7 +73,6 @@ public interface IOrderService {
     void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order);
 
     /**
-     *
      * @param basket
      * @param dsTask
      * @param bucketFiles
@@ -80,27 +80,30 @@ public interface IOrderService {
      * @param role
      * @param priority
      */
-    void createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, String role,
-            int priority);
+    void createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, int subOrderDuration, String role, int priority);
 
     /**
      * Asynchronous method called by createOrder to complete order creation. This method cannot be transactional (due
      * to proxyfication and thread-context execution) so it @see {@link IOrderService#completeOrderCreation} calls next one after forcing given tenant
-     * @param basket basket used to create order (removed at the end of the method)
-     * @param order created order to be completed
-     * @param role current user role
-     * @param tenant current tenant
+     *
+     * @param basket                 basket used to create order (removed at the end of the method)
+     * @param order                  created order to be completed
+     * @param subOrderDuration validity period in hours
+     * @param role                   current user role
+     * @param tenant                 current tenant
      */
-    void asyncCompleteOrderCreation(Basket basket, Order order, String role, String tenant);
+    void asyncCompleteOrderCreation(Basket basket, Order order, int subOrderDuration, String role, String tenant);
 
     /**
      * Transactional completeOrderCreation method (must be called AFTER forcing tenant)
-     * @param basket basket used to create order (removed at the end of the method)
-     * @param order created order to be completed
-     * @param role user role
-     * @param tenant current tenant
+     *
+     * @param basket                 basket used to create order (removed at the end of the method)
+     * @param order                  created order to be completed
+     * @param subOrderDuration validity period in hours
+     * @param role                   user role
+     * @param tenant                 current tenant
      */
-    void completeOrderCreation(Basket basket, Order order, String role, String tenant);
+    void completeOrderCreation(Basket basket, Order order, int subOrderDuration, String role, String tenant);
 
     /**
      * Load an order.

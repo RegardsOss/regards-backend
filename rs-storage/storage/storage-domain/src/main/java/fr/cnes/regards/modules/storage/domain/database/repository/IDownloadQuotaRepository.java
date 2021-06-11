@@ -1,16 +1,16 @@
 package fr.cnes.regards.modules.storage.domain.database.repository;
 
-import com.google.common.annotations.VisibleForTesting;
-import fr.cnes.regards.modules.storage.domain.database.*;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import com.google.common.annotations.VisibleForTesting;
+import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
+import fr.cnes.regards.modules.storage.domain.database.UserDownloadQuota;
+import fr.cnes.regards.modules.storage.domain.database.UserDownloadRate;
+import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
+import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
+
 public interface IDownloadQuotaRepository {
-
-    DefaultDownloadQuotaLimits getDefaultDownloadQuotaLimits();
-
-    DefaultDownloadQuotaLimits changeDefaultDownloadQuotaLimits(Long maxQuota, Long rateLimit);
 
     DownloadQuotaLimits save(DownloadQuotaLimits quota);
 

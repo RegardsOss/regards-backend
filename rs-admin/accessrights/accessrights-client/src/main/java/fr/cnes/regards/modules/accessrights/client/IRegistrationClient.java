@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.accessrights.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.hateoas.EntityModel;

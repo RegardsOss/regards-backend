@@ -215,7 +215,7 @@ public class OrderServiceIT {
         dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
-        Order order = orderService.createOrder(basket, "myCommand", "http://perdu.com");
+        Order order = orderService.createOrder(basket, "myCommand", "http://perdu.com", 240);
         Assert.assertNotNull(order);
         Assert.assertEquals("myCommand", order.getLabel());
     }
@@ -238,7 +238,7 @@ public class OrderServiceIT {
         dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
-        Order order = orderService.createOrder(basket, null, "http://perdu.com");
+        Order order = orderService.createOrder(basket, null, "http://perdu.com", 240);
         Assert.assertTrue("Label should be generated using current date (up to second)",
                           Pattern.matches("Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}", order.getLabel()));
     }
@@ -263,7 +263,7 @@ public class OrderServiceIT {
         basket = basketRepos.save(basket);
         try {
             Order order = orderService.createOrder(basket, "this-label-has-too-many-characters-if-we-append(51)",
-                                                   "http://perdu.com");
+                                                   "http://perdu.com", 240);
             Assert.fail("An exception should have been thrown as label is too long");
         } catch (EntityInvalidException e) {
             Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
@@ -289,10 +289,10 @@ public class OrderServiceIT {
         dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
-        orderService.createOrder(basket, "myCommand", "http://perdu.com");
+        orderService.createOrder(basket, "myCommand", "http://perdu.com", 240);
         try {
             // create a second time with same label: label should be already used by that owner
-            orderService.createOrder(basket, "myCommand", "http://perdu2.com");
+            orderService.createOrder(basket, "myCommand", "http://perdu2.com", 240);
             Assert.fail("An exception should have been thrown as label is too long");
         } catch (EntityInvalidException e) {
             Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
@@ -323,7 +323,7 @@ public class OrderServiceIT {
         FilesTask ds1SubOrder1Task = new FilesTask();
         ds1SubOrder1Task.setOwner(USER_EMAIL);
         DataFile dataFile1 = new DataFile();
-        dataFile1.setUri(new URI("staff://toto/titi/tutu"));
+        dataFile1.setUri(new URI("staff://toto/titi/tutu").toString());
         dataFile1.setDataType(DataType.RAWDATA);
         dataFile1.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
         dataFile1.setOnline(true);
@@ -338,7 +338,7 @@ public class OrderServiceIT {
         ds1SubOrder1Task.addFile(df1);
 
         DataFile dataFile2 = new DataFile();
-        dataFile2.setUri(new URI("staff://toto2/titi2/tutu2"));
+        dataFile2.setUri(new URI("staff://toto2/titi2/tutu2").toString());
         dataFile2.setOnline(false);
         dataFile2.setFilesize(1l);
         dataFile2.setFilename("tutu2");
@@ -394,7 +394,7 @@ public class OrderServiceIT {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket, "perdu", "http://perdu.com");
+        Order order = orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
         Thread.sleep(5_000);
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
@@ -452,7 +452,7 @@ public class OrderServiceIT {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket, "perdu", "http://perdu.com");
+        Order order = orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
         order.setExpirationDate(OffsetDateTime.now().minus(1, ChronoUnit.DAYS));
         orderRepos.save(order);
 

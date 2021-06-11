@@ -78,6 +78,8 @@
         <module>plugins-docs</module>
         <module>gson-regards-starter</module>
         <module>gson-regards</module>
+        <module>jsoniter-regards</module>
+        <module>jsoniter-regards-starter</module>
         <module>feign-regards</module>
         <module>feign-regards-starter</module>
         <module>security-config</module>

@@ -20,14 +20,18 @@
 
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.dump.FeatureSaveMetadataService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,19 +44,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
-import fr.cnes.regards.modules.feature.service.dump.FeatureSaveMetadataService;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Test for {@link FeatureSaveMetadataJob}
@@ -74,9 +72,6 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
     private IJobService jobService;
 
     @Autowired
-    private IDumpSettingsRepository dumpConfRepo;
-
-    @Autowired
     private FeatureSaveMetadataService saveMetadataService;
 
     @Autowired
@@ -87,9 +82,6 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // clear before test
-        dumpConfRepo.deleteAll();
-
         // dump location is in microservice workspace by default
         try {
             this.dumpLocation = workspaceService.getMicroserviceWorkspace();
@@ -100,7 +92,7 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
 
     @Test
     @Purpose("Check if the dump of features is successfully created")
-    public void checkDumpSuccess() throws ExecutionException, InterruptedException {
+    public void checkDumpSuccess() throws ExecutionException, InterruptedException, EntityException {
         // add feature to db
         int nbFeatures = 6;
         initData(nbFeatures);
@@ -140,7 +132,7 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
         try {
             runSaveMetadataJob();
             Assert.fail();
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (ExecutionException | InterruptedException | EntityException e) {
             Assert.assertTrue("DuplicateUniqueNameException was expected",
                               e.getMessage().contains("DuplicateUniqueNameException"));
         }
@@ -163,7 +155,7 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
         Assert.assertEquals("Dump folder should be empty", 0, this.dumpLocation.toFile().listFiles().length);
     }
 
-    private JobInfo runSaveMetadataJob() throws ExecutionException, InterruptedException {
+    private JobInfo runSaveMetadataJob() throws ExecutionException, InterruptedException, EntityException {
         // Run Job and wait for end
         JobInfo saveMetadataJobInfo = saveMetadataService.scheduleJobs();
         if (saveMetadataJobInfo != null) {
@@ -189,7 +181,6 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
         abstractFeatureRequestRepo.deleteAll();
         featureRepo.deleteAll();
         jobInfoRepository.deleteAll();
-        dumpConfRepo.deleteAll();
         //clear dump location
         FileUtils.deleteDirectory(this.dumpLocation.toFile());
     }

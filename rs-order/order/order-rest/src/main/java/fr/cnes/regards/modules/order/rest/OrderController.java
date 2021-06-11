@@ -18,36 +18,8 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -63,18 +35,35 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
-import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
+import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Encoders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Order controller
@@ -152,6 +141,9 @@ public class OrderController implements IResourceController<OrderDto> {
     private IOrderDataFileService dataFileService;
 
     @Autowired
+    private IOrderSettingsService orderSettingsService;
+
+    @Autowired
     private JWTService jwtService;
 
     @Autowired
@@ -163,15 +155,33 @@ public class OrderController implements IResourceController<OrderDto> {
     @Value("${regards.order.secret}")
     private String secret;
 
-    @ResourceAccess(description = "Validate current basket and create corresponding order",
-            role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Validate current basket and create corresponding order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
     public ResponseEntity<EntityModel<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
             throws IllegalStateException, EntityInvalidException, EmptyBasketException {
         String user = authResolver.getUser();
         Basket basket = basketService.find(user);
+        Order order = orderService.createOrder(
+                basket,
+                orderRequest.getLabel(),
+                orderRequest.getOnSuccessUrl(),
+                orderSettingsService.getUserOrderParameters().getSubOrderDuration()
+        );
+        return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+    }
 
-        Order order = orderService.createOrder(basket, orderRequest.getLabel(), orderRequest.getOnSuccessUrl());
+    @ResourceAccess(description = "Validate current basket and create corresponding order", role = DefaultRole.ADMIN)
+    @RequestMapping(method = RequestMethod.POST, path = ADMIN_ROOT_PATH)
+    public ResponseEntity<EntityModel<OrderDto>> createAppOrder(@RequestBody OrderRequest orderRequest)
+            throws IllegalStateException, EntityInvalidException, EmptyBasketException {
+        String user = authResolver.getUser();
+        Basket basket = basketService.find(user);
+        Order order = orderService.createOrder(
+                basket,
+                orderRequest.getLabel(),
+                orderRequest.getOnSuccessUrl(),
+                orderSettingsService.getAppSubOrderDuration()
+        );
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
 

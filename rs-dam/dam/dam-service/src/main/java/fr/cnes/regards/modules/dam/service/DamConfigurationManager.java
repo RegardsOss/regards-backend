@@ -20,16 +20,6 @@
  */
 package fr.cnes.regards.modules.dam.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
@@ -39,8 +29,16 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IConnectionPlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * DAM configuration manager. Exports model & connection plugin configurations & datasource plugin configurations.
@@ -51,17 +49,23 @@ import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 @Component
 public class DamConfigurationManager extends AbstractModuleManager<Void> {
 
-    @Autowired
-    private IPluginService pluginService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DamConfigurationManager.class);
+
+    private final IPluginService pluginService;
+    private final DynamicTenantSettingService dynamicTenantSettingService;
+
+    public DamConfigurationManager(IPluginService pluginService, DynamicTenantSettingService dynamicTenantSettingService) {
+        this.pluginService = pluginService;
+        this.dynamicTenantSettingService = dynamicTenantSettingService;
+    }
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
 
         Set<String> importErrors = new HashSet<>();
-        Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
 
         // First create connections
-        for (PluginConfiguration plgConf : configurations) {
+        for (PluginConfiguration plgConf : getPluginConfigurations(configuration)) {
             try {
                 pluginService.savePluginConfiguration(plgConf);
             } catch (EntityInvalidException | EncryptionException | EntityNotFoundException e) {
@@ -69,12 +73,23 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
             }
         }
 
+        for (DynamicTenantSetting setting : getSettings(configuration)) {
+            try {
+                dynamicTenantSettingService.update(setting.getName(), setting.getValue());
+            } catch (ModuleException e) {
+                importErrors.add(String.format("Configuration item not imported : Invalid Tenant Setting %s", setting));
+                LOGGER.error("Configuration item not imported : Invalid Tenant Setting {}", setting);
+            }
+        }
+
         return importErrors;
     }
 
     @Override
-    public ModuleConfiguration exportConfiguration() throws ModuleException {
+    public ModuleConfiguration exportConfiguration() {
+
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
+
         // export connections
         for (PluginConfiguration connection : pluginService.getPluginConfigurationsByType(IConnectionPlugin.class)) {
             // All connection should be active
@@ -86,16 +101,28 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
         for (PluginConfiguration dataSource : pluginService.getPluginConfigurationsByType(IDataSourcePlugin.class)) {
             configurations.add(ModuleConfigurationItem.build(pluginService.prepareForExport(dataSource)));
         }
+
+        // export settings
+        dynamicTenantSettingService.readAll().forEach(setting -> configurations.add(ModuleConfigurationItem.build(setting)));
+
         return ModuleConfiguration.build(info, configurations);
     }
 
     /**
      * Get all {@link PluginConfiguration}s of the {@link ModuleConfigurationItem}s
-     * @param items {@link ModuleConfigurationItem}s
+     * @param configuration {@link ModuleConfiguration}s
      * @return  {@link PluginConfiguration}s
      */
-    private Set<PluginConfiguration> getPluginConfs(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
+    private Set<PluginConfiguration> getPluginConfigurations(ModuleConfiguration configuration) {
+        return configuration.getConfiguration().stream()
+                .filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
                 .map(i -> (PluginConfiguration) i.getTypedValue()).collect(Collectors.toSet());
     }
+
+    private Set<DynamicTenantSetting> getSettings(ModuleConfiguration configuration) {
+        return configuration.getConfiguration().stream()
+                .filter(i -> DynamicTenantSetting.class.isAssignableFrom(i.getKey()))
+                .map(i -> (DynamicTenantSetting) i.getTypedValue()).collect(Collectors.toSet());
+    }
+
 }

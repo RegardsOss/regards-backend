@@ -176,6 +176,11 @@ public class FileReferenceService {
         return fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage, checksum);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<FileReference> searchWithOwners(String storage, String checksum) {
+        return fileRefWithOwnersRepo.findByLocationStorageAndMetaInfoChecksum(storage, checksum);
+    }
+
     /**
      * Search for all {@link FileReference}s associated to the given checksums.
      * @param checksums

@@ -74,6 +74,11 @@ public class FeatureRequestsSelectionDTO {
         return this;
     }
 
+    public FeatureRequestsSelectionDTO withStep(FeatureRequestStep step) {
+        this.filters.withStep(step);
+        return this;
+    }
+
     public FeatureRequestsSelectionDTO withFilters(FeatureRequestSearchParameters filters) {
         this.filters = filters;
         return this;

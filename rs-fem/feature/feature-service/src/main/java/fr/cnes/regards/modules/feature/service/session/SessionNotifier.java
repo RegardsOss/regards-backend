@@ -23,73 +23,97 @@ import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClien
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
 import org.springframework.stereotype.Service;
 
-/**
- * Service that sends notifications to collect statistics about feature requests.
- *
- * @author Iliana Ghazali
- **/
+
 @Service
 @MultitenantTransactional
 public class SessionNotifier {
 
-    /**
-     * Name of the corresponding SessionStep
-     */
     private static final String GLOBAL_SESSION_STEP = "feature";
 
-    /**
-     * Service to notify property changes
-     */
-    @Autowired
-    private ISessionAgentClient sessionNotificationClient;
+    private final ISessionAgentClient sessionNotificationClient;
 
-    //TODO : one method per each property : examples below
-
-    // Error requests
-    public void incrementRequestErrors(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionFeaturePropertyEnum.REQUESTS_ERRORS, 1);
+    public SessionNotifier(ISessionAgentClient sessionNotificationClient) {
+        this.sessionNotificationClient = sessionNotificationClient;
     }
 
-    public void decrementRequestErrors(String sessionOwner, String session, long nbProducts) {
-        decrementCount(sessionOwner, session, SessionFeaturePropertyEnum.REQUESTS_ERRORS, nbProducts);
+    public void incrementCount(FeatureEntity featureEntity, SessionProperty property) {
+        if (featureEntity != null) {
+            incrementCount(featureEntity.getSessionOwner(), featureEntity.getSession(), property);
+        }
     }
 
-    // Refused requests
-
-    public void incrementRequestRefused(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionFeaturePropertyEnum.REQUESTS_REFUSED, 1);
+    public void incrementCount(ILightFeatureEntity featureEntity, SessionProperty property) {
+        if (featureEntity != null) {
+            incrementCount(featureEntity.getSessionOwner(), featureEntity.getSession(), property);
+        }
     }
 
-    public void decrementRequestRefused(String sessionOwner, String session, long nbProducts) {
-        decrementCount(sessionOwner, session, SessionFeaturePropertyEnum.REQUESTS_REFUSED, nbProducts);
+    public void incrementCount(ILightFeatureCreationRequest request, SessionProperty property) {
+        incrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
     }
 
-    // ----------- UTILS -----------
+    public void incrementCount(FeatureCreationRequest request, SessionProperty property) {
+        incrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
+    }
 
-    // GENERIC METHODS TO BUILD NOTIFICATIONS
+    public void incrementCount(String source, String session, SessionProperty property) {
+        incrementCount(source, session, property, 1L);
+    }
 
-    // INC
-    private void incrementCount(String source, String session, SessionFeaturePropertyEnum property,
-            long nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
-                                                                  property.getName(), String.valueOf(nbProducts),
-                                                                  property.isInputRelated(),
-                                                                  property.isOutputRelated()));
+    public void incrementCount(String source, String session, SessionProperty property, long nbProducts) {
+        StepPropertyInfo stepPropertyInfo = new StepPropertyInfo(StepTypeEnum.REFERENCING,
+                                                                 property.getState(),
+                                                                 property.getName(),
+                                                                 String.valueOf(nbProducts),
+                                                                 property.isInputRelated(),
+                                                                 property.isOutputRelated()
+        );
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session, stepPropertyInfo);
         sessionNotificationClient.increment(step);
     }
 
-    // DEC
-    private void decrementCount(String source, String session, SessionFeaturePropertyEnum property,
-            long nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
-                                                                  property.getName(), String.valueOf(nbProducts),
-                                                                  property.isInputRelated(),
-                                                                  property.isOutputRelated()));
+    public void decrementCount(FeatureEntity featureEntity, SessionProperty property) {
+        if (featureEntity != null) {
+            decrementCount(featureEntity.getSessionOwner(), featureEntity.getSession(), property);
+        }
+    }
+
+    public void decrementCount(ILightFeatureEntity featureEntity, SessionProperty property) {
+        if (featureEntity != null) {
+            decrementCount(featureEntity.getSessionOwner(), featureEntity.getSession(), property);
+        }
+    }
+
+    public void decrementCount(ILightFeatureCreationRequest request, SessionProperty property) {
+        decrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
+    }
+
+    public void decrementCount(FeatureCreationRequest request, SessionProperty property) {
+        decrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
+    }
+
+
+    public void decrementCount(String source, String session, SessionProperty property) {
+        decrementCount(source, session, property, 1L);
+    }
+
+    public void decrementCount(String source, String session, SessionProperty property, long nbProducts) {
+
+        StepPropertyInfo stepPropertyInfo = new StepPropertyInfo(StepTypeEnum.REFERENCING,
+                                                                 property.getState(),
+                                                                 property.getName(),
+                                                                 String.valueOf(nbProducts),
+                                                                 property.isInputRelated(),
+                                                                 property.isOutputRelated()
+        );
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session, stepPropertyInfo);
         sessionNotificationClient.decrement(step);
     }
+
 }

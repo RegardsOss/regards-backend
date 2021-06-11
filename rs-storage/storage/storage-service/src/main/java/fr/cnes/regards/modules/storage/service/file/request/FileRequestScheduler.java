@@ -57,7 +57,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  * @author Sébastien Binda
  */
 @Component
-@Profile("!noschedule")
+@Profile("!noscheduler")
 @EnableScheduling
 public class FileRequestScheduler extends AbstractTaskScheduler {
 

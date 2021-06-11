@@ -47,7 +47,6 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -110,9 +109,6 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
     protected IFeatureNotificationRequestRepository notificationRequestRepo;
 
     @Autowired
-    private IFeatureNotificationSettingsRepository featureNotificationSettingsRepo;
-
-    @Autowired
     protected IFeatureSaveMetadataRequestRepository featureSaveMetadataRequestRepository;
 
     @Autowired
@@ -130,7 +126,6 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
         this.featureRepo.deleteAllInBatch();
         this.notificationRequestRepo.deleteAllInBatch();
         this.jobInfoRepository.deleteAll();
-        this.featureNotificationSettingsRepo.deleteAll();
     }
 
     public void createFeatures(String providerId, int nbFeatures, String source, String session) {

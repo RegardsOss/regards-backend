@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -36,6 +28,14 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * This job is used to dump aips.
@@ -77,7 +77,7 @@ public class AIPSaveMetadataJob extends AbstractJob<Void> {
             // Define path for dumpLocation
             String dumpLocationStr = metadataRequest.getDumpLocation();
             Path dumpLocation;
-            if (dumpLocationStr == null) {
+            if (StringUtils.isEmpty(dumpLocationStr)) {
                 dumpLocation = workspaceService.getMicroserviceWorkspace();
             } else {
                 dumpLocation = Paths.get(dumpLocationStr);

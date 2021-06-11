@@ -128,8 +128,8 @@ public class FileReferenceEventHandler
     private void handleFileStored(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
-            Optional<FileReference> oFileRef = fileReferenceService.search(event.getLocation().getStorage(),
-                                                                           event.getMetaInfo().getChecksum());
+            Optional<FileReference> oFileRef = fileReferenceService.searchWithOwners(event.getLocation().getStorage(),
+                                                                                     event.getMetaInfo().getChecksum());
             if (oFileRef.isPresent()) {
                 fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
                 LOGGER.debug("[STORE SUCCESS {}] New stored file is associated to a copy request {}",

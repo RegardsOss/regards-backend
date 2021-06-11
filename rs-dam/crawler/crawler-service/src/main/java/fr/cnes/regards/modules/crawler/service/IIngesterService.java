@@ -6,7 +6,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
-import fr.cnes.regards.modules.model.gson.ModelGsonReadyEvent;
+import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 
 /**
  * Ingester service interface.<br/>
@@ -30,7 +30,7 @@ public interface IIngesterService {
     void updatePlannedDate(DatasourceIngestion dsIngestion)
             throws ModuleException, NotAvailablePluginConfigurationException;
 
-    void handleApplicationReadyEvent(ModelGsonReadyEvent event);
+    void handleApplicationReadyEvent(ModelJsonReadyEvent event);
 
     void handleMessageEvent(DataSourceMessageEvent event);
 }

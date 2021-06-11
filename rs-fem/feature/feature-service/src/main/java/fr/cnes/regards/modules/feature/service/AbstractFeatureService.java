@@ -19,9 +19,16 @@
 package fr.cnes.regards.modules.feature.service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
+import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -45,7 +52,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 /**
  * @author Marc SORDI
  */
-public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> implements IAbstractFeatureService {
+public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> implements IAbstractFeatureService<R> {
 
     protected static final int MAX_PAGE_TO_DELETE = 50;
 
@@ -55,6 +62,9 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private IFeatureEntityRepository featureEntityRepository;
 
     @Override
     public void validateRequest(AbstractRequestEvent event, Errors errors) {
@@ -93,33 +103,33 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<R> requestsPage;
         String message;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
-                && (selection.getFilters().getState() != RequestState.ERROR)) {
-            message = String.format("Requests in state %s are not deletable", selection.getFilters().getState());
-        } else {
-            int cpt = 0;
-            boolean stop = false;
-            // Delete only error requests
-            selection.getFilters().setState(RequestState.ERROR);
-            do {
-                requestsPage = findRequests(selection, page);
-                if (total == 0) {
-                    total = requestsPage.getTotalElements();
-                }
-                getRequestsRepository().deleteAll(requestsPage);
-                nbHandled += requestsPage.getNumberOfElements();
-                if (!requestsPage.hasNext() || (cpt >= MAX_PAGE_TO_DELETE)) {
-                    stop = true;
-                } else {
-                    cpt++;
-                }
-            } while (!stop);
-            if (nbHandled < total) {
-                message = String.format("All requests has not been handled. Limit of deletable requests (%d) exceeded",
-                                        MAX_PAGE_TO_DELETE * MAX_ENTITY_PER_PAGE);
-            } else {
-                message = "All deletable requested handled";
+        int cpt = 0;
+        boolean stop = false;
+        // Delete only deletable requests
+        for (FeatureRequestStep step : FeatureRequestStep.values()) {
+            if (!step.isProcessing()) {
+                selection.withStep(step);
             }
+        }
+        do {
+            requestsPage = findRequests(selection, page);
+            if (total == 0) {
+                total = requestsPage.getTotalElements();
+            }
+            sessionInfoUpdateForDelete(requestsPage.toList());
+            getRequestsRepository().deleteAll(requestsPage);
+            nbHandled += requestsPage.getNumberOfElements();
+            if (!requestsPage.hasNext() || (cpt >= MAX_PAGE_TO_DELETE)) {
+                stop = true;
+            } else {
+                cpt++;
+            }
+        } while (!stop);
+        if (nbHandled < total) {
+            message = String.format("All requests has not been handled. Limit of deletable requests (%d) exceeded",
+                                    MAX_PAGE_TO_DELETE * MAX_ENTITY_PER_PAGE);
+        } else {
+            message = "All deletable requested handled";
         }
         return RequestHandledResponse.build(total, nbHandled, message);
     }
@@ -144,6 +154,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
                     total = requestsPage.getTotalElements();
                 }
                 List<R> toUpdate = requestsPage.map(this::globalUpdateForRetry).toList();
+                sessionInfoUpdateForRetry(toUpdate);
                 toUpdate = getRequestsRepository().saveAll(toUpdate);
                 nbHandled += toUpdate.size();
                 if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
@@ -176,6 +187,13 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         return updateForRetry(request);
     }
 
+    @Override
+    public Map<FeatureUniformResourceName, ILightFeatureEntity> getSessionInfoByUrn(Collection<FeatureUniformResourceName> uniformResourceNames) {
+        return featureEntityRepository.findByUrnIn(uniformResourceNames)
+                .stream()
+                .collect(Collectors.toMap(ILightFeatureEntity::getUrn, Function.identity()));
+    }
+
     protected abstract Page<R> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
 
     protected abstract IAbstractFeatureRequestRepository<R> getRequestsRepository();
@@ -185,4 +203,9 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     protected abstract void logRequestDenied(String requestOwner, String requestId, Set<String> errors);
 
     protected abstract R updateForRetry(R request);
+
+    protected abstract void sessionInfoUpdateForRetry(Collection<R> requests);
+
+    protected abstract void sessionInfoUpdateForDelete(Collection<R> requests);
+
 }

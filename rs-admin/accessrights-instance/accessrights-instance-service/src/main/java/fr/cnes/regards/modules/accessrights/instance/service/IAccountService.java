@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Define the base interface for any implementation of an Account Service.
@@ -38,17 +38,23 @@ public interface IAccountService {
     /**
      * Create an account.
      *
-     * @param pAccount
-     *            The {@link Account}
+     * @param pAccount The {@link Account}
      * @return The account
      */
     Account createAccount(Account pAccount);
 
     /**
+     * Set Account status to {@link AccountStatus#ACTIVE}
+     * and publish an {@link AccountAcceptedEvent}
+     *
+     * @param account The {@link Account}
+     */
+    void activate(Account account);
+
+    /**
      * Retrieve the list of all {@link Account}s.
      *
-     * @param pPageable
-     *            pagination informations
+     * @param pPageable pagination informations
      * @return The accounts list
      */
     Page<Account> retrieveAccountList(final Pageable pPageable);
@@ -158,11 +164,6 @@ public interface IAccountService {
      */
     String getPasswordRules();
 
-    /**
-     * Encrypt password
-     * @param pPassword the password to encrypt
-     * @return the encrypted password
-     */
     /**
      * Check account validity
      */

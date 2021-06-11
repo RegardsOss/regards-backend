@@ -60,7 +60,7 @@ import fr.cnes.regards.framework.test.util.JUnitLogRule;
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ContextConfiguration(
         classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, MockAmqpConfiguration.class })
-@ActiveProfiles({ "default", "test", "noschedule" })
+@ActiveProfiles({ "default", "test", "noscheduler" })
 @TestPropertySource(properties = { "regards.cloud.enabled=false", "spring.flyway.enabled=false" })
 public abstract class AbstractRegardsServiceIT {
 

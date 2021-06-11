@@ -19,7 +19,12 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 
@@ -36,6 +41,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
@@ -62,9 +68,9 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * Test {@link AIPUpdateRunnerJob}
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000",
-        "eureka.client.enabled=false" },
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job", "regards.amqp.enabled=true",
+                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
@@ -272,14 +278,16 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         Set<RequestInfo> requests = Sets.newHashSet();
         String newStorageLocation = "somewhere";
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests.add(RequestResultInfoDTO
-                .build("groupId", toUpdateChecksum, newStorageLocation, null, Sets.newHashSet("someone"),
-                       simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
+        Collection<String> owners = Sets.newHashSet(toUpdate.getAipId());
+        successRequests
+                .add(RequestResultInfoDTO.build("groupId", toUpdateChecksum, newStorageLocation, null, owners,
+                                                simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
 
         storageListener.onCopySuccess(requests);
 
         JobInfo updateJob = aipUpdateService.scheduleJob();
+        Assert.assertNotNull("One update job should be scheduled", updateJob);
         runAndWaitJob(Lists.newArrayList(updateJob));
 
         // Check that the new location is added to the AIP in DB.

@@ -67,7 +67,7 @@ public class ServiceAggregatorClientITConfiguration {
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         metaData.setPluginId(SampleServicePlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration pluginConfiguration = new PluginConfiguration("testConf", metaData.getPluginId());
-        pluginConfiguration.setMetaData(metaData);
+        pluginConfiguration.setMetaDataAndPluginId(metaData);
         pluginConfiguration.setId(ID);
         ID = ID + 1;
         return new PluginConfigurationDto(pluginConfiguration);

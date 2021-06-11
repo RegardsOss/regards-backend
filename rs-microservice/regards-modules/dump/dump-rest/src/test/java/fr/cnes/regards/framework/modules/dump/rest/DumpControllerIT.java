@@ -20,21 +20,23 @@
 
 package fr.cnes.regards.framework.modules.dump.rest;
 
-import java.time.OffsetDateTime;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.dump.service.scheduler.AbstractDumpScheduler;
+import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
 
 /**
  * {@link DumpController} REST API test
@@ -47,28 +49,30 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 public class DumpControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
-    private IDumpSettingsRepository dumpRepository;
+    IDumpSettingsService dumpSettingsService;
+
+    @MockBean
+    private AbstractDumpScheduler abstractDumpScheduler;
+
+    @Before
+    public void init() {
+        MockitoAnnotations.initMocks(AbstractDumpScheduler.class);
+    }
 
     @Test
     @Purpose("Test reset last req dump date")
-    public void testResetLastReqDumpDate() {
+    public void testResetLastReqDumpDate() throws EntityException {
+
         // Create lastReqDumpDate to now
-        dumpRepository.save(new DumpSettings(true, "", "target/", OffsetDateTime.now()));
-        DumpSettings resource = dumpRepository.getOne(DumpSettings.DUMP_CONF_ID);
-        Assert.assertFalse(resource.getLastDumpReqDate() == null);
+        dumpSettingsService.setLastDumpReqDate(OffsetDateTime.now());
+        Assert.assertNotNull(dumpSettingsService.lastDumpReqDate());
 
         // Reset lastReqDumpDate
         RequestBuilderCustomizer putRequest = customizer().expectStatusOk();
         performDefaultPatch(DumpController.TYPE_MAPPING + DumpController.RESET_LAST_DUMP_DATE, null, putRequest,
                             "Reset lastReqDumpDate error");
 
-        resource = dumpRepository.getOne(DumpSettings.DUMP_CONF_ID);
-        Assert.assertTrue(resource.getLastDumpReqDate() == null);
-    }
-
-    @After
-    public void doAfter() {
-        dumpRepository.deleteAll();
+        Assert.assertNull(dumpSettingsService.lastDumpReqDate());
     }
 
 }

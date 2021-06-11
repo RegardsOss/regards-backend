@@ -58,11 +58,13 @@ public class FileReferenceEventPublisher {
      * @param message success message
      * @param groupId Business request identifier
      */
-    public void copySuccess(FileReference fileRef, String message, String groupId, Collection<String> owners) {
+    public void copySuccess(FileReference fileRef, String message, String groupId) {
         LOGGER.trace("Publishing FileReferenceEvent COPIED. {}", message);
-        publisher.publish(FileReferenceEvent
-                .build(fileRef.getMetaInfo().getChecksum(), null, FileReferenceEventType.COPIED, owners, message,
-                       fileRef.getLocation(), fileRef.getMetaInfo(), Sets.newHashSet(groupId)));
+        // Inform all owners of the file that it has been copied in an other storage location.
+        publisher.publish(FileReferenceEvent.build(fileRef.getMetaInfo().getChecksum(), null,
+                                                   FileReferenceEventType.COPIED, fileRef.getLazzyOwners(), message,
+                                                   fileRef.getLocation(), fileRef.getMetaInfo(),
+                                                   Sets.newHashSet(groupId)));
     }
 
     /**

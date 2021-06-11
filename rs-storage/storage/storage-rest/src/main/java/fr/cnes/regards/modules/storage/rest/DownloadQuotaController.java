@@ -68,24 +68,6 @@ public class DownloadQuotaController {
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    @GetMapping(value = PATH_DEFAULT_QUOTA)
-    @ResponseBody
-    @ResourceAccess(description = "Get default download quota limits.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
-        return quotaService.getDefaultDownloadQuotaLimits()
-            .map(limits -> new ResponseEntity<>(limits, HttpStatus.OK))
-            .get();
-    }
-
-    @PutMapping(value = PATH_DEFAULT_QUOTA)
-    @ResponseBody
-    @ResourceAccess(description = "Update default download quota limits.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid @RequestBody DefaultDownloadQuotaLimits newDefaults) {
-        return quotaService.changeDefaultDownloadQuotaLimits(newDefaults)
-            .map(ignored -> new ResponseEntity<>(newDefaults, HttpStatus.OK))
-            .get();
-    }
-
     @GetMapping(path = PATH_USER_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.PROJECT_ADMIN)

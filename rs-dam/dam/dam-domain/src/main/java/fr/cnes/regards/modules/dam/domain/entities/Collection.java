@@ -40,6 +40,10 @@ public class Collection extends AbstractEntity<CollectionFeature> {
         super(model, new CollectionFeature(tenant, providerId, label));
     }
 
+    public Collection(Model model, CollectionFeature feature) {
+        super(model, feature);
+    }
+
     public Collection() {
         // we use super and not this because at deserialization we need a ipId null at the object creation which is then
         // replaced by the attribute if present or added by creation method

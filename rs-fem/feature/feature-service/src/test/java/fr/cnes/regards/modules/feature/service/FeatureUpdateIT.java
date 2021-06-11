@@ -18,26 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
+import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -45,12 +31,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.RequestInfo;
+import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -60,18 +41,39 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.runners.MethodSorters;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
 
 /**
  * @author kevin
  *
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_update", "regards.amqp.enabled=true",
-                "regards.feature.metrics.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+        properties = {"spring.jpa.properties.hibernate.default_schema=feature_update", "regards.amqp.enabled=true", "regards.feature.metrics.enabled=true"},
+        locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
@@ -335,6 +337,13 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                 .registerRequests(prepareUpdateRequests(urns));
         Assert.assertFalse(results.getGranted().isEmpty());
 
+        // Simulate all requests to scheduled
+        this.featureUpdateService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+                .forEach(r -> {
+                    r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
+                    this.featureUpdateRequestRepo.save(r);
+                });
+
         // Try delete all requests.
         RequestHandledResponse response = this.featureUpdateService.deleteRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
@@ -350,6 +359,18 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                             response.getTotalHandled());
         Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
                             response.getTotalRequested());
+
+        // Simulate all requests to scheduled
+        this.featureUpdateService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+                .forEach(r -> {
+                    r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                    this.featureUpdateRequestRepo.save(r);
+                });
+
+        response = this.featureUpdateService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 20 requests deleted", 20, response.getTotalHandled());
+        Assert.assertEquals("There should be 20 requests to delete", 20, response.getTotalRequested());
 
     }
 
@@ -382,6 +403,200 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", 0,
                             response.getTotalRequested());
 
+    }
+
+    @Test
+    public void test1SessionNotifier() throws InterruptedException {
+
+        int requestCount = 10;
+        prepareCreationTestData(false, requestCount, true, true);
+
+        // Update
+        List<FeatureUniformResourceName> urns = Collections.singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
+        featureUpdateService.registerRequests(prepareUpdateRequests(urns));
+        TimeUnit.SECONDS.sleep(5);
+        featureUpdateService.scheduleRequests();
+        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 20);
+        mockNotificationSuccess();
+        waitUpdateRequestDeletion(0, 20000);
+
+        checkOneUpdate(requestCount);
+    }
+
+    @Test
+    public void test1SessionNotifierWithoutNotification() throws InterruptedException, EntityException {
+
+        setNotificationSetting(false);
+
+        int requestCount = 10;
+        prepareCreationTestData(false, requestCount, false, true);
+
+        // Update
+        List<FeatureUniformResourceName> urns = Collections.singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
+        featureUpdateService.registerRequests(prepareUpdateRequests(urns));
+        TimeUnit.SECONDS.sleep(5);
+        featureUpdateService.scheduleRequests();
+        waitUpdateRequestDeletion(0, 20000);
+
+        checkOneUpdate(requestCount);
+    }
+
+    @Test
+    public void test1SessionNotifierWithRetry() throws InterruptedException {
+
+        createOneWithError();
+
+        featureUpdateService.retryRequests(new FeatureRequestsSelectionDTO());
+        mockNotificationSuccess();
+        waitRequest(featureUpdateRequestRepo, 0, 20000);
+
+        // Compute Session step
+        computeSessionStep();
+
+        // Check Session step values
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        Assertions.assertEquals(12, requests.size());
+        checkRequests(8, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1, property("referencingRequests"), requests);
+        checkRequests(2, property("runningReferencingRequests"), requests);
+        checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(1, property("updateRequests"), requests);
+        checkRequests(4, property("runningUpdateRequests"), requests);
+        checkRequests(1, property("updatedProducts"), requests);
+        checkRequests(2, property("inErrorUpdateRequests"), requests);
+        checkRequests(1, inputRelated(), requests);
+        checkRequests(1, outputRelated(), requests);
+
+        // Check Session step
+        SessionStep sessionStep = getSessionStep();
+        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assertions.assertEquals(1, sessionStep.getInputRelated());
+        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
+        Assertions.assertEquals(7, sessionStepProperties.size());
+        checkKey(1, "referencingRequests", sessionStepProperties);
+        checkKey(0, "runningReferencingRequests", sessionStepProperties);
+        checkKey(1, "referencedProducts", sessionStepProperties);
+        checkKey(1, "updateRequests", sessionStepProperties);
+        checkKey(0, "runningUpdateRequests", sessionStepProperties);
+        checkKey(0, "inErrorUpdateRequests", sessionStepProperties);
+        checkKey(1, "updatedProducts", sessionStepProperties);
+    }
+
+    @Test
+    public void test1SessionNotifierWithDelete() throws InterruptedException {
+
+        createOneWithError();
+
+        featureUpdateService.deleteRequests(new FeatureRequestsSelectionDTO());
+        waitRequest(featureUpdateRequestRepo, 0, 20000);
+
+        // Compute Session step
+        computeSessionStep();
+
+        // Check Session step values
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        Assertions.assertEquals(10, requests.size());
+        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1, property("referencingRequests"), requests);
+        checkRequests(2, property("runningReferencingRequests"), requests);
+        checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(2, property("updateRequests"), requests);
+        checkRequests(2, property("runningUpdateRequests"), requests);
+        checkRequests(2, property("inErrorUpdateRequests"), requests);
+        checkRequests(1, inputRelated(), requests);
+        checkRequests(1, outputRelated(), requests);
+
+        // Check Session step
+        SessionStep sessionStep = getSessionStep();
+        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assertions.assertEquals(1, sessionStep.getInputRelated());
+        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
+        Assertions.assertEquals(6, sessionStepProperties.size());
+        checkKey(1, "referencingRequests", sessionStepProperties);
+        checkKey(0, "runningReferencingRequests", sessionStepProperties);
+        checkKey(1, "referencedProducts", sessionStepProperties);
+        checkKey(0, "updateRequests", sessionStepProperties);
+        checkKey(0, "runningUpdateRequests", sessionStepProperties);
+        checkKey(0, "inErrorUpdateRequests", sessionStepProperties);
+    }
+
+    private void checkOneUpdate(int requestCount) throws InterruptedException {
+
+        // Compute Session step
+        computeSessionStep();
+
+        // Check Session step values
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        Assertions.assertEquals((requestCount + 1) * 4, requests.size());
+        checkRequests((requestCount + 1) * 3, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(requestCount + 1, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(requestCount, property("referencingRequests"), requests);
+        checkRequests(requestCount, property("referencedProducts"), requests);
+        checkRequests(1, property("updateRequests"), requests);
+        checkRequests(1, property("updatedProducts"), requests);
+        checkRequests(requestCount * 2, property("runningReferencingRequests"), requests);
+        checkRequests(2, property("runningUpdateRequests"), requests);
+        checkRequests(requestCount, inputRelated(), requests);
+        checkRequests(requestCount, outputRelated(), requests);
+
+        // Check Session step
+        SessionStep sessionStep = getSessionStep();
+        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assertions.assertEquals(requestCount, sessionStep.getInputRelated());
+        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
+        Assertions.assertEquals(6, sessionStepProperties.size());
+        checkKey(requestCount, "referencingRequests", sessionStepProperties);
+        checkKey(requestCount, "referencedProducts", sessionStepProperties);
+        checkKey(0, "runningReferencingRequests", sessionStepProperties);
+        checkKey(1, "updateRequests", sessionStepProperties);
+        checkKey(1, "updatedProducts", sessionStepProperties);
+        checkKey(0, "runningUpdateRequests", sessionStepProperties);
+    }
+
+    private void createOneWithError() throws InterruptedException {
+        // Create and Update One with Files, fail on notification
+        prepareCreationTestData(false, 1, true, true);
+
+        // Update
+        List<FeatureUniformResourceName> urns = Collections.singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
+        featureUpdateService.registerRequests(prepareUpdateRequests(urns));
+        TimeUnit.SECONDS.sleep(5);
+        featureUpdateService.scheduleRequests();
+        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 20);
+        mockNotificationError();
+        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
+
+        // Compute Session step
+        computeSessionStep();
+
+        // Check Session step values
+        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
+        Assertions.assertEquals(8, requests.size());
+        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(2, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(1, property("referencingRequests"), requests);
+        checkRequests(2, property("runningReferencingRequests"), requests);
+        checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(1, property("updateRequests"), requests);
+        checkRequests(2, property("runningUpdateRequests"), requests);
+        checkRequests(1, property("inErrorUpdateRequests"), requests);
+        checkRequests(1, inputRelated(), requests);
+        checkRequests(1, outputRelated(), requests);
+
+        // Check Session step
+        SessionStep sessionStep = getSessionStep();
+        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
+        Assertions.assertEquals(1, sessionStep.getInputRelated());
+        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
+        Assertions.assertEquals(6, sessionStepProperties.size());
+        checkKey(1, "referencingRequests", sessionStepProperties);
+        checkKey(0, "runningReferencingRequests", sessionStepProperties);
+        checkKey(1, "referencedProducts", sessionStepProperties);
+        checkKey(1, "updateRequests", sessionStepProperties);
+        checkKey(0, "runningUpdateRequests", sessionStepProperties);
+        checkKey(1, "inErrorUpdateRequests", sessionStepProperties);
     }
 
 }

@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -43,11 +31,20 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Integration tests for the accesses functionalities.
@@ -130,9 +127,6 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IAccountsClient accountsClient;
 
-    @Autowired
-    private IAccountSettingsClient accountSettingsClient;
-
     /**
      * Do some setup before each test
      */
@@ -166,7 +160,6 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         //lets mock the feign clients
         Account account = new Account(newAccessRequest.getEmail(), newAccessRequest.getFirstName(),
                 newAccessRequest.getLastName(), newAccessRequest.getPassword());
-        AccountSettings accountSettings = new AccountSettings();
 
         Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
@@ -174,8 +167,6 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
         Mockito.when(accountsClient.createAccount(accountNPassword))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
-        Mockito.when(accountSettingsClient.retrieveAccountSettings())
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
 
         performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusCreated(), ERROR_MESSAGE);
     }
