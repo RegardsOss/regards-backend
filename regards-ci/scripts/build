@@ -231,8 +231,8 @@ function nightly {
         clean package \
         org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
 	sonar:sonar \
-        -Dsonar.jacoco.reportPath="${SERVICES}/jacoco-ut.exec" \
-        -Dsonar.jacoco.itReportPath="${SERVICES}/jacoco-it.exec" \
+        -Dsonar.jacoco.reportPath="${SERVICES}/target/coverage-reports/jacoco-ut.exec" \
+        -Dsonar.jacoco.itReportPath="${SERVICES}/target/coverage-reports/jacoco-it.exec" \
         -Dsonar.branch.name="develop" \
         -Dmaven.multiModuleProjectDirectory=${SERVICES} \
         -Dfile.encoding=UTF-8 \
