@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.featureprovider.service.session;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.ISourceDeleteService;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.ISessionDeleteService;
 import fr.cnes.regards.modules.featureprovider.service.FeatureExtractionDeletionService;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -28,24 +28,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Implementation of {@link ISourceDeleteService} to delete all
- * {@link fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest} linked to a source
+ * Implementation of {@link ISessionDeleteService} to delete all
+ * {@link fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest} linked to a source and a session
  *
  * @author Iliana Ghazali
  **/
 @Service
 @MultitenantTransactional
-public class SourceDeleteService implements ISourceDeleteService {
+public class ExtractionSessionDeleteService implements ISessionDeleteService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionDeleteService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExtractionSessionDeleteService.class);
 
     @Autowired
     private FeatureExtractionDeletionService deletionService;
 
     @Override
-    public void deleteSource(String source) {
-        LOGGER.info("Event received to program the deletion of all extraction requests of source {}", source);
+    public void deleteSession(String source, String session) {
+        LOGGER.info("Event received to program the deletion of all extraction requests from session {} of source {}",
+                    session, source);
         // Run a DeleteProductsJob
-        deletionService.scheduleDeletion(source, Optional.empty());
+        deletionService.scheduleDeletion(source, Optional.of(session));
     }
 }

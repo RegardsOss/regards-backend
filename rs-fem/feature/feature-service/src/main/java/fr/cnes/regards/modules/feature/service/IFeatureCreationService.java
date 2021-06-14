@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 
-public interface IFeatureCreationService extends IAbstractFeatureService {
+public interface IFeatureCreationService extends IAbstractFeatureService<FeatureCreationRequest> {
 
     /**
      * Register creation requests in database for further processing from incoming request events

@@ -36,12 +36,12 @@ import org.springframework.stereotype.Service;
  **/
 @Service
 @MultitenantTransactional
-public class SessionNotifier {
+public class ExtractionSessionNotifier {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionNotifier.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExtractionSessionNotifier.class);
 
     /**
      * Name of the corresponding SessionStep
@@ -57,37 +57,37 @@ public class SessionNotifier {
     // Extraction requests received
 
     public void incrementRequestCount(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.TOTAL_REQUESTS, 1);
+        incrementCount(sessionOwner, session, ExtractionSessionPropertyEnum.TOTAL_REQUESTS, 1);
     }
 
     // Error requests
 
     public void incrementRequestErrors(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.REQUESTS_ERRORS, 1);
+        incrementCount(sessionOwner, session, ExtractionSessionPropertyEnum.REQUESTS_ERRORS, 1);
     }
 
     public void decrementRequestErrors(String sessionOwner, String session, long nbProducts) {
-        decrementCount(sessionOwner, session, SessionExtractionPropertyEnum.REQUESTS_ERRORS, nbProducts);
+        decrementCount(sessionOwner, session, ExtractionSessionPropertyEnum.REQUESTS_ERRORS, nbProducts);
     }
 
     // Refused requests
 
     public void incrementRequestRefused(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.REQUESTS_REFUSED, 1);
+        incrementCount(sessionOwner, session, ExtractionSessionPropertyEnum.REQUESTS_REFUSED, 1);
     }
 
     public void decrementRequestRefused(String sessionOwner, String session, long nbProducts) {
-        decrementCount(sessionOwner, session, SessionExtractionPropertyEnum.REQUESTS_REFUSED, nbProducts);
+        decrementCount(sessionOwner, session, ExtractionSessionPropertyEnum.REQUESTS_REFUSED, nbProducts);
     }
 
     // Generated products
 
     public void incrementGeneratedProducts(String sessionOwner, String session) {
-        incrementCount(sessionOwner, session, SessionExtractionPropertyEnum.GENERATED_PRODUCTS, 1);
+        incrementCount(sessionOwner, session, ExtractionSessionPropertyEnum.GENERATED_PRODUCTS, 1);
     }
 
     public void decrementGeneratedProducts(String sessionOwner, String session) {
-        decrementCount(sessionOwner, session, SessionExtractionPropertyEnum.GENERATED_PRODUCTS, 1);
+        decrementCount(sessionOwner, session, ExtractionSessionPropertyEnum.GENERATED_PRODUCTS, 1);
     }
 
     // ----------- UTILS -----------
@@ -104,7 +104,7 @@ public class SessionNotifier {
      * @param property   property to be notified
      * @param nbProducts value to increment the corresponding property
      */
-    private void incrementCount(String source, String session, SessionExtractionPropertyEnum property,
+    private void incrementCount(String source, String session, ExtractionSessionPropertyEnum property,
             long nbProducts) {
         if (!Strings.isNullOrEmpty(source) && !Strings.isNullOrEmpty(session)) {
             StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
@@ -130,7 +130,7 @@ public class SessionNotifier {
      * @param property   property to be notified
      * @param nbProducts value to decrement the corresponding property
      */
-    private void decrementCount(String source, String session, SessionExtractionPropertyEnum property,
+    private void decrementCount(String source, String session, ExtractionSessionPropertyEnum property,
             long nbProducts) {
         if (!Strings.isNullOrEmpty(source) && !Strings.isNullOrEmpty(session)) {
 

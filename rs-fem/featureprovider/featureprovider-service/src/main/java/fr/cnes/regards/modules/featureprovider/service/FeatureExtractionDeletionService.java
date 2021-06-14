@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
-import fr.cnes.regards.modules.featureprovider.service.session.SessionNotifier;
+import fr.cnes.regards.modules.featureprovider.service.session.ExtractionSessionNotifier;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,7 +64,7 @@ public class FeatureExtractionDeletionService {
     private FeatureProviderConfigurationProperties confProperties;
 
     @Autowired
-    private SessionNotifier sessionNotifier;
+    private ExtractionSessionNotifier extractionSessionNotifier;
 
     @Autowired
     private FeatureExtractionDeletionService self;
@@ -148,10 +148,10 @@ public class FeatureExtractionDeletionService {
 
             // notify if requests were deleted
             if (nbRefusedReq != 0) {
-                this.sessionNotifier.decrementRequestRefused(sourceName, requestList.getKey(), nbRefusedReq);
+                this.extractionSessionNotifier.decrementRequestRefused(sourceName, requestList.getKey(), nbRefusedReq);
             }
             if (nbErrorReq != 0) {
-                this.sessionNotifier.decrementRequestErrors(sourceName, requestList.getKey(), nbErrorReq);
+                this.extractionSessionNotifier.decrementRequestErrors(sourceName, requestList.getKey(), nbErrorReq);
             }
         }
     }

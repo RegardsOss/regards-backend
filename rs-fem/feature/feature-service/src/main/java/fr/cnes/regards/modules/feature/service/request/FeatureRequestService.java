@@ -18,34 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Maps;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
-import fr.cnes.regards.modules.feature.domain.request.IProviderIdByUrn;
+import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
@@ -56,13 +35,21 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
-import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
-import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
-import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
-import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
+import fr.cnes.regards.modules.feature.service.*;
 import fr.cnes.regards.modules.feature.service.dump.IFeatureMetadataService;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.apache.commons.compress.utils.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -104,6 +91,9 @@ public class FeatureRequestService implements IFeatureRequestService {
 
     @Autowired
     public IFeatureMetadataService featureMetadataService;
+
+    @Autowired
+    private FeatureSessionNotifier featureSessionNotifier;
 
     @Override
     public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection,
@@ -204,9 +194,7 @@ public class FeatureRequestService implements IFeatureRequestService {
     @Override
     public void handleStorageError(Collection<RequestResultInfoDTO> errorRequests) {
         Map<String, String> errorByGroupId = Maps.newHashMap();
-        errorRequests.forEach(e -> {
-            errorByGroupId.put(e.getGroupId(), e.getErrorCause());
-        });
+        errorRequests.forEach(e -> errorByGroupId.put(e.getGroupId(), e.getErrorCause()));
 
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(errorByGroupId.keySet());
 
@@ -218,9 +206,9 @@ public class FeatureRequestService implements IFeatureRequestService {
         request.forEach(r -> {
             r.setState(RequestState.ERROR);
             r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
-            r.addError(String.format("Error during file storage : %s",
-                                     Optional.ofNullable(errorByGroupId.get(r.getGroupId())).orElse("unknown error.")));
+            r.addError(String.format("Error during file storage : %s", Optional.ofNullable(errorByGroupId.get(r.getGroupId())).orElse("unknown error.")));
         });
+        featureCreationService.doOnError(request);
         this.fcrRepo.saveAll(request);
     }
 
@@ -232,23 +220,20 @@ public class FeatureRequestService implements IFeatureRequestService {
     @Override
     public void handleDeletionError(Collection<RequestResultInfoDTO> errorRequests) {
         Map<String, String> errorByGroupId = Maps.newHashMap();
-        errorRequests.forEach(e -> {
-            errorByGroupId.put(e.getGroupId(), e.getErrorCause());
-        });
-        Set<FeatureDeletionRequest> request = this.fdrRepo.findByGroupIdIn(errorByGroupId.keySet());
+        errorRequests.forEach(e -> errorByGroupId.put(e.getGroupId(), e.getErrorCause()));
+        Set<FeatureDeletionRequest> deletionRequests = fdrRepo.findByGroupIdIn(errorByGroupId.keySet());
 
-        // publish success notification for all request id
-        request.forEach(item -> publisher.publish(FeatureRequestEvent
-                .build(FeatureRequestType.DELETION, item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                       RequestState.ERROR, null)));
+        // publish error notification for all deletionRequests id
+        deletionRequests.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, item.getRequestId(), item.getRequestOwner(), null,
+                                                                                     item.getUrn(), RequestState.ERROR, null)));
         // set FeatureDeletionRequest to error state
-        request.forEach(r -> {
+        deletionRequests.forEach(r -> {
             r.setState(RequestState.ERROR);
-            r.addError(String.format("Error during file deletion : %s",
-                                     Optional.ofNullable(errorByGroupId.get(r.getGroupId())).orElse("unknown error.")));
+            r.addError(String.format("Error during file deletion : %s", Optional.ofNullable(errorByGroupId.get(r.getGroupId())).orElse("unknown error.")));
         });
 
-        this.fdrRepo.saveAll(request);
+        featureDeletionService.doOnError(deletionRequests);
+        this.fdrRepo.saveAll(deletionRequests);
     }
 
     /**
@@ -257,14 +242,11 @@ public class FeatureRequestService implements IFeatureRequestService {
      * @param requests {@link FeatureRequestDTO}s page
      */
     private void addProviderIdsToRequests(Page<FeatureRequestDTO> requests) {
-        List<FeatureUniformResourceName> missingUrns = requests.stream().map(r -> r.getUrn()).filter(r -> r != null)
-                .collect(Collectors.toList());
+        List<FeatureUniformResourceName> missingUrns = requests.stream().map(FeatureRequestDTO::getUrn).filter(Objects::nonNull).collect(Collectors.toList());
         if (!missingUrns.isEmpty()) {
-            List<IProviderIdByUrn> providerIds = abstractFeatureRequestRepo
-                    .findFeatureProviderIdFromRequestUrns(missingUrns);
+            List<IProviderIdByUrn> providerIds = abstractFeatureRequestRepo.findFeatureProviderIdFromRequestUrns(missingUrns);
             requests.forEach(r -> {
-                providerIds.stream().filter(i -> i.getUrn().equals(r.getUrn())).findFirst()
-                        .ifPresent(i -> r.setProviderId(i.getProviderId()));
+                providerIds.stream().filter(i -> i.getUrn().equals(r.getUrn())).findFirst().ifPresent(i -> r.setProviderId(i.getProviderId()));
             });
         }
     }

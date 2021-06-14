@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionResponseE
 import fr.cnes.regards.modules.featureprovider.domain.IFeatureExtractionRequestLight;
 import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
-import fr.cnes.regards.modules.featureprovider.service.session.SessionNotifier;
+import fr.cnes.regards.modules.featureprovider.service.session.ExtractionSessionNotifier;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -142,7 +142,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
     private FeatureClient featureClient;
 
     @Autowired
-    private SessionNotifier sessionNotifier;
+    private ExtractionSessionNotifier extractionSessionNotifier;
 
     @Override
     public void validateRequest(AbstractRequestEvent event, Errors errors) {
@@ -176,7 +176,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         publisher.publish(new FeatureExtractionResponseEvent(requestId, requestOwner, RequestState.DENIED,
                 Sets.newHashSet(errorMessage)));
         // Notify denied request to the session agent
-        this.sessionNotifier.incrementRequestRefused(sessionOwner, session);
+        this.extractionSessionNotifier.incrementRequestRefused(sessionOwner, session);
         return true;
     }
 
@@ -215,7 +215,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         String session = item.getMetadata().getSession();
 
         // notify extract request to the session agent
-        sessionNotifier.incrementRequestCount(sessionOwner, session);
+        extractionSessionNotifier.incrementRequestCount(sessionOwner, session);
 
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureExtractionRequestEvent.class.getName());
@@ -238,7 +238,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             publisher.publish(new FeatureExtractionResponseEvent(item.getRequestId(), item.getRequestOwner(),
                     RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             // publish request denied to the session agent
-            sessionNotifier.incrementRequestRefused(sessionOwner, session);
+            extractionSessionNotifier.incrementRequestRefused(sessionOwner, session);
             return;
         }
         // Monitoring log
@@ -314,8 +314,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                 publisher.publish(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
                         RequestState.ERROR, errors));
                 // Notify error request to the session agent
-                this.sessionNotifier.incrementRequestErrors(request.getMetadata().getSessionOwner(),
-                                                            request.getMetadata().getSession());
+                this.extractionSessionNotifier.incrementRequestErrors(request.getMetadata().getSessionOwner(),
+                                                                      request.getMetadata().getSession());
             }
         }
 
@@ -409,8 +409,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                     events.add(new FeatureExtractionResponseEvent(extractRequestId, extractRequest.getRequestOwner(),
                             RequestState.ERROR, extractRequest.getErrors()));
                     // send request error to session agent
-                    this.sessionNotifier.incrementRequestErrors(extractRequestLight.getMetadata().getSessionOwner(),
-                                                                extractRequestLight.getMetadata().getSession());
+                    this.extractionSessionNotifier.incrementRequestErrors(extractRequestLight.getMetadata().getSessionOwner(),
+                                                                          extractRequestLight.getMetadata().getSession());
                 }
                 publisher.publish(events);
                 // Update FeatureExtractionResponseEvent with error state
@@ -442,8 +442,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                             grantedRequestPerRequestId.get(extractRequestId).getRequestOwner(), RequestState.SUCCESS,
                             new HashSet<>()));
                     // notify request success
-                    this.sessionNotifier.incrementGeneratedProducts(extractRequestLight.getMetadata().getSessionOwner(),
-                                                                    extractRequestLight.getMetadata().getSession());
+                    this.extractionSessionNotifier.incrementGeneratedProducts(extractRequestLight.getMetadata().getSessionOwner(),
+                                                                              extractRequestLight.getMetadata().getSession());
                 }
                 publisher.publish(events);
                 // Delete all success FeatureExtractionResponseEvent
@@ -464,8 +464,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             errorResponses.add(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
                     RequestState.ERROR, errorMessages));
             // notify error to the session agent
-            this.sessionNotifier.incrementRequestErrors(request.getMetadata().getSessionOwner(),
-                                                        request.getMetadata().getSession());
+            this.extractionSessionNotifier.incrementRequestErrors(request.getMetadata().getSessionOwner(),
+                                                                  request.getMetadata().getSession());
         }
         featureExtractionRequestRepo.saveAll(featureExtractionRequests);
         publisher.publish(errorResponses);

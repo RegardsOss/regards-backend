@@ -16,66 +16,41 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.feature.service.session;
+package fr.cnes.regards.modules.featureprovider.service.session;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 
 /**
- * Enumeration of all properties monitored within fem
+ * Enumeration of all properties monitored within feature provider
  *
  * @author Iliana Ghazali
  **/
-public enum SessionFeaturePropertyEnum {
+public enum ExtractionSessionPropertyEnum {
 
     /**
-     * Number of referencing requests
+     * Number of extraction requests received
      */
-    REFERENCING_REQUESTS("referencingRequests", StepPropertyStateEnum.SUCCESS, true, false),
+    TOTAL_REQUESTS("totalRequests", StepPropertyStateEnum.SUCCESS, true, false),
 
     /**
-     * Number of delete requests
-     */
-    DELETE_REQUESTS("deleteRequests", StepPropertyStateEnum.INFO, false, false),
-
-    /**
-     * Number of update requests
-     */
-    UPDATE_REQUESTS("updateRequests", StepPropertyStateEnum.INFO, false, false),
-
-    /**
-     * Number of requests notified again
-     */
-    NOTIFY_REQUESTS("notifyRequests", StepPropertyStateEnum.INFO, false, false),
-
-    /**
-     * Number of requests denied
-     */
-    REQUESTS_REFUSED("refusedRequests", StepPropertyStateEnum.ERROR, false, false),
-
-    /**
-     * Number of requests in error
-     */
-    REQUESTS_ERRORS("requestsErrors", StepPropertyStateEnum.ERROR, false, false),
-
-    /**
-     * Number of requests running
+     * Number of requests currently running
      */
     REQUESTS_RUNNING("requestsRunning", StepPropertyStateEnum.RUNNING, false, false),
 
     /**
-     * Number of referenced products
+     * Number of generated products
      */
-    REFERENCED_PRODUCTS("referencedProducts", StepPropertyStateEnum.SUCCESS, false, true),
+    GENERATED_PRODUCTS("generatedProducts", StepPropertyStateEnum.SUCCESS, false, true),
 
     /**
-     * Number of deleted products
+     * Number of requests refused
      */
-    DELETED_PRODUCTS("deletedProducts", StepPropertyStateEnum.INFO, true, false),
+    REQUESTS_REFUSED("requestsRefused", StepPropertyStateEnum.ERROR, false, false),
 
     /**
-     * Number of products notified again
+     * Number of requests in error
      */
-    NOTIFY_PRODUCTS("notifyProducts", StepPropertyStateEnum.INFO, false, false);
+    REQUESTS_ERRORS("requestsErrors", StepPropertyStateEnum.ERROR, false, false);
 
     /**
      * Name of the property
@@ -88,16 +63,17 @@ public enum SessionFeaturePropertyEnum {
     private final StepPropertyStateEnum state;
 
     /**
-     * If the property is inputRelated
+     * If the property is inputRelated, this field will be increment or decrement according to the value of the property
      */
     private final boolean inputRelated;
 
     /**
-     * If the property is outputRelated
+     * If the property is outputRelated, this field will be increment or decrement according to the value of the
+     * property
      */
     private final boolean outputRelated;
 
-    SessionFeaturePropertyEnum(String name, StepPropertyStateEnum state, boolean inputRelated,
+    ExtractionSessionPropertyEnum(String name, StepPropertyStateEnum state, boolean inputRelated,
             boolean outputRelated) {
         this.name = name;
         this.state = state;

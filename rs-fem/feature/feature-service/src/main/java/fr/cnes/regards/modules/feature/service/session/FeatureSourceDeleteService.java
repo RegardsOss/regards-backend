@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.feature.service.session;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.ISessionDeleteService;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.ISourceDeleteService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -29,14 +29,13 @@ import org.springframework.stereotype.Service;
  **/
 @Service
 @MultitenantTransactional
-public class SessionDeleteService implements ISessionDeleteService {
+public class FeatureSourceDeleteService implements ISourceDeleteService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionDeleteService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureSourceDeleteService.class);
 
     @Override
-    public void deleteSession(String source, String session) {
-        LOGGER.info("Event received to program the deletion of all products from session {} of source {}", session,
-                    source);
-        // TODO : send requests to delete products from session
+    public void deleteSource(String source) {
+        LOGGER.info("Event received to program the deletion of all products of source {}", source);
+        // TODO : send requests to delete products from source
     }
 }
