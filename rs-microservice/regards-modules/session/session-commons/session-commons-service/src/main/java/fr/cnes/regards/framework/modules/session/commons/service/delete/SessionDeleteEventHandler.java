@@ -31,6 +31,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 /**
+ * Handle deletion of a session
+ *
  * @author Iliana Ghazali
  **/
 @Component
