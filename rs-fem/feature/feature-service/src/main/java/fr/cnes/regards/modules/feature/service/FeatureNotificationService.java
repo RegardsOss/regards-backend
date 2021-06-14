@@ -178,7 +178,8 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
 
             FeatureNotificationRequest request = FeatureNotificationRequest
                     .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
-                           FeatureRequestStep.LOCAL_DELAYED, item.getPriority(), item.getUrn(), RequestState.GRANTED);
+                           FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, item.getPriority(), item.getUrn(),
+                           RequestState.GRANTED);
             // Monitoring log
             FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
             // Publish GRANTED request
