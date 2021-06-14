@@ -32,41 +32,41 @@ import org.springframework.stereotype.Service;
 
 @Service
 @MultitenantTransactional
-public class SessionNotifier {
+public class FeatureSessionNotifier {
 
     private static final String GLOBAL_SESSION_STEP = "feature";
 
     private final ISessionAgentClient sessionNotificationClient;
 
-    public SessionNotifier(ISessionAgentClient sessionNotificationClient) {
+    public FeatureSessionNotifier(ISessionAgentClient sessionNotificationClient) {
         this.sessionNotificationClient = sessionNotificationClient;
     }
 
-    public void incrementCount(FeatureEntity featureEntity, SessionProperty property) {
+    public void incrementCount(FeatureEntity featureEntity, FeatureSessionProperty property) {
         if (featureEntity != null) {
             incrementCount(featureEntity.getSessionOwner(), featureEntity.getSession(), property);
         }
     }
 
-    public void incrementCount(ILightFeatureEntity featureEntity, SessionProperty property) {
+    public void incrementCount(ILightFeatureEntity featureEntity, FeatureSessionProperty property) {
         if (featureEntity != null) {
             incrementCount(featureEntity.getSessionOwner(), featureEntity.getSession(), property);
         }
     }
 
-    public void incrementCount(ILightFeatureCreationRequest request, SessionProperty property) {
+    public void incrementCount(ILightFeatureCreationRequest request, FeatureSessionProperty property) {
         incrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
     }
 
-    public void incrementCount(FeatureCreationRequest request, SessionProperty property) {
+    public void incrementCount(FeatureCreationRequest request, FeatureSessionProperty property) {
         incrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
     }
 
-    public void incrementCount(String source, String session, SessionProperty property) {
+    public void incrementCount(String source, String session, FeatureSessionProperty property) {
         incrementCount(source, session, property, 1L);
     }
 
-    public void incrementCount(String source, String session, SessionProperty property, long nbProducts) {
+    public void incrementCount(String source, String session, FeatureSessionProperty property, long nbProducts) {
         StepPropertyInfo stepPropertyInfo = new StepPropertyInfo(StepTypeEnum.REFERENCING,
                                                                  property.getState(),
                                                                  property.getName(),
@@ -78,32 +78,32 @@ public class SessionNotifier {
         sessionNotificationClient.increment(step);
     }
 
-    public void decrementCount(FeatureEntity featureEntity, SessionProperty property) {
+    public void decrementCount(FeatureEntity featureEntity, FeatureSessionProperty property) {
         if (featureEntity != null) {
             decrementCount(featureEntity.getSessionOwner(), featureEntity.getSession(), property);
         }
     }
 
-    public void decrementCount(ILightFeatureEntity featureEntity, SessionProperty property) {
+    public void decrementCount(ILightFeatureEntity featureEntity, FeatureSessionProperty property) {
         if (featureEntity != null) {
             decrementCount(featureEntity.getSessionOwner(), featureEntity.getSession(), property);
         }
     }
 
-    public void decrementCount(ILightFeatureCreationRequest request, SessionProperty property) {
+    public void decrementCount(ILightFeatureCreationRequest request, FeatureSessionProperty property) {
         decrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
     }
 
-    public void decrementCount(FeatureCreationRequest request, SessionProperty property) {
+    public void decrementCount(FeatureCreationRequest request, FeatureSessionProperty property) {
         decrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
     }
 
 
-    public void decrementCount(String source, String session, SessionProperty property) {
+    public void decrementCount(String source, String session, FeatureSessionProperty property) {
         decrementCount(source, session, property, 1L);
     }
 
-    public void decrementCount(String source, String session, SessionProperty property, long nbProducts) {
+    public void decrementCount(String source, String session, FeatureSessionProperty property, long nbProducts) {
 
         StepPropertyInfo stepPropertyInfo = new StepPropertyInfo(StepTypeEnum.REFERENCING,
                                                                  property.getState(),

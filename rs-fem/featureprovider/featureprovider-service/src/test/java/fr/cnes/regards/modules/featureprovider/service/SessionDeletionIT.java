@@ -36,9 +36,9 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
-import fr.cnes.regards.modules.featureprovider.service.session.SessionDeleteService;
-import fr.cnes.regards.modules.featureprovider.service.session.SessionExtractionPropertyEnum;
-import fr.cnes.regards.modules.featureprovider.service.session.SourceDeleteService;
+import fr.cnes.regards.modules.featureprovider.service.session.ExtractionSessionDeleteService;
+import fr.cnes.regards.modules.featureprovider.service.session.ExtractionSessionPropertyEnum;
+import fr.cnes.regards.modules.featureprovider.service.session.ExtractionSourceDeleteService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -54,7 +54,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
- * Test for {@link SourceDeleteService} and {@link SessionDeleteService}
+ * Test for {@link ExtractionSourceDeleteService} and {@link ExtractionSessionDeleteService}
  *
  * @author Iliana Ghazali
  **/
@@ -79,10 +79,10 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
     private static final int NB_GRANTED_REQUESTS = 10;
 
     @Autowired
-    private SessionDeleteService sessionDeleteService;
+    private ExtractionSessionDeleteService extractionSessionDeleteService;
 
     @Autowired
-    private SourceDeleteService sourceDeleteService;
+    private ExtractionSourceDeleteService extractionSourceDeleteService;
 
     @Override
     public void doInit() throws InterruptedException, ModuleException, NotAvailablePluginConfigurationException {
@@ -92,7 +92,7 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
     @Test
     @Purpose("Assert a session is correctly deleted. Only requests other than error requests should remain.")
     public void deleteSessionTest() throws InterruptedException {
-        sessionDeleteService.deleteSession(SOURCE_1, SESSION_1);
+        extractionSessionDeleteService.deleteSession(SOURCE_1, SESSION_1);
         waitForJobSuccesses(FeatureExtractionDeletionJob.class.getName(), 1, 30000);
 
         // assert session is correctly deleted
@@ -128,14 +128,14 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
         List<StepPropertyUpdateRequest> decEvents = stepPropertyList.stream()
                 .filter(step -> step.getType().equals(StepPropertyEventTypeEnum.DEC)).collect(Collectors.toList());
         Assert.assertEquals("Unexpected number of events. Check the workflow", 1, decEvents.size());
-        checkStepEvent(decEvents.get(0), SessionExtractionPropertyEnum.REQUESTS_ERRORS.getName(),
+        checkStepEvent(decEvents.get(0), ExtractionSessionPropertyEnum.REQUESTS_ERRORS.getName(),
                        String.valueOf(NB_ERROR_REQUESTS), StepPropertyEventTypeEnum.DEC, SOURCE_1, SESSION_1);
     }
 
     @Test
     @Purpose("Assert a source is correctly deleted. Only requests other than error requests should remain.")
     public void deleteSourceTest() throws InterruptedException {
-        sourceDeleteService.deleteSource(SOURCE_1);
+        extractionSourceDeleteService.deleteSource(SOURCE_1);
         waitForJobSuccesses(FeatureExtractionDeletionJob.class.getName(), 1, 30000);
 
         // assert source is correctly deleted
@@ -164,10 +164,10 @@ public class SessionDeletionIT extends FeatureProviderMultitenantTest {
         Assert.assertEquals("Unexpected number of events. Check the workflow", 2, decEvents.size());
         for (StepPropertyUpdateRequest decEvent : decEvents) {
             if (decEvent.getSession().equals(SESSION_1)) {
-                checkStepEvent(decEvent, SessionExtractionPropertyEnum.REQUESTS_ERRORS.getName(),
+                checkStepEvent(decEvent, ExtractionSessionPropertyEnum.REQUESTS_ERRORS.getName(),
                                String.valueOf(NB_ERROR_REQUESTS), StepPropertyEventTypeEnum.DEC, SOURCE_1, SESSION_1);
             } else if (decEvent.getSession().equals(SESSION_2)) {
-                checkStepEvent(decEvent, SessionExtractionPropertyEnum.REQUESTS_ERRORS.getName(),
+                checkStepEvent(decEvent, ExtractionSessionPropertyEnum.REQUESTS_ERRORS.getName(),
                                String.valueOf(NB_ERROR_REQUESTS), StepPropertyEventTypeEnum.DEC, SOURCE_1, SESSION_2);
             } else {
                 Assert.fail("Unexpected event");

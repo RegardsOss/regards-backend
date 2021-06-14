@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.feature.service.flow.FeatureDeletionRequestEventH
 import fr.cnes.regards.modules.feature.service.flow.FeatureUpdateRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.flow.NotificationRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
-import fr.cnes.regards.modules.feature.service.session.SessionNotifier;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
@@ -99,7 +99,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     private static final String RESOURCE_PATH = "fr/cnes/regards/modules/feature/service/";
 
-    protected final String sessionStepName = (String) ReflectionTestUtils.getField(SessionNotifier.class, "GLOBAL_SESSION_STEP");
+    protected final String sessionStepName = (String) ReflectionTestUtils.getField(FeatureSessionNotifier.class, "GLOBAL_SESSION_STEP");
 
     protected String owner = "owner";
     protected String session = "session";

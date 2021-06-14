@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.feature.service.session;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 
 
-public enum SessionProperty {
+public enum FeatureSessionProperty {
 
     REFERENCING_REQUESTS("referencingRequests", StepPropertyStateEnum.SUCCESS, true, false),
     DELETE_REQUESTS("deleteRequests", StepPropertyStateEnum.INFO),
@@ -54,14 +54,14 @@ public enum SessionProperty {
     private boolean inputRelated;
     private boolean outputRelated;
 
-    SessionProperty(String name, StepPropertyStateEnum state, boolean inputRelated, boolean outputRelated) {
+    FeatureSessionProperty(String name, StepPropertyStateEnum state, boolean inputRelated, boolean outputRelated) {
         this.name = name;
         this.state = state;
         this.inputRelated = inputRelated;
         this.outputRelated = outputRelated;
     }
 
-    SessionProperty(String name, StepPropertyStateEnum state) {
+    FeatureSessionProperty(String name, StepPropertyStateEnum state) {
         this.name = name;
         this.state = state;
     }

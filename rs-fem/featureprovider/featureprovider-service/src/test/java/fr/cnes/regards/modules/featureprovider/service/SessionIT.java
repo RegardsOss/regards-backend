@@ -36,7 +36,8 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
-import fr.cnes.regards.modules.featureprovider.service.session.SessionExtractionPropertyEnum;
+import fr.cnes.regards.modules.featureprovider.service.session.ExtractionSessionNotifier;
+import fr.cnes.regards.modules.featureprovider.service.session.ExtractionSessionPropertyEnum;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -48,7 +49,7 @@ import org.springframework.test.context.TestPropertySource;
 /**
  * Test to test if
  * {@link fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent} are correctly
- * sent following the calling of methods in {@link fr.cnes.regards.modules.featureprovider.service.session.SessionNotifier}
+ * sent following the calling of methods in {@link ExtractionSessionNotifier}
  *
  * @author Iliana Ghazali
  **/
@@ -81,17 +82,17 @@ public class SessionIT extends FeatureProviderMultitenantTest {
         // check events were correctly sent
         Assert.assertEquals("Wrong number of events created. Check the workflow of events sent", 6,
                             stepPropertyList.size());
-        checkStepEvent(stepPropertyList.get(0), SessionExtractionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
-                      StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
-        checkStepEvent(stepPropertyList.get(1), SessionExtractionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(0), ExtractionSessionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
-        checkStepEvent(stepPropertyList.get(2), SessionExtractionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(1), ExtractionSessionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
-        checkStepEvent(stepPropertyList.get(3), SessionExtractionPropertyEnum.GENERATED_PRODUCTS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(2), ExtractionSessionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
-        checkStepEvent(stepPropertyList.get(4), SessionExtractionPropertyEnum.GENERATED_PRODUCTS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(3), ExtractionSessionPropertyEnum.GENERATED_PRODUCTS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
-        checkStepEvent(stepPropertyList.get(5), SessionExtractionPropertyEnum.GENERATED_PRODUCTS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(4), ExtractionSessionPropertyEnum.GENERATED_PRODUCTS.getName(), "1",
+                       StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
+        checkStepEvent(stepPropertyList.get(5), ExtractionSessionPropertyEnum.GENERATED_PRODUCTS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
     }
 
@@ -109,13 +110,13 @@ public class SessionIT extends FeatureProviderMultitenantTest {
         // check events were correctly sent
         Assert.assertEquals("Wrong number of events created. Check the workflow of events sent", 4,
                             stepPropertyList.size());
-        checkStepEvent(stepPropertyList.get(0), SessionExtractionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(0), ExtractionSessionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
-        checkStepEvent(stepPropertyList.get(1), SessionExtractionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(1), ExtractionSessionPropertyEnum.TOTAL_REQUESTS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
-        checkStepEvent(stepPropertyList.get(2), SessionExtractionPropertyEnum.REQUESTS_ERRORS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(2), ExtractionSessionPropertyEnum.REQUESTS_ERRORS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
-        checkStepEvent(stepPropertyList.get(3), SessionExtractionPropertyEnum.REQUESTS_ERRORS.getName(), "1",
+        checkStepEvent(stepPropertyList.get(3), ExtractionSessionPropertyEnum.REQUESTS_ERRORS.getName(), "1",
                        StepPropertyEventTypeEnum.INC, SOURCE_1, SESSION_1);
     }
 

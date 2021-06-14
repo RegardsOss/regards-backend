@@ -53,8 +53,8 @@ import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureCreationSta
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
-import fr.cnes.regards.modules.feature.service.session.SessionNotifier;
-import fr.cnes.regards.modules.feature.service.session.SessionProperty;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
@@ -131,7 +131,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     private IFeatureNotificationSettingsService notificationSettingsService;
 
     @Autowired
-    private SessionNotifier sessionNotifier;
+    private FeatureSessionNotifier featureSessionNotifier;
 
     @PersistenceContext
     private EntityManager em;
@@ -211,7 +211,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                     FeatureRequestEvent.build(FeatureRequestType.CREATION, requestId, requestOwner, featureId, null, RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             metrics.count(featureId, null, FeatureCreationState.CREATION_REQUEST_DENIED);
             // Update session properties
-            sessionNotifier.incrementCount(sessionOwner, session, SessionProperty.DENIED_REFERENCING_REQUESTS);
+            featureSessionNotifier.incrementCount(sessionOwner, session, FeatureSessionProperty.DENIED_REFERENCING_REQUESTS);
 
         } else {
 
@@ -228,7 +228,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             grantedRequests.add(request);
             requestInfo.addGrantedRequest(request.getProviderId(), request.getRequestId());
             // Update session properties
-            sessionNotifier.incrementCount(sessionOwner, session, SessionProperty.REFERENCING_REQUESTS);
+            featureSessionNotifier.incrementCount(sessionOwner, session, FeatureSessionProperty.REFERENCING_REQUESTS);
         }
     }
 
@@ -258,7 +258,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                     requestIds.add(request.getId());
                     featureIdsScheduled.add(request.getProviderId());
                     // Update session properties
-                    sessionNotifier.incrementCount(request, SessionProperty.RUNNING_REFERENCING_REQUESTS);
+                    featureSessionNotifier.incrementCount(request, FeatureSessionProperty.RUNNING_REFERENCING_REQUESTS);
                 }
             }
             featureCreationRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
@@ -524,9 +524,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Override
     protected void sessionInfoUpdateForRetry(Collection<FeatureCreationRequest> requests) {
         requests.forEach(request -> {
-            sessionNotifier.decrementCount(request, SessionProperty.IN_ERROR_REFERENCING_REQUESTS);
+            featureSessionNotifier.decrementCount(request, FeatureSessionProperty.IN_ERROR_REFERENCING_REQUESTS);
             if (FeatureRequestStep.REMOTE_NOTIFICATION_ERROR.equals(request.getLastExecErrorStep())) {
-                sessionNotifier.incrementCount(request, SessionProperty.RUNNING_REFERENCING_REQUESTS);
+                featureSessionNotifier.incrementCount(request, FeatureSessionProperty.RUNNING_REFERENCING_REQUESTS);
             }
         });
     }
@@ -534,24 +534,24 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Override
     protected void sessionInfoUpdateForDelete(Collection<FeatureCreationRequest> requestList) {
         requestList.forEach(request -> {
-            sessionNotifier.decrementCount(request, SessionProperty.IN_ERROR_REFERENCING_REQUESTS);
-            sessionNotifier.decrementCount(request, SessionProperty.REFERENCING_REQUESTS);
+            featureSessionNotifier.decrementCount(request, FeatureSessionProperty.IN_ERROR_REFERENCING_REQUESTS);
+            featureSessionNotifier.decrementCount(request, FeatureSessionProperty.REFERENCING_REQUESTS);
         });
     }
 
     @Override
     public void doOnSuccess(Collection<FeatureCreationRequest> requests) {
         requests.forEach(request -> {
-            sessionNotifier.incrementCount(request, SessionProperty.REFERENCED_PRODUCTS);
-            sessionNotifier.decrementCount(request, SessionProperty.RUNNING_REFERENCING_REQUESTS);
+            featureSessionNotifier.incrementCount(request, FeatureSessionProperty.REFERENCED_PRODUCTS);
+            featureSessionNotifier.decrementCount(request, FeatureSessionProperty.RUNNING_REFERENCING_REQUESTS);
         });
     }
 
     @Override
     public void doOnError(Collection<FeatureCreationRequest> requests) {
         requests.forEach(request -> {
-            sessionNotifier.incrementCount(request, SessionProperty.IN_ERROR_REFERENCING_REQUESTS);
-            sessionNotifier.decrementCount(request, SessionProperty.RUNNING_REFERENCING_REQUESTS);
+            featureSessionNotifier.incrementCount(request, FeatureSessionProperty.IN_ERROR_REFERENCING_REQUESTS);
+            featureSessionNotifier.decrementCount(request, FeatureSessionProperty.RUNNING_REFERENCING_REQUESTS);
         });
     }
 

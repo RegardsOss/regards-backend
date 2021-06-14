@@ -42,8 +42,8 @@ import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureUpdateState
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
-import fr.cnes.regards.modules.feature.service.session.SessionNotifier;
-import fr.cnes.regards.modules.feature.service.session.SessionProperty;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
@@ -109,7 +109,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     private IFeatureNotificationSettingsService notificationSettingsService;
 
     @Autowired
-    private SessionNotifier sessionNotifier;
+    private FeatureSessionNotifier featureSessionNotifier;
 
     @Override
     public RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureUpdateRequestEvent> events) {
@@ -178,7 +178,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             }
             metrics.count(featureId, null, FeatureUpdateState.UPDATE_REQUEST_DENIED);
             // Update session properties
-            sessionNotifier.incrementCount(sessionInfo, SessionProperty.DENIED_UPDATE_REQUESTS);
+            featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.DENIED_UPDATE_REQUESTS);
 
         } else {
             // Manage granted request
@@ -195,7 +195,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             grantedRequests.add(request);
             requestInfo.addGrantedRequest(request.getUrn(), request.getRequestId());
             // Update session properties
-            sessionNotifier.incrementCount(sessionInfo, SessionProperty.UPDATE_REQUESTS);
+            featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.UPDATE_REQUESTS);
         }
     }
 
@@ -223,7 +223,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                     requestIds.add(r.getId());
                     metrics.count(r.getProviderId(), r.getUrn(), FeatureUpdateState.UPDATE_REQUEST_SCHEDULED);
                     // Update session properties
-                    sessionNotifier.incrementCount(sessionInfoByUrn.get(r.getUrn()), SessionProperty.RUNNING_UPDATE_REQUESTS);
+                    featureSessionNotifier.incrementCount(sessionInfoByUrn.get(r.getUrn()), FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
                 });
 
                 // Switch to next step
@@ -403,9 +403,9 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         Map<FeatureUniformResourceName, FeatureRequestStep> errorStepByUrn = requests.stream()
                 .collect(Collectors.toMap(FeatureUpdateRequest::getUrn, FeatureUpdateRequest::getLastExecErrorStep));
         sessionInfoByUrn.forEach((urn, entity) -> {
-            sessionNotifier.decrementCount(entity, SessionProperty.IN_ERROR_UPDATE_REQUESTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS);
             if (FeatureRequestStep.REMOTE_NOTIFICATION_ERROR.equals(errorStepByUrn.get(urn))) {
-                sessionNotifier.incrementCount(entity, SessionProperty.RUNNING_UPDATE_REQUESTS);
+                featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
             }
         });
     }
@@ -415,8 +415,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
                 getSessionInfoByUrn(requests.stream().map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
-            sessionNotifier.decrementCount(entity, SessionProperty.IN_ERROR_UPDATE_REQUESTS);
-            sessionNotifier.decrementCount(entity, SessionProperty.UPDATE_REQUESTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.UPDATE_REQUESTS);
         });
     }
 
@@ -425,8 +425,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
                 getSessionInfoByUrn(requests.stream().map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
-            sessionNotifier.decrementCount(entity, SessionProperty.RUNNING_UPDATE_REQUESTS);
-            sessionNotifier.incrementCount(entity, SessionProperty.UPDATED_PRODUCTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
+            featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.UPDATED_PRODUCTS);
         });
     }
 
@@ -435,8 +435,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
                 getSessionInfoByUrn(requests.stream().map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
-            sessionNotifier.decrementCount(entity, SessionProperty.RUNNING_UPDATE_REQUESTS);
-            sessionNotifier.incrementCount(entity, SessionProperty.IN_ERROR_UPDATE_REQUESTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
+            featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS);
         });
 
     }

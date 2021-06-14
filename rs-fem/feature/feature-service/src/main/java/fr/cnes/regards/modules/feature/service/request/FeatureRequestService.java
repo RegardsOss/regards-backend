@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.*;
 import fr.cnes.regards.modules.feature.service.dump.IFeatureMetadataService;
-import fr.cnes.regards.modules.feature.service.session.SessionNotifier;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
@@ -93,7 +93,7 @@ public class FeatureRequestService implements IFeatureRequestService {
     public IFeatureMetadataService featureMetadataService;
 
     @Autowired
-    private SessionNotifier sessionNotifier;
+    private FeatureSessionNotifier featureSessionNotifier;
 
     @Override
     public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection,

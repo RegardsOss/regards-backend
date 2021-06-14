@@ -38,8 +38,8 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
-import fr.cnes.regards.modules.feature.service.session.SessionNotifier;
-import fr.cnes.regards.modules.feature.service.session.SessionProperty;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.apache.commons.lang3.NotImplementedException;
@@ -98,7 +98,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     private IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
 
     @Autowired
-    private SessionNotifier sessionNotifier;
+    private FeatureSessionNotifier featureSessionNotifier;
 
     @Autowired
     public IFeatureCreationService featureCreationService;
@@ -154,7 +154,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
             publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
                                                         RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             // Update session properties
-            sessionNotifier.incrementCount(sessionInfo, SessionProperty.DENIED_NOTIFY_REQUESTS);
+            featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.DENIED_NOTIFY_REQUESTS);
         } else {
 
             FeatureNotificationRequest request = FeatureNotificationRequest.build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
@@ -168,7 +168,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
             // Add new request id to existing ones
             existingRequestIds.add(request.getRequestId());
             // Update session properties
-            sessionNotifier.incrementCount(sessionInfo, SessionProperty.NOTIFY_REQUESTS);
+            featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.NOTIFY_REQUESTS);
         }
     }
 
@@ -197,7 +197,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
             handleNotificationError(visitorErrorRequests, FeatureRequestStep.LOCAL_NOTIFICATION_ERROR);
 
             getSessionInfoByUrn(requestsToSend.stream().filter(FeatureNotificationRequest.class::isInstance).map(AbstractFeatureRequest::getUrn).collect(Collectors.toList()))
-                    .forEach((urn, entity) -> sessionNotifier.incrementCount(entity, SessionProperty.RUNNING_NOTIFY_REQUESTS));
+                    .forEach((urn, entity) -> featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS));
         }
         return requestsToSend.size();
     }
@@ -287,7 +287,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     protected void sessionInfoUpdateForRetry(Collection<FeatureNotificationRequest> requests) {
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
                 getSessionInfoByUrn(requests.stream().map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
-        sessionInfoByUrn.forEach((urn, entity) -> sessionNotifier.decrementCount(entity, SessionProperty.IN_ERROR_NOTIFY_REQUESTS));
+        sessionInfoByUrn.forEach((urn, entity) -> featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_NOTIFY_REQUESTS));
     }
 
     @Override
@@ -295,8 +295,8 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
                 getSessionInfoByUrn(requests.stream().map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
-            sessionNotifier.decrementCount(entity, SessionProperty.IN_ERROR_NOTIFY_REQUESTS);
-            sessionNotifier.decrementCount(entity, SessionProperty.NOTIFY_REQUESTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_NOTIFY_REQUESTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.NOTIFY_REQUESTS);
         });
     }
 
@@ -305,8 +305,8 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
                 getSessionInfoByUrn(requests.stream().map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
-            sessionNotifier.decrementCount(entity, SessionProperty.RUNNING_NOTIFY_REQUESTS);
-            sessionNotifier.incrementCount(entity, SessionProperty.NOTIFY_PRODUCTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS);
+            featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.NOTIFY_PRODUCTS);
         });
     }
 
@@ -315,8 +315,8 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
                 getSessionInfoByUrn(requests.stream().map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
-            sessionNotifier.incrementCount(entity, SessionProperty.IN_ERROR_NOTIFY_REQUESTS);
-            sessionNotifier.decrementCount(entity, SessionProperty.RUNNING_NOTIFY_REQUESTS);
+            featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.IN_ERROR_NOTIFY_REQUESTS);
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS);
         });
     }
 

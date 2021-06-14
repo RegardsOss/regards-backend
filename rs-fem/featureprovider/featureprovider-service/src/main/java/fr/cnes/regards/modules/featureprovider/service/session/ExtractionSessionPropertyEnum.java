@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyS
  *
  * @author Iliana Ghazali
  **/
-public enum SessionExtractionPropertyEnum {
+public enum ExtractionSessionPropertyEnum {
 
     /**
      * Number of extraction requests received
@@ -73,7 +73,7 @@ public enum SessionExtractionPropertyEnum {
      */
     private final boolean outputRelated;
 
-    SessionExtractionPropertyEnum(String name, StepPropertyStateEnum state, boolean inputRelated,
+    ExtractionSessionPropertyEnum(String name, StepPropertyStateEnum state, boolean inputRelated,
             boolean outputRelated) {
         this.name = name;
         this.state = state;
