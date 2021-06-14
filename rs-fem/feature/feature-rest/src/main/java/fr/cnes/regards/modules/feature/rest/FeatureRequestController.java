@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
@@ -153,11 +154,13 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
                              MethodParamFactory.build(FeatureRequestTypeEnum.class,
                                                       FeatureRequestTypeEnum.valueOf(resource.getContent().getType())),
                              MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
-            resourceService
-                    .addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("retry"),
-                             MethodParamFactory.build(FeatureRequestTypeEnum.class,
-                                                      FeatureRequestTypeEnum.valueOf(resource.getContent().getType())),
-                             MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+            if (resource.getContent().getStep() != FeatureRequestStep.LOCAL_DELAYED) {
+                resourceService.addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("retry"),
+                                        MethodParamFactory.build(FeatureRequestTypeEnum.class,
+                                                                 FeatureRequestTypeEnum
+                                                                         .valueOf(resource.getContent().getType())),
+                                        MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+            }
         }
     }
 

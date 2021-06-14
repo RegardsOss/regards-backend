@@ -18,9 +18,38 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -58,31 +87,6 @@ import fr.cnes.regards.modules.featureprovider.domain.IFeatureExtractionRequestL
 import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
 import fr.cnes.regards.modules.featureprovider.service.session.ExtractionSessionNotifier;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
 
 /**
  * Feature reference service management
@@ -310,6 +314,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                                            errors));
                 // Publish ERROR request
                 request.setState(RequestState.ERROR);
+                request.setStep(FeatureRequestStep.LOCAL_ERROR);
                 request.addError(e.getMessage());
                 publisher.publish(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
                         RequestState.ERROR, errors));
@@ -397,8 +402,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             Map<String, FeatureRequestEvent> deniedRequestPerRequestId = denied.stream()
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
             // Filter requests associated to an existing FeatureExtractionResponseEvent
-            Set<IFeatureExtractionRequestLight> extractRequestsLightSet =
-                    featureExtractionRequestRepo.findByRequestIdIn(deniedRequestPerRequestId.keySet());
+            Set<IFeatureExtractionRequestLight> extractRequestsLightSet = featureExtractionRequestRepo
+                    .findByRequestIdIn(deniedRequestPerRequestId.keySet());
 
             if (!extractRequestsLightSet.isEmpty()) {
                 List<FeatureExtractionResponseEvent> events = new ArrayList<>();
@@ -409,8 +414,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                     events.add(new FeatureExtractionResponseEvent(extractRequestId, extractRequest.getRequestOwner(),
                             RequestState.ERROR, extractRequest.getErrors()));
                     // send request error to session agent
-                    this.extractionSessionNotifier.incrementRequestErrors(extractRequestLight.getMetadata().getSessionOwner(),
-                                                                          extractRequestLight.getMetadata().getSession());
+                    this.extractionSessionNotifier
+                            .incrementRequestErrors(extractRequestLight.getMetadata().getSessionOwner(),
+                                                    extractRequestLight.getMetadata().getSession());
                 }
                 publisher.publish(events);
                 // Update FeatureExtractionResponseEvent with error state
@@ -442,8 +448,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                             grantedRequestPerRequestId.get(extractRequestId).getRequestOwner(), RequestState.SUCCESS,
                             new HashSet<>()));
                     // notify request success
-                    this.extractionSessionNotifier.incrementGeneratedProducts(extractRequestLight.getMetadata().getSessionOwner(),
-                                                                              extractRequestLight.getMetadata().getSession());
+                    this.extractionSessionNotifier
+                            .incrementGeneratedProducts(extractRequestLight.getMetadata().getSessionOwner(),
+                                                        extractRequestLight.getMetadata().getSession());
                 }
                 publisher.publish(events);
                 // Delete all success FeatureExtractionResponseEvent

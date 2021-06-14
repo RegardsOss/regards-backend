@@ -79,7 +79,7 @@ public class AmqpClientPublisher {
         }
 
         if (Files.isDirectory(path)) {
-            doPublishAll(exchangeName, queueName, priority, headers, path);
+            doPublishAll(exchangeName, queueName, priority, headers, path, iterations);
         } else {
             Matcher matcher = TEMPLATE_PATTERN.matcher(jsonPathString);
             // Check if it is a template
@@ -119,13 +119,20 @@ public class AmqpClientPublisher {
      * Publish all messages load from specified directory.
      */
     private void doPublishAll(String exchangeName, Optional<String> queueName, Integer priority,
-            Map<String, Object> headers, Path jsonPath) {
+            Map<String, Object> headers, Path jsonPath, Integer iterations) {
 
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.json");
 
         try (Stream<Path> walk = Files.walk(jsonPath)) {
             walk.filter(Files::isRegularFile).filter(p -> matcher.matches(p)).forEach(p -> {
-                doPublish(exchangeName, queueName, priority, headers, p);
+                Matcher patternmatcher = TEMPLATE_PATTERN.matcher(p.toString());
+                // Check if it is a template
+                if (patternmatcher.matches()) {
+                    LOGGER.info("Handling JSON template");
+                    doPublishWithTemplate(exchangeName, queueName, priority, headers, p, iterations);
+                } else {
+                    doPublish(exchangeName, queueName, priority, headers, p);
+                }
             });
 
         } catch (IOException e) {
