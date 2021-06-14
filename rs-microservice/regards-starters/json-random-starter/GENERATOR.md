@@ -34,6 +34,14 @@ For instance, template :
     "urn":"{{urn('TEST:%s',#id)}}",
 }
 ```
+or
+```json \
+{
+    "#id":"{{uuid()}}",
+    "#tenant":{{property(regards.tenant)}}
+    "urn":"{{urn('TEST:%s',#tenant,#id)}}",
+}
+```
 
 ... allows to generate object below removing `#id`.
 
@@ -53,6 +61,7 @@ For instance, template :
 | `enum(x,y,z)`                                            | Random value from specified parameters |
 | `float()`                                                | Float |
 | `float(min,max)`                                         | Float between limits (<span style="color:#800080">Not implemented yet</span>) |
+| `format(pattern,...parameters)`                       | Formatted string from given pattern with string parameters formatted wth String.format |
 | `integer()`                                              | Integer |
 | `integer(min,max)`                                       | Integer between limits |
 | `long()`                                                 | Long |
@@ -60,10 +69,12 @@ For instance, template :
 | `now()`                                                  | Now with OffsetDateTime |
 | `odt()`                                                  | OffsetDateTime |
 | `odt(minInclusive,maxExclusive)`                         | OffsetDateTime between limits (min inclusive, max exclusive) |
+| `property(propertyKey)      `                         | Retrieve value from spring properties for the given key |
 | `string()`                                               | Alphanumeric string of 10 to 20 characters length |
 | `string(maxLengthInclusive,maxLengthExclusive)`          | Alphanumeric string between length limits |
 | `urn('format')`                                          | URN with random UUID applied formatted with String.format |
-| `urn(format, refkey)`                                    | URN based on generated value at refkey JSON path formatted with String.format |
+| `urn(format, IdRefkey)`                                 | URN based on generated value at refkey JSON path formatted with String.format |
+| `urn(format, projetRefKey, Idrefkey)`                 | URN based on generated value at refkey JSON path formatted with String.format |
 | `uuid()`                                                 | Random UUID |
 | `seq()`                                                  | Sequence of Integer value from 0 |
 | `seq(format)`                                            | Sequence of Integer value from 0 formatted with String.format |

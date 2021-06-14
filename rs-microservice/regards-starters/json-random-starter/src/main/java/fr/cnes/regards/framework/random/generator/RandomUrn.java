@@ -32,7 +32,9 @@ public class RandomUrn extends AbstractRandomGenerator<String> {
 
     private String format;
 
-    private String from;
+    private String projetProperty;
+
+    private String idProperty;
 
     public RandomUrn(FunctionDescriptor fd) {
         super(fd);
@@ -46,7 +48,12 @@ public class RandomUrn extends AbstractRandomGenerator<String> {
                 break;
             case 2:
                 format = fd.getParameter(0);
-                from = fd.getParameter(1);
+                idProperty = fd.getParameter(1);
+                break;
+            case 3:
+                format = fd.getParameter(0);
+                projetProperty = fd.getParameter(1);
+                idProperty = fd.getParameter(2);
                 break;
             default:
                 throw new IllegalArgumentException(String.format(USAGE, fd.getType()));
@@ -55,10 +62,13 @@ public class RandomUrn extends AbstractRandomGenerator<String> {
 
     @Override
     public Optional<List<String>> getDependentProperties() {
-        if (from == null) {
+        if ((idProperty == null) && (projetProperty == null)) {
             return Optional.empty();
+        } else if (projetProperty == null) {
+            return Optional.of(Arrays.asList(idProperty));
+        } else {
+            return Optional.of(Arrays.asList(idProperty, projetProperty));
         }
-        return Optional.of(Arrays.asList(from));
     }
 
     @Override
@@ -68,15 +78,22 @@ public class RandomUrn extends AbstractRandomGenerator<String> {
 
     @Override
     public String randomWithContext(Map<String, Object> context) {
-        Object fromObject = findValue(context, from);
-        if (UUID.class.isAssignableFrom(fromObject.getClass())) {
-            return String.format(format, UUID.fromString(((UUID) fromObject).toString()));
+        Object idProObject = findValue(context, idProperty);
+        String uuid = null;
+        if (UUID.class.isAssignableFrom(idProObject.getClass())) {
+            uuid = UUID.fromString(((UUID) idProObject).toString()).toString();
+        } else if (String.class.isAssignableFrom(idProObject.getClass())) {
+            uuid = UUID.nameUUIDFromBytes(((String) idProObject).getBytes()).toString();
+        } else {
+            throw new UnsupportedOperationException(String.format("%s does not support %s for dependent property value",
+                                                                  fd.getType(), idProObject.getClass()));
         }
-        if (String.class.isAssignableFrom(fromObject.getClass())) {
-            return String.format(format, UUID.nameUUIDFromBytes(((String) fromObject).getBytes()));
+
+        if (projetProperty != null) {
+            return String.format(format, findValue(context, projetProperty).toString(), uuid);
+        } else {
+            return String.format(format, uuid);
         }
-        throw new UnsupportedOperationException(String.format("%s does not support %s for dependent property value",
-                                                              fd.getType(), fromObject.getClass()));
 
     }
 }

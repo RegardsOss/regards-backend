@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
 import fr.cnes.regards.framework.random.generator.ObjectRandomGenerator;
 import fr.cnes.regards.framework.random.generator.RandomGenerator;
 
@@ -44,9 +45,9 @@ public class Generator {
     /**
      * Initialize generators and generate the message batch.
      */
-    public List<Map<String, Object>> generate(Path templatePath, Integer number) {
+    public List<Map<String, Object>> generate(Path templatePath, Integer number, IPropertyGetter propertyGetter) {
         // Initialize generators
-        initGenerators(templatePath);
+        initGenerators(templatePath, propertyGetter);
         // Generate messages
         return generate(number);
     }
@@ -54,7 +55,7 @@ public class Generator {
     /**
      * Initialize generators from specified template. You have to call {@link #generate(Integer)} to generate message with these generators.
      */
-    public void initGenerators(Path templatePath) {
+    public void initGenerators(Path templatePath, IPropertyGetter propertyGetter) {
         try {
             LOGGER.info("Loading JSON template from {}", templatePath);
             // Load JSON template
@@ -62,7 +63,7 @@ public class Generator {
             Map<String, Object> template = mapper.readValue(templatePath.toFile(), Map.class);
             // Initialize generators
             root = new ObjectRandomGenerator();
-            doInitGenerators(template, root);
+            doInitGenerators(template, root, propertyGetter);
         } catch (IOException e) {
             String error = String.format("Cannot read json template from path %s", templatePath);
             LOGGER.error(error, e);
@@ -71,17 +72,18 @@ public class Generator {
     }
 
     @SuppressWarnings("unchecked")
-    private void doInitGenerators(Map<String, Object> template, ObjectRandomGenerator generator) {
+    private void doInitGenerators(Map<String, Object> template, ObjectRandomGenerator generator,
+            IPropertyGetter propertyGetter) {
         for (Entry<String, Object> entry : template.entrySet()) {
             if ((entry.getValue() != null) && Map.class.isAssignableFrom(entry.getValue().getClass())) {
                 // Propagate
                 ObjectRandomGenerator org = new ObjectRandomGenerator();
                 LOGGER.trace("Initializing generator for {} with value {}", entry.getKey(), entry.getValue());
-                doInitGenerators((Map<String, Object>) entry.getValue(), org);
+                doInitGenerators((Map<String, Object>) entry.getValue(), org, propertyGetter);
                 generator.addGenerator(entry.getKey(), org);
             } else {
                 // Initialize generator
-                generator.addGenerator(entry.getKey(), RandomGenerator.of(entry.getValue()));
+                generator.addGenerator(entry.getKey(), RandomGenerator.of(entry.getValue(), propertyGetter));
             }
         }
     }

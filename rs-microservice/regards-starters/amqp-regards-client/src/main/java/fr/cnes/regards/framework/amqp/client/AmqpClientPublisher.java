@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.random.Generator;
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
 
 @Service
 @SuppressWarnings("unchecked")
@@ -58,6 +59,9 @@ public class AmqpClientPublisher {
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private IPropertyGetter propertyGetter;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -95,7 +99,7 @@ public class AmqpClientPublisher {
             Map<String, Object> headers, Path templatePath, Integer iterations) {
         // Generate messages
         Generator generator = new Generator();
-        generator.initGenerators(templatePath);
+        generator.initGenerators(templatePath, propertyGetter);
 
         Integer remaining = iterations;
         while (remaining > 0) {
