@@ -382,6 +382,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                 entities.add(entity);
                 // add entity to request (toNotify)
                 request.setToNotify(entity.getFeature());
+                request.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
                 successfulRequest.add(request);
             }
 
@@ -394,8 +395,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
         // if notifications are required
         if (notificationSettingsService.isActiveNotification()) {
-            featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequest.stream()
-                    .map(AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+            featureUpdateRequestRepo.saveAll(successfulRequest);
         } else {
             doOnSuccess(successfulRequest);
             featureUpdateRequestRepo.deleteInBatch(successfulRequest);

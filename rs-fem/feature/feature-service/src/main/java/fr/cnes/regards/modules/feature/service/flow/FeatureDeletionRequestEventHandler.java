@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
  *
  */
 @Component
-@Profile("!nohandler")
+@Profile("!noFemHandler")
 public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureDeletionRequestEvent>
         implements IBatchHandler<FeatureDeletionRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 

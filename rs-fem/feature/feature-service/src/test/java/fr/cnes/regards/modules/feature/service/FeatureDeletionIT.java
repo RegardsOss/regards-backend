@@ -63,7 +63,7 @@ import static org.junit.Assert.*;
 @TestPropertySource(
         properties = {"spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true"},
         locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
-@ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 

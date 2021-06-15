@@ -29,7 +29,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @author Marc SORDI
  *
  */
-@Profile("!noscheduler")
 @Configuration
 @EnableScheduling
 public class SchedulingConfiguration {

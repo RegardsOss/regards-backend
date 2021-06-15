@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.model.service.validation.ValidationMode;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_validation" })
-@ActiveProfiles({ "noscheduler", "nohandler" })
+@ActiveProfiles({ "noscheduler", "noFemHandler" })
 public class FeatureValidationTest extends AbstractFeatureMultitenantServiceTest {
 
     @SuppressWarnings("unused")

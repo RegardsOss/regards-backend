@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.feature.service.IFeatureService;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=notif_job_test", "regards.amqp.enabled=true" })
-@ActiveProfiles(value = { "testAmqp", "nohandler", "noscheduler" })
+@ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class PublishFeatureNotificationJobTest extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired

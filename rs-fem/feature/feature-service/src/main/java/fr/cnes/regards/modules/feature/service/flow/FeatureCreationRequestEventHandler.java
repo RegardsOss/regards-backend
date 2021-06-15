@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
  *
  */
 @Component
-@Profile("!nohandler")
+@Profile("!noFemHandler")
 public class FeatureCreationRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureCreationRequestEvent>
         implements IBatchHandler<FeatureCreationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 

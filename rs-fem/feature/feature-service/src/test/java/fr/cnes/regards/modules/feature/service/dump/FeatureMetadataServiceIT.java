@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantService
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_metadata_service_it",
         "regards.amqp.enabled=true", "regards.feature.dump.zip-limit = 3" })
-@ActiveProfiles(value = { "nohandler", "noscheduler" })
+@ActiveProfiles(value = { "noFemHandler", "noscheduler" })
 public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));

@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_listener_deletion",
         "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
         "spring.jpa.properties.hibernate.order_inserts=true" })
-@ActiveProfiles(value = { "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired

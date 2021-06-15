@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @TestPropertySource(
         properties = {"spring.jpa.properties.hibernate.default_schema=feature_session_delete", "regards.amqp.enabled=true"},
         locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
-@ActiveProfiles(value = {"testAmqp", "noscheduler", "nohandler"})
+@ActiveProfiles(value = {"testAmqp", "noscheduler", "noFemHandler"})
 public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
 
     private static final String SOURCE1 = "SOURCE 1";

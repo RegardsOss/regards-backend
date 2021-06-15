@@ -58,7 +58,7 @@ import java.util.concurrent.ExecutionException;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_savemetadata_job_it",
         "regards.amqp.enabled=true" })
-@ActiveProfiles(value = { "testAmqp", "nohandler", "noscheduler" })
+@ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceTest {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
