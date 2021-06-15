@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
+import com.google.common.base.Strings;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -25,6 +26,7 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -36,7 +38,6 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.client.FeatureClient;
@@ -53,6 +54,8 @@ import org.junit.Assert;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.mockito.Spy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -65,38 +68,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
  **/
 public abstract class FeatureProviderMultitenantTest extends AbstractMultitenantServiceTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureProviderMultitenantTest.class);
+
+    /**
+     * Services
+     */
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     protected FeatureProviderConfigurationProperties properties;
 
+    // AMQP
     @Autowired
     protected ISubscriber subscriber;
 
     @Autowired
     protected IPublisher publisher;
-
-    @Autowired
-    protected IFeatureExtractionRequestRepository extractionRequestRepo;
-
-    @Autowired
-    protected IFeatureExtractionRequestRepository referenceRequestRepo;
-
-    @Autowired
-    protected IFeatureExtractionService featureReferenceService;
-
-    @Autowired
-    protected IPluginConfigurationRepository pluginConfRepo;
-
-    @Autowired
-    protected IStepPropertyUpdateRequestRepository stepRepo;
-
-    @Autowired
-    protected ISessionStepRepository sessionStepRepo;
-
-    @SpyBean
-    protected IPluginService pluginService;
 
     @Autowired(required = false)
     protected IAmqpAdmin amqpAdmin;
@@ -104,26 +92,62 @@ public abstract class FeatureProviderMultitenantTest extends AbstractMultitenant
     @Autowired(required = false)
     protected IRabbitVirtualHostAdmin vhostAdmin;
 
+    // FEATURE
     @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepo;
+    protected IFeatureExtractionService featureReferenceService;
 
     @Spy
     protected FeatureClient featureClient;
 
+
+    // PLUGINS
+    @SpyBean
+    protected IPluginService pluginService;
+
+    // JOBS
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    /**
+     * Repositories
+     */
+
+    // REQUESTS
+    @Autowired
+    protected IFeatureExtractionRequestRepository extractionRequestRepo;
+
+    @Autowired
+    protected IFeatureExtractionRequestRepository referenceRequestRepo;
+
+    // PLUGINS
+    @Autowired
+    protected IPluginConfigurationRepository pluginConfRepo;
+
+    // SESSION AGENT
+    @Autowired
+    protected IStepPropertyUpdateRequestRepository stepRepo;
+
+    @Autowired
+    protected ISessionStepRepository sessionStepRepo;
+
+    // JOBS
+    @Autowired
+    private IJobInfoRepository jobInfoRepo;
+
+
+    // -------------
+    // BEFORE METHODS
+    // -------------
+
     @Before
     public void init() throws Exception {
-        this.extractionRequestRepo.deleteAll();
-        this.referenceRequestRepo.deleteAll();
-        this.pluginConfRepo.deleteAll();
-        this.jobInfoRepo.deleteAll();
-        this.stepRepo.deleteAll();
-        this.sessionStepRepo.deleteAll();
+        // simulate application started and ready
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // clean repositories
+        cleanRepositories();
         // override this method to custom action performed before
         doInit();
     }
@@ -136,6 +160,9 @@ public abstract class FeatureProviderMultitenantTest extends AbstractMultitenant
         // Override to init something
     }
 
+    // -------------
+    // AFTER METHODS
+    // -------------
 
     @After
     public void after() throws Exception {
@@ -152,6 +179,9 @@ public abstract class FeatureProviderMultitenantTest extends AbstractMultitenant
         // Override to init something
     }
 
+    // -------------
+    //     AMQP
+    // -------------
 
     private void cleanAMQP() throws InterruptedException {
         subscriber.unsubscribeFrom(FeatureExtractionRequestEvent.class);
@@ -160,29 +190,69 @@ public abstract class FeatureProviderMultitenantTest extends AbstractMultitenant
 
         cleanAMQPQueues(FeatureExtractionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FeatureRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(StepPropertyUpdateRequestEvent.class, Target.MICROSERVICE, WorkerMode.UNICAST);
 
         Thread.sleep(2000L);
     }
 
     /**
-     * Internal method to clean AMQP queues, if actives
+     * Clean AMQP by default with {@link WorkerMode#BROADCAST}
      */
-    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
+    public void cleanAMQPQueues(Class<?> type, Target target) {
+        cleanAMQPQueues(type, target, WorkerMode.BROADCAST);
+    }
+
+    /**
+     * Internal method to clean AMQP queues, if actives
+     * @param type handler or event class, depending on the type of event
+     */
+    public void cleanAMQPQueues(Class<?> type, Target target, WorkerMode mode) {
         if (vhostAdmin != null) {
             // Re-set tenant because above simulation clear it!
-            runtimeTenantResolver.forceTenant(getDefaultTenant());
+
             // Purge event queue
             try {
                 vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
+                // get queue name
+                String queueName = null;
+                if (mode.equals(WorkerMode.BROADCAST)) {
+                    queueName = amqpAdmin.getSubscriptionQueueName((Class<? extends IHandler<?>>) type, target);
+                } else if(mode.equals(WorkerMode.UNICAST)){
+                    queueName = amqpAdmin.getUnicastQueueName(runtimeTenantResolver.getTenant(), type, target);
+                }
+                // clean queue
+                if (!Strings.isNullOrEmpty(queueName)) {
+                    amqpAdmin.purgeQueue(queueName, false);
+                    LOGGER.info("Queue {} was cleaned", queueName);
+                }
             } catch (AmqpIOException e) {
-                //todo
+                LOGGER.warn("Failed to clean AMQP queues", e);
             } finally {
                 vhostAdmin.unbind();
             }
         }
     }
+
+    // -------------
+    //     REPO
+    // -------------
+    private void cleanRepositories() {
+        // session agent
+        this.stepRepo.deleteAll();
+        this.sessionStepRepo.deleteAll();
+
+        // features
+        this.extractionRequestRepo.deleteAll();
+        this.referenceRequestRepo.deleteAll();
+        this.pluginConfRepo.deleteAll();
+
+        // jobs
+        jobInfoRepo.deleteAll();
+    }
+
+    // -------------
+    //     UTILS
+    // -------------
 
     protected void waitForState(JpaRepository<? extends AbstractRequest, ?> repo, RequestState state)
             throws InterruptedException {

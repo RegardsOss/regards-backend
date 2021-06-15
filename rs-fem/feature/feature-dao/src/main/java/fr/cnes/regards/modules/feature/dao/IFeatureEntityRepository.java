@@ -64,4 +64,8 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
 
     void deleteAllByUrnIn(Collection<FeatureUniformResourceName> urns);
 
+    Page<ILightFeatureEntity> findBySessionOwner(String sessionOwner, Pageable pageable);
+
+    Page<ILightFeatureEntity> findBySessionOwnerAndSession(String sessionOwner, String session, Pageable pageable);
+
 }

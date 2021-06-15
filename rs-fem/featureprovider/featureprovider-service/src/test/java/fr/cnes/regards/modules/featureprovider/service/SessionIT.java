@@ -20,13 +20,10 @@ package fr.cnes.regards.modules.featureprovider.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
@@ -192,11 +189,5 @@ public class SessionIT extends FeatureProviderMultitenantTest {
                                                                     "testFeatureGeneration"));
         }
         return eventsToPublish;
-    }
-
-    @Override
-    public void doAfter() {
-        subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
-        cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 }

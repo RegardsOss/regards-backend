@@ -48,14 +48,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to generate {@link Session}s associated to a single {@link Source} from {@link SessionStep}s
  *
  * @author Iliana Ghazali
  **/
-@Service
 @MultitenantTransactional
 public class ManagerSnapshotService {
 

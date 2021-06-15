@@ -22,17 +22,17 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 /**
  * Events sent to update {@link SessionStep}.
  *
  * @author Iliana Ghazali
  **/
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
+@Event(target = Target.MICROSERVICE, mode = WorkerMode.UNICAST, converter = JsonMessageConverter.GSON)
 public class StepPropertyUpdateRequestEvent implements ISubscribable {
 
     /**

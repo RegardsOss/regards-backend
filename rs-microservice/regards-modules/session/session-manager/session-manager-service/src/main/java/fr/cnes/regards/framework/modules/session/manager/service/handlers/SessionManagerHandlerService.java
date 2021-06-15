@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Service for {@link SessionManagerHandler}. It handles new amqp events received and saves new {@link SessionStep}
@@ -37,7 +36,6 @@ import org.springframework.stereotype.Service;
  *
  * @author Iliana Ghazali
  **/
-@Service
 @MultitenantTransactional
 public class SessionManagerHandlerService {
 
