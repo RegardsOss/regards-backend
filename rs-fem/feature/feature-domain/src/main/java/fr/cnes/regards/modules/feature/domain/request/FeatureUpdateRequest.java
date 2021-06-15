@@ -55,6 +55,13 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     @Type(type = "jsonb")
     private Feature feature;
 
+    /**
+     * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
+     */
+    @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
+    @Type(type = "jsonb")
+    private Feature toNotify;
+
     public static FeatureUpdateRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             RequestState state, Set<String> errors, Feature feature, PriorityLevel priority, FeatureRequestStep step) {
         Assert.notNull(feature, "Feature is required");
@@ -97,4 +104,11 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         this.feature = feature;
     }
 
+    public Feature getToNotify() {
+        return toNotify;
+    }
+
+    public void setToNotify(Feature toNotify) {
+        this.toNotify = toNotify;
+    }
 }

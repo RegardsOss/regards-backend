@@ -18,33 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
@@ -52,12 +26,9 @@ import fr.cnes.regards.modules.feature.dao.FeatureNotificationRequestSpecificati
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
@@ -72,6 +43,24 @@ import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Service for prepare {@link NotificationRequestEvent} from {@link FeatureNotificationRequestEvent}
@@ -83,7 +72,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 public class FeatureNotificationService extends AbstractFeatureService<FeatureNotificationRequest>
         implements IFeatureNotificationService {
 
-    public static final String DEBUG_MSG_NOTIFICATION_REQUESTS_IN_MS = "------------->>> {} Notification requests in {} ms";
+    public static final String DEBUG_MSG_NOTIFICATION_REQUESTS_IN_MS = "------------->>> {} Notification requests sent in {} ms";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureNotificationService.class);
 
@@ -130,10 +119,11 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         List<FeatureNotificationRequest> notificationsRequest = new ArrayList<>();
         Set<String> existingRequestIds = this.featureNotificationRequestRepository.findRequestId();
 
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(events.stream()
-                .map(FeatureNotificationRequestEvent::getUrn).collect(Collectors.toSet()));
+        Set<FeatureUniformResourceName> featureUrns = events.stream().map(FeatureNotificationRequestEvent::getUrn)
+                .collect(Collectors.toSet());
+        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = featureRepo.findCompleteByUrnIn(featureUrns).stream().collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
 
-        events.forEach(item -> prepareNotificationRequest(item, sessionInfoByUrn.get(item.getUrn()),
+        events.forEach(item -> prepareNotificationRequest(item, featureByUrn.get(item.getUrn()),
                                                           notificationsRequest, existingRequestIds));
         LOGGER.trace("------------->>> {} Notification requests prepared in {} ms", notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
@@ -152,7 +142,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
      * @param notificationsRequest list of {@link FeatureNotificationRequest} granted
      * @param existingRequestIds   list of existing request in database
      */
-    private void prepareNotificationRequest(FeatureNotificationRequestEvent item, ILightFeatureEntity sessionInfo,
+    private void prepareNotificationRequest(FeatureNotificationRequestEvent item, FeatureEntity sessionInfo,
             List<FeatureNotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
@@ -180,6 +170,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                     .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
                            FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, item.getPriority(), item.getUrn(),
                            RequestState.GRANTED);
+            request.setToNotify(sessionInfo.getFeature());
             // Monitoring log
             FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
             // Publish GRANTED request
@@ -207,8 +198,11 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         CreateNotificationRequestEventVisitor visitor = new CreateNotificationRequestEventVisitor(gson, featureRepo,
                 visitorErrorRequests);
         if (!requestsToSend.isEmpty()) {
-            List<NotificationRequestEvent> eventToSend = requestsToSend.stream().map(r -> r.accept(visitor))
-                    .filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
+            List<NotificationRequestEvent> eventToSend = requestsToSend.stream()
+                    .map(r -> r.accept(visitor))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
             effectivelySend(sendingStart, eventToSend);
             // remove visitor error requests from requests to send because they are in error and not sent!
             Set<AbstractFeatureRequest> requestsSent = new HashSet<>(requestsToSend);
