@@ -2381,6 +2381,7 @@
 						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when unit tests are run. -->
 						<argLine>${jacoco.agent.ut.arg} ${regards.maven.test.env}</argLine>
+						<reuseForks>false</reuseForks>
 						<properties>
 							<property>
 								<name>listener</name>

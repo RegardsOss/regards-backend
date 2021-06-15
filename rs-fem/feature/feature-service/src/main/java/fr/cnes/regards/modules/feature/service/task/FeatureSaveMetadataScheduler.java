@@ -17,12 +17,12 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.modules.feature.service.task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.modules.dump.service.scheduler.AbstractDumpScheduler;
@@ -34,6 +34,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  * Scheduler to handle feature dumps
  * @author Iliana Ghazali
  */
+@Profile("!noscheduler")
 @Component
 public class FeatureSaveMetadataScheduler extends AbstractDumpScheduler {
 
