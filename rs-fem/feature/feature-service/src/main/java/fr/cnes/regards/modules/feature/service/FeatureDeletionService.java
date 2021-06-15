@@ -326,12 +326,11 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         } else {
             sessionInfoUpdateOnSuccess(successfulRequests.values());
             this.deletionRepo.deleteInBatch(successfulRequests.keySet());
-            this.featureRepo.deleteAll(successfulRequests.values());
         }
 
         // Delete all features without files, related requests will be deleted once we know notifier has successfully sent the notification about it
         this.creationRepo.deleteByFeatureEntityIn(successfulRequests.values());
-
+        this.featureRepo.deleteAll(successfulRequests.values());
     }
 
     private boolean haveFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {

@@ -39,8 +39,6 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -83,7 +81,6 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
-@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 

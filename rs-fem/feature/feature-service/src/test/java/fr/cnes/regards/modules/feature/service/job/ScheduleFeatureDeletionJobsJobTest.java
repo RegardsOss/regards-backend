@@ -96,7 +96,11 @@ public class ScheduleFeatureDeletionJobsJobTest extends AbstractFeatureMultitena
                             jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
                                                              JobStatus.TO_BE_RUN, JobStatus.QUEUED, JobStatus.RUNNING,
                                                              JobStatus.SUCCEEDED));
-        Thread.sleep(2_000);
+        int loop = 0;
+        while ((listener.getNumberOfRequests() < 100) && (loop < 100)) {
+            Thread.sleep(100);
+            loop++;
+        }
         Assert.assertEquals("All 100 feature should be notified", 100, listener.getNumberOfRequests());
     }
 
