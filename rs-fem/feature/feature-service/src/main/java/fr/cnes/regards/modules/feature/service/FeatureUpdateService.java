@@ -380,6 +380,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                 // Register
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);
                 entities.add(entity);
+                // add entity to request (toNotify)
+                request.setToNotify(entity.getFeature());
                 successfulRequest.add(request);
             }
 
