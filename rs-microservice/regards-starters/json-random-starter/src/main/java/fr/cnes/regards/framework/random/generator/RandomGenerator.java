@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 import fr.cnes.regards.framework.random.function.FunctionDescriptorParser;
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
 
 public interface RandomGenerator<T> {
 
@@ -54,7 +55,7 @@ public interface RandomGenerator<T> {
                 "Random with context must be overridden for dependent property generation");
     }
 
-    static RandomGenerator<?> of(Object value) {
+    static RandomGenerator<?> of(Object value, IPropertyGetter propertyGetter) {
         // Parse function
         FunctionDescriptor fd = FunctionDescriptorParser.parse(value);
         if (fd == null) {
@@ -94,11 +95,17 @@ public interface RandomGenerator<T> {
             case STRING:
                 rg = new RandomString(fd);
                 break;
+            case STRING_FORMAT:
+                rg = new RandomStringFormat(fd);
+                break;
             case URN:
                 rg = new RandomUrn(fd);
                 break;
             case UUID:
                 rg = new RandomUuid(fd);
+                break;
+            case PROPERTY:
+                rg = new PropertyGenerator(fd, propertyGetter);
                 break;
             default:
                 throw new IllegalArgumentException(String.format("Unsupported function %s", fd.getType()));
