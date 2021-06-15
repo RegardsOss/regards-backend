@@ -31,10 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 /**
  * Scheduler to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
@@ -42,8 +40,6 @@ import org.springframework.stereotype.Component;
  *
  * @author Iliana Ghazali
  */
-@Profile("!noscheduler")
-@Component
 @EnableScheduling
 public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
 
@@ -77,7 +73,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
     /**
      * Snapshot task
      */
-    private final LockingTaskExecutor.Task snapshotProcessTask = () -> {
+    private final LockingTaskExecutor.Task cleanProcessTask = () -> {
         LockAssert.assertLocked();
         agentCleanSessionStepJobService.scheduleJob();
     };
@@ -94,7 +90,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CLEAN_SESSION_STEPS);
-                lockingTaskExecutors.executeWithLock(snapshotProcessTask,
+                lockingTaskExecutors.executeWithLock(cleanProcessTask,
                                                      new LockConfiguration(microserviceName + "_clean-session-steps",
                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {

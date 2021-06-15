@@ -56,6 +56,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -73,12 +74,14 @@ import org.springframework.test.context.TestPropertySource;
         properties = { "spring.jpa.properties.hibernate.default_schema=acq_start_stop", "regards.amqp.enabled=true" }
 // ,locations = { "classpath:application-local.properties" }
 )
-@ActiveProfiles("testAmqp")
+@ActiveProfiles({"testAmqp", "nohandler"})
 public class StartStopChainTest extends DataproviderMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(StartStopChainTest.class);
 
+    @Autowired
+    private SessionNotificationHandler notifHandler;
 
     @Override
     public void doAfter() throws ModuleException, InterruptedException {
@@ -107,6 +110,7 @@ public class StartStopChainTest extends DataproviderMultitenantServiceTest {
             }
         });
         Thread.sleep(2_000);
+        notifHandler.clear();
     }
 
     /**

@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Service for {@link SnapshotJobEventHandler}. Update {@link SnapshotProcess} according to the
@@ -42,7 +41,6 @@ import org.springframework.stereotype.Service;
  *
  * @author Iliana Ghazali
  **/
-@Service
 @MultitenantTransactional
 public class SnapshotJobEventService {
 

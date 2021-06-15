@@ -50,8 +50,9 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_lock_jobs_it",
-        "regards.session.manager.clean.session.limit.store=30" })
-@ActiveProfiles({ "testAMQP", "noscheduler" })
+        "regards.session.manager.clean.session.limit.store=30", "regards.session.management.snapshot.process"
+        + ".scheduler.bulk.initial.delay=10000000" })
+@ActiveProfiles({ "testAMQP" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS,
         hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {

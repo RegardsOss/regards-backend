@@ -70,7 +70,7 @@ import org.springframework.test.context.TestPropertySource;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_cdpp_product",
         "regards.session.agent.snapshot.process.scheduler.bulk.delay=15000", "regards.amqp.enabled=true" })
-@ActiveProfiles({ "testAmqp", "noscheduler", "disableDataProviderTask"})
+@ActiveProfiles({ "testAmqp", "noscheduler", "disableDataProviderTask", "nomonitoring"})
 public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantServiceTest {
 
     @SuppressWarnings("unused")

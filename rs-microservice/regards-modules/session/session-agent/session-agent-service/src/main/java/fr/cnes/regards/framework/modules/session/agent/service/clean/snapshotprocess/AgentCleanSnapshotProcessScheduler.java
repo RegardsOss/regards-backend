@@ -30,18 +30,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 /**
  * Scheduler to clean not used {@link fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess}
  *
  * @author Iliana Ghazali
  */
-@Profile("!noscheduler")
-@Component
 @EnableScheduling
 public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
 
@@ -75,7 +71,7 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
     /**
      * Snapshot task
      */
-    private final LockingTaskExecutor.Task snapshotProcessTask = () -> {
+    private final LockingTaskExecutor.Task cleanSnapshotProcessTask = () -> {
         LockAssert.assertLocked();
         agentCleanSnapshotProcessJobService.scheduleJob();
     };
@@ -92,7 +88,7 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CLEAN_SNAPSHOT_PROCESS);
-                lockingTaskExecutors.executeWithLock(snapshotProcessTask,
+                lockingTaskExecutors.executeWithLock(cleanSnapshotProcessTask,
                                                      new LockConfiguration(microserviceName + "_clean-snapshot-process",
                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {

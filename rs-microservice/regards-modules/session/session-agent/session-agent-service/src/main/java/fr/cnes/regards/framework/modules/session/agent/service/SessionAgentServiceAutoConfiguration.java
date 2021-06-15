@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnaps
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * @author Iliana Ghazali
@@ -53,6 +54,7 @@ public class SessionAgentServiceAutoConfiguration {
     }
 
     @Bean
+    @Profile("!noscheduler")
     public AgentCleanSessionStepScheduler agentCleanSessionStepScheduler() {
         return new AgentCleanSessionStepScheduler();
     }
@@ -68,6 +70,7 @@ public class SessionAgentServiceAutoConfiguration {
     }
 
     @Bean
+    @Profile("!noscheduler")
     public AgentCleanSnapshotProcessScheduler agentCleanSnapshotProcessScheduler() {
         return new AgentCleanSnapshotProcessScheduler();
     }
@@ -77,6 +80,7 @@ public class SessionAgentServiceAutoConfiguration {
      */
 
     @Bean
+    @Profile("!nohandler")
     public SessionAgentEventHandler sessionAgentHandler() {
         return new SessionAgentEventHandler();
     }
@@ -101,6 +105,7 @@ public class SessionAgentServiceAutoConfiguration {
     }
 
     @Bean
+    @Profile("!noscheduler")
     public AgentSnapshotScheduler agentSnapshotScheduler(){
         return new AgentSnapshotScheduler();
     }

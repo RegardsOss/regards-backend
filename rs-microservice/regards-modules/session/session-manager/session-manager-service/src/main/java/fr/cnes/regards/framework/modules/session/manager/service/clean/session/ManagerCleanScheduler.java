@@ -35,10 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 /**
  * Scheduler to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep},
@@ -47,8 +45,6 @@ import org.springframework.stereotype.Component;
  *
  * @author Iliana Ghazali
  */
-@Profile("!noscheduler")
-@Component
 @EnableScheduling
 public class ManagerCleanScheduler extends AbstractTaskScheduler {
 
@@ -81,7 +77,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
     /**
      * Snapshot task
      */
-    private final LockingTaskExecutor.Task snapshotProcessTask = () -> {
+    private final LockingTaskExecutor.Task cleanProcessTask = () -> {
         LockAssert.assertLocked();
         managerCleanJobService.scheduleJob();
     };
@@ -106,7 +102,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                 long startTime = System.currentTimeMillis();
                 boolean isSnapshotJobsFinished = waitUntilManagerSnapshotJobEnd(startTime);
                 if (isSnapshotJobsFinished) {
-                    lockingTaskExecutors.executeWithLock(snapshotProcessTask,
+                    lockingTaskExecutors.executeWithLock(cleanProcessTask,
                                                          new LockConfiguration(microserviceName + "_clean-session",
                                                                                Instant.now()
                                                                                        .plusSeconds(MAX_TASK_DELAY)));
