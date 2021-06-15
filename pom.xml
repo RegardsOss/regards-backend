@@ -2297,6 +2297,7 @@
 						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when integration tests are run. -->
 						<argLine>${jacoco.agent.it.arg}</argLine>
+						<reuseForks>false</reuseForks>
 						<properties>
 							<property>
 								<name>listener</name>

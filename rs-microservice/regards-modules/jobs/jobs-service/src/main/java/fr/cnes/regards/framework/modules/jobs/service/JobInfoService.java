@@ -45,6 +45,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -195,10 +196,8 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
         for (JobInfo jobInfo : jobInfos) {
             JobStatusInfo status = jobInfo.getStatus();
-            jobInfoRepository.updateCompletion(status.getPercentCompleted(),
-                                               status.getEstimatedCompletion(),
-                                               jobInfo.getId(),
-                                               OffsetDateTime.now());
+            jobInfoRepository.updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(),
+                                               jobInfo.getId(), OffsetDateTime.now());
         }
     }
 
@@ -208,7 +207,7 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
-    @Scheduled(fixedDelayString = "${regards.jobs.out.of.date.cleaning.rate.ms:3600000}", initialDelay = 0)
+    @Scheduled(fixedDelayString = "${regards.jobs.out.of.date.cleaning.rate.ms:3600000}", initialDelay = 30_000)
     @Transactional(propagation = Propagation.SUPPORTS)
     public void cleanOutOfDateJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
@@ -240,14 +239,12 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
         for (JobInfo job : jobs) {
             // if last heartbeat date is null it means job has been started but not yet pinged by job engine
             if ((job.getLastHeartbeatDate() != null) && job.getLastHeartbeatDate().isBefore(deadLimitDate)) {
-                job.getStatus().setStackTrace(String.format(
-                        "This jobs has been considered dead because heartbeat has not responded for more than %s ms",
-                        deadAfter));
+                job.getStatus().setStackTrace(String
+                        .format("This jobs has been considered dead because heartbeat has not responded for more than %s ms",
+                                deadAfter));
                 job.updateStatus(JobStatus.FAILED);
                 LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
-                            job.getId(),
-                            job.getClassName(),
-                            deadAfter);
+                            job.getId(), job.getClassName(), deadAfter);
                 failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
             }
         }

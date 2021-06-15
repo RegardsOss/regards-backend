@@ -13,6 +13,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequestVisitor;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
+import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
@@ -78,6 +79,8 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
 
     @Override
     public Optional<NotificationRequestEvent> visitCopyRequest(FeatureCopyRequest copyRequest) {
+        // this type of request might not be notified but in case it is but i've not seen it lets use basic logic.
+        // if perfs are crappy inspire yourself from what has been done for update requests or feature notification requests
         FeatureEntity featureEntity = featureRepo.findByUrn(copyRequest.getUrn());
         if(featureEntity != null) {
             return Optional.of(new NotificationRequestEvent(gson.toJsonTree(featureEntity.getFeature()).getAsJsonObject(),
@@ -93,9 +96,9 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
 
     @Override
     public Optional<NotificationRequestEvent> visitUpdateRequest(FeatureUpdateRequest updateRequest) {
-        FeatureEntity featureEntity = featureRepo.findByUrn(updateRequest.getUrn());
-        if(featureEntity != null) {
-        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(featureEntity.getFeature()).getAsJsonObject(),
+        Feature feature = updateRequest.getToNotify();
+        if(feature != null) {
+        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(feature).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.UPDATED)),
                                             updateRequest.getRequestId(),
                                             updateRequest.getRequestOwner()));
@@ -107,10 +110,9 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
 
     @Override
     public Optional<NotificationRequestEvent> visitNotificationRequest(FeatureNotificationRequest featureNotificationRequest) {
-        FeatureEntity featureEntity = featureRepo.findByUrn(featureNotificationRequest.getUrn());
-            if(featureEntity != null) {
-        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(featureEntity
-                                                                   .getFeature()).getAsJsonObject(),
+        Feature feature = featureNotificationRequest.getToNotify();
+            if(feature != null) {
+        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(feature).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.NOTIFIED)),
                                             featureNotificationRequest.getRequestId(),
                                             featureNotificationRequest.getRequestOwner()));

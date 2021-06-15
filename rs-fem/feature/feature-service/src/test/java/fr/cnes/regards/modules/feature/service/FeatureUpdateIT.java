@@ -18,6 +18,30 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.runners.MethodSorters;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
@@ -31,7 +55,12 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.dto.*;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -41,38 +70,17 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
-import org.junit.runners.MethodSorters;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static org.junit.Assert.*;
 
 /**
  * @author kevin
  *
  */
 @TestPropertySource(
-        properties = {"spring.jpa.properties.hibernate.default_schema=feature_update", "regards.amqp.enabled=true", "regards.feature.metrics.enabled=true"},
-        locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
+        properties = { "spring.jpa.properties.hibernate.default_schema=feature_update", "regards.amqp.enabled=true",
+                "regards.feature.metrics.enabled=true" },
+        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
+                "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
-@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
@@ -150,16 +158,12 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != 3));
         List<FeatureEntity> entities = super.featureRepo.findAll();
+
         // features have been created. now lets simulate a deletion of one of them
         FeatureEntity toDelete = entities.get(2);
         FeatureDeletionRequestEvent featureDeletionRequest = FeatureDeletionRequestEvent
                 .build("TEST", toDelete.getUrn(), PriorityLevel.NORMAL);
         this.featureDeletionService.registerRequests(Lists.list(featureDeletionRequest));
-
-        // simulate an update request on a feature being deleted
-        FeatureUpdateRequest fur4 = FeatureUpdateRequest
-                .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null,
-                       toDelete.getFeature(), PriorityLevel.NORMAL, FeatureRequestStep.LOCAL_DELAYED);
 
         // simulate an update request
         FeatureEntity toUpdate = entities.get(0);
@@ -178,32 +182,42 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                 .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null,
                        updatingByScheduler.getFeature(), PriorityLevel.NORMAL, FeatureRequestStep.LOCAL_DELAYED);
 
+        // simulate an update request on a feature being deleted
+        FeatureUpdateRequest fur4 = FeatureUpdateRequest
+                .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null,
+                       toDelete.getFeature(), PriorityLevel.NORMAL, FeatureRequestStep.LOCAL_DELAYED);
+
         // bypass registration to help simulate the state we want
         fur1 = super.featureUpdateRequestRepo.save(fur1);
         fur2 = super.featureUpdateRequestRepo.save(fur2);
         fur3 = super.featureUpdateRequestRepo.save(fur3);
         fur4 = super.featureUpdateRequestRepo.save(fur4);
 
-        assertEquals("There should be 1 deletion request scheduled", 1, this.featureDeletionService.scheduleRequests());
+        // Simulate featue deletion request running
+        Page<FeatureDeletionRequest> deletionRequests = featureDeletionService
+                .findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 10));
+        Assert.assertEquals("There sould be one deletion request", 1L, deletionRequests.getTotalElements());
+        FeatureDeletionRequest dr = deletionRequests.getContent().get(0);
+        dr.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
+        featureDeletionRequestRepo.save(dr);
+
         // Wait minimum processing time for request to be scheduled after being delayed
-        Thread.sleep(properties.getDelayBeforeProcessing() * 1000);
-        // fur1 and fur4 should be scheduled. Fur1 cause nothing prevents it, and fur4 because deletion is done so the update request can be scheduled (but will fail)
-        assertEquals("There should be 2 update requests scheduled", 2, this.featureUpdateService.scheduleRequests());
+        Thread.sleep(properties.getDelayBeforeProcessing() * 1100);
+        // fur1 should be scheduled. fur4 cannot be scheduled as the deletion request is processing.
+        assertEquals("There should be 2 update requests scheduled", 1, this.featureUpdateService.scheduleRequests());
 
         List<FeatureUpdateRequest> updateRequests = this.featureUpdateRequestRepo.findAll();
 
-        // fur1 ,fur2 and fur4 should be scheduled
-        assertEquals(3, updateRequests.stream()
+        // fur1 and fur2 should be scheduled
+        assertEquals(2, updateRequests.stream()
                 .filter(request -> request.getStep().equals(FeatureRequestStep.LOCAL_SCHEDULED)).count());
         // fur3 stay delayed cause a update on the same feature is scheduled
         assertEquals(1, updateRequests.stream()
                 .filter(request -> request.getStep().equals(FeatureRequestStep.LOCAL_DELAYED)).count());
 
-        // Wait for update job done
-        Thread.sleep(10000);
-        fur4 = super.featureUpdateRequestRepo.findById(fur4.getId()).get();
-        assertEquals("Update request on already deleted feature should be in error", RequestState.ERROR,
-                     fur4.getState());
+        // fur4 in error cause a deletion is scheduled on the same urn
+        assertEquals(1, updateRequests.stream()
+                .filter(request -> request.getStep().equals(FeatureRequestStep.LOCAL_ERROR)).count());
     }
 
     /**
@@ -412,7 +426,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         prepareCreationTestData(false, requestCount, true, true);
 
         // Update
-        List<FeatureUniformResourceName> urns = Collections.singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
+        List<FeatureUniformResourceName> urns = Collections
+                .singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
         featureUpdateService.registerRequests(prepareUpdateRequests(urns));
         TimeUnit.SECONDS.sleep(5);
         featureUpdateService.scheduleRequests();
@@ -432,7 +447,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         prepareCreationTestData(false, requestCount, false, true);
 
         // Update
-        List<FeatureUniformResourceName> urns = Collections.singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
+        List<FeatureUniformResourceName> urns = Collections
+                .singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
         featureUpdateService.registerRequests(prepareUpdateRequests(urns));
         TimeUnit.SECONDS.sleep(5);
         featureUpdateService.scheduleRequests();
@@ -560,7 +576,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         prepareCreationTestData(false, 1, true, true);
 
         // Update
-        List<FeatureUniformResourceName> urns = Collections.singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
+        List<FeatureUniformResourceName> urns = Collections
+                .singletonList(featureRepo.findAll().stream().map(FeatureEntity::getUrn).findAny().get());
         featureUpdateService.registerRequests(prepareUpdateRequests(urns));
         TimeUnit.SECONDS.sleep(5);
         featureUpdateService.scheduleRequests();

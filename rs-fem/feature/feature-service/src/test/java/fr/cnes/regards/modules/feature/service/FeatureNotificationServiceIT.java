@@ -38,8 +38,10 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runners.MethodSorters;
@@ -55,8 +57,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -92,51 +94,75 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         // mock the publish method to not broke other tests
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
+        int numberFeature = 2;
+        List<Feature> featuresNotified = doNotificationProcess(numberFeature);
+
+        Mockito.verify(publisher, Mockito.times(3)).publish(recordsCaptor.capture());
+        // the first publish message to be intercepted must be the creation of createdEntity
+        assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
+                FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(0).getMetadata().toString());
+        assertEquals(gson.toJson(featuresNotified.get(0)), recordsCaptor.getValue().get(0).getPayload().toString());
+        // the second message is the update of updatedEntity
+        assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
+                FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(1).getMetadata().toString());
+        assertEquals(gson.toJson(featuresNotified.get(1)), recordsCaptor.getValue().get(1).getPayload().toString());
+
+    }
+
+    @Test
+    @Ignore("Test to manuel check perf using logs of feature notification request handling.")
+    public void testNotification1000() {
+        doNotificationProcess(1000);
+    }
+
+    private List<Feature> doNotificationProcess(int numberNotified) {
         // use it only to initialize Feature
-        List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(2, true);
-        list.get(0).getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
-                                                                                   EntityType.DATA, "tenant", 1));
-        list.get(1).getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
-                                                                                   EntityType.DATA, "tenant", 1));
-        FeatureEntity createdEntity = FeatureEntity.build("moi", "session", list.get(0).getFeature(), null,
-                                                          list.get(0).getFeature().getModel());
-        FeatureEntity updatedEntity = FeatureEntity.build("moi", "session", list.get(1).getFeature(), null,
-                                                          list.get(1).getFeature().getModel());
-        updatedEntity.setLastUpdate(OffsetDateTime.now().plusSeconds(1));
-
-        createdEntity.setUrn(list.get(0).getFeature().getUrn());
-        updatedEntity.setUrn(list.get(1).getFeature().getUrn());
-
-        // to skip creation and update process
-        this.featureRepo.save(createdEntity);
-        this.featureRepo.save(updatedEntity);
+        List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(numberNotified, true);
+        for(FeatureCreationRequestEvent event: list) {
+            event.getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
+                                                                                 EntityType.DATA,
+                                                                                 "tenant",
+                                                                                 1));
+        }
+        List<FeatureNotificationRequestEvent> notifCreated = new ArrayList<>(numberNotified /2);
+        List<FeatureNotificationRequestEvent> notifUpdated = new ArrayList<>(numberNotified /2);
+        // consider half to be update entities
+        List<Feature> featuresNotified = new ArrayList<>(numberNotified);
+        for(int i = 0; i< numberNotified /2; i++) {
+            FeatureEntity createdEntity = FeatureEntity
+                    .build("moi", "session", list.get(i).getFeature(), null, list.get(i).getFeature().getModel());
+            FeatureEntity updatedEntity = FeatureEntity
+                    .build("moi", "session", list.get(i+ numberNotified /2).getFeature(), null, list.get(i+ numberNotified
+                            /2).getFeature().getModel());
+            updatedEntity.setLastUpdate(OffsetDateTime.now().plusSeconds(1));
+            createdEntity.setUrn(list.get(i).getFeature().getUrn());
+            updatedEntity.setUrn(list.get(i+ numberNotified /2).getFeature().getUrn());
+            // to skip creation and update process
+            featuresNotified.add(createdEntity.getFeature());
+            featuresNotified.add(updatedEntity.getFeature());
+            this.featureRepo.save(createdEntity);
+            this.featureRepo.save(updatedEntity);
+            notifCreated.add(FeatureNotificationRequestEvent.build("notifier", createdEntity.getUrn(), PriorityLevel.LOW));
+            notifUpdated.add(FeatureNotificationRequestEvent.build("notifier", updatedEntity.getUrn(), PriorityLevel.LOW));
+        }
 
         this.publisher
-                .publish(FeatureNotificationRequestEvent.build("notifier", createdEntity.getUrn(), PriorityLevel.LOW));
+                .publish(notifCreated);
         this.publisher
-                .publish(FeatureNotificationRequestEvent.build("notifier", updatedEntity.getUrn(), PriorityLevel.LOW));
+                .publish(notifUpdated);
 
-        this.waitRequest(notificationRequestRepo, 2, 30000);
-        assertEquals(2, notificationService.sendToNotifier());
+        this.waitRequest(notificationRequestRepo, numberNotified, 30000);
+        assertEquals(numberNotified, notificationService.sendToNotifier());
         //simulate that notification has been handle with success
         Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo
                 .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
                                                        OffsetDateTime.now().plusDays(1),
-                                                       PageRequest.of(0, 2, Sort.by(Sort.Order.asc("priority"),
-                                                                                    Sort.Order.asc("requestDate"))));
+                                                       PageRequest.of(0,
+                                                                      numberNotified, Sort.by(Sort.Order.asc("priority"),
+                                                                                             Sort.Order.asc("requestDate"))));
         featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
         this.waitRequest(notificationRequestRepo, 0, 30000);
-
-        Mockito.verify(publisher).publish(recordsCaptor.capture());
-        // the first publish message to be intercepted must be the creation of createdEntity
-        assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
-                FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(0).getMetadata().toString());
-        assertEquals(gson.toJson(createdEntity.getFeature()), recordsCaptor.getValue().get(0).getPayload().toString());
-        // the second message is the update of updatedEntity
-        assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
-                FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(1).getMetadata().toString());
-        assertEquals(gson.toJson(updatedEntity.getFeature()), recordsCaptor.getValue().get(1).getPayload().toString());
-
+        return featuresNotified;
     }
 
     @Test
@@ -153,7 +179,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         // Notify them
-        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(f -> f.getUrn())
+        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn)
                 .collect(Collectors.toList());
         this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
 
@@ -194,7 +220,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         // Create features
         prepareCreationTestData(false, nbValid, true, true);
         // Notify them
-        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(f -> f.getUrn())
+        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn)
                 .collect(Collectors.toList());
         Assert.assertTrue(urns.size() > 0);
         int results = this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
@@ -227,7 +253,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         // Create features
         prepareCreationTestData(false, nbValid, true, true);
         // Notify them
-        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(f -> f.getUrn())
+        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn)
                 .collect(Collectors.toList());
         Assert.assertTrue(urns.size() > 0);
         int results = this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));

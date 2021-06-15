@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -41,6 +42,10 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
 
     @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
     Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
+            @Param("now") OffsetDateTime offsetDateTime);
+
+    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step in (:steps) and fdr.requestDate <= :now")
+    Set<FeatureDeletionRequest> findByStepIn(@Param("steps") Collection<FeatureRequestStep> steps,
             @Param("now") OffsetDateTime offsetDateTime);
 
     @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
