@@ -82,14 +82,14 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // search for session 1
         RequestBuilderCustomizer customizer1 = customizer();
-        customizer1.addParameter("name", "SESSION_1");
+        customizer1.addParameter("sessionName", "SESSION_1");
         customizer1.expectStatusOk();
         customizer1.expectValue("$.metadata.totalElements", 6);
         performDefaultGet(SessionManagerController.ROOT_MAPPING, customizer1, "The session expected was not returned");
 
         // search for state = errors
         RequestBuilderCustomizer customizer2 = customizer();
-        customizer2.addParameter("state", "errors");
+        customizer2.addParameter("sessionState", "errors");
         customizer2.expectStatusOk();
         customizer2.expectValue("$.metadata.totalElements", 1);
         customizer2.expectValue("$.content.[0].content.id", sessionList.get(0).getId());
@@ -97,7 +97,7 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // search for state = waiting
         RequestBuilderCustomizer customizer3 = customizer();
-        customizer3.addParameter("state", "waiting");
+        customizer3.addParameter("sessionState", "waiting");
         customizer3.expectStatusOk();
         customizer3.expectValue("$.metadata.totalElements", 1);
         customizer3.expectValue("$.content.[0].content.id", sessionList.get(1).getId());
@@ -105,7 +105,7 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // search for state = waiting
         RequestBuilderCustomizer customizer4 = customizer();
-        customizer4.addParameter("state", "running");
+        customizer4.addParameter("sessionState", "running");
         customizer4.expectStatusOk();
         customizer4.expectValue("$.metadata.totalElements", 1);
         customizer4.expectValue("$.content.[0].content.id", sessionList.get(2).getId());
@@ -113,7 +113,7 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // search for state = ok
         RequestBuilderCustomizer customizer5 = customizer();
-        customizer5.addParameter("state", "ok");
+        customizer5.addParameter("sessionState", "ok");
         customizer5.expectStatusOk();
         customizer5.expectValue("$.metadata.totalElements", 4);
         customizer5.expectValue("$.content.[0].content.id", sessionList.get(3).getId());
@@ -124,7 +124,7 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // search for source = SOURCE_5
         RequestBuilderCustomizer customizer6 = customizer();
-        customizer6.addParameter("source", "SOURCE_5");
+        customizer6.addParameter("sourceName", "SOURCE_5");
         customizer6.expectStatusOk();
         customizer6.expectValue("$.metadata.totalElements", 2);
         customizer6.expectValue("$.content.[0].content.id", sessionList.get(5).getId());
@@ -133,8 +133,8 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // search with combined filters
         RequestBuilderCustomizer customizer7 = customizer();
-        customizer7.addParameter("source", "SOURCE_5");
-        customizer7.addParameter("name", "SESSION_2");
+        customizer7.addParameter("sourceName", "SOURCE_5");
+        customizer7.addParameter("sessionName", "SESSION_2");
         customizer7.expectStatusOk();
         customizer7.expectValue("$.metadata.totalElements", 1);
         customizer7.expectValue("$.content.[0].content.id", sessionList.get(6).getId());

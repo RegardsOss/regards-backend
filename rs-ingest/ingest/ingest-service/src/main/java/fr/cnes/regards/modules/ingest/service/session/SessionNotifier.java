@@ -83,7 +83,7 @@ public class SessionNotifier {
     }
 
     public void incrementProductStoreSuccess(IngestRequest request) {
-        incrementCount(request, SessionNotifierPropertyEnum.GENERATED_PRODUCTS, request.getAips().size());
+        incrementCount(request, SessionNotifierPropertyEnum.REFERENCED_PRODUCTS, request.getAips().size());
     }
 
     public void incrementProductStoreError(IngestRequest request) {
@@ -244,7 +244,7 @@ public class SessionNotifier {
             decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REQUESTS_RUNNING, nbStorePending);
         }
 
-        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.GENERATED_PRODUCTS, nbGenerated + nbStored);
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REFERENCED_PRODUCTS, nbGenerated + nbStored);
     }
 
     // ----------- UTILS -----------

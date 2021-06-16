@@ -87,7 +87,7 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // Search the first source by name
         RequestBuilderCustomizer customizer1 = customizer();
-        customizer1.addParameter("name", SOURCE_1);
+        customizer1.addParameter("sourceName", SOURCE_1);
         customizer1.expectStatusOk();
         customizer1.expectValue("$.metadata.totalElements", 1);
         customizer1.expectValue("$.content.[0].content.name", SOURCE_1);
@@ -95,7 +95,7 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // Search source by state = running
         RequestBuilderCustomizer customizer2 = customizer();
-        customizer2.addParameter("state", "running");
+        customizer2.addParameter("sourceState", "running");
         customizer2.expectStatusOk();
         customizer2.expectValue("$.metadata.totalElements", 1);
         customizer2.expectValue("$.content.[0].content.name", SOURCE_3);
@@ -103,7 +103,7 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // Search source by state = error
         RequestBuilderCustomizer customizer3 = customizer();
-        customizer3.addParameter("state", "errors");
+        customizer3.addParameter("sourceState", "errors");
         customizer3.expectStatusOk();
         customizer3.expectValue("$.metadata.totalElements", 1);
         customizer3.expectValue("$.content.[0].content.name", SOURCE_1);
@@ -111,7 +111,7 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // Search source by state = waiting
         RequestBuilderCustomizer customizer4 = customizer();
-        customizer4.addParameter("state", "waiting");
+        customizer4.addParameter("sourceState", "waiting");
         customizer4.expectStatusOk();
         customizer4.expectValue("$.metadata.totalElements", 1);
         customizer4.expectValue("$.content.[0].content.name", SOURCE_2);
@@ -119,7 +119,7 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
 
         // Search source by state = ok
         RequestBuilderCustomizer customizer5 = customizer();
-        customizer5.addParameter("state", "ok");
+        customizer5.addParameter("sourceState", "ok");
         customizer5.expectStatusOk();
         customizer5.expectValue("$.metadata.totalElements", 2);
         performDefaultGet(SourceManagerController.ROOT_MAPPING, customizer5, "The sources expected were not returned");

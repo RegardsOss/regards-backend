@@ -162,7 +162,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
-        Assert.assertEquals(aips.size(), (long) result.get(SessionNotifierPropertyEnum.GENERATED_PRODUCTS.getName()));
+        Assert.assertEquals(aips.size(), (long) result.get(SessionNotifierPropertyEnum.REFERENCED_PRODUCTS.getName()));
     }
 
     @Test
@@ -211,7 +211,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
-        Assert.assertEquals(aips.size(), (long) result.get(SessionNotifierPropertyEnum.GENERATED_PRODUCTS.getName()));
+        Assert.assertEquals(aips.size(), (long) result.get(SessionNotifierPropertyEnum.REFERENCED_PRODUCTS.getName()));
         Assert.assertNull(result.get(SessionNotifierPropertyEnum.REQUESTS_ERRORS.getName()));
 
     }
@@ -234,7 +234,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
-        Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.GENERATED_PRODUCTS.getName()));
+        Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REFERENCED_PRODUCTS.getName()));
         Assert.assertNull(result.get(SessionNotifierPropertyEnum.REQUESTS_ERRORS.getName()));
     }
 }

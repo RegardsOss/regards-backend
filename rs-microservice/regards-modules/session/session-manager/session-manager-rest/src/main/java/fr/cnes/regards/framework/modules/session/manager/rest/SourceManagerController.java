@@ -85,11 +85,11 @@ public class SourceManagerController implements IResourceController<Source> {
     @GetMapping
     @ResponseBody
     @ResourceAccess(description = "Endpoint to get sources", role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedModel<EntityModel<Source>>> getSources(@RequestParam(required = false) String name,
-            @RequestParam(required = false) String state,
+    public ResponseEntity<PagedModel<EntityModel<Source>>> getSources(@RequestParam(required = false) String sourceName,
+            @RequestParam(required = false) String sourceState,
             @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
             final PagedResourcesAssembler<Source> assembler) {
-        Page<Source> sources = this.sourceManagerService.loadSources(name, state, pageable);
+        Page<Source> sources = this.sourceManagerService.loadSources(sourceName, sourceState, pageable);
         return ResponseEntity.ok(toPagedResources(sources, assembler));
     }
 

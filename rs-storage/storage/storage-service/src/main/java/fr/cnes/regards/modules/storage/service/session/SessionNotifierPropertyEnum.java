@@ -40,12 +40,12 @@ public enum SessionNotifierPropertyEnum {
     /**
      * Number of copy requests
      */
-    COPY_REQUESTS("copyRequests", StepPropertyStateEnum.SUCCESS, true, false),
+    COPY_REQUESTS("copyRequests", StepPropertyStateEnum.SUCCESS, false, false),
 
     /**
      * Number of delete requests
      */
-    DELETE_REQUESTS("deleteRequests", StepPropertyStateEnum.SUCCESS, true, false),
+    DELETE_REQUESTS("deleteRequests", StepPropertyStateEnum.SUCCESS, false, false),
 
     /**
      * Number of requests refused

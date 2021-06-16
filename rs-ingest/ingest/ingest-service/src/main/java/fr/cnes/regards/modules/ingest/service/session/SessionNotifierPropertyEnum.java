@@ -35,7 +35,7 @@ public enum SessionNotifierPropertyEnum {
 
     REQUESTS_RUNNING("requestsRunning", StepPropertyStateEnum.RUNNING, false, false),
 
-    GENERATED_PRODUCTS("generatedProducts", StepPropertyStateEnum.SUCCESS, false, true),
+    REFERENCED_PRODUCTS("referencedProducts", StepPropertyStateEnum.SUCCESS, false, true),
 
     NEW_PRODUCT_VERSIONS("newProductVersions", StepPropertyStateEnum.INFO, false, false),
 
