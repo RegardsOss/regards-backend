@@ -43,12 +43,14 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.service.entities.visitor.SubsettingCoherenceVisitor;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.IModelService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
+import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import org.slf4j.Logger;
@@ -58,6 +60,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.validation.Errors;
 import org.springframework.web.util.UriUtils;
 
 import javax.persistence.EntityManager;
@@ -69,6 +72,7 @@ import java.util.stream.Collectors;
 
 /**
  * Specific EntityService for Datasets
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author oroussel
  */
@@ -98,23 +102,39 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
     private IModelAttrAssocService modelAttributeService;
 
     public DatasetService(IModelFinder modelFinder, IDatasetRepository repository,
-                          IAttributeModelService attributeService, IModelAttrAssocService modelAttributeService,
-                          IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
-                          IDeletedEntityRepository deletedEntityRepository, ICollectionRepository collectionRepository,
-                          EntityManager em, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
-                          IOpenSearchService openSearchService, IPluginService pluginService,
-                          IAbstractEntityRequestRepository abstractEntityRequestRepo, IDamSettingsService damSettingsService
-                          ) {
-        super(modelFinder, entityRepository, modelService, damSettingsService, deletedEntityRepository, collectionRepository, repository,
+            IAttributeModelService attributeService, IModelAttrAssocService modelAttributeService,
+            IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
+            IDeletedEntityRepository deletedEntityRepository, ICollectionRepository collectionRepository,
+            EntityManager em, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
+            IOpenSearchService openSearchService, IPluginService pluginService,
+            IAbstractEntityRequestRepository abstractEntityRequestRepo, IDamSettingsService damSettingsService) {
+        super(modelFinder, entityRepository, modelService, damSettingsService,deletedEntityRepository, collectionRepository, repository,
               repository, em, publisher, runtimeTenantResolver, abstractEntityRequestRepo);
         this.openSearchService = openSearchService;
         this.pluginService = pluginService;
     }
 
+    @Override
+    public Dataset createDataset(Dataset dataset, Errors errors) throws ModuleException {
+        checkAndOrSetModel(dataset);
+        // Validate dynamic model
+        validate(dataset, errors, ValidationMode.CREATION);
+        return create(dataset);
+    }
+
+    @Override
+    public Dataset updateDataset(Long datasetId, Dataset dataset, Errors errors) throws ModuleException {
+        checkAndOrSetModel(dataset);
+        // Validate dynamic model
+        validate(dataset, errors, ValidationMode.UPDATE);
+        return update(datasetId, dataset);
+    }
+
     /**
      * Control the DataSource associated to the {@link Dataset} in parameter if needed.</br>
      * If any DataSource is associated, sets the default DataSource.
-     * @throws ModuleException if error occurs!
+     *
+     * @throws ModuleException                          if error occurs!
      * @throws NotAvailablePluginConfigurationException
      */
     private Dataset checkDataSource(Dataset dataset) throws ModuleException, NotAvailablePluginConfigurationException {
@@ -130,9 +150,9 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
                 dataset.setDataSource(pluginConf);
             } catch (ModuleException e) {
                 LOGGER.error("Unable to dejsonify model parameter from PluginConfiguration", e);
-                throw new EntityNotFoundException(String
-                        .format("Unable to dejsonify model parameter from PluginConfiguration (%s)", e.getMessage()),
-                        PluginConfiguration.class);
+                throw new EntityNotFoundException(
+                        String.format("Unable to dejsonify model parameter from PluginConfiguration (%s)",
+                                      e.getMessage()), PluginConfiguration.class);
             }
         }
         return dataset;
@@ -141,6 +161,7 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
     /**
      * Check that the sub-setting criterion setting on a Dataset are coherent with the {@link Model} associated to the
      * data source. Should always be closed after checkDataSource, so the dataModel is properly set.
+     *
      * @param dataset the {@link Dataset} to check
      * @return the modified {@link Dataset}
      */
@@ -155,7 +176,7 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
         ICriterion subsettingCriterion = dataset.getUserSubsettingClause();
         // To avoid loading models when not necessary
         if (!subsettingCriterion.equals(ICriterion.all())) {
-            SubsettingCoherenceVisitor criterionVisitor = getSubsettingCoherenceVisitor(dataset.getDataModel());
+            SubsettingCoherenceVisitor criterionVisitor = getSubsettingCoherenceVisitor();
             if (!subsettingCriterion.accept(criterionVisitor)) {
                 throw new EntityInvalidException(
                         "Given subsettingCriterion cannot be accepted for the Dataset : " + dataset.getLabel());
@@ -164,9 +185,21 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
         return dataset;
     }
 
-    @Override
-    public SubsettingCoherenceVisitor getSubsettingCoherenceVisitor(String dataModelName) throws ModuleException {
+    private SubsettingCoherenceVisitor getSubsettingCoherenceVisitor() throws ModuleException {
         return new SubsettingCoherenceVisitor(finder);
+    }
+
+    @Override
+    public boolean validateOpenSearchSubsettingClause(String clause) {
+        try {
+            // we have to add "q=" to be able to parse the query
+            ICriterion criterionToBeVisited = openSearchService.parse("q=" + clause);
+            ICriterionVisitor<Boolean> visitor = getSubsettingCoherenceVisitor();
+            return criterionToBeVisited.accept(visitor);
+        } catch (ModuleException mex) {
+            LOGGER.error("Subsetting clause validation throw exception", mex);
+            return Boolean.FALSE;
+        }
     }
 
     @Override
@@ -217,8 +250,8 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
     }
 
     @Override
-    public Page<AttributeModel> getAttributeModels(Set<UniformResourceName> urns, Set<String> modelNames, Pageable pageable)
-            throws ModuleException {
+    public Page<AttributeModel> getAttributeModels(Set<UniformResourceName> urns, Set<String> modelNames,
+            Pageable pageable) throws ModuleException {
         Page<AttributeModel> attModelPage;
         if (((modelNames == null) || modelNames.isEmpty()) && ((urns == null) || urns.isEmpty())) {
             // Retrieve all dataset models attributes
@@ -229,7 +262,8 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
             if ((modelNames == null) || modelNames.isEmpty()) {
                 // Retrieve all attributes associated to the given datasets
                 List<Dataset> datasets = datasetRepository.findByIpIdIn(urns);
-                Set<String> dsModelNames = datasets.stream().map(ds -> ds.getModel().getName()).collect(Collectors.toSet());
+                Set<String> dsModelNames = datasets.stream().map(ds -> ds.getModel().getName())
+                        .collect(Collectors.toSet());
                 attModelPage = modelAttributeService.getAttributeModels(dsModelNames, pageable);
             } else {
                 // Retrieve all attributes associated to the given models.

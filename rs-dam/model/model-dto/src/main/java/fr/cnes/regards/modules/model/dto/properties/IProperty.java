@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.google.gson.JsonElement;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Range;
@@ -738,7 +739,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return att;
     }
 
-    public static JsonProperty buildJson(String name, JsonObject value) {
+    public static JsonProperty buildJson(String name, JsonElement value) {
         JsonProperty att = new JsonProperty();
         att.setName(name);
         att.setValue(value);

@@ -228,7 +228,7 @@ function nightly {
 
     set -x
     mvn -B -P delivery,CI \
-        clean package \
+        clean verify \
         org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
 	sonar:sonar \
         -Dsonar.jacoco.reportPath="${SERVICES}/target/coverage-reports/jacoco-ut.exec" \

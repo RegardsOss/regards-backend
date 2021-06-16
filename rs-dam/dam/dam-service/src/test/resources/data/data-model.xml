@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 
+	Last changes :
+-->
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
+	<name>DATAOO1</name>
+	<description>Hydrology data model</description>
+	<version>0.1.0</version>
+	<type>DATA</type>
+	<attribute>
+		<label>DateTime</label>
+		<name>datetime</name>
+		<type>DATE_ISO8601</type>
+	</attribute>
+	<attribute>
+		<label>Start dateTime</label>
+		<name>start_datetime</name>
+		<type>DATE_ISO8601</type>
+	</attribute>
+	<attribute>
+		<label>End dateTime</label>
+		<name>end_datetime</name>
+		<type>DATE_ISO8601</type>
+	</attribute>
+	<attribute>
+		<label>Platform</label>
+		<name>platform</name>
+		<type>STRING</type>
+	</attribute>
+	<attribute>
+		<label>Instruments</label>
+		<name>instruments</name>
+		<description>Name of instruments or sensors used</description>
+		<type>STRING_ARRAY</type>		
+	</attribute>
+	<attribute>
+		<label>Mission</label>
+		<name>mission</name>
+		<description>Name of the mission for which data is collected</description>
+		<type>STRING</type>		
+	</attribute>
+	<attribute>
+		<label>Version</label>
+		<name>version</name>
+		<description>Product counter</description>
+		<type>STRING</type>
+	</attribute>
+	<!-- Providers -->
+	<attribute optional="true">
+		<label>Providers</label>
+		<name>providers</name>
+		<type>JSON</type>
+		<restriction>
+			<json_schema><![CDATA[ {
+				"$schema": "http://json-schema.org/draft-07/schema#",
+				"$id": "https://schemas.stacspec.org/v1.0.0/item-spec/json-schema/provider.json#",
+				"title": "Providers",
+				"type": "array",
+				"items": {
+					"type": "object",
+					"required": [
+						"name"
+					],
+					"properties": {
+						"name": {
+							"title": "Organization name",
+							"type": "string",
+							"minLength": 1
+						},
+						"description": {
+							"title": "Organization description",
+							"type": "string"
+						},
+						"roles": {
+							"title": "Organization roles",
+							"type": "array",
+							"items": {
+								"type": "string",
+								"enum": [
+									"producer",
+									"licensor",
+									"processor",
+									"host"
+								]
+							}
+						},
+						"url": {
+							"title": "Organization homepage",
+							"type": "string",
+							"format": "iri"
+						}
+					}
+				}
+			}]]></json_schema>
+		</restriction>
+	</attribute>
+	<fragment>
+        <name>hydro</name>
+		<description>Extension STAC : Extension about hydrology</description>
+        <attribute optional="true">
+			<label>Data type</label>
+			<name>data_type</name>
+			<type>STRING</type>
+		</attribute>        
+        <attribute>
+			<label>Variables</label>
+			<name>variables</name>
+			<type>STRING_ARRAY</type>
+		</attribute>        
+        <attribute optional="true">
+			<label>Categories</label>
+			<name>categories</name>
+			<type>STRING_ARRAY</type>
+		</attribute> 
+    </fragment>
+	<fragment>
+        <name>spatial</name>
+		<description>Extension STAC : Extension about spatial data</description>
+        <attribute optional="true">
+			<label>Cycle ID</label>
+			<name>cycle_id</name>
+			<type>INTEGER</type>
+		</attribute>
+        <attribute optional="true">
+			<label>CRID</label>
+			<name>crid</name>
+			<type>STRING</type>
+			<restriction>
+				<pattern>[DPTVX][GIO][A-Z0-9]{2}[A-Z0-9]{0,2}</pattern>
+			</restriction>
+		</attribute>
+		<attribute optional="true">
+			<label>Pass ID</label>
+			<name>pass_id</name>
+			<type>INTEGER</type>
+			<restriction>
+				<integer_range>
+					<min>1</min>
+					<max>584</max>
+				</integer_range>
+			</restriction>
+		</attribute>
+		<attribute optional="true">
+			<label>Tile ID</label>
+			<name>tile_id</name>
+			<type>INTEGER</type>
+			<restriction>
+				<integer_range>
+					<min>1</min>
+					<max>308</max>
+				</integer_range>
+			</restriction>
+		</attribute> 
+		<attribute optional="true">
+			<label>Tile side</label>
+			<name>tile_side</name>
+			<type>STRING</type>
+			<restriction>
+				<enumeration>
+					<value>Full</value>
+					<value>Left</value>
+					<value>Right</value>
+				</enumeration>
+			</restriction>
+		</attribute>
+		<attribute optional="true">
+			<label>Bassin ID</label>
+			<name>bassin_id</name>
+			<type>STRING</type>
+		</attribute>
+		<attribute optional="true">
+			<label>Continent ID</label>
+			<name>continent_id</name>
+			<type>STRING</type>
+			<restriction>
+				<enumeration>
+					<value>AF</value>
+					<value>AU</value>
+					<value>EU</value>
+					<value>GR</value>
+					<value>NA</value>
+					<value>SA</value>
+					<value>SI</value>
+				</enumeration>
+			</restriction>
+		</attribute>
+		<attribute optional="true">
+			<label>Scene ID</label>
+			<name>scene_id</name>
+			<type>INTEGER</type>
+		</attribute>
+    </fragment>
+	<fragment>
+		<name>dcs</name>
+		<description>Extension STAC : Extension about data characteristics</description>
+		<attribute>
+			<label>Origin</label>
+			<name>origin</name>
+			<type>STRING</type>
+		</attribute>
+		<attribute>
+			<label>Techno ID</label>
+			<name>techno_id</name>
+			<type>STRING</type>
+			<restriction>
+				<enumeration>
+					<value>spatial</value>
+					<value>model</value>
+					<value>in-situ</value>
+				</enumeration>
+			</restriction>
+		</attribute>
+		<attribute optional="true">
+			<label>Reference catalog</label>
+			<name>reference_catalog</name>
+			<description>If HYSOPE2 only references metadata without giving access to physical data, this field indicates which catalog contains data.</description>
+			<type>STRING</type>			
+		</attribute>
+	</fragment>
+</model>

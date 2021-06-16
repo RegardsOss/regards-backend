@@ -107,6 +107,9 @@ public interface RandomGenerator<T> {
             case PROPERTY:
                 rg = new PropertyGenerator(fd, propertyGetter);
                 break;
+            case CRID:
+                rg = new RandomCrid(fd);
+                break;
             default:
                 throw new IllegalArgumentException(String.format("Unsupported function %s", fd.getType()));
         }

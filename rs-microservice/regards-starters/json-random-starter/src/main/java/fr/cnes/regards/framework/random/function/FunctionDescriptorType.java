@@ -32,6 +32,7 @@ public enum FunctionDescriptorType {
     STRING("string"),
     STRING_FORMAT("format"),
     URN("urn"),
+    CRID("crid"),
     UUID("uuid"),
     PROPERTY("property");
 
