@@ -24,6 +24,8 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
@@ -320,5 +322,9 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
             default:
                 break;
         }
+    }
+
+    public void waitJobDone(JobInfo jobInfo, JobStatus jobStatus, long timeout) {
+        this.ingestServiceTest.waitJobDone(jobInfo, jobStatus, timeout);
     }
 }

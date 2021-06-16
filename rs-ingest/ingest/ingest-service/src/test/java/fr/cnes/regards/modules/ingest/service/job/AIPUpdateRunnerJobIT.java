@@ -28,6 +28,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -73,7 +76,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
                 "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
-public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
+public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
 
@@ -195,26 +198,6 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         } while (true);
     }
 
-    protected void runAndWaitJob(Collection<JobInfo> jobs) {
-        // Run Job and wait for end
-        String tenant = runtimeTenantResolver.getTenant();
-        try {
-            Iterator<JobInfo> it = jobs.iterator();
-            List<RunnableFuture<Void>> list = Lists.newArrayList();
-            while (it.hasNext()) {
-                list.add(jobService.runJob(it.next(), tenant));
-            }
-            for (RunnableFuture<Void> futur : list) {
-                futur.get();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            LOGGER.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        } finally {
-            runtimeTenantResolver.forceTenant(tenant);
-        }
-    }
-
     /**
      * Test to add/remove TAGS and categories to an existing list of AIPs.
      * @throws ModuleException
@@ -239,7 +222,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         long nbTasksPerSip = 5;
         waitForUpdateTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
         JobInfo updateJob = aipUpdateService.scheduleJob();
-        runAndWaitJob(Lists.newArrayList(updateJob));
+        waitJobDone(updateJob, JobStatus.SUCCEEDED, 5_000);
 
         Page<AIPEntity> aips = aipService
                 .findByFilters(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
@@ -288,7 +271,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
 
         JobInfo updateJob = aipUpdateService.scheduleJob();
         Assert.assertNotNull("One update job should be scheduled", updateJob);
-        runAndWaitJob(Lists.newArrayList(updateJob));
+        waitJobDone(updateJob, JobStatus.SUCCEEDED, 5_000);
 
         // Check that the new location is added to the AIP in DB.
         aips = aipService.findByFilters(SearchAIPsParameters.build().withProviderId(providerId), PageRequest.of(0, 10));

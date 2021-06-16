@@ -29,6 +29,9 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
@@ -402,6 +405,22 @@ public class IngestServiceTest {
             toSend.add(IngestRequestFlowItem.build(mtd, sip));
         }
         publisher.publish(toSend);
+    }
+
+    public void waitJobDone(JobInfo jobInfo, JobStatus status, long timeout) {
+        boolean done = false;
+        long start = System.currentTimeMillis();
+        JobInfo ji = null;
+        do {
+            ji = jobInfoRepository.findCompleteById(jobInfo.getId());
+            if (ji.getStatus().getStatus() == status) {
+                done = true;
+            }
+        }while (!done && (System.currentTimeMillis() < (start + timeout)));
+
+        if (!done) {
+            Assert.assertEquals("Job info is not in expected status", ji.getStatus().getStatus(), jobInfo.getStatus().getStatus());
+        }
     }
 
 }
