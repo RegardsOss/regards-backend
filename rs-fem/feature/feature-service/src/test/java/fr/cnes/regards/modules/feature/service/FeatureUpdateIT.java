@@ -467,7 +467,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(0);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -508,7 +508,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(0);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -541,7 +541,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     private void checkOneUpdate(int requestCount) throws InterruptedException {
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(0);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -586,7 +586,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         waitForStep(featureUpdateRequestRepository, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(0);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();

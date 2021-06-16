@@ -18,6 +18,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.assertj.core.util.Lists;
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
+import org.awaitility.core.ConditionEvaluationListener;
+import org.awaitility.core.EvaluatedCondition;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -722,13 +726,21 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         featureSettingsNotificationService.setActiveNotification(value);
     }
 
-    protected void computeSessionStep() throws InterruptedException {
-        computeSessionStep(owner, session);
+    protected void computeSessionStep(int nbStepsRequired) throws InterruptedException {
+        computeSessionStep(nbStepsRequired, owner, session);
     }
 
-    protected void computeSessionStep(String source, String session) throws InterruptedException {
+    private boolean expectSteps(int nbStepsRequired) {
+        this.runtimeTenantResolver.forceTenant(getDefaultTenant());
+        return stepPropertyUpdateRequestRepository.findAll().size() >= nbStepsRequired;
+    }
+
+    protected void computeSessionStep(int nbStepsRequired, String source, String session) throws InterruptedException {
         OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
-        OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(60);
+        OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(120);
+        if (nbStepsRequired > 0) {
+                Awaitility.await().atMost(Durations.TEN_SECONDS).with().until(() -> this.expectSteps(nbStepsRequired));
+        }
         boolean done = false;
         do {
             agentSnapshotJobService.scheduleJob();
@@ -750,6 +762,10 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                 }
             }
         } while (!done && OffsetDateTime.now(ZoneOffset.UTC).isAfter(end));
+
+        if (!done) {
+            LOGGER.warn("Session step not computed !");
+        }
     }
 
 }

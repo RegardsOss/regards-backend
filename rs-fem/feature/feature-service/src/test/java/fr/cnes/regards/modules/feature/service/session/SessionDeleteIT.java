@@ -47,8 +47,8 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
         TimeUnit.SECONDS.sleep(20);
         Assertions.assertEquals(4, featureEntityRepository.findAll().size());
         Assertions.assertEquals(0, featureEntityRepository.findBySessionOwner(SOURCE1, Pageable.unpaged()).getTotalElements());
-        computeSessionStep(SOURCE1, SESSION1);
-        computeSessionStep(SOURCE1, SESSION2);
+        computeSessionStep(0,SOURCE1, SESSION1);
+        computeSessionStep(0,SOURCE1, SESSION2);
         SessionStep sessionStep = getSessionStep(SOURCE1, SESSION1);
         checkKey(0, "referencedProducts", sessionStep.getProperties());
         sessionStep = getSessionStep(SOURCE1, SESSION2);
@@ -61,8 +61,8 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
         TimeUnit.SECONDS.sleep(20);
         Assertions.assertEquals(6, featureEntityRepository.findAll().size());
         Assertions.assertEquals(0, featureEntityRepository.findBySessionOwnerAndSession(SOURCE1, SESSION1, Pageable.unpaged()).getTotalElements());
-        computeSessionStep(SOURCE1, SESSION1);
-        computeSessionStep(SOURCE1, SESSION2);
+        computeSessionStep(0,SOURCE1, SESSION1);
+        computeSessionStep(0,SOURCE1, SESSION2);
         SessionStep sessionStep = getSessionStep(SOURCE1, SESSION1);
         checkKey(0, "referencedProducts", sessionStep.getProperties());
         sessionStep = getSessionStep(SOURCE1, SESSION2);

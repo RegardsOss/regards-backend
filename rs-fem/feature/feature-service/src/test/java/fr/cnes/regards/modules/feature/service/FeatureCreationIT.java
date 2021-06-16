@@ -485,11 +485,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(requestCount * 4);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(requestCount * 4, requests.size());
         checkRequests(requestCount * 3, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(requestCount, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(requestCount, property("referencingRequests"), requests);
@@ -519,11 +518,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(requestCount * 4);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(requestCount * 4, requests.size());
         checkRequests(requestCount * 3, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(requestCount, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(requestCount, property("referencingRequests"), requests);
@@ -564,11 +562,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep((requestCount * 4) + 4);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals((requestCount * 4) + 4, requests.size());
         checkRequests((requestCount * 3) + 2, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(requestCount + 2, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(requestCount, property("referencingRequests"), requests);
@@ -603,11 +600,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep((requestCount * 4) + 2);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals((requestCount * 4) + 2, requests.size());
         checkRequests(requestCount * 3, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(requestCount + 2, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(requestCount + 1, property("referencingRequests"), requests);
@@ -620,7 +616,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         // Check Session step
         SessionStep sessionStep = getSessionStep();
         Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(requestCount - 1, sessionStep.getInputRelated());
+        Assertions.assertEquals(requestCount - 1 , sessionStep.getInputRelated());
         Assertions.assertEquals(requestCount - 1, sessionStep.getOutputRelated());
         SessionStepProperties sessionStepProperties = sessionStep.getProperties();
         Assertions.assertEquals(4, sessionStepProperties.size());
@@ -644,11 +640,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(8);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(8, requests.size());
         checkRequests(5, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(3, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -682,11 +677,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(6);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(6, requests.size());
         checkRequests(3, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(3, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(2, property("referencingRequests"), requests);
@@ -726,11 +720,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_STORAGE_ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(requestCount * 4);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(requestCount * 4, requests.size());
         checkRequests(requestCount * 3, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(requestCount, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(requestCount, property("referencingRequests"), requests);
@@ -761,11 +754,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep();
+        computeSessionStep(4);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(4, requests.size());
         checkRequests(3, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(1, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);

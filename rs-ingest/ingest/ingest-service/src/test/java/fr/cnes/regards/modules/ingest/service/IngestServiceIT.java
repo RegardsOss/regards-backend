@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -128,15 +130,19 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
 
         // A post process request should be created
-        Assert.assertEquals("There should be one post process request created", 1L, postProcessRepo.count());
+        Awaitility.await().atMost(Durations.TEN_SECONDS).with().until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return postProcessRepo.count() == 1L;
+        });
 
         // wait for postprocessing job scheduling
-        Thread.sleep(2_000);
-        Assert.assertEquals(1L,
-                            jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.QUEUED,
-                                                             JobStatus.TO_BE_RUN, JobStatus.PENDING, JobStatus.RUNNING,
-                                                             JobStatus.SUCCEEDED)
-                                    .longValue());
+        Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.QUEUED,
+                                             JobStatus.TO_BE_RUN, JobStatus.PENDING, JobStatus.RUNNING,
+                                             JobStatus.SUCCEEDED)
+                    .longValue() == 1L;
+        });
     }
 
     @Test
