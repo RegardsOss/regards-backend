@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.validation.Errors;
+
+import java.util.Set;
 
 /**
  * Qualified interface for Dataset entity service
@@ -40,6 +39,20 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 public interface IDatasetService extends IEntityService<Dataset> {
 
     /**
+     * Create a dataset
+     */
+    Dataset createDataset(Dataset dataset, Errors errors) throws ModuleException;
+
+    /**
+     * Update dataset
+     * @param datasetId internal identifier
+     * @param dataset the dataset to update
+     * @param errors validation errors
+     * @return updated dataset
+     */
+    Dataset updateDataset(Long datasetId, Dataset dataset, Errors errors) throws ModuleException;
+
+    /**
      * Extract the AttributeModel of {@link DataObject} that can be contained into datasets. <br/>
      * If pUrns is null or empty AND pModelName is null then the scope of datasets is not restrained.<br/>
      * If pUrns is not null and not empty AND pModelName is not null then we only consider pModelName.<br/>
@@ -47,7 +60,8 @@ public interface IDatasetService extends IEntityService<Dataset> {
      * model.<br/>
      * If pUrns is not null and not empty AND pModelName is null then the scope of datasets is restrained to all the
      * datasets represented by the given urns
-     * @param pUrns {@link UniformResourceName}s
+     *
+     * @param pUrns      {@link UniformResourceName}s
      * @param modelNames
      * @param pPageable
      * @return {@link AttributeModel}s
@@ -58,6 +72,7 @@ public interface IDatasetService extends IEntityService<Dataset> {
 
     /**
      * Retrieve {@link AttributeModel}s associated to the given {@link Dataset}s or {@link Model}s given.
+     *
      * @param pUrns
      * @param modelNames
      * @param pPageable
@@ -68,16 +83,16 @@ public interface IDatasetService extends IEntityService<Dataset> {
             throws ModuleException;
 
     /**
-     * Build a criterion visitor allowing us to check if a criterion is valid or not
+     * Validate clause
      *
-     * @param dataModelName modelName towards which we should check coherence
-     * @return visitor to perform a coherence check
-     * @throws ModuleException if the model cannot be retrieve
+     * @param clause to be validate
+     * @return true if clause is valid, false otherwise
      */
-    ICriterionVisitor<Boolean> getSubsettingCoherenceVisitor(String dataModelName) throws ModuleException;
+    boolean validateOpenSearchSubsettingClause(String clause);
 
     /**
      * Get the number of datasets associated to a given datasource plugin configuration.
+     *
      * @param dataSourcePluginConfId identifier of the {@link PluginConfiguration} of the datasource
      * @return number of datasets.
      */

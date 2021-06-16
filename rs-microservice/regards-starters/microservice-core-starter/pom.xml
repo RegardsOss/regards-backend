@@ -83,7 +83,12 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>cloud-regards-starter</artifactId>
-        </dependency>
+	    </dependency>
+		<!-- Micrometer Prometheus registry -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>        
     </dependencies>
 
 </project>

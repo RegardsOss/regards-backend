@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.model.dto.properties;
 
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
-public class JsonProperty extends AbstractProperty<JsonObject> {
+public class JsonProperty extends AbstractProperty<JsonElement> {
 
     @Override
     public PropertyType getType() {
