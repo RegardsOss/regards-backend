@@ -32,4 +32,8 @@ public interface IJobService {
 
     RunnableFuture<Void> runJob(JobInfo jobInfo, String tenant);
 
+    /**
+     * For test purpose, allow to reset the job service threadPool
+     */
+    void cleanAndRestart();
 }

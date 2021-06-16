@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.service.delete.SessionDeleteEventHandler;
@@ -86,7 +87,6 @@ import org.springframework.test.context.TestPropertySource;
  *
  * @author Marc SORDI
  */
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
 public abstract class IngestMultitenantServiceTest extends AbstractMultitenantServiceTest {
@@ -135,9 +135,14 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     @Autowired
     protected IAbstractRequestRepository abstractRequestRepository;
 
+    @Autowired
+    protected IJobService jobService;
+
     @Before
     public void init() throws Exception {
+        LOGGER.info("-------------> Test initialization !!!");
         // clear AMQP queues and repositories
+        jobService.cleanAndRestart();
         ingestServiceTest.init();
         ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
 

@@ -131,7 +131,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals("There should be one post process request created", 1L, postProcessRepo.count());
 
         // wait for postprocessing job scheduling
-        Thread.sleep(FIVE_SECONDS);
+        Thread.sleep(2_000);
         Assert.assertEquals(1L,
                             jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.QUEUED,
                                                              JobStatus.TO_BE_RUN, JobStatus.PENDING, JobStatus.RUNNING,

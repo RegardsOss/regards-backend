@@ -3,12 +3,7 @@ package fr.cnes.regards.framework.modules.jobs.service;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -305,6 +300,19 @@ public class JobService implements IJobService {
             runtimeTenantResolver.clearTenant();
         }
         return future;
+    }
+
+    public void cleanAndRestart() {
+        List<Runnable> runables = threadPool.shutdownNow();
+        LOGGER.info("Waiting 60s max for {} jobs to be terminated...",runables.size());
+        try {
+            threadPool.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.warn("Waiting task interrupted");
+        }
+        threadPool = null;
+        this.init();
+        LOGGER.info("JOB Service reinitialized and all jobs stopped !");
     }
 
     /**
