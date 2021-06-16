@@ -25,14 +25,12 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to launch {@link AgentCleanSessionStepJob}
  *
  * @author Iliana Ghazali
  **/
-@Service
 @MultitenantTransactional
 public class AgentCleanSessionStepJobService {
 

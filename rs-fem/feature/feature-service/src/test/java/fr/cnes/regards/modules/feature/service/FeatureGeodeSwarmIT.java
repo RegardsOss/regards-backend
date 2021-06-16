@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode_swarm",
                 "regards.amqp.enabled=true", "regards.tenant=project1" },
         locations = { "classpath:regards_geode.properties", "classpath:batch.properties" })
-@ActiveProfiles(value = { "testAmqp", "nohandler", "noscheduler" })
+@ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureGeodeSwarmIT.class);

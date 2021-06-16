@@ -72,7 +72,7 @@ import static org.junit.Assert.fail;
 
 @TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true"},
         locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
-@ActiveProfiles(value = {"testAmqp", "noscheduler", "nohandler"})
+@ActiveProfiles(value = {"testAmqp", "noscheduler", "noFemHandler"})
 public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
     @SpyBean

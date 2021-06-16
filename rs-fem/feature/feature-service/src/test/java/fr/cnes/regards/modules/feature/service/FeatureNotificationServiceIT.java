@@ -97,7 +97,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         int numberFeature = 2;
         List<Feature> featuresNotified = doNotificationProcess(numberFeature);
 
-        Mockito.verify(publisher, Mockito.times(3)).publish(recordsCaptor.capture());
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(recordsCaptor.capture());
         // the first publish message to be intercepted must be the creation of createdEntity
         assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
                 FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(0).getMetadata().toString());

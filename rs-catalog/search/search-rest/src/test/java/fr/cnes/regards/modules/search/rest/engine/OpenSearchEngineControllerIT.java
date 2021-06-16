@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.rest.engine;
 
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
@@ -37,7 +38,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.net.HttpHeaders;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -301,19 +301,19 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         Assert.assertNotNull(startDate);
         Assert.assertNotNull(stopDate);
 
-        customizer.expect(
-                          MockMvcResultMatchers
-                                  .xpath(atomUrl
-                                          + String.format("/Parameter[@name='debut' and @minInclusive='%s']",
-                                                          OffsetDateTimeAdapter
-                                                                  .format((OffsetDateTime) startDate.getValue())))
-                                  .exists());
-        customizer.expect(
-                          MockMvcResultMatchers
-                                  .xpath(atomUrl + String.format("/Parameter[@name='fin' and @maxInclusive='%s']",
-                                                                 OffsetDateTimeAdapter
-                                                                         .format((OffsetDateTime) stopDate.getValue())))
-                                  .exists());
+        OffsetDateTime start = (OffsetDateTime) startDate.getValue();
+        OffsetDateTime stop = (OffsetDateTime) stopDate.getValue();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        customizer
+                .expect(MockMvcResultMatchers
+                        .xpath(atomUrl + String.format("/Parameter[@name='debut' and @minInclusive='%s']",
+                                                       fmt.format(start.withOffsetSameInstant(ZoneOffset.UTC))))
+                        .exists());
+        customizer
+                .expect(MockMvcResultMatchers
+                        .xpath(atomUrl + String.format("/Parameter[@name='fin' and @maxInclusive='%s']",
+                                                       fmt.format(stop.withOffsetSameInstant(ZoneOffset.UTC))))
+                        .exists());
 
         // customizer.addParameter("token", "public_token");
 

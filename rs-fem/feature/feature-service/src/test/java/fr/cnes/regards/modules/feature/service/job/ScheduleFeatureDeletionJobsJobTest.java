@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.feature.service.IFeatureService;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job_test",
         "regards.amqp.enabled=true", "regards.feature.deletion.notification.job.size=30" })
-@ActiveProfiles(value = { "testAmqp", "nohandler", "noscheduler" })
+@ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class ScheduleFeatureDeletionJobsJobTest extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired

@@ -80,7 +80,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
                 "regards.feature.metrics.enabled=true" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
-@ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 

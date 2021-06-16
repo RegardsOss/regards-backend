@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version"
         //        , "spring.jpa.show-sql=true"
 })
-@ActiveProfiles(value = { "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureVersionTest extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired

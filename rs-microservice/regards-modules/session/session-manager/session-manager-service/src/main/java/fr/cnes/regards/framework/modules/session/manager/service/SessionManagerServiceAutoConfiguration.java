@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerS
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Autoconfiguration for session management service
@@ -50,6 +51,7 @@ public class SessionManagerServiceAutoConfiguration {
      * Update
      */
     @Bean
+    @Profile("!noscheduler")
     public ManagerSnapshotScheduler managerScheduler() {
         return new ManagerSnapshotScheduler();
     }
@@ -69,6 +71,7 @@ public class SessionManagerServiceAutoConfiguration {
      */
 
     @Bean
+    @Profile("!noscheduler")
     public ManagerCleanScheduler managerCleanScheduler() {
         return new ManagerCleanScheduler();
     }
@@ -84,6 +87,7 @@ public class SessionManagerServiceAutoConfiguration {
     }
 
     @Bean
+    @Profile("!noscheduler")
     public ManagerCleanSnapshotProcessScheduler managerCleanSnapshotProcessScheduler() {
         return new ManagerCleanSnapshotProcessScheduler();
     }
@@ -102,6 +106,7 @@ public class SessionManagerServiceAutoConfiguration {
      * Handler
      */
     @Bean
+    @Profile("!nohandler")
     public SessionManagerHandler managerHandler() {
         return new SessionManagerHandler();
     }

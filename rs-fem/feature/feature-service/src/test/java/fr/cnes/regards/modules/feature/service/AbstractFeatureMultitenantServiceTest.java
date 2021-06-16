@@ -541,8 +541,11 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return factory;
     }
 
-    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
-            boolean override) {
+    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate, boolean override) {
+        return initFeatureCreationRequestEvent(featureNumberToCreate, override, owner, session);
+    }
+
+    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate, boolean override, String source, String session) {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
         FeatureCreationRequestEvent toAdd;
@@ -564,15 +567,14 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                                                                  1024L, "MD5", "checksum"),
                                      FeatureFileLocation.build("www.google.com", "GPFS"));
 
-            featureToAdd = Feature.build("id" + i, owner, null, IGeometry.point(IGeometry.position(10.0, 20.0)),
-                                         EntityType.DATA, model)
-                    .withFiles(file);
+            featureToAdd = Feature.build("id" + i, source, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model).withFiles(file);
             featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
             featureToAdd.addProperty(IProperty.buildObject("file_characterization",
                                                            IProperty.buildBoolean("valid", Boolean.TRUE)));
 
-            toAdd = FeatureCreationRequestEvent.build(owner, FeatureCreationSessionMetadata
-                    .build(owner, session, PriorityLevel.NORMAL, Lists.emptyList(), override), featureToAdd);
+            toAdd = FeatureCreationRequestEvent.build(source,
+                                                      FeatureCreationSessionMetadata.build(source, session, PriorityLevel.NORMAL, Lists.emptyList(), override),
+                                                      featureToAdd);
             toAdd.setRequestId(String.valueOf(i));
             toAdd.setFeature(featureToAdd);
             toAdd.setRequestDate(OffsetDateTime.now().minusDays(1));
@@ -582,10 +584,16 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return events;
     }
 
-    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles,
-            int featureToCreateNumber, boolean isToNotify, boolean override) throws InterruptedException {
+    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles, int featureToCreateNumber, boolean isToNotify, boolean override)
+            throws InterruptedException {
+        return prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, override, owner, session);
+    }
 
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, override);
+    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles, int featureToCreateNumber, boolean isToNotify, boolean override,
+                                                                        String source, String session
+    ) throws InterruptedException {
+
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, override, source, session);
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features
@@ -604,12 +612,12 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         int cpt = 0;
         long featureNumberInDatabase;
         do {
-            featureNumberInDatabase = this.featureRepo.count();
+            featureNumberInDatabase = featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged()).getTotalElements();
             TimeUnit.MILLISECONDS.sleep(1000);
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != featureToCreateNumber));
 
-        assertEquals(featureToCreateNumber, this.featureRepo.count());
+        assertEquals(featureToCreateNumber, featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged()).getTotalElements());
 
         // in that case all features hasn't been saved
         if (cpt == 100) {
@@ -669,14 +677,17 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected List<FeatureUpdateRequestEvent> prepareUpdateRequests(List<FeatureUniformResourceName> urns) {
         return featureRepo.findByUrnIn(urns).stream().map(f -> FeatureUpdateRequestEvent
                 .build("test", FeatureMetadata.build(PriorityLevel.NORMAL), f.getFeature())).map(e -> {
-                    e.getFeature().getProperties().clear();
-                    return e;
-                }).collect(Collectors.toList());
+            e.getFeature().getProperties().clear();
+            return e;
+        }).collect(Collectors.toList());
     }
 
     protected SessionStep getSessionStep() {
-        Optional<SessionStep> sessionStepOptional = sessionStepRepository
-                .findBySourceAndSessionAndStepId(owner, session, sessionStepName);
+        return getSessionStep(owner, session);
+    }
+
+    protected SessionStep getSessionStep(String source, String session) {
+        Optional<SessionStep> sessionStepOptional = sessionStepRepository.findBySourceAndSessionAndStepId(source, session, sessionStepName);
         Assertions.assertTrue(sessionStepOptional.isPresent());
         return sessionStepOptional.get();
     }
@@ -712,20 +723,33 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     }
 
     protected void computeSessionStep() throws InterruptedException {
+        computeSessionStep(owner, session);
+    }
+
+    protected void computeSessionStep(String source, String session) throws InterruptedException {
         OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
-        SessionStep sessionStep;
+        OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(60);
         boolean done = false;
         do {
             agentSnapshotJobService.scheduleJob();
             TimeUnit.SECONDS.sleep(1);
-            sessionStep = sessionStepRepository.findAll().stream().findFirst().orElse(null);
-            if ((sessionStep != null) && (stepPropertyUpdateRequestRepository
-                    .countBySourceAndDateGreaterThanAndDateLessThanEqual(owner, sessionStep.getLastUpdateDate(),
-                                                                         start) == 0)) {
-                done = true;
+            SessionStep step = sessionStepRepository.findBySourceAndLastUpdateDateBefore(source, end, Pageable.unpaged()).getContent()
+                    .stream()
+                    .filter(sessionStep -> sessionStep.getSession().equals(session))
+                    .findFirst()
+                    .orElse(null);
+            if (step != null) {
+                List<StepPropertyUpdateRequest> requests =
+                        stepPropertyUpdateRequestRepository.findBySourceAndDateGreaterThanAndDateLessThanEqual(source, step.getLastUpdateDate(), start, Pageable.unpaged())
+                                .getContent()
+                                .stream()
+                                .filter(request -> request.getSession().equals(session))
+                                .collect(Collectors.toList());
+                if (requests.isEmpty()) {
+                    done = true;
+                }
             }
-
-        } while (!done && OffsetDateTime.now(ZoneOffset.UTC).isBefore(start.plusSeconds(60)));
+        } while (!done && OffsetDateTime.now(ZoneOffset.UTC).isAfter(end));
     }
 
 }

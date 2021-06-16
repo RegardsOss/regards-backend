@@ -53,7 +53,7 @@ import java.util.List;
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_mutation", "regards.amqp.enabled=true" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
-@ActiveProfiles({ "testAmqp", "noscheduler", "nohandler" })
+@ActiveProfiles({ "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
 
     @SuppressWarnings("unused")

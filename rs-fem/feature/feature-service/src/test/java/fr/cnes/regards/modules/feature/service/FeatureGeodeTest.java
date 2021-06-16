@@ -38,7 +38,7 @@ import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode_rc" })
-@ActiveProfiles(value = { "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureGeodeTest extends AbstractFeatureMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureGeodeTest.class);

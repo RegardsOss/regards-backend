@@ -22,20 +22,24 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.session.commons.service.delete.ISourceDeleteService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * TODO
- **/
+import java.util.Optional;
+
 @Service
 @MultitenantTransactional
 public class FeatureSourceDeleteService implements ISourceDeleteService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureSourceDeleteService.class);
 
+    @Autowired
+    private FeatureDeleteService featureDeleteService;
+
     @Override
     public void deleteSource(String source) {
-        LOGGER.info("Event received to program the deletion of all products of source {}", source);
-        // TODO : send requests to delete products from source
+        LOGGER.info("Event received to schedule the deletion of all features of source {}", source);
+        featureDeleteService.scheduleDeletion(source, Optional.empty());
     }
+
 }

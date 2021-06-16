@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_data_object" }, locations = {
         "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
-@ActiveProfiles(value = { "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired

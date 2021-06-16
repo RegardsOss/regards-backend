@@ -34,7 +34,6 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  * Scheduler to handle feature dumps
  * @author Iliana Ghazali
  */
-@Profile("!noscheduler")
 @Component
 public class FeatureSaveMetadataScheduler extends AbstractDumpScheduler {
 

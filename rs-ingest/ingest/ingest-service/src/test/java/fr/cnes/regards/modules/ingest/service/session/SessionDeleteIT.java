@@ -74,16 +74,14 @@ public class SessionDeleteIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() {
-        Mockito.clearInvocations(sourceDeleteService);
-        Mockito.clearInvocations(sessionDeleteService);
         initData();
     }
 
     @Test
-    public void testDeleteSourceOrder() {
+    public void testDeleteSource() {
         // publish source deletion event to delete SOURCE 1
         publisher.publish(new SourceDeleteEvent(SOURCE_1));
-        Mockito.verify(sourceDeleteService, Mockito.times(1)).deleteSource(SOURCE_1);
+        Mockito.verify(sourceDeleteService, Mockito.timeout(1000L).times(1)).deleteSource(SOURCE_1);
 
         // wait for deletion of all aips linked to SOURCE 1
         long wait = FIVE_SECONDS * 10;
@@ -103,10 +101,10 @@ public class SessionDeleteIT extends IngestMultitenantServiceTest {
     }
 
     @Test
-    public void testSessionDeleteOrder() {
+    public void testSessionDelete() {
         // publish session deletion event to delete SESSION 1 of SOURCE 1
         publisher.publish(new SessionDeleteEvent(SOURCE_1, SESSION_1));
-        Mockito.verify(sessionDeleteService, Mockito.times(1)).deleteSession(SOURCE_1, SESSION_1);
+        Mockito.verify(sessionDeleteService, Mockito.timeout(1000L).times(1)).deleteSession(SOURCE_1, SESSION_1);
 
         // wait for deletion of all aips linked to SESSION 1 of SOURCE 1
         long wait = FIVE_SECONDS * 10;

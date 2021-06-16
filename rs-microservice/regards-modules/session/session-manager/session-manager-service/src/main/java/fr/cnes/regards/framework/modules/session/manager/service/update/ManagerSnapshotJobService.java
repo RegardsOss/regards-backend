@@ -33,12 +33,12 @@ import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
+ * Create {@link ManagerSnapshotJob} to create sources and sessions from session steps
+ *
  * @author Iliana Ghazali
  **/
-@Service
 @MultitenantTransactional
 public class ManagerSnapshotJobService {
 

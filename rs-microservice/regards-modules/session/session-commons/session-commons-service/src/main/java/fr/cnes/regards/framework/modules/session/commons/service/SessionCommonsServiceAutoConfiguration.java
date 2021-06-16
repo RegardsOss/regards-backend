@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.session.commons.service.jobs.SnapshotJo
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * @author Iliana Ghazali
@@ -42,11 +43,13 @@ public class SessionCommonsServiceAutoConfiguration {
      */
 
     @Bean
+    @Profile("!nohandler")
     public SessionDeleteEventHandler sessionDeleteEventHandler() {
         return new SessionDeleteEventHandler();
     }
 
     @Bean
+    @Profile("!nohandler")
     public SourceDeleteEventHandler sourceDeleteEventHandler() {
         return new SourceDeleteEventHandler();
     }
@@ -68,6 +71,7 @@ public class SessionCommonsServiceAutoConfiguration {
      */
 
     @Bean
+    @Profile("!nohandler")
     public SnapshotJobEventHandler snapshotJobEventHandler() {
         return new SnapshotJobEventHandler();
     }

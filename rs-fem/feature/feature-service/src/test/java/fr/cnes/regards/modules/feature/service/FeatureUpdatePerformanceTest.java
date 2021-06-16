@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 //                        , "spring.jpa.show-sql=true"
         }, locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
         "classpath:metrics.properties" })
-@ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdatePerformanceTest.class);

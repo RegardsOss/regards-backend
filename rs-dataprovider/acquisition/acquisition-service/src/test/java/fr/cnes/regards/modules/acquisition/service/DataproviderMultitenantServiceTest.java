@@ -17,6 +17,7 @@ package fr.cnes.regards.modules.acquisition.service;/*
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import com.google.common.base.Strings;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -24,13 +25,13 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
@@ -92,9 +93,6 @@ public abstract class DataproviderMultitenantServiceTest extends AbstractMultite
     // SESSION AGENT
     @Autowired
     protected AgentSnapshotService agentService;
-
-    @Autowired
-    protected SessionNotificationHandler notifHandler;
 
     /**
      * Repositories
@@ -188,22 +186,39 @@ public abstract class DataproviderMultitenantServiceTest extends AbstractMultite
 
     public void cleanAMQP() {
         subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
-        cleanAMQPQueues(SessionAgentEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(SessionNotificationHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(StepPropertyUpdateRequestEvent.class, Target.MICROSERVICE, WorkerMode.UNICAST);
     }
 
+    /**
+     * Clean AMQP by default with {@link WorkerMode#BROADCAST}
+     */
+    public void cleanAMQPQueues(Class<?> type, Target target) {
+        cleanAMQPQueues(type, target, WorkerMode.BROADCAST);
+    }
 
     /**
      * Internal method to clean AMQP queues, if actives
+     * @param type handler or event class, depending on the type of event
      */
-    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
+    public void cleanAMQPQueues(Class<?> type, Target target, WorkerMode mode) {
         if (vhostAdmin != null) {
             // Re-set tenant because above simulation clear it!
 
             // Purge event queue
             try {
                 vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
+                // get queue name
+                String queueName = null;
+                if (mode.equals(WorkerMode.BROADCAST)) {
+                    queueName = amqpAdmin.getSubscriptionQueueName((Class<? extends IHandler<?>>) type, target);
+                } else if(mode.equals(WorkerMode.UNICAST)){
+                    queueName = amqpAdmin.getUnicastQueueName(runtimeTenantResolver.getTenant(), type, target);
+                }
+                // clean queue
+                if (!Strings.isNullOrEmpty(queueName)) {
+                    amqpAdmin.purgeQueue(queueName, false);
+                    LOGGER.info("Queue {} was cleaned", queueName);
+                }
             } catch (AmqpIOException e) {
                 LOGGER.warn("Failed to clean AMQP queues", e);
             } finally {
@@ -220,7 +235,6 @@ public abstract class DataproviderMultitenantServiceTest extends AbstractMultite
         snapshotRepo.deleteAllInBatch();
         stepRepo.deleteAllInBatch();
         sessionStepRepo.deleteAllInBatch();
-        notifHandler.clear();
 
         // acquisitions
         acqFileRepository.deleteAllInBatch();

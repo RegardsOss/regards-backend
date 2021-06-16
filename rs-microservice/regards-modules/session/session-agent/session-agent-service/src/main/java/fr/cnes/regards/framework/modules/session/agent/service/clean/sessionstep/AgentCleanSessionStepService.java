@@ -32,7 +32,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
@@ -40,7 +39,6 @@ import org.springframework.stereotype.Service;
  *
  * @author Iliana Ghazali
  **/
-@Service
 @MultitenantTransactional
 public class AgentCleanSessionStepService {
 

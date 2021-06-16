@@ -133,7 +133,7 @@ public class SessionNotifier {
             int nbProducts) {
         if (source != null && session != null) {
             StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                                 new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
+                                                 new StepPropertyInfo(StepTypeEnum.STORAGE, property.getState(),
                                                                       property.getName(), String.valueOf(nbProducts),
                                                                       property.isInputRelated(),
                                                                       property.isOutputRelated()));
@@ -146,7 +146,7 @@ public class SessionNotifier {
             int nbProducts) {
         if (source != null && session != null) {
             StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                                 new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
+                                                 new StepPropertyInfo(StepTypeEnum.STORAGE, property.getState(),
                                                                       property.getName(), String.valueOf(nbProducts),
                                                                       property.isInputRelated(),
                                                                       property.isOutputRelated()));
