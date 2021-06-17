@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,7 +46,7 @@ public interface IDynamicTenantSettingClient {
 
     String UPDATE_PATH = "/{name}";
 
-    @PutMapping(path = ROOT_PATH + UPDATE_PATH)
+    @PutMapping(path = ROOT_PATH + UPDATE_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(@PathVariable(name = "name") String name,
             @RequestBody DynamicTenantSettingDto setting);
 
