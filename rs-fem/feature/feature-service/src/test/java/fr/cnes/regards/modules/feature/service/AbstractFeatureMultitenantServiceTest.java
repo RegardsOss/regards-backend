@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.feature.service;
 
+import static fr.cnes.regards.framework.amqp.event.Target.MICROSERVICE;
 import static fr.cnes.regards.framework.amqp.event.Target.ONE_PER_MICROSERVICE_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -21,6 +22,7 @@ import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.awaitility.core.ConditionEvaluationListener;
+import org.awaitility.core.ConditionTimeoutException;
 import org.awaitility.core.EvaluatedCondition;
 import org.junit.After;
 import org.junit.Assert;
@@ -211,11 +213,12 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     @Before
     public void before() throws Exception {
-        cleanRepo();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         cleanQueues();
+        cleanRepo();
+        setNotificationSetting(true);
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
-        setNotificationSetting(true);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         doInit();
     }
@@ -260,7 +263,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         cleanAMQPQueues(FeatureDeletionRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(NotificationRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FileRequestGroupEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(SessionAgentEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueuesUnicast(getDefaultTenant(), StepPropertyUpdateRequestEvent.class, MICROSERVICE);
     }
 
     // ------------------------
@@ -523,6 +526,25 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     }
 
     /**
+     * Internal method to clean AMQP queues, if actives
+     */
+    public void cleanAMQPQueuesUnicast(String tenant, Class<?> eventType, Target target) {
+        if (vhostAdmin != null) {
+            // Re-set tenant because above simulation clear it!
+
+            // Purge event queue
+            try {
+                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+                amqpAdmin.purgeQueue(amqpAdmin.getUnicastQueueName(tenant, eventType, target), false);
+            } catch (AmqpIOException e) {
+                //todo
+            } finally {
+                vhostAdmin.unbind();
+            }
+        }
+    }
+
+    /**
      * Create features
      * @param nbFeatures number of features to create
      */
@@ -732,14 +754,18 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     private boolean expectSteps(int nbStepsRequired) {
         this.runtimeTenantResolver.forceTenant(getDefaultTenant());
-        return stepPropertyUpdateRequestRepository.findAll().size() >= nbStepsRequired;
+        return stepPropertyUpdateRequestRepository.findAll().size() == nbStepsRequired;
     }
 
     protected void computeSessionStep(int nbStepsRequired, String source, String session) throws InterruptedException {
         OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
         OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(120);
         if (nbStepsRequired > 0) {
+            try {
                 Awaitility.await().atMost(Durations.TEN_SECONDS).with().until(() -> this.expectSteps(nbStepsRequired));
+            } catch (ConditionTimeoutException e) {
+                Assert.assertEquals(nbStepsRequired, stepPropertyUpdateRequestRepository.findAll().size());
+            }
         }
         boolean done = false;
         do {

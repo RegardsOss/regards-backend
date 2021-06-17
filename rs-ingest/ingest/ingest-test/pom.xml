@@ -55,5 +55,9 @@
         <groupId>fr.cnes.regards.framework.test</groupId>
         <artifactId>regards-integration-test</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+    </dependency>
 </dependencies>
 </project>

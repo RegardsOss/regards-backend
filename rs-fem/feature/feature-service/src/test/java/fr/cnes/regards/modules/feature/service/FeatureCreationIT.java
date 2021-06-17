@@ -43,6 +43,8 @@ import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -445,6 +447,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         // check that half of the FeatureCreationRequest with step to LOCAL_SCHEDULED
         // have their priority to HIGH and half to AVERAGE
+        Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED, PageRequest.of(0, properties.getMaxBulkSize())).getTotalElements() == properties.getMaxBulkSize();
+        });
         Page<FeatureCreationRequest> scheduled = featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED, PageRequest.of(0, properties.getMaxBulkSize()));
         int highPriorityNumber = 0;
         int otherPriorityNumber = 0;
@@ -479,7 +485,6 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
     @Test
     public void testSessionNotifierWithNotification() throws InterruptedException {
-
         int requestCount = 10;
         prepareCreationTestData(true, requestCount, true, true);
         waitCreationRequestDeletion(0, 20000);

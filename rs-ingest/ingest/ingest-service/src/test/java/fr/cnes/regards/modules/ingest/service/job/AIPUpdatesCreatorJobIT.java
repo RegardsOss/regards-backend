@@ -38,6 +38,11 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -133,26 +138,14 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
      * @throws InterruptedException
      */
     public void waitForTaskCreated(long expectedTasks, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long taskCount;
-        do {
-            taskCount = aipUpdateRequestRepository.count();
-            LOGGER.debug("{} UpdateRequest(s) created in database", taskCount);
-            if (taskCount == expectedTasks) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
-            }
-        } while (true);
+        try {
+            Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return aipUpdateRequestRepository.count() == expectedTasks;
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.fail(String.format("Timeout waiting for %s update requests", expectedTasks));
+        }
     }
 
     @Test
@@ -182,6 +175,11 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         waitForTaskCreated((nbSipConcerned * nbTasksPerSip) + nbInitialTasks, 10_000);
 
         Pageable pageRequest = PageRequest.of(0, 200);
+        Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED,
+                                                             pageRequest).getTotalElements() >= nbSipConcerned * nbTasksPerSip;
+        });
         Page<AIPUpdateRequest> blocked = aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED,
                                                                                    pageRequest);
         Assert.assertEquals(nbSipConcerned * nbTasksPerSip, blocked.getTotalElements());
