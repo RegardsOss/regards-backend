@@ -289,11 +289,10 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         waitRequest(notificationRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(8);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(8, requests.size());
         checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(2, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -330,11 +329,10 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         waitRequest(notificationRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(12);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(12, requests.size());
         checkRequests(8, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -372,11 +370,10 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         waitRequest(notificationRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(10);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(10, requests.size());
         checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -411,11 +408,10 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         waitForSate(notificationRequestRepo, RequestState.ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(8);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(8, requests.size());
         checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(2, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
