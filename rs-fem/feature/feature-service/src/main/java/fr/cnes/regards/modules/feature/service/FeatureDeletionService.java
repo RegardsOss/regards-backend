@@ -253,7 +253,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                 for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
                     // Build fake incomplete feature
                     Feature fakeFeature = Feature.build(unknown, unknown, fdr.getUrn(), IGeometry.unlocated(), EntityType.DATA, unknown);
-                    fdr.setToNotify(fakeFeature);
+                    fdr.setToNotify(fakeFeature, null, null);
                     fdr.setAlreadyDeleted(true);
                     fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
                     featureDeletionJob.advanceCompletion();
@@ -320,7 +320,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : successfulRequests.entrySet()) {
                 entry.getKey().setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
                 entry.getKey().setAlreadyDeleted(false);
-                entry.getKey().setToNotify(entry.getValue().getFeature());
+                entry.getKey().setToNotify(entry.getValue().getFeature(), entry.getValue().getSessionOwner(), entry.getValue().getSession());
             }
             deletionRepo.saveAll(successfulRequests.keySet());
         } else {
@@ -431,43 +431,51 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                 getSessionInfoByUrn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet()));
         Map<FeatureUniformResourceName, FeatureRequestStep> errorStepByUrn = requests.stream()
                 .collect(Collectors.toMap(FeatureDeletionRequest::getUrn, FeatureDeletionRequest::getLastExecErrorStep));
-        sessionInfoByUrn.forEach((urn, entity) -> {
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_DELETE_REQUESTS);
-            if (FeatureRequestStep.REMOTE_NOTIFICATION_ERROR.equals(errorStepByUrn.get(urn))) {
-                featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
+
+        requests.forEach(r -> {
+            featureSessionNotifier.decrementCount(r.getSourceToNotify(),r.getSessionToNotify(), FeatureSessionProperty.IN_ERROR_DELETE_REQUESTS);
+            if (FeatureRequestStep.REMOTE_NOTIFICATION_ERROR.equals(errorStepByUrn.get(r.getUrn()))) {
+                featureSessionNotifier.incrementCount(r.getSourceToNotify(),r.getSessionToNotify(), FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
             }
         });
     }
 
     @Override
     protected void sessionInfoUpdateForDelete(Collection<FeatureDeletionRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
-                getSessionInfoByUrn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet()));
-        sessionInfoByUrn.forEach((urn, entity) -> {
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_DELETE_REQUESTS);
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.DELETE_REQUESTS);
+        requests.forEach((r) -> {
+            if (r.getSourceToNotify() != null && r.getSessionToNotify() != null) {
+                featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.IN_ERROR_DELETE_REQUESTS);
+                featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.DELETE_REQUESTS);
+            }
         });
     }
 
     @Override
     public void doOnSuccess(Collection<FeatureDeletionRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
-                getSessionInfoByUrn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet()));
-        sessionInfoByUrn.forEach((urn, entity) -> {
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
-            featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.DELETED_PRODUCTS);
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.REFERENCED_PRODUCTS);
+        requests.forEach((r) -> {
+            if (r.getSourceToNotify() != null && r.getSessionToNotify() != null) {
+                featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
+                featureSessionNotifier.incrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.DELETED_PRODUCTS);
+                featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.REFERENCED_PRODUCTS);
+            }
         });
-        featureRepo.deleteAllByUrnIn(sessionInfoByUrn.keySet());
+        featureRepo.deleteAllByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet()));
     }
 
     @Override
     public void doOnError(Collection<FeatureDeletionRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn =
-                getSessionInfoByUrn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet()));
-        sessionInfoByUrn.forEach((urn, entity) -> {
-            featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.IN_ERROR_DELETE_REQUESTS);
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
+        requests.forEach((r) -> {
+            if (r.getSourceToNotify() != null && r.getSessionToNotify() != null) {
+                featureSessionNotifier.incrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.IN_ERROR_DELETE_REQUESTS);
+                featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
+            }
         });
     }
 

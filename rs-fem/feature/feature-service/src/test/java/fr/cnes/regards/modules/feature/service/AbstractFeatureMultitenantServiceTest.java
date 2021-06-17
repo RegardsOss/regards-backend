@@ -216,9 +216,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         cleanQueues();
         cleanRepo();
-        setNotificationSetting(true);
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
+        setNotificationSetting(true);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         doInit();
     }

@@ -395,11 +395,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(13);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(13, requests.size());
         checkRequests(8, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(5, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -438,11 +437,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(10);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(10, requests.size());
         checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -470,11 +468,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
     private void checkOneDeletion() throws InterruptedException {
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(9);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(4 + 5, requests.size());
         checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(3, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -511,11 +508,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         waitForSate(featureDeletionRequestRepo, RequestState.ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(8);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(4 + 4, requests.size());
         checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(2, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
