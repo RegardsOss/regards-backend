@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDe
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,16 +39,26 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
         prepareCreationTestData(true, 2, true, true, SOURCE1, SESSION2);
         prepareCreationTestData(true, 2, true, true, SOURCE2, SESSION1);
         prepareCreationTestData(true, 2, true, true, SOURCE2, SESSION2);
+
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureEntityRepository.findAll().size() == 8;
+        });
+
         waitCreationRequestDeletion(0, 60000);
     }
 
     @Test
     public void testSessionDeleteBySource() throws InterruptedException {
         publisher.publish(new SourceDeleteEvent(SOURCE1));
-        TimeUnit.SECONDS.sleep(20);
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureEntityRepository.findAll().size() == 4;
+        });
         Assertions.assertEquals(4, featureEntityRepository.findAll().size());
         Assertions.assertEquals(0, featureEntityRepository.findBySessionOwner(SOURCE1, Pageable.unpaged()).getTotalElements());
-        computeSessionStep(0,SOURCE1, SESSION1);
+        // 8products *4 (request+running+referenced+running) + 2 deletion event of (2product each)
+        computeSessionStep((8*4) + (2),SOURCE1, SESSION1);
         computeSessionStep(0,SOURCE1, SESSION2);
         SessionStep sessionStep = getSessionStep(SOURCE1, SESSION1);
         checkKey(0, "referencedProducts", sessionStep.getProperties());
@@ -58,10 +69,14 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testSessionDeleteBySourceAndSession() throws InterruptedException {
         publisher.publish(new SessionDeleteEvent(SOURCE1, SESSION1));
-        TimeUnit.SECONDS.sleep(20);
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureEntityRepository.findAll().size() == 6;
+        });
         Assertions.assertEquals(6, featureEntityRepository.findAll().size());
         Assertions.assertEquals(0, featureEntityRepository.findBySessionOwnerAndSession(SOURCE1, SESSION1, Pageable.unpaged()).getTotalElements());
-        computeSessionStep(0,SOURCE1, SESSION1);
+        // 8products *4 (request+running+referenced+running) + 1 deletion event of (2product)
+        computeSessionStep((8*4) + (1),SOURCE1, SESSION1);
         computeSessionStep(0,SOURCE1, SESSION2);
         SessionStep sessionStep = getSessionStep(SOURCE1, SESSION1);
         checkKey(0, "referencedProducts", sessionStep.getProperties());

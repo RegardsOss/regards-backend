@@ -10,10 +10,7 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -121,8 +118,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     private static final String RESOURCE_PATH = "fr/cnes/regards/modules/feature/service/";
 
-    protected final String sessionStepName = (String) ReflectionTestUtils.getField(FeatureSessionNotifier.class,
-                                                                                   "GLOBAL_SESSION_STEP");
+    protected final String sessionStepName = (String) ReflectionTestUtils
+            .getField(FeatureSessionNotifier.class, "GLOBAL_SESSION_STEP");
 
     protected String owner = "owner";
 
@@ -216,9 +213,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         cleanQueues();
         cleanRepo();
-        setNotificationSetting(true);
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
+        setNotificationSetting(true);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         doInit();
     }
@@ -272,41 +269,27 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     /**
      * Wait until feature are properly created
+     *
      * @param expected expected feature number
-     * @param from feature updated after from date. May be <code>null</code>.
-     * @param timeout timeout in milliseconds
+     * @param from     feature updated after from date. May be <code>null</code>.
+     * @param timeout  timeout in milliseconds
      */
     protected void waitFeature(long expected, @Nullable OffsetDateTime from, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long entityCount;
-        do {
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
             if (from != null) {
-                entityCount = featureRepo.countByLastUpdateGreaterThan(from);
+                return expected == featureRepo.countByLastUpdateGreaterThan(from);
             } else {
-                entityCount = featureRepo.count();
+                return expected == featureRepo.count();
             }
-            LOGGER.trace("{} feature(s) created in database", entityCount);
-            if (entityCount == expected) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout only " + entityCount + " feature in database instead of " + expected);
-            }
-        } while (true);
+        });
     }
 
     /**
      * Wait until feature creation request(s) are properly deleted
+     *
      * @param expected expected request number
-     * @param timeout timeout in milliseconds
+     * @param timeout  timeout in milliseconds
      */
     protected void waitCreationRequestDeletion(long expected, long timeout) {
         waitRequest(featureCreationRequestRepo, expected, timeout);
@@ -314,75 +297,42 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     /**
      * Wait until feature update request(s) are properly deleted
+     *
      * @param expected expected request number
-     * @param timeout timeout in milliseconds
+     * @param timeout  timeout in milliseconds
      */
     protected void waitUpdateRequestDeletion(long expected, long timeout) {
         waitRequest(featureUpdateRequestRepo, expected, timeout);
     }
 
     protected void waitRequest(JpaRepository<?, ?> repo, long expected, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long entityCount;
-        do {
-            entityCount = repo.count();
-            LOGGER.trace("{} request(s) remain(s) in database", entityCount);
-            if (entityCount == expected) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(1000);
-                } catch (InterruptedException e) {
-                    LOGGER.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
-                                               entityCount));
-                    Assert.fail(String.format("Thread interrupted {} expected in database, {} really ", expected,
-                                              entityCount));
-
-                }
-            } else {
-                LOGGER.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
-                                           entityCount));
-                Assert.fail("Timeout");
-            }
-        } while (true);
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return repo.count() == expected;
+        });
     }
 
     protected void waitForErrorState(JpaRepository<? extends AbstractRequest, ?> repo) throws InterruptedException {
-
-        int cpt = 0;
-        // we will expect that all feature reference remain in database with the error state
-        do {
-            TimeUnit.MILLISECONDS.sleep(1000);
-            if (cpt == 60) {
-                fail("Timeout");
-            }
-            cpt++;
-        } while (!repo.findAll().stream().allMatch(request -> RequestState.ERROR.equals(request.getState())));
+        Awaitility.await().atMost(Durations.ONE_MINUTE).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return repo.findAll().stream().allMatch(request -> RequestState.ERROR.equals(request.getState()));
+        });
     }
 
     protected void waitForStep(JpaRepository<? extends AbstractRequest, ?> repository, FeatureRequestStep step,
             int count, int timeout) throws InterruptedException {
-        Instant start = Instant.now();
-        while (repository.findAll().stream().filter(item -> step.equals(item.getStep())).count() != count) {
-            TimeUnit.SECONDS.sleep(1);
-            if (Instant.now().isAfter(start.plusSeconds(timeout))) {
-                fail("Timeout reached waiting for FeatureRequest : " + step);
-            }
-        }
+        Awaitility.await().atMost(Durations.ONE_MINUTE).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return repository.findAll().stream().filter(item -> step.equals(item.getStep())).count() == count;
+        });
     }
 
     protected void waitForSate(JpaRepository<? extends AbstractRequest, ?> repository, RequestState state, int count,
             int timeout) throws InterruptedException {
-        Instant start = Instant.now();
-        while (repository.findAll().stream().filter(item -> state.equals(item.getState())).count() != count) {
-            TimeUnit.SECONDS.sleep(1);
-            if (Instant.now().isAfter(start.plusSeconds(timeout))) {
-                fail("Timeout reached waiting for FeatureState  : " + state);
-            }
-        }
+        Awaitility.await().atMost(Durations.ONE_MINUTE).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return repository.findAll().stream().filter(item -> state.equals(item.getState())).count() == count;
+        });
     }
 
     // ------------------------
@@ -451,8 +401,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             // find first page of requests to handle
             fcrPage = featureCreationRequestRepo.findByStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED, pageToRequest);
             // simulate storage response
-            featureRequestService.handleStorageSuccess(fcrPage.stream().map(AbstractFeatureRequest::getGroupId)
-                    .collect(Collectors.toSet()));
+            featureRequestService.handleStorageSuccess(
+                    fcrPage.stream().map(AbstractFeatureRequest::getGroupId).collect(Collectors.toSet()));
             // get next page of requests if present
             if (fcrPage.hasNext()) {
                 fcrPage.nextPageable();
@@ -463,10 +413,10 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected void mockNotificationSuccess() {
         Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo
                 .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                                                       OffsetDateTime.now().plusDays(1),
-                                                       PageRequest.of(0, properties.getMaxBulkSize(),
-                                                                      Sort.by(Sort.Order.asc("priority"),
-                                                                              Sort.Order.asc("requestDate"))));
+                                                       OffsetDateTime.now().plusDays(1), PageRequest
+                                                               .of(0, properties.getMaxBulkSize(),
+                                                                   Sort.by(Sort.Order.asc("priority"),
+                                                                           Sort.Order.asc("requestDate"))));
         if (!requestsToSend.isEmpty()) {
             featureNotificationService.sendToNotifier();
             //simulate that notification has been handle with success
@@ -487,16 +437,16 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     protected void mockNotificationError() {
         Page<AbstractFeatureRequest> requestsToSend;
-        Pageable pageable = PageRequest.of(0, properties.getMaxBulkSize(),
-                                           Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate")));
+        Pageable pageable = PageRequest
+                .of(0, properties.getMaxBulkSize(), Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate")));
         do {
             requestsToSend = abstractFeatureRequestRepo
                     .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
                                                            OffsetDateTime.now().plusDays(1), pageable);
             if (!requestsToSend.isEmpty()) {
                 featureNotificationService.sendToNotifier();
-                featureNotificationService.handleNotificationError(requestsToSend.toSet(),
-                                                                   FeatureRequestStep.REMOTE_NOTIFICATION_ERROR);
+                featureNotificationService
+                        .handleNotificationError(requestsToSend.toSet(), FeatureRequestStep.REMOTE_NOTIFICATION_ERROR);
             }
             pageable = requestsToSend.nextPageable();
         } while (requestsToSend.hasNext());
@@ -546,6 +496,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     /**
      * Create features
+     *
      * @param nbFeatures number of features to create
      */
     protected void initData(int nbFeatures) {
@@ -567,11 +518,13 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return factory;
     }
 
-    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate, boolean override) {
+    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
+            boolean override) {
         return initFeatureCreationRequestEvent(featureNumberToCreate, override, owner, session);
     }
 
-    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate, boolean override, String source, String session) {
+    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
+            boolean override, String source, String session) {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
         FeatureCreationRequestEvent toAdd;
@@ -588,19 +541,19 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
         // create events to publish
         for (int i = 0; i < featureNumberToCreate; i++) {
-            file = FeatureFile.build(
-                                     FeatureFileAttributes.build(DataType.DESCRIPTION, new MimeType("mime"), "toto",
-                                                                 1024L, "MD5", "checksum"),
-                                     FeatureFileLocation.build("www.google.com", "GPFS"));
+            file = FeatureFile.build(FeatureFileAttributes
+                                             .build(DataType.DESCRIPTION, new MimeType("mime"), "toto", 1024L, "MD5",
+                                                    "checksum"), FeatureFileLocation.build("www.google.com", "GPFS"));
 
-            featureToAdd = Feature.build("id" + i, source, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model).withFiles(file);
+            featureToAdd = Feature
+                    .build("id" + i +"_"+ UUID.randomUUID().toString(), source, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA,
+                           model).withFiles(file);
             featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
-            featureToAdd.addProperty(IProperty.buildObject("file_characterization",
-                                                           IProperty.buildBoolean("valid", Boolean.TRUE)));
+            featureToAdd.addProperty(
+                    IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", Boolean.TRUE)));
 
-            toAdd = FeatureCreationRequestEvent.build(source,
-                                                      FeatureCreationSessionMetadata.build(source, session, PriorityLevel.NORMAL, Lists.emptyList(), override),
-                                                      featureToAdd);
+            toAdd = FeatureCreationRequestEvent.build(source, FeatureCreationSessionMetadata
+                    .build(source, session, PriorityLevel.NORMAL, Lists.emptyList(), override), featureToAdd);
             toAdd.setRequestId(String.valueOf(i));
             toAdd.setFeature(featureToAdd);
             toAdd.setRequestDate(OffsetDateTime.now().minusDays(1));
@@ -610,16 +563,18 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return events;
     }
 
-    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles, int featureToCreateNumber, boolean isToNotify, boolean override)
-            throws InterruptedException {
-        return prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, override, owner, session);
+    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles,
+            int featureToCreateNumber, boolean isToNotify, boolean override) throws InterruptedException {
+        return prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, override, owner,
+                                       session);
     }
 
-    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles, int featureToCreateNumber, boolean isToNotify, boolean override,
-                                                                        String source, String session
-    ) throws InterruptedException {
+    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles,
+            int featureToCreateNumber, boolean isToNotify, boolean override, String source, String session)
+            throws InterruptedException {
 
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, override, source, session);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, override,
+                                                                                   source, session);
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features
@@ -638,12 +593,14 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         int cpt = 0;
         long featureNumberInDatabase;
         do {
-            featureNumberInDatabase = featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged()).getTotalElements();
+            featureNumberInDatabase = featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged())
+                    .getTotalElements();
             TimeUnit.MILLISECONDS.sleep(1000);
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != featureToCreateNumber));
 
-        assertEquals(featureToCreateNumber, featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged()).getTotalElements());
+        assertEquals(featureToCreateNumber,
+                     featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged()).getTotalElements());
 
         // in that case all features hasn't been saved
         if (cpt == 100) {
@@ -713,7 +670,12 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     }
 
     protected SessionStep getSessionStep(String source, String session) {
-        Optional<SessionStep> sessionStepOptional = sessionStepRepository.findBySourceAndSessionAndStepId(source, session, sessionStepName);
+        Awaitility.await().atMost(Durations.FIVE_SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return sessionStepRepository.findBySourceAndSessionAndStepId(source, session, sessionStepName).isPresent();
+        });
+        Optional<SessionStep> sessionStepOptional = sessionStepRepository
+                .findBySourceAndSessionAndStepId(source, session, sessionStepName);
         Assertions.assertTrue(sessionStepOptional.isPresent());
         return sessionStepOptional.get();
     }
@@ -767,31 +729,26 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                 Assert.assertEquals(nbStepsRequired, stepPropertyUpdateRequestRepository.findAll().size());
             }
         }
-        boolean done = false;
-        do {
-            agentSnapshotJobService.scheduleJob();
-            TimeUnit.SECONDS.sleep(1);
-            SessionStep step = sessionStepRepository.findBySourceAndLastUpdateDateBefore(source, end, Pageable.unpaged()).getContent()
-                    .stream()
-                    .filter(sessionStep -> sessionStep.getSession().equals(session))
-                    .findFirst()
+        agentSnapshotJobService.scheduleJob();
+
+        // Check that sessionStep is well generated
+        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            boolean done = false;
+            SessionStep step = sessionStepRepository.findBySourceAndLastUpdateDateBefore(source, end, Pageable.unpaged())
+                    .getContent().stream().filter(sessionStep -> sessionStep.getSession().equals(session)).findFirst()
                     .orElse(null);
             if (step != null) {
-                List<StepPropertyUpdateRequest> requests =
-                        stepPropertyUpdateRequestRepository.findBySourceAndDateGreaterThanAndDateLessThanEqual(source, step.getLastUpdateDate(), start, Pageable.unpaged())
-                                .getContent()
-                                .stream()
-                                .filter(request -> request.getSession().equals(session))
-                                .collect(Collectors.toList());
+                List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository
+                        .findBySourceAndDateGreaterThanAndDateLessThanEqual(source, step.getLastUpdateDate(), start,
+                                                                            Pageable.unpaged()).getContent().stream()
+                        .filter(request -> request.getSession().equals(session)).collect(Collectors.toList());
                 if (requests.isEmpty()) {
                     done = true;
                 }
             }
-        } while (!done && OffsetDateTime.now(ZoneOffset.UTC).isAfter(end));
-
-        if (!done) {
-            LOGGER.warn("Session step not computed !");
-        }
+            return done;
+        });
     }
 
 }

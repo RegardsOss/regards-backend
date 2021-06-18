@@ -58,6 +58,12 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @Type(type = "jsonb")
     private Feature toNotify;
 
+    @Column(name="sessionToNotify", length=255)
+    private String sessionToNotify;
+
+    @Column(name="sourceToNotify", length=255)
+    private String sourceToNotify;
+
     /**
      * This is used to notify user. Should only be setted by deletion process
      */
@@ -94,8 +100,10 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         return toNotify;
     }
 
-    public void setToNotify(Feature toNotify) {
+    public void setToNotify(Feature toNotify, String sourceToNotify, String sessionToNotify) {
         this.toNotify = toNotify;
+        this.sessionToNotify = sessionToNotify;
+        this.sourceToNotify = sourceToNotify;
     }
 
     public boolean isAlreadyDeleted() {
@@ -104,5 +112,13 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
     public void setAlreadyDeleted(boolean alreadyDeleted) {
         this.alreadyDeleted = alreadyDeleted;
+    }
+
+    public String getSessionToNotify() {
+        return sessionToNotify;
+    }
+
+    public String getSourceToNotify() {
+        return sourceToNotify;
     }
 }

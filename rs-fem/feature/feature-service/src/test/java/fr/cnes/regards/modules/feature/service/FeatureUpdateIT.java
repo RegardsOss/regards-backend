@@ -467,11 +467,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(12);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(12, requests.size());
         checkRequests(8, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -508,11 +507,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(10);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(10, requests.size());
         checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
@@ -541,11 +539,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     private void checkOneUpdate(int requestCount) throws InterruptedException {
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep((requestCount + 1) * 4);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals((requestCount + 1) * 4, requests.size());
         checkRequests((requestCount + 1) * 3, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(requestCount + 1, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(requestCount, property("referencingRequests"), requests);
@@ -586,7 +583,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         waitForStep(featureUpdateRequestRepository, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep(0);
+        computeSessionStep(8);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
