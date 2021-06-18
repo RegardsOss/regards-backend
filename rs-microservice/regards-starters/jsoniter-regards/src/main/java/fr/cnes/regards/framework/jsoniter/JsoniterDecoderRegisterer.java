@@ -39,7 +39,8 @@ public class JsoniterDecoderRegisterer {
                 URLJsoniterDecoder.selfRegister(),
                 OffsetDateTimeJsoniterDecoder.selfRegister(),
                 UniformResourceNameJsoniterDecoder.selfRegister(),
-                IIndexableJsoniterDecoder.selfRegister()
+                IIndexableJsoniterDecoder.selfRegister(),
+                SearchAfterReminderDecoder.selfRegister()
         );
     }
 
