@@ -25,13 +25,19 @@ import fr.cnes.regards.framework.jpa.multitenant.test.MockAmqpConfiguration;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.util.JUnitLogRule;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -93,6 +99,15 @@ public abstract class AbstractRegardsServiceIT {
     @Value("${regards.tenant:PROJECT}")
     private String defaultTenant;
 
+    @Autowired
+    private ApplicationEventPublisher springPublisher;
+
+    @Before
+    public void beforeITTest() {
+        this.simulateApplicationReadyEvent();
+        this.simulateApplicationStartedEvent();
+    }
+
     @After
     public void afterITTest() {
         subscriber.purgeAllQueues(getDefaultTenant());
@@ -115,6 +130,22 @@ public abstract class AbstractRegardsServiceIT {
      */
     protected String generateToken(String name, final String role) {
         return jwtService.generateToken(getDefaultTenant(), name, name, role);
+    }
+
+    /**
+     * Useful class to simulate a Spring Boot {@link ApplicationReadyEvent}.<br/>
+     * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
+     */
+    protected void simulateApplicationReadyEvent() {
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
+    }
+
+    /**
+     * Useful class to simulate a Spring Boot {@link ApplicationStartedEvent}.<br/>
+     * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
+     */
+    protected void simulateApplicationStartedEvent() {
+        springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
     }
 
     /**
