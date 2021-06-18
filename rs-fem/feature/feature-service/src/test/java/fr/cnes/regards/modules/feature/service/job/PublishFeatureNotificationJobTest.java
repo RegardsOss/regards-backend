@@ -58,7 +58,6 @@ public class PublishFeatureNotificationJobTest extends AbstractFeatureMultitenan
 
     @Test
     public void notifySelection() throws InterruptedException, ExecutionException {
-        cleanAMQPQueues(NotificationEventListener.class, ONE_PER_MICROSERVICE_TYPE);
         initData(100);
         NotificationEventListener listener = new NotificationEventListener();
         subscriber.subscribeTo(FeatureNotificationRequestEvent.class, listener);

@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
+import com.google.gson.GsonBuilder;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.jpa.multitenant.test.AppDaoTestConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.test.MockAmqpConfiguration;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.util.JUnitLogRule;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -30,13 +37,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.GsonBuilder;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AppDaoTestConfiguration;
-import fr.cnes.regards.framework.jpa.multitenant.test.MockAmqpConfiguration;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.test.util.JUnitLogRule;
-
 /**
  * Base class to realize integration tests using JWT and MockMvc. Should hold all the configurations to be considred by
  * any of its children.
@@ -45,15 +45,16 @@ import fr.cnes.regards.framework.test.util.JUnitLogRule;
  * <pre>
  * tenantResolver.forceTenant(DEFAULT_TENANT);
  * </pre>
- *
+ * <p>
  * in
  *
  * <pre>
  * &#64;Before
  * </pre>
- *
+ * <p>
  * annotated method for example or into tests methods.
  * <i>public</i> schema is used.
+ *
  * @author svissier
  */
 @RunWith(SpringRunner.class)
@@ -64,15 +65,12 @@ import fr.cnes.regards.framework.test.util.JUnitLogRule;
 @TestPropertySource(properties = { "regards.cloud.enabled=false", "spring.flyway.enabled=false" })
 public abstract class AbstractRegardsServiceIT {
 
-    private static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
-
     /**
      * Default user role. User {@link #getDefaultRole()} instead.
      */
     protected static final String DEFAULT_ROLE = "ROLE_DEFAULT";
 
-    @Value("${regards.tenant:PROJECT}")
-    private String defaultTenant;
+    private static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
 
     @Rule
     public JUnitLogRule rule = new JUnitLogRule();
@@ -89,6 +87,18 @@ public abstract class AbstractRegardsServiceIT {
     @Autowired
     protected GsonBuilder gsonBuilder;
 
+    @Autowired
+    protected ISubscriber subscriber;
+
+    @Value("${regards.tenant:PROJECT}")
+    private String defaultTenant;
+
+    @After
+    public void afterITTest() {
+        subscriber.purgeAllQueues(getDefaultTenant());
+        subscriber.unsubscribeFromAll();
+    }
+
     /**
      * @return class logger instance
      */
@@ -98,6 +108,7 @@ public abstract class AbstractRegardsServiceIT {
 
     /**
      * Generate token for default tenant
+     *
      * @param name user name
      * @param role user role
      * @return JWT

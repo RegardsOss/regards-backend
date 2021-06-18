@@ -62,8 +62,6 @@ public class ScheduleFeatureDeletionJobsJobTest extends AbstractFeatureMultitena
 
     @Test
     public void test() throws InterruptedException, ExecutionException {
-        // Initialize AMQP for test
-        cleanAMQPQueues(DeletionEventListener.class, ONE_PER_MICROSERVICE_TYPE);
         DeletionEventListener listener = new DeletionEventListener();
         subscriber.subscribeTo(FeatureDeletionRequestEvent.class, listener);
 

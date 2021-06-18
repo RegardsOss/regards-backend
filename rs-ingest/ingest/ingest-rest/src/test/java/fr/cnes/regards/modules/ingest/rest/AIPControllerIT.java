@@ -125,7 +125,6 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         storageClient.setBehavior(true, true);
         // Clean everything
         ingestServiceTest.init();
-        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
 
         // resend the event of AppReady to reinit default data
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
