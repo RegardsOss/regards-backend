@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.feature.service.session;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
@@ -10,10 +11,15 @@ import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @TestPropertySource(
@@ -28,13 +34,9 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
     private static final String SESSION2 = "SESSION 2";
 
     @Autowired
-    private IPublisher publisher;
-
-    @Autowired
     private IFeatureEntityRepository featureEntityRepository;
 
-    @Override
-    protected void doInit() throws Exception {
+    private void prepareData() throws InterruptedException {
         prepareCreationTestData(true, 2, true, true, SOURCE1, SESSION1);
         prepareCreationTestData(true, 2, true, true, SOURCE1, SESSION2);
         prepareCreationTestData(true, 2, true, true, SOURCE2, SESSION1);
@@ -49,9 +51,10 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     @Test
-    public void testSessionDeleteBySource() throws InterruptedException {
+    public void testSessionDeleteBySource() throws InterruptedException, SQLException {
+        prepareData();
         publisher.publish(new SourceDeleteEvent(SOURCE1));
-        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             return featureEntityRepository.findAll().size() == 4;
         });
@@ -67,9 +70,10 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     @Test
-    public void testSessionDeleteBySourceAndSession() throws InterruptedException {
+    public void testSessionDeleteBySourceAndSession() throws InterruptedException, SQLException {
+        prepareData();
         publisher.publish(new SessionDeleteEvent(SOURCE1, SESSION1));
-        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             return featureEntityRepository.findAll().size() == 6;
         });

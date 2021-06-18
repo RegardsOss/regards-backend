@@ -130,7 +130,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
 
         // A post process request should be created
-        Awaitility.await().atMost(Durations.TEN_SECONDS).with().until(() -> {
+        Awaitility.await().atMost(Durations.ONE_MINUTE).with().until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             return postProcessRepo.count() == 1L;
         });

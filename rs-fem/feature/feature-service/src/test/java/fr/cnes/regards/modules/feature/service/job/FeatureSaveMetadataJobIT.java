@@ -54,6 +54,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Test for {@link FeatureSaveMetadataJob}
+ *
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_savemetadata_job_it",
@@ -77,11 +78,7 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
     @Autowired
     private IWorkspaceService workspaceService;
 
-    @Override
-    public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
+    public void prepare() {
         // dump location is in microservice workspace by default
         try {
             this.dumpLocation = workspaceService.getMicroserviceWorkspace();
@@ -93,6 +90,7 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
     @Test
     @Purpose("Check if the dump of features is successfully created")
     public void checkDumpSuccess() throws ExecutionException, InterruptedException, EntityException {
+        prepare();
         // add feature to db
         int nbFeatures = 6;
         initData(nbFeatures);
@@ -114,13 +112,16 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
         Assert.assertEquals(0, errorRequests.size());
 
         // Check folder target/workspace/<microservice>/ exists and contains 1 dump
-        Assert.assertTrue("The dump location does not exist or does not contain one zip",
-                          Files.exists(this.dumpLocation) && this.dumpLocation.toFile().listFiles().length == 1);
+        Assert.assertTrue("The dump location does not exist", Files.exists(this.dumpLocation));
+        LOGGER.info("this.dumpLocation.toFile().listFiles().length={}",this.dumpLocation.toFile().listFiles().length);
+        Assert.assertTrue("The dump location does not contains one zip",
+                          this.dumpLocation.toFile().listFiles().length == 1);
     }
 
     @Test
     @Purpose("Check if the dump of features is not created (in error)")
     public void checkDumpError() throws InterruptedException {
+        prepare();
         // add features to db
         int nbFeatures = 3;
         initData(nbFeatures);

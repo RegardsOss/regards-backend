@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -144,21 +145,24 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         this.featureCreationService.scheduleRequests();
 
-        cpt = 0;
-        do {
-            featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != (maxBulkSize + 1)));
-
-        assertEquals(maxBulkSize + 1, this.featureRepo.count());
-
-        // in that case all features hasn't been saved
-        if (cpt == 100) {
-            fail("Doesn't have all features at the end of time");
+        try {
+            Awaitility.await().atMost(Durations.ONE_MINUTE).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return this.featureRepo.count() == maxBulkSize + 1;
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.assertEquals("Invalid number of feature", maxBulkSize + 1, this.featureRepo.count());
         }
 
         // id0 come from super.init
+        try {
+            Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return featureRepo.findByProviderIdInOrderByVersionDesc(Lists.newArrayList("id0")).size() == 2;
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.assertEquals("Invalid number of version of same feature", 2, featureRepo.findByProviderIdInOrderByVersionDesc(Lists.newArrayList("id0")).size());
+        }
         List<IUrnVersionByProvider> urnsForId1 = featureRepo
                 .findByProviderIdInOrderByVersionDesc(Lists.newArrayList("id0"));
         Assert.assertTrue(featureRepo.findByUrn(urnsForId1.get(0).getUrn()).getFeature().isLast());
@@ -449,9 +453,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         // have their priority to HIGH and half to AVERAGE
         Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
-            return featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED, PageRequest.of(0, properties.getMaxBulkSize())).getTotalElements() == properties.getMaxBulkSize();
+            return featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED, PageRequest.of(0, properties.getMaxBulkSize())).getSize() == properties.getMaxBulkSize();
         });
         Page<FeatureCreationRequest> scheduled = featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED, PageRequest.of(0, properties.getMaxBulkSize()));
+        Assert.assertEquals(properties.getMaxBulkSize().intValue(), scheduled.getSize());
         int highPriorityNumber = 0;
         int otherPriorityNumber = 0;
         for (FeatureCreationRequest request : scheduled) {

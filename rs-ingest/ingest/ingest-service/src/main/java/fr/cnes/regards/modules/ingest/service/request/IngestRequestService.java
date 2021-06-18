@@ -489,6 +489,7 @@ public class IngestRequestService implements IIngestRequestService {
         // POSTPROCESS
         for (Entry<IngestProcessingChain, Set<AIPEntity>> es : postProcessToSchedule.entrySet()) {
             for (AIPEntity aip : es.getValue()) {
+                LOGGER.info("New post process request to schedule for aip {} / {}",aip.getProviderId(), aip.getAipId());
                 AIPPostProcessRequest req = AIPPostProcessRequest
                         .build(aip, es.getKey().getPostProcessingPlugin().get().getBusinessId());
                 toSchedule.add(aipPostProcessRequestRepository.save(req));

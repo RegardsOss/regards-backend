@@ -55,6 +55,17 @@ public interface ISubscriberContract {
     <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType);
 
     /**
+     * Unsubscribe handler from all events already subscribed
+     */
+    void unsubscribeFromAll();
+
+    /**
+     * Purge all queues based on registered handlers
+     * @param tenant
+     */
+    void purgeAllQueues(String tenant);
+
+    /**
      * Purge related queues (for all tenant virtual hosts). Useful for testing purpose before publishing events. Purge
      * can be done as well using {@link #subscribeTo(Class, IHandler, boolean)}
      * @param eventType {@link ISubscribable} event type

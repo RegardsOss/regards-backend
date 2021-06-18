@@ -1,63 +1,17 @@
 package fr.cnes.regards.modules.feature.service;
 
-import static fr.cnes.regards.framework.amqp.event.Target.MICROSERVICE;
-import static fr.cnes.regards.framework.amqp.event.Target.ONE_PER_MICROSERVICE_TYPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.assertj.core.util.Lists;
-import org.awaitility.Awaitility;
-import org.awaitility.Durations;
-import org.awaitility.core.ConditionEvaluationListener;
-import org.awaitility.core.ConditionTimeoutException;
-import org.awaitility.core.EvaluatedCondition;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.jupiter.api.Assertions;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentEventHandler;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
@@ -65,25 +19,12 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepPrope
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
+import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureFile;
-import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
-import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
-import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
@@ -91,10 +32,6 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
-import fr.cnes.regards.modules.feature.service.flow.FeatureCreationRequestEventHandler;
-import fr.cnes.regards.modules.feature.service.flow.FeatureDeletionRequestEventHandler;
-import fr.cnes.regards.modules.feature.service.flow.FeatureUpdateRequestEventHandler;
-import fr.cnes.regards.modules.feature.service.flow.NotificationRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
@@ -108,9 +45,45 @@ import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFa
 import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
+import org.assertj.core.util.Lists;
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
+import org.awaitility.core.ConditionTimeoutException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.MimeType;
+
+import javax.persistence.EntityManager;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
@@ -198,12 +171,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     @Autowired
     private IJobInfoRepository jobInfoRepository;
 
-    @Autowired(required = false)
-    private IAmqpAdmin amqpAdmin;
-
-    @Autowired(required = false)
-    private IRabbitVirtualHostAdmin vhostAdmin;
-
     // ------------------------
     // TO CLEAN TESTS
     // ------------------------
@@ -211,7 +178,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     @Before
     public void before() throws Exception {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        cleanQueues();
         cleanRepo();
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
@@ -226,7 +192,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     @After
     public void after() throws Exception {
-        cleanQueues();
         setNotificationSetting(true);
         doAfter();
     }
@@ -245,22 +210,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         this.jobInfoRepository.deleteAll();
         stepPropertyUpdateRequestRepository.deleteAll();
         sessionStepRepository.deleteAll();
-    }
-
-    public void cleanQueues() {
-        subscriber.unsubscribeFrom(FeatureCreationRequestEvent.class);
-        subscriber.unsubscribeFrom(FeatureDeletionRequestEvent.class);
-        subscriber.unsubscribeFrom(FeatureUpdateRequestEvent.class);
-        subscriber.unsubscribeFrom(FeatureNotificationRequestEvent.class);
-        subscriber.unsubscribeFrom(NotificationRequestEvent.class);
-        subscriber.unsubscribeFrom(FileRequestsGroupEvent.class);
-        subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
-        cleanAMQPQueues(FeatureCreationRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FeatureUpdateRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FeatureDeletionRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(NotificationRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FileRequestGroupEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueuesUnicast(getDefaultTenant(), StepPropertyUpdateRequestEvent.class, MICROSERVICE);
     }
 
     // ------------------------
@@ -457,44 +406,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     // ------------------------
 
     /**
-     * Internal method to clean AMQP queues, if actives
-     */
-    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
-            } catch (AmqpIOException e) {
-                //todo
-            } finally {
-                vhostAdmin.unbind();
-            }
-        }
-    }
-
-    /**
-     * Internal method to clean AMQP queues, if actives
-     */
-    public void cleanAMQPQueuesUnicast(String tenant, Class<?> eventType, Target target) {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getUnicastQueueName(tenant, eventType, target), false);
-            } catch (AmqpIOException e) {
-                //todo
-            } finally {
-                vhostAdmin.unbind();
-            }
-        }
-    }
-
-    /**
      * Create features
      *
      * @param nbFeatures number of features to create
@@ -546,7 +457,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                                                     "checksum"), FeatureFileLocation.build("www.google.com", "GPFS"));
 
             featureToAdd = Feature
-                    .build("id" + i +"_"+ UUID.randomUUID().toString(), source, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA,
+                    .build("id" + i, source, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA,
                            model).withFiles(file);
             featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
             featureToAdd.addProperty(
@@ -735,9 +646,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             boolean done = false;
-            SessionStep step = sessionStepRepository.findBySourceAndLastUpdateDateBefore(source, end, Pageable.unpaged())
-                    .getContent().stream().filter(sessionStep -> sessionStep.getSession().equals(session)).findFirst()
-                    .orElse(null);
+            SessionStep step = sessionStepRepository
+                    .findBySourceAndLastUpdateDateBefore(source, end, Pageable.unpaged()).getContent().stream()
+                    .filter(sessionStep -> sessionStep.getSession().equals(session)).findFirst().orElse(null);
             if (step != null) {
                 List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository
                         .findBySourceAndDateGreaterThanAndDateLessThanEqual(source, step.getLastUpdateDate(), start,

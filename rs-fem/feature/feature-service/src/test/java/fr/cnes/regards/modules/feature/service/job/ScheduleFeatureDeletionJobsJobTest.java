@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import static fr.cnes.regards.framework.amqp.event.Target.ONE_PER_MICROSERVICE_TYPE;
-
-import java.util.concurrent.ExecutionException;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -37,15 +27,24 @@ import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.concurrent.ExecutionException;
+
+import static fr.cnes.regards.framework.amqp.event.Target.ONE_PER_MICROSERVICE_TYPE;
 
 /**
  * Test class to check {@link PublishFeatureDeletionEventsJob}s and  {@link ScheduleFeatureDeletionJobsJob}s
  *
  * @author Sébastien Binda
- *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job_test",
-        "regards.amqp.enabled=true", "regards.feature.deletion.notification.job.size=30" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job_test", "regards.amqp.enabled=true",
+                "regards.feature.deletion.notification.job.size=30" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class ScheduleFeatureDeletionJobsJobTest extends AbstractFeatureMultitenantServiceTest {
 
@@ -78,9 +77,9 @@ public class ScheduleFeatureDeletionJobsJobTest extends AbstractFeatureMultitena
             jobService.runJob(job, tenant).get();
         }
         // No job should be scheduled
-        Assert.assertEquals("No PublishFeatureDeletionEventsJob should be scheduled as the feature selection should be empty",
-                            new Long(0L),
-                            jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName()));
+        Assert.assertEquals(
+                "No PublishFeatureDeletionEventsJob should be scheduled as the feature selection should be empty",
+                new Long(0L), jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName()));
         Thread.sleep(1_000);
         Assert.assertEquals("No deletion request event should be sent", 0, listener.getNumberOfRequests());
 
@@ -92,10 +91,10 @@ public class ScheduleFeatureDeletionJobsJobTest extends AbstractFeatureMultitena
         }
         // As the number of features to handle is 100 and each job should handle 30 features, there should be 4 jobs scheduled
         Assert.assertEquals("There should be 100/regards.feature.deletion.notification.job.size jobs scheduled ",
-                            new Long(4L),
-                            jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
-                                                             JobStatus.TO_BE_RUN, JobStatus.QUEUED, JobStatus.RUNNING,
-                                                             JobStatus.SUCCEEDED));
+                            new Long(4L), jobInfoService
+                                    .retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
+                                                       JobStatus.TO_BE_RUN, JobStatus.QUEUED, JobStatus.RUNNING,
+                                                       JobStatus.SUCCEEDED));
         int loop = 0;
         while ((listener.getNumberOfRequests() < 100) && (loop < 100)) {
             Thread.sleep(100);

@@ -149,62 +149,12 @@ public class IngestServiceTest {
                 snapshotProcessRepository.deleteAllInBatch();
                 stepPropertyUpdateRequestRepository.deleteAllInBatch();
                 sessionStepRepository.deleteAllInBatch();
-                cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
                 done = waitAllRequestsFinished();
             } catch (DataAccessException e) {
                 LOGGER.error(e.getMessage(), e);
             }
             loop++;
         } while (done && (loop < 5));
-    }
-
-    public void clear() {
-        // WARNING : clean context manually because Spring doesn't do it between tests
-        subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
-        subscriber.unsubscribeFrom(IngestRequestEvent.class);
-        subscriber.unsubscribeFrom(FileRequestsGroupEvent.class);
-        subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
-        subscriber.unsubscribeFrom(SessionDeleteEvent.class);
-        subscriber.unsubscribeFrom(SourceDeleteEvent.class);
-        subscriber.unsubscribeFrom(SessionStepEvent.class);
-    }
-
-    /**
-     * Clean AMQP by default with {@link WorkerMode#BROADCAST}
-     */
-    public void cleanAMQPQueues(Class<?> type, Target target) {
-        cleanAMQPQueues(type, target, WorkerMode.BROADCAST);
-    }
-
-    /**
-     * Internal method to clean AMQP queues, if actives
-     * @param type handler or event class, depending on the type of event
-     */
-    public void cleanAMQPQueues(Class<?> type, Target target, WorkerMode mode) {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                // get queue name
-                String queueName = null;
-                if (mode.equals(WorkerMode.BROADCAST)) {
-                    queueName = amqpAdmin.getSubscriptionQueueName((Class<? extends IHandler<?>>) type, target);
-                } else if(mode.equals(WorkerMode.UNICAST)){
-                    queueName = amqpAdmin.getUnicastQueueName(runtimeTenantResolver.getTenant(), type, target);
-                }
-                // clean queue
-                if (!Strings.isNullOrEmpty(queueName)) {
-                    amqpAdmin.purgeQueue(queueName, false);
-                    LOGGER.info("Queue {} was cleaned", queueName);
-                }
-            } catch (AmqpIOException e) {
-                LOGGER.warn("Failed to clean AMQP queues", e);
-            } finally {
-                vhostAdmin.unbind();
-            }
-        }
     }
 
     public void waitForIngestion(long expectedSips) {

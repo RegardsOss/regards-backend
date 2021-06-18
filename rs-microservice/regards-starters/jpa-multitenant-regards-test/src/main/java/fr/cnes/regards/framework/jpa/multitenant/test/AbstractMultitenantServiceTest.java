@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.junit.After;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +36,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Multitenant test utility class for testing service layer. This class starts up an integration test context enabling
@@ -76,6 +77,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * <code>
  * &#64;ActiveProfiles("testAmqp")
  * </code>
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("javadoc")
@@ -85,12 +87,15 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
+    protected ISubscriber subscriber;
+
+    @Autowired
     private ApplicationEventPublisher springPublisher;
 
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    public static class ScanningConfiguration {
-
+    @After
+    public void afterMuntitenantServiceTest() {
+        subscriber.unsubscribeFromAll();
+        subscriber.purgeAllQueues(getDefaultTenant());
     }
 
     /**
@@ -117,6 +122,12 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
      */
     protected void simulateApplicationStartedEvent() {
         springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
+    }
+
+    @Configuration
+    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
+    public static class ScanningConfiguration {
+
     }
 
 }

@@ -16,9 +16,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.orm.jpa.EntityManagerFactoryInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,8 +54,8 @@ public class FeatureDeleteService {
     }
 
     public long delete(String source, String session) {
-
         long deletedFeaturesCount = 0;
+        long toDelete = 0;
         Page<ILightFeatureEntity> entityPage;
         Pageable pageable = PageRequest.of(0, properties.getMaxBulkSize(), Sort.by("id"));
 
@@ -62,13 +65,17 @@ public class FeatureDeleteService {
             } else {
                 entityPage = featureEntityRepository.findBySessionOwnerAndSession(source, session, pageable);
             }
+            if (toDelete == 0) {
+                toDelete = entityPage.getTotalElements();
+            }
             List<ILightFeatureEntity> entities = entityPage.getContent();
             if (!entities.isEmpty()) {
                 self.deleteAndNotify(source, entities);
                 deletedFeaturesCount += entities.size();
             }
-
         } while (!Thread.currentThread().isInterrupted() && entityPage.hasNext());
+
+        LOGGER.info("[SESSION DELETE EVENT] {}/{} deleted features for {}/{}",deletedFeaturesCount, toDelete, source, session);
 
         if (Thread.currentThread().isInterrupted()) {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());

@@ -146,7 +146,6 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         // clear AMQP queues and repositories
         jobService.cleanAndRestart();
         ingestServiceTest.init();
-        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
 
         // simulate application started and ready
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -168,19 +167,8 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     @After
     public void after() throws Exception {
-        // unsubscribe from AMQP queues
-        ingestServiceTest.clear();
-        clearQueues();
-
         // override this method to custom action performed after
         doAfter();
-    }
-
-    private void clearQueues() {
-        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        ingestServiceTest.cleanAMQPQueues(SourceDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        ingestServiceTest.cleanAMQPQueues(SessionDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        ingestServiceTest.cleanAMQPQueues(StepPropertyUpdateRequestEvent.class, Target.MICROSERVICE, WorkerMode.UNICAST);
     }
     /**
      * Custom test cleaning to override
