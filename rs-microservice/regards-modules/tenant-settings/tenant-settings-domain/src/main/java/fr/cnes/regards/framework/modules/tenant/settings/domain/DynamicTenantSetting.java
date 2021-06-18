@@ -32,6 +32,7 @@ import java.util.Objects;
 import org.hibernate.annotations.Type;
 
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 @Entity
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 public class DynamicTenantSetting {
 
     @Id
+    @ConfigIgnore
     @SequenceGenerator(name = "tenantSettingSequence", sequenceName = "seq_dynamic_tenant_setting")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tenantSettingSequence")
     @Column(name = "id")
