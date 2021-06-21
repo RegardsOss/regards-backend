@@ -27,10 +27,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
 
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -176,26 +178,10 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceTest {
      * @param timeout in ms
      */
     public void waitForUpdateTaskCreated(long expectedTasks, long timeout) {
-        long end = System.currentTimeMillis() + timeout;
-        // Wait
-        long taskCount;
-        do {
-            taskCount = aipUpdateRequestRepository.count();
-            LOGGER.debug("{} UpdateRequest(s) created in database", taskCount);
-            if (taskCount == expectedTasks) {
-                break;
-            }
-            long now = System.currentTimeMillis();
-            if (end > now) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    Assert.fail("Thread interrupted");
-                }
-            } else {
-                Assert.fail("Timeout");
-            }
-        } while (true);
+        Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return aipUpdateRequestRepository.count() == expectedTasks;
+        });
     }
 
     /**
@@ -208,7 +194,6 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceTest {
             @Requirement("REGARDS_DSL_STO_AIP_210") })
     @Purpose("Check that specific informations can be updated in AIP properties")
     public void testUpdateJob() throws ModuleException, InterruptedException {
-        ingestServiceTest.waitAllRequestsFinished(20_000);
         storageClient.setBehavior(true, true);
         initData();
 
@@ -221,7 +206,9 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceTest {
         long nbSipConcerned = 2;
         long nbTasksPerSip = 5;
         waitForUpdateTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
+        // Wait job scheduled
         JobInfo updateJob = aipUpdateService.scheduleJob();
+        // Wait job done
         waitJobDone(updateJob, JobStatus.SUCCEEDED, 5_000);
 
         Page<AIPEntity> aips = aipService

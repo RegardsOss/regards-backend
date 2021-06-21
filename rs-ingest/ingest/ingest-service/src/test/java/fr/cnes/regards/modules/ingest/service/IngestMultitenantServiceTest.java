@@ -24,8 +24,10 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
@@ -71,13 +73,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -121,6 +129,9 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     @Autowired
     protected IAIPRepository aipRepository;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
 
     @Autowired
     protected IngestServiceTest ingestServiceTest;
@@ -313,6 +324,19 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     }
 
     public void waitJobDone(JobInfo jobInfo, JobStatus jobStatus, long timeout) {
+        Assert.assertNotNull ("Job info should not be null", jobInfo);
         this.ingestServiceTest.waitJobDone(jobInfo, jobStatus, timeout);
+    }
+
+    public JobInfo waitJobCreated(String jobClassName, long timeout) {
+        try {
+            Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return !this.jobInfoService.retrieveJobs(jobClassName, PageRequest.of(0, 1)).isEmpty();
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.fail(String.format("Fail after waiting for new job %s", jobClassName));
+        }
+        return this.jobInfoService.retrieveJobs(jobClassName, PageRequest.of(0, 1), JobStatus.values()).getContent().get(0);
     }
 }
