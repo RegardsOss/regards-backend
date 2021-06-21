@@ -86,8 +86,8 @@ public class SessionManagerController implements IResourceController<Session> {
     @GetMapping
     @ResponseBody
     @ResourceAccess(description = "Endpoint to get sessions", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(@RequestParam(required = false) String sessionName,
-            @RequestParam(required = false) String sessionState, @RequestParam(required = false) String sourceName,
+    public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(@RequestParam(name = "sessionName", required = false) String sessionName,
+            @RequestParam(name = "sessionState", required = false) String sessionState, @RequestParam(name = "sourceName", required = false) String sourceName,
             @PageableDefault(sort = "lastUpdateDate" , direction = Sort.Direction.DESC, size = 20) Pageable pageable,
             PagedResourcesAssembler<Session> assembler) {
         Page<Session> sessions = this.sessionManagerService.loadSessions(sessionName, sessionState, sourceName, pageable);
