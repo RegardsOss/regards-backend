@@ -40,12 +40,7 @@ import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
 
-@TestPropertySource(
-    properties = {
-        "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests",
-        "regards.storage.cache.path=unused but required" // ¯\_(ツ)_/¯
-    }
-)
+@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests"})
 public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuotaManagerImplIT.class);
@@ -79,8 +74,6 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         quotaManager.setUserDiffsByTenant(new HashMap<>());//HashMap.empty());
         quotaManager.setDiffsAccumulatorByTenant(new HashMap<>());//HashMap.empty());
-        // we override cache setting values for tests
-        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME, Paths.get("target", "cache", getDefaultTenant()));
     }
 
     @After

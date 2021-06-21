@@ -51,8 +51,8 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
 /**
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests"},
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "noscheduler" })
 public class StorageLocationConfigurationServiceTest extends AbstractMultitenantServiceTest {
 

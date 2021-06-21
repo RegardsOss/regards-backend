@@ -41,7 +41,7 @@
 	<logger name="org.hibernate.type.descriptor.sql" level="WARN" />
 	
 	<logger name="fr.cnes.regards" level="WARN" />
-	<logger name="fr.cnes.regards.modules.storage" level="DEBUG" />
+	<logger name="fr.cnes.regards.modules.storage" level="INFO" />
 
 	<root level="info">
 		<appender-ref ref="STDOUT" />

@@ -1,8 +1,10 @@
 package fr.cnes.regards.modules.storage.service.settings;
 
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,9 @@ public class StorageSettingService extends AbstractSettingService {
     @Autowired
     private StorageSettingService self;
 
+    @Value("${regards.storage.default.tenant.cache.path:cache}")
+    private String defaultCachePath;
+
     protected StorageSettingService(IDynamicTenantSettingService dynamicTenantSettingService) {
         super(dynamicTenantSettingService);
     }
@@ -45,9 +50,9 @@ public class StorageSettingService extends AbstractSettingService {
         // we can happily set the value no matter what as it will only be applied once by initialization logic
         DynamicTenantSetting tenantCachePath = StorageSetting.CACHE_PATH;
         String tenant = runtimeTenantResolver.getTenant();
-        tenantCachePath.setDefaultValue(StorageSetting.DEFAULT_CACHE_ROOT.resolve(tenant));
+        tenantCachePath.setDefaultValue(Paths.get(defaultCachePath).resolve(tenant));
         // default value is only there as information for users, so we also need to set the correct value for the first initialization
-        tenantCachePath.setValue(StorageSetting.DEFAULT_CACHE_ROOT.resolve(tenant));
+        tenantCachePath.setValue(Paths.get(defaultCachePath).resolve(tenant));
         return StorageSetting.SETTING_LIST;
     }
 

@@ -84,7 +84,6 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // we override cache setting values for tests
-        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME, Paths.get("target", "cache", getDefaultTenant()));
         dynamicTenantSettingService.update(StorageSetting.CACHE_MAX_SIZE_NAME, 5L);
     }
 

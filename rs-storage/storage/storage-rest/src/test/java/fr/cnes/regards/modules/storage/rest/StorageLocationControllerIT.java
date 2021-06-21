@@ -60,8 +60,7 @@ import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
  *
  */
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_loc_rest_it",
-        "regards.storage.cache.path=target/cache" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_loc_rest_it"})
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT {
 

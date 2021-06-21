@@ -71,8 +71,7 @@ import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(
-        properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
-                "regards.storage.cache.path=target/cache" },
+        properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_perf_tests"},
         locations = { "classpath:application-test.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractStorageTest {

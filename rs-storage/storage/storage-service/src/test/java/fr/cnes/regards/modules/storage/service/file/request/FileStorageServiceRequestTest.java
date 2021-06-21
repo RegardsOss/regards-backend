@@ -63,8 +63,8 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
  *
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_storage_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_storage_tests"},
+        locations = { "classpath:application-test.properties" })
 public class FileStorageServiceRequestTest extends AbstractStorageTest {
 
     private static final  String SESSION_OWNER_1 = "SOURCE 1";

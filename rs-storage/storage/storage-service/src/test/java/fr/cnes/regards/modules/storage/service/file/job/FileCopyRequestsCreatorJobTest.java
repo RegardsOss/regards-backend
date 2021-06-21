@@ -48,8 +48,8 @@ import fr.cnes.regards.modules.storage.service.JobsPriority;
  * @author Sébastien Binda
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_job_test",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_job_test"},
+        locations = { "classpath:application-test.properties" })
 public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
 
     @Autowired

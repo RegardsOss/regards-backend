@@ -99,7 +99,6 @@ import static org.junit.Assert.*;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = {
     "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
-    "regards.storage.cache.path=target/cache",
     "regards.storage.quota.report.tick=1",
     "regards.amqp.enabled=true"
 })

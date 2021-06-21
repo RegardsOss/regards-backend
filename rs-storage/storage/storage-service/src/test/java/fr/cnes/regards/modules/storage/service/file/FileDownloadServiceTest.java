@@ -79,9 +79,6 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
         super.init();
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
-        // we override cache setting values for tests
-        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME,
-                                           Paths.get("target", "cache", getDefaultTenant()));
     }
 
     @Test

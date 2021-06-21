@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.storage.service.file.handler.FileReferenceEventHa
 @ActiveProfiles(value = { "default", "test", "testAmqp", "storageTest" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
-        "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true", "regards.storage.schedule.delay:1000",
+        "regards.amqp.enabled=true", "regards.storage.schedule.delay:1000",
         "regards.storage.location.schedule.delay:600000", "regards.storage.reference.items.bulk.size:10" },
         locations = { "classpath:application-local.properties" })
 @Ignore("Performances tests")
