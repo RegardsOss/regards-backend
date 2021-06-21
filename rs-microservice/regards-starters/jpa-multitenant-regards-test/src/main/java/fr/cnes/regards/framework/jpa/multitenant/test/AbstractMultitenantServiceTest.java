@@ -93,7 +93,7 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
     private ApplicationEventPublisher springPublisher;
 
     @After
-    public void afterMuntitenantServiceTest() {
+    public void afterMultitenantServiceTest() {
         subscriber.unsubscribeFromAll();
         subscriber.purgeAllQueues(getDefaultTenant());
     }
@@ -113,7 +113,11 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
      * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationReadyEvent() {
+        String tenant = runtimeTenantResolver.getTenant ();
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
+        if (tenant != null) {
+            runtimeTenantResolver.forceTenant(tenant);
+        }
     }
 
     /**
@@ -121,7 +125,11 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
      * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationStartedEvent() {
+        String tenant = runtimeTenantResolver.getTenant ();
         springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
+        if (tenant != null) {
+            runtimeTenantResolver.forceTenant(tenant);
+        }
     }
 
     @Configuration

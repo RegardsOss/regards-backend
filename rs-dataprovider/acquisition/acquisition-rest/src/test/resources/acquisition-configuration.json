@@ -1,5 +1,5 @@
 {
-    "microservice": "Test application",
+    "microservice": "rs-test",
     "modules": [
         {
             "module": {
