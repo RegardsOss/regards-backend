@@ -271,10 +271,10 @@ public class FileStorageRequestService {
         // init storage requester
         String sessionOwner = request.getSessionOwner();
         String session = request.getSession();
+        // increment store request to the session agent
+        this.sessionNotifier.incrementStoreRequests(sessionOwner, session);
         // Check if fileReference is present
         if (fileRef.isPresent()) {
-            // increment store request to the session agent
-            this.sessionNotifier.incrementStoreRequests(sessionOwner, session);
             // handle file
             return handleFileToStoreAlreadyExists(fileRef.get(), request, oDeletionReq, groupId);
         } else if (oReq.isPresent()) {
@@ -293,8 +293,6 @@ public class FileStorageRequestService {
         } else {
             Optional<String> cause = Optional.empty();
             Optional<FileRequestStatus> status = Optional.empty();
-            // increment store request to the session agent
-            this.sessionNotifier.incrementStoreRequests(sessionOwner, session);
             // Check that URL is a valid
             try {
                 new URL(request.getOriginUrl());

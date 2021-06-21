@@ -20,7 +20,7 @@ services:
     environment:
       - cluster.name=regards
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms2500m -Xmx2500m"
+      - "ES_JAVA_OPTS=-Xms500m -Xmx500m"
     ulimits:
       memlock:
         soft: -1

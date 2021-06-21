@@ -68,8 +68,12 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
 
     @Override
     public void handle(TenantWrapper<RetryFlowItem> wrapper) {
-        runtimeTenantResolver.forceTenant(wrapper.getTenant());
-        RetryFlowItem request = wrapper.getContent();
+        this.handle(wrapper.getTenant(), wrapper.getContent());
+    }
+
+    @Override
+    public void handle(String tenant, RetryFlowItem request) {
+        runtimeTenantResolver.forceTenant(tenant);
         try {
             switch (request.getType()) {
                 case STORAGE:
