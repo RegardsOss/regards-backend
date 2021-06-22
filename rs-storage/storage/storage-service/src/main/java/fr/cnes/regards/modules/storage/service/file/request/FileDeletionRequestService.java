@@ -153,8 +153,6 @@ public class FileDeletionRequestService {
             newDelRequest.setStatus(reqStatusService.getNewStatus(newDelRequest, Optional.of(status)));
             request = fileDeletionRequestRepo.save(newDelRequest);
             existingRequests.add(request);
-            // notify deletion requests to the session agent
-            this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
             // notify running request to the session agent
             this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
         } else {
@@ -437,6 +435,12 @@ public class FileDeletionRequestService {
     public void handle(Collection<FileDeletionRequestDTO> requests, String groupId,
             Collection<FileReference> existingOnes, Collection<FileDeletionRequest> existingRequests) {
         for (FileDeletionRequestDTO request : requests) {
+            // notify deletion requests to the session agent
+            String sessionOwner = request.getSessionOwner();
+            String session = request.getSession();
+            this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
+
+            // check if file reference already exists
             Optional<FileReference> oFileRef = existingOnes.stream()
                     .filter(f -> f.getLocation().getStorage().equals(request.getStorage())
                             && f.getMetaInfo().getChecksum().equals(request.getChecksum()))
@@ -445,9 +449,6 @@ public class FileDeletionRequestService {
                 FileReference fileRef = oFileRef.get();
                 removeOwner(fileRef, request.getOwner(), request.getSessionOwner(), request.getSession(),
                             request.isForceDelete(), existingRequests, groupId);
-            } else {
-                // notify deletion requests to session agent
-                this.sessionNotifier.incrementDeleteRequests(request.getSessionOwner(), request.getSession());
             }
             // In all case, inform caller that deletion request is success.
             reqGroupService.requestSuccess(groupId, FileRequestType.DELETION, request.getChecksum(),
@@ -473,8 +474,6 @@ public class FileDeletionRequestService {
                 create(fileReference, forceDelete, groupId, existingRequests, FileRequestStatus.TO_DO, sessionOwner,
                        session);
             } else {
-                // notify deletion requests to the session agent
-                this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
                 // notify running request to the session agent
                 this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
                 // Delete associated cache request if any
@@ -483,8 +482,6 @@ public class FileDeletionRequestService {
                 fileRefService.delete(fileReference, groupId, sessionOwner, session);
             }
         } else {
-            // notify deletion requests to the session agent
-            this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
             // Notify successfully deleted file
             this.sessionNotifier.notifyDeletedFiles(sessionOwner, session);
         }

@@ -74,7 +74,7 @@ public class SessionIT extends FeatureProviderMultitenantTest {
 
         // get list of properties
         List<StepPropertyUpdateRequest> stepPropertyList = this.stepRepo.findBySession(SESSION_1);
-        stepPropertyList.sort(Comparator.comparing(StepPropertyUpdateRequest::getDate));
+        stepPropertyList.sort(Comparator.comparing(StepPropertyUpdateRequest::getCreationDate));
 
         // check events were correctly sent
         Assert.assertEquals("Wrong number of events created. Check the workflow of events sent", 6,
@@ -102,7 +102,7 @@ public class SessionIT extends FeatureProviderMultitenantTest {
 
         // get list of properties
         List<StepPropertyUpdateRequest> stepPropertyList = this.stepRepo.findBySession(SESSION_1);
-        stepPropertyList.sort(Comparator.comparing(StepPropertyUpdateRequest::getDate));
+        stepPropertyList.sort(Comparator.comparing(StepPropertyUpdateRequest::getCreationDate));
 
         // check events were correctly sent
         Assert.assertEquals("Wrong number of events created. Check the workflow of events sent", 4,

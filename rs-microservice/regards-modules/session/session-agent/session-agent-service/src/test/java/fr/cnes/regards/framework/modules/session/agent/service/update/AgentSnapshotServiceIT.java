@@ -79,68 +79,101 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsTest {
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
 
         // ACQUISITION - scan event
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE.plusSeconds(1),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "2", true,
-                                                                                         false)));
+        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusSeconds(1),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.ACQUISITION,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "2", true, false));
 
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(1),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "4", true,
-                                                                                         false)));
+        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(1),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.ACQUISITION,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "4", true, false));
 
         // REFERENCING - oais event
-        stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(2),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "6", false,
-                                                                                         true)));
+        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(2),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.REFERENCING,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "6", false, true));
 
         // STORAGE - storage event
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(5),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "store.products", "2", false,
-                                                                                         true)));
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(3),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
-                                                                                         StepPropertyStateEnum.ERROR,
-                                                                                         "store.products.errors", "4",
-                                                                                         false, false)));
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(4),
-                                                       StepPropertyEventTypeEnum.VALUE,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
-                                                                                         StepPropertyStateEnum.ERROR,
-                                                                                         "store.products.state",
-                                                                                         "ERROR", false, false)));
+        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(5),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.STORAGE,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "store.products", "2", false, true));
+        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(3),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.STORAGE,
+                                                                                StepPropertyStateEnum.ERROR,
+                                                                                "store.products.errors", "4", false,
+                                                                                false));
+        StepPropertyUpdateRequest step6 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(4),
+                                                                        StepPropertyEventTypeEnum.VALUE,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.STORAGE,
+                                                                                StepPropertyStateEnum.ERROR,
+                                                                                "store.products.state", "ERROR", false,
+                                                                                false));
         // DISSEMINATION - metacatalog event
-        stepRequests.add(new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(7),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
-                                                                                         StepPropertyStateEnum.WAITING,
-                                                                                         "dis.products.pending", "2",
-                                                                                         false, false)));
-
+        StepPropertyUpdateRequest step7 = new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(7),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.DISSEMINATION,
+                                                                                StepPropertyStateEnum.WAITING,
+                                                                                "dis.products.pending", "2", false,
+                                                                                false));
         // OTHER EVENTS NOT RELATED TO SESSION 1
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2, CREATION_DATE.plusMinutes(20),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "2", true,
-                                                                                         false)));
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_3, CREATION_DATE.plusMinutes(20),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "store.products", "6", false,
-                                                                                         true)));
+        StepPropertyUpdateRequest step8 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2,
+                                                                        CREATION_DATE.plusMinutes(20),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.ACQUISITION,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "2", true, false));
+        StepPropertyUpdateRequest step9 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_3,
+                                                                        CREATION_DATE.plusMinutes(20),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.STORAGE,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "store.products", "6", false, true));
+
+        // set registration dates to creation dates
+        step1.setRegistrationDate(step1.getCreationDate());
+        step2.setRegistrationDate(step2.getCreationDate());
+        step3.setRegistrationDate(step3.getCreationDate());
+        step4.setRegistrationDate(step4.getCreationDate());
+        step5.setRegistrationDate(step5.getCreationDate());
+        step6.setRegistrationDate(step6.getCreationDate());
+        step7.setRegistrationDate(step7.getCreationDate());
+        step8.setRegistrationDate(step8.getCreationDate());
+        step9.setRegistrationDate(step9.getCreationDate());
+
+        // add steps
+        stepRequests.add(step1);
+        stepRequests.add(step2);
+        stepRequests.add(step3);
+        stepRequests.add(step4);
+        stepRequests.add(step5);
+        stepRequests.add(step6);
+        stepRequests.add(step7);
+        stepRequests.add(step8);
+        stepRequests.add(step9);
 
         return this.stepPropertyRepo.saveAll(stepRequests);
     }
@@ -148,38 +181,61 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsTest {
     private List<StepPropertyUpdateRequest> createRun2StepEvents() {
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
         // STORAGE - storage event
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(30),
-                                                       StepPropertyEventTypeEnum.DEC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
-                                                                                         StepPropertyStateEnum.ERROR,
-                                                                                         "store.products.errors", "4",
-                                                                                         false, false)));
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(35),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
-                                                                                         StepPropertyStateEnum.RUNNING,
-                                                                                         "store.products", "4", false,
-                                                                                         true)));
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(38),
-                                                       StepPropertyEventTypeEnum.VALUE,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
-                                                                                         StepPropertyStateEnum.INFO,
-                                                                                         "store.products.state",
-                                                                                         "RUNNING", false, false)));
+        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(30),
+                                                                        StepPropertyEventTypeEnum.DEC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.STORAGE,
+                                                                                StepPropertyStateEnum.ERROR,
+                                                                                "store.products.errors", "4", false,
+                                                                                false));
+        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(35),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.STORAGE,
+                                                                                StepPropertyStateEnum.RUNNING,
+                                                                                "store.products", "4", false, true));
+        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(38),
+                                                                        StepPropertyEventTypeEnum.VALUE,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.STORAGE,
+                                                                                StepPropertyStateEnum.INFO,
+                                                                                "store.products.state", "RUNNING",
+                                                                                false, false));
         // DISSEMINATION - metacatalog event
-        stepRequests.add(new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(40),
-                                                       StepPropertyEventTypeEnum.DEC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
-                                                                                         StepPropertyStateEnum.WAITING,
-                                                                                         "dis.products.pending", "2",
-                                                                                         false, false)));
+        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(40),
+                                                                        StepPropertyEventTypeEnum.DEC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.DISSEMINATION,
+                                                                                StepPropertyStateEnum.WAITING,
+                                                                                "dis.products.pending", "2", false,
+                                                                                false));
 
-        stepRequests.add(new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(40),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "dis.products", "2", false,
-                                                                                         true)));
+        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(40),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.DISSEMINATION,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "dis.products", "2", false, true));
+
+        // set registration dates to creation dates
+        step1.setRegistrationDate(step1.getCreationDate());
+        step2.setRegistrationDate(step2.getCreationDate());
+        step3.setRegistrationDate(step3.getCreationDate());
+        step4.setRegistrationDate(step4.getCreationDate());
+        step5.setRegistrationDate(step5.getCreationDate());
+
+        // add steps
+        stepRequests.add(step1);
+        stepRequests.add(step2);
+        stepRequests.add(step3);
+        stepRequests.add(step4);
+        stepRequests.add(step5);
+
         return this.stepPropertyRepo.saveAll(stepRequests);
     }
 

@@ -68,10 +68,10 @@ public class AgentSnapshotJobService {
         // Filter out all snapshot processes currently running or with no step events to update
         Predicate<SnapshotProcess> predicateAlreadyProcessed = process -> (process.getJobId() != null) || (
                 (process.getLastUpdateDate() == null && stepPropertyUpdateRequestRepo
-                        .countBySourceAndDateBefore(process.getSource(), schedulerStartDate) == 0) || (
+                        .countBySourceAndRegistrationDateBefore(process.getSource(), schedulerStartDate) == 0) || (
                         process.getLastUpdateDate() != null && stepPropertyUpdateRequestRepo
-                                .countBySourceAndDateGreaterThanAndDateLessThanEqual(process.getSource(), process.getLastUpdateDate(),
-                                                                                     schedulerStartDate) == 0));
+                                .countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThanEqual(
+                                        process.getSource(), process.getLastUpdateDate(), schedulerStartDate) == 0));
 
         snapshotProcessesRetrieved.removeIf(predicateAlreadyProcessed);
 

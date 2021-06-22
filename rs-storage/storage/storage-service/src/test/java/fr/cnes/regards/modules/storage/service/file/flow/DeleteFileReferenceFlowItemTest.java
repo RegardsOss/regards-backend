@@ -193,9 +193,13 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 1, stepEventList.size());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 3, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.DELETE_REQUESTS,
                        StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
+        checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.DELETED_FILES,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER_1, SESSION_1, "1");
+        checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.STORED_FILES,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER_1, SESSION_1, "1");
     }
 
     /**

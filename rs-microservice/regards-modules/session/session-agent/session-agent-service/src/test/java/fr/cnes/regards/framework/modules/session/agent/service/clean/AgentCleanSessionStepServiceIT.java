@@ -117,51 +117,73 @@ public class AgentCleanSessionStepServiceIT extends AbstractAgentServiceUtilsTes
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
 
         // ACQUISITION - SOURCE 1 / scan event OWNER 1
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE.plusSeconds(1),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "10", true,
-                                                                                         false)));
+        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusSeconds(1),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.ACQUISITION,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "10", true, false));
 
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(1),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "10", true,
-                                                                                         false)));
+        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusMinutes(1),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.ACQUISITION,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "10", true, false));
+        step2.setRegistrationDate(step2.getCreationDate());
 
         // REFERENCING - SOURCE 1 / oais event OWNER 1
-        stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1, CREATION_DATE.plusDays(limitStore),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "6", false,
-                                                                                         true)));
-        // ACQUISITION - SOURCE 1 / scan event OWNER 2
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2, CREATION_DATE.plusSeconds(1),
-                                                       StepPropertyEventTypeEnum.INC,
-                                                       new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "8", true,
-                                                                                         false)));
+        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1,
+                                                                        CREATION_DATE.plusDays(limitStore),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.REFERENCING,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "6", false, true));
 
-        stepRequests
-                .add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2, CREATION_DATE.plusDays(limitStore + 1),
-                                                   StepPropertyEventTypeEnum.INC,
-                                                   new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
-                                                                                     StepPropertyStateEnum.SUCCESS,
-                                                                                     "gen.products", "4", true,
-                                                                                     false)));
+        // ACQUISITION - SOURCE 1 / scan event OWNER 2
+        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2,
+                                                                        CREATION_DATE.plusSeconds(1),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.ACQUISITION,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "8", true, false));
+
+        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2,
+                                                                        CREATION_DATE.plusDays(limitStore + 1),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.ACQUISITION,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "4", true, false));
 
         // REFERENCING - SOURCE 2 / oais event OWNER 1
-        stepRequests
-                .add(new StepPropertyUpdateRequest("oais", SOURCE_2, OWNER_1, CREATION_DATE.plusDays(limitStore + 1),
-                                                   StepPropertyEventTypeEnum.INC,
-                                                   new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
-                                                                                     StepPropertyStateEnum.SUCCESS,
-                                                                                     "gen.products", "6", false,
-                                                                                     true)));
+        StepPropertyUpdateRequest step6 = new StepPropertyUpdateRequest("oais", SOURCE_2, OWNER_1,
+                                                                        CREATION_DATE.plusDays(limitStore + 1),
+                                                                        StepPropertyEventTypeEnum.INC,
+                                                                        new StepPropertyUpdateRequestInfo(
+                                                                                StepTypeEnum.REFERENCING,
+                                                                                StepPropertyStateEnum.SUCCESS,
+                                                                                "gen.products", "6", false, true));
+        // set registration dates to creation dates
+        step1.setRegistrationDate(step1.getCreationDate());
+        step2.setRegistrationDate(step2.getCreationDate());
+        step3.setRegistrationDate(step3.getCreationDate());
+        step4.setRegistrationDate(step4.getCreationDate());
+        step5.setRegistrationDate(step5.getCreationDate());
+        step6.setRegistrationDate(step6.getCreationDate());
+
+        // add steps
+        stepRequests.add(step1);
+        stepRequests.add(step2);
+        stepRequests.add(step3);
+        stepRequests.add(step4);
+        stepRequests.add(step5);
+        stepRequests.add(step6);
+
         return this.stepPropertyRepo.saveAll(stepRequests);
     }
 }

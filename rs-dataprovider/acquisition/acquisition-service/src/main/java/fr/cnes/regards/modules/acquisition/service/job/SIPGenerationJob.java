@@ -124,7 +124,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 // Launch generation plugin
                 SIP sip = generateSipPlugin.generate(product);
                 // Update product
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.SUBMITTED);
+                sessionNotifier.notifyChangeProductState(product, ProductSIPState.SUBMITTED, true);
                 product.setSip(sip);
                 product.setSipState(ProductSIPState.SUBMITTED);
                 success.add(product);
@@ -133,7 +133,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 if (!Thread.currentThread().isInterrupted()) {
                     String message = String.format("Error while generating product \"%s\"", product.getProductName());
                     logger.error(message, e);
-                    sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
+                    sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR, true);
                     product.setSipState(ProductSIPState.GENERATION_ERROR);
                     product.setError(e.getMessage());
                     errors.add(product);

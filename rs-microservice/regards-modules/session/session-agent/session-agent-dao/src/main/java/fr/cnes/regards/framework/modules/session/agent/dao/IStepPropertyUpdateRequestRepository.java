@@ -43,14 +43,14 @@ import org.springframework.stereotype.Repository;
 public interface IStepPropertyUpdateRequestRepository extends JpaRepository<StepPropertyUpdateRequest, Long> {
 
 
-    Page<StepPropertyUpdateRequest> findBySourceAndDateGreaterThanAndDateLessThanEqual(String source, OffsetDateTime lastUpdate,
+    Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThanEqual(String source, OffsetDateTime lastUpdate,
             OffsetDateTime freezeDate, Pageable page);
 
-    long countBySourceAndDateGreaterThanAndDateLessThanEqual(String source, OffsetDateTime lastUpdate, OffsetDateTime freezeDate);
+    long countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThanEqual(String source, OffsetDateTime lastUpdate, OffsetDateTime freezeDate);
 
-    Page<StepPropertyUpdateRequest> findBySourceAndDateBefore(String source, OffsetDateTime freezeDate, Pageable page);
+    Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateBefore(String source, OffsetDateTime freezeDate, Pageable page);
 
-    long countBySourceAndDateBefore(String source, OffsetDateTime lastUpdate);
+    long countBySourceAndRegistrationDateBefore(String source, OffsetDateTime lastUpdate);
 
     List<StepPropertyUpdateRequest> findBySessionStepIn(List<SessionStep> content);
 
@@ -60,4 +60,9 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
     @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM StepPropertyUpdateRequest s) "
             + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
     int deleteUnusedProcess(OffsetDateTime limitDate);
+
+    // for tests
+    Page<StepPropertyUpdateRequest> findBySourceAndCreationDateGreaterThanAndCreationDateLessThanEqual(String source,
+            OffsetDateTime lastUpdate, OffsetDateTime freezeDate, Pageable page);
+
 }

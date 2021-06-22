@@ -84,9 +84,10 @@ public class SourceManagerController implements IResourceController<Source> {
 
     @GetMapping
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to get sources", role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedModel<EntityModel<Source>>> getSources(@RequestParam(name = "sourceName", required = false) String sourceName,
-            @RequestParam(name = "sourceState", required = false) String sourceState,
+    @ResourceAccess(description = "Endpoint to get sources", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<PagedModel<EntityModel<Source>>> getSources(
+            @RequestParam(value = "sourceName", required = false) String sourceName,
+            @RequestParam(value = "sourceState", required = false) String sourceState,
             @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
             final PagedResourcesAssembler<Source> assembler) {
         Page<Source> sources = this.sourceManagerService.loadSources(sourceName, sourceState, pageable);
@@ -102,7 +103,7 @@ public class SourceManagerController implements IResourceController<Source> {
 
     @DeleteMapping(value = DELETE_SOURCE_MAPPING)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to delete a source", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to delete a source", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteSource(@PathVariable("name") final String name) throws EntityNotFoundException {
         this.sourceManagerService.orderDeleteSource(name);
         return new ResponseEntity<>(HttpStatus.OK);

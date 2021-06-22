@@ -87,7 +87,7 @@ public class AgentSnapshotService {
 
         // CREATE SESSION STEPS
         boolean interrupted;
-        Pageable pageToRequest = PageRequest.of(0, stepPropertyPageSize, Sort.by("date").and(Sort.by("id")));
+        Pageable pageToRequest = PageRequest.of(0, stepPropertyPageSize, Sort.by("creationDate").and(Sort.by("id")));
         List<StepPropertyUpdateRequest> stepPropertyRequestsProcessed = new ArrayList<>();
         // iterate on all pages of stepPropertyUpdateRequest to create SessionSteps
         do {
@@ -141,9 +141,9 @@ public class AgentSnapshotService {
         Page<StepPropertyUpdateRequest> stepPropertyPage;
         if (lastUpdated != null) {
             stepPropertyPage = this.stepPropertyRepo
-                    .findBySourceAndDateGreaterThanAndDateLessThanEqual(source, lastUpdated, freezeDate, pageToRequest);
+                    .findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThanEqual(source, lastUpdated, freezeDate, pageToRequest);
         } else {
-            stepPropertyPage = this.stepPropertyRepo.findBySourceAndDateBefore(source, freezeDate, pageToRequest);
+            stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateBefore(source, freezeDate, pageToRequest);
         }
 
         // loop on every stepPropertyUpdateRequest to create or update SessionSteps
@@ -175,9 +175,9 @@ public class AgentSnapshotService {
             stepPropertyUpdateRequest.setSessionStep(sessionStep);
 
             // UPDATE SNAPSHOT PROCESS LAST UPDATE DATE
-            OffsetDateTime stepPropertyDate = stepPropertyUpdateRequest.getDate();
-            if (lastSnapshotDate == null || lastSnapshotDate.isBefore(stepPropertyDate)) {
-                lastSnapshotDate = stepPropertyDate;
+            OffsetDateTime stepPropertyRegistrationDate = stepPropertyUpdateRequest.getRegistrationDate();
+            if (lastSnapshotDate == null || lastSnapshotDate.isBefore(stepPropertyRegistrationDate)) {
+                lastSnapshotDate = stepPropertyRegistrationDate;
             }
         }
         // add stepPropertyRequests processed to the list of stepProperties processed
@@ -231,8 +231,8 @@ public class AgentSnapshotService {
 
         // UPDATE lastUpdateDate of SessionStep with the most recent date of stepPropertyUpdateRequest
         if (sessionStep.getLastUpdateDate() == null || sessionStep.getLastUpdateDate()
-                .isBefore(stepPropertyUpdateRequest.getDate())) {
-            sessionStep.setLastUpdateDate(stepPropertyUpdateRequest.getDate());
+                .isBefore(stepPropertyUpdateRequest.getCreationDate())) {
+            sessionStep.setLastUpdateDate(stepPropertyUpdateRequest.getCreationDate());
         }
     }
 
@@ -248,25 +248,24 @@ public class AgentSnapshotService {
     private void calculateDifferences(SessionStep sessionStep,
             StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo, String property, long previousValue,
             long valueNum) {
-        // forbid negative values
         // set in/out
         if (stepPropertyUpdateRequestInfo.isInputRelated()) {
-            sessionStep.setInputRelated(Math.max(sessionStep.getInputRelated() + valueNum, 0L));
+            sessionStep.setInputRelated(sessionStep.getInputRelated() + valueNum);
         }
         if (stepPropertyUpdateRequestInfo.isOutputRelated()) {
-            sessionStep.setOutputRelated(Math.max(sessionStep.getOutputRelated() + valueNum, 0L));
+            sessionStep.setOutputRelated(sessionStep.getOutputRelated() + valueNum);
         }
         // Set state
         StepState stepState = sessionStep.getState();
         if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.WAITING)) {
-            stepState.setWaiting(Math.max(stepState.getWaiting() + valueNum, 0L));
+            stepState.setWaiting(stepState.getWaiting() + valueNum);
         } else if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.ERROR)) {
-            stepState.setErrors(Math.max(stepState.getErrors() + valueNum, 0L));
+            stepState.setErrors(stepState.getErrors() + valueNum);
         } else if (stepPropertyUpdateRequestInfo.getState().equals(StepPropertyStateEnum.RUNNING)) {
-            stepState.setRunning(Math.max(stepState.getRunning() + valueNum, 0L));
+            stepState.setRunning(stepState.getRunning() + valueNum);
         }
         // set property
-        sessionStep.getProperties().put(property, String.valueOf(Math.max(previousValue + valueNum, 0L)));
+        sessionStep.getProperties().put(property, String.valueOf(previousValue + valueNum));
     }
 
     private void resetSessionStep(SessionStep sessionStep) {

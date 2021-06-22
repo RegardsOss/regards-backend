@@ -244,7 +244,9 @@ public class SessionNotifier {
             decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REQUESTS_RUNNING, nbStorePending);
         }
 
-        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REFERENCED_PRODUCTS, nbGenerated + nbStored);
+        int nbDeletedProducts = nbGenerated + nbStored;
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REFERENCED_PRODUCTS, nbDeletedProducts);
+        incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.DELETED_PRODUCTS, nbDeletedProducts);
     }
 
     // ----------- UTILS -----------

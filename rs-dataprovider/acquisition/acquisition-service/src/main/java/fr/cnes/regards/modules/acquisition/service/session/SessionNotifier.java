@@ -74,17 +74,21 @@ public class SessionNotifier {
 
     // PRODUCT
 
-    public void notifyChangeProductState(Product product, ISipState nextSipState) {
-        notifyChangeProductState(product, Optional.of(nextSipState));
+    public void notifyChangeProductState(Product product, ISipState nextSipState, boolean isPreviousStateToDecrement) {
+        notifyChangeProductState(product, Optional.of(nextSipState), isPreviousStateToDecrement);
     }
 
-    private void notifyChangeProductState(Product product, Optional<ISipState> nextSipState) {
+    private void notifyChangeProductState(Product product, Optional<ISipState> nextSipState,
+            boolean isPreviousStateToDecrement) {
         Optional<SessionProductPropertyEnum> current = getProperty(product.getState(), product.getSipState());
         Optional<SessionProductPropertyEnum> next = getProperty(product.getState(),
                                                                 nextSipState.orElse(product.getSipState()));
         if (!current.equals(next)) {
-            notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState(),
-                                   product.getSipState());
+            if (isPreviousStateToDecrement) {
+                notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(),
+                                       product.getState(), product.getSipState());
+            }
+
             // Add to submitting
             notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState(),
                                    nextSipState.orElse(product.getSipState()));

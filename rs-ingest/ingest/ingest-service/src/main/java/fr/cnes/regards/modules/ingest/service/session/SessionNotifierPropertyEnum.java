@@ -37,6 +37,8 @@ public enum SessionNotifierPropertyEnum {
 
     REFERENCED_PRODUCTS("referencedProducts", StepPropertyStateEnum.SUCCESS, false, true),
 
+    DELETED_PRODUCTS("deletedProducts", StepPropertyStateEnum.INFO, false, false),
+
     NEW_PRODUCT_VERSIONS("newProductVersions", StepPropertyStateEnum.INFO, false, false),
 
     REPLACED_PRODUCTS("replacedProducts", StepPropertyStateEnum.INFO, false, false),

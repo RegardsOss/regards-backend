@@ -151,6 +151,10 @@ public class FileCopyRequestService {
      * @return {@link FileCopyRequest} created if any.
      */
     public Optional<FileCopyRequest> copy(FileCopyRequestDTO requestDto, String groupId) {
+        // notify the copy request to the session agent
+        String sessionOwner = requestDto.getSessionOwner();
+        String session = requestDto.getSession();
+        this.sessionNotifier.incrementCopyRequests(sessionOwner, session);
 
         // Check a same request already exists
         Optional<FileCopyRequest> request = copyRepository.findOneByMetaInfoChecksumAndStorage(requestDto.getChecksum(),
@@ -158,11 +162,6 @@ public class FileCopyRequestService {
         if (request.isPresent()) {
             return Optional.of(handleAlreadyExists(requestDto, request.get(), groupId));
         } else {
-            String sessionOwner = requestDto.getSessionOwner();
-            String session = requestDto.getSession();
-            // notify the copy request to the session agent
-            this.sessionNotifier.incrementCopyRequests(sessionOwner, session);
-
             // get file meta info to copy
             Set<FileReference> refs = fileRefService.search(requestDto.getChecksum());
             if (refs.isEmpty()) {

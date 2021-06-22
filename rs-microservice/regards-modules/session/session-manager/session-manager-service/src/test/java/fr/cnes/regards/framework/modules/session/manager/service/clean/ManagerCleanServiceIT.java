@@ -92,13 +92,13 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsTest {
         // ACQUISITION
         SessionStep step1 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
                                             new StepState(3L, 2L, 5L));
-        step1.setLastUpdateDate(UPDATE_DATE.plusSeconds(1L));
+        step1.setLastUpdateDate(UPDATE_DATE.plusMinutes(100L));
         stepRequests.add(step1);
 
         // REFERENCING
         SessionStep step2 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
                                             new StepState(0L, 1L, 0L));
-        step2.setLastUpdateDate(UPDATE_DATE.plusMinutes(1L));
+        step2.setLastUpdateDate(UPDATE_DATE.plusMinutes(1000L));
         stepRequests.add(step2);
 
         SessionStep step3 = new SessionStep("oais", SOURCE_1, SESSION_2, StepTypeEnum.REFERENCING,
@@ -183,7 +183,7 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsTest {
 
         // outdated sessionSteps from the sessionRepo should be deleted because it is a temporary tables. All
         // sessionSteps have been processed within sessions
-        Assert.assertTrue("SessionStep be present because its lastUpdateDate is after the limit",
+        Assert.assertTrue("SessionStep should be present because its lastUpdateDate is after the limit",
                            this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, SESSION_1, "scan").isPresent());
         Assert.assertFalse("Outdated sessionStep should have been deleted from the temporary table",
                            this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, SESSION_2, "oais").isPresent());

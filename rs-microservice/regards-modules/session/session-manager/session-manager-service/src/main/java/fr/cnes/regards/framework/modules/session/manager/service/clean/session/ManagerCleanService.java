@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +80,7 @@ public class ManagerCleanService {
      */
     public int clean() {
         // Init startClean with the current date minus the limit of SessionStep save configured
-        OffsetDateTime startClean = OffsetDateTime.now().minusDays(this.limitStoreSessionSteps);
+        OffsetDateTime startClean = OffsetDateTime.now(ZoneOffset.UTC).minusDays(this.limitStoreSessionSteps);
         LOGGER.debug("Check old session steps and sessions before {}", startClean);
         boolean interrupted = Thread.currentThread().isInterrupted();
 

@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.session.manager.service.clean.snapshot
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class ManagerCleanSnapshotProcessService {
 
     public int clean() {
         // Init startClean with the current date minus the limit of SnapshotProcess save configured
-        OffsetDateTime startClean = OffsetDateTime.now().minusDays(this.limitStoreSnapshotProcess);
+        OffsetDateTime startClean = OffsetDateTime.now(ZoneOffset.UTC).minusDays(this.limitStoreSnapshotProcess);
         LOGGER.debug("Check unused snapshot processes before {}", startClean);
         return this.snapshotProcessRepo.deleteUnusedProcess(startClean);
     }

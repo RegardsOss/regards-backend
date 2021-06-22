@@ -290,7 +290,7 @@ public class ProductService implements IProductService {
             if (product.getLastSIPGenerationJobInfo() != null) {
                 jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
             }
-            sessionNotifier.notifyChangeProductState(product, ProductSIPState.SCHEDULED);
+            sessionNotifier.notifyChangeProductState(product, ProductSIPState.SCHEDULED, true);
             // Change product SIP state
             product.setSipState(ProductSIPState.SCHEDULED);
             product.setLastSIPGenerationJobInfo(jobInfo);
@@ -537,7 +537,7 @@ public class ProductService implements IProductService {
             Set<String> productNames = productNameParam.getValue();
             Set<Product> products = retrieve(productNames);
             for (Product product : products) {
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
+                sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR, true);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(jobInfo.getStatus().getStackTrace());
                 save(product);
@@ -593,7 +593,7 @@ public class ProductService implements IProductService {
                 }
                 // Notification must be before the state is changed as the notifier use the current
                 // state to decrement/increment session properties
-                sessionNotifier.notifyChangeProductState(product, SIPState.INGESTED);
+                sessionNotifier.notifyChangeProductState(product, SIPState.INGESTED, false);
                 product.setSipState(SIPState.INGESTED);
                 product.setIpId(info.getSipId());
                 save(product);
@@ -622,7 +622,7 @@ public class ProductService implements IProductService {
                 }
                 // Notification must be before the state is changed as the notifier use the current
                 // state to decrement/increment session properties
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.INGESTION_FAILED);
+                sessionNotifier.notifyChangeProductState(product, ProductSIPState.INGESTION_FAILED, false);
                 product.setSipState(ProductSIPState.INGESTION_FAILED);
                 product.setIpId(info.getSipId());
                 product.setError(errorMessage.toString());
@@ -816,7 +816,7 @@ public class ProductService implements IProductService {
                 saveAndSubmitSIP(product, processingChain);
             } catch (SIPGenerationException e) {
                 LOGGER.error(e.getMessage(), e);
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.INGESTION_FAILED);
+                sessionNotifier.notifyChangeProductState(product, ProductSIPState.INGESTION_FAILED, false);
                 product.setSipState(ProductSIPState.INGESTION_FAILED);
                 product.setError(e.getMessage());
                 save(product);

@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropert
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,7 @@ public class AgentCleanSessionStepService {
 
     public int clean() {
         // Init startClean with the current date minus the limit of SessionStep save configured
-        OffsetDateTime startClean = OffsetDateTime.now().minusDays(this.limitStoreSessionSteps);
+        OffsetDateTime startClean = OffsetDateTime.now(ZoneOffset.UTC).minusDays(this.limitStoreSessionSteps);
         LOGGER.debug("Check old session steps before {}", startClean);
         boolean interrupted = Thread.currentThread().isInterrupted();
         int nbSessionStepsDeleted = 0;

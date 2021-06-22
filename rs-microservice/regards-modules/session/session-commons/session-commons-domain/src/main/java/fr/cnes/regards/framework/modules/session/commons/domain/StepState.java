@@ -70,4 +70,9 @@ public class StepState {
     public void setRunning(long running) {
         this.running = running;
     }
+
+    @Override
+    public String toString() {
+        return "StepState{" + "errors=" + errors + ", waiting=" + waiting + ", running=" + running + '}';
+    }
 }

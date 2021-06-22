@@ -18,15 +18,10 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
-import com.google.common.base.Strings;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -35,19 +30,15 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.client.FeatureClient;
-import fr.cnes.regards.modules.feature.client.FeatureRequestEventHandler;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
 import org.junit.After;
 import org.junit.Assert;
@@ -56,7 +47,6 @@ import org.junit.Before;
 import org.mockito.Spy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -166,7 +156,6 @@ public abstract class FeatureProviderMultitenantTest extends AbstractMultitenant
 
     @After
     public void after() throws Exception {
-        cleanAMQP();
         // override this method to custom action performed after
         doAfter();
     }
@@ -177,60 +166,6 @@ public abstract class FeatureProviderMultitenantTest extends AbstractMultitenant
      */
     protected void doAfter() throws Exception {
         // Override to init something
-    }
-
-    // -------------
-    //     AMQP
-    // -------------
-
-    private void cleanAMQP() throws InterruptedException {
-        subscriber.unsubscribeFrom(FeatureExtractionRequestEvent.class);
-        subscriber.unsubscribeFrom(FeatureRequestEvent.class);
-        subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
-
-        cleanAMQPQueues(FeatureExtractionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FeatureRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(StepPropertyUpdateRequestEvent.class, Target.MICROSERVICE, WorkerMode.UNICAST);
-
-        Thread.sleep(2000L);
-    }
-
-    /**
-     * Clean AMQP by default with {@link WorkerMode#BROADCAST}
-     */
-    public void cleanAMQPQueues(Class<?> type, Target target) {
-        cleanAMQPQueues(type, target, WorkerMode.BROADCAST);
-    }
-
-    /**
-     * Internal method to clean AMQP queues, if actives
-     * @param type handler or event class, depending on the type of event
-     */
-    public void cleanAMQPQueues(Class<?> type, Target target, WorkerMode mode) {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                // get queue name
-                String queueName = null;
-                if (mode.equals(WorkerMode.BROADCAST)) {
-                    queueName = amqpAdmin.getSubscriptionQueueName((Class<? extends IHandler<?>>) type, target);
-                } else if(mode.equals(WorkerMode.UNICAST)){
-                    queueName = amqpAdmin.getUnicastQueueName(runtimeTenantResolver.getTenant(), type, target);
-                }
-                // clean queue
-                if (!Strings.isNullOrEmpty(queueName)) {
-                    amqpAdmin.purgeQueue(queueName, false);
-                    LOGGER.info("Queue {} was cleaned", queueName);
-                }
-            } catch (AmqpIOException e) {
-                LOGGER.warn("Failed to clean AMQP queues", e);
-            } finally {
-                vhostAdmin.unbind();
-            }
-        }
     }
 
     // -------------

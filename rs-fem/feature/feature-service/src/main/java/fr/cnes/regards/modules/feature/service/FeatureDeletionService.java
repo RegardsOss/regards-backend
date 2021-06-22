@@ -355,7 +355,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                                                                                   feature.getFeature().getUrn()
                                                                                           .toString(),
                                                                                   feature.getSessionOwner(),
-                                                                                  feature.getSessionOwner(), false))
+                                                                                  feature.getSession(), false))
                                    .getGroupId());
         }
         return fdr;

@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -71,10 +70,10 @@ public class StepPropertyUpdateRequest {
     @NotNull
     private String session;
 
-    @Column(name = "date")
+    @Column(name = "creation_date")
     @NotNull
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime date;
+    private OffsetDateTime creationDate;
 
     @Column(name = "type")
     @NotNull
@@ -91,15 +90,21 @@ public class StepPropertyUpdateRequest {
     @JoinColumn(name = "gen_session", referencedColumnName = "session")
     private SessionStep sessionStep;
 
+    @Column(name = "registration_date")
+    @NotNull
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime registrationDate;
+
     public StepPropertyUpdateRequest(@NotNull String stepId, @NotNull String source, @NotNull String session,
-            @NotNull OffsetDateTime date, @NotNull StepPropertyEventTypeEnum type,
+            @NotNull OffsetDateTime creationDate, @NotNull StepPropertyEventTypeEnum type,
             @NotNull StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo) {
         this.stepId = stepId;
         this.source = source;
         this.session = session;
-        this.date = date;
+        this.creationDate = creationDate;
         this.type = type;
         this.stepPropertyUpdateRequestInfo = stepPropertyUpdateRequestInfo;
+        this.registrationDate = OffsetDateTime.now();
     }
     public StepPropertyUpdateRequest(){
     }
@@ -132,12 +137,12 @@ public class StepPropertyUpdateRequest {
         this.session = session;
     }
 
-    public OffsetDateTime getDate() {
-        return date;
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
     }
 
-    public void setDate(OffsetDateTime date) {
-        this.date = date;
+    public void setCreationDate(OffsetDateTime creationDate) {
+        this.creationDate = creationDate;
     }
 
     public StepPropertyEventTypeEnum getType() {
@@ -164,11 +169,19 @@ public class StepPropertyUpdateRequest {
         this.sessionStep = sessionStep;
     }
 
+    public OffsetDateTime getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(OffsetDateTime registrationDate) {
+        this.registrationDate = registrationDate;
+    }
+
     @Override
     public String toString() {
         return "StepPropertyUpdateRequest{" + "id=" + id + ", stepId='" + stepId + '\'' + ", source='" + source + '\''
-                + ", session='" + session + '\'' + ", date=" + date + ", type=" + type
+                + ", session='" + session + '\'' + ", creationDate=" + creationDate + ", type=" + type
                 + ", stepPropertyUpdateRequestInfo=" + stepPropertyUpdateRequestInfo + ", sessionStep=" + sessionStep
-                + '}';
+                + ", registrationDate=" + registrationDate + '}';
     }
 }
