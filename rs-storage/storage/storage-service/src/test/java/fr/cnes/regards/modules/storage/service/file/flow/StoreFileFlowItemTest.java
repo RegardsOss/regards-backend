@@ -151,6 +151,68 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                        SESSION_OWNER, SESSION, "1");
     }
 
+    /**
+     * Test request to reference a file already stored.
+     * The file is not stored by the service as the origin storage and the destination storage are identical
+     */
+    @Test
+    public void storeSameFileFlowItem() {
+        String owner = "new-owner";
+        String checksum = UUID.randomUUID().toString();
+        String storage = "storage";
+        // Create a new bus message File reference request
+        StorageFlowItem item1 = StorageFlowItem
+                .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner,
+                                                   SESSION_OWNER, SESSION,
+                                                   originUrl, ONLINE_CONF_LABEL, Optional.empty()), UUID.randomUUID().toString());
+        StorageFlowItem item2 = StorageFlowItem
+                .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner+"23",
+                                                   SESSION_OWNER, SESSION,
+                                                   originUrl, ONLINE_CONF_LABEL, Optional.empty()),
+                       UUID.randomUUID().toString());
+        List<StorageFlowItem> items = new ArrayList<>();
+        items.add(item1);
+        items.add(item2);
+        storeHandler.handleBatch(getDefaultTenant(), items);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // Check file is not referenced yet
+        Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
+        // Check a file reference request is created
+        Assert.assertEquals("File request should be created", 1,
+                            stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
+        // Now check for event published
+        Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
+
+        // SImulate job schedule
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
+                                                              Lists.newArrayList(owner));
+        runAndWaitJob(jobs);
+        Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+        Assert.assertTrue("File request should be deleted",
+                          stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
+        // Now check for event published
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        Assert.assertEquals("File reference event STORED should be published", FileReferenceEventType.STORED,
+                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
+
+        // Check step events were correctly send
+        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 5, stepEventList.size());
+        checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(4), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION, "2");
+    }
+
     @Test
     public void storeFilesFlowItem() {
         // Create a new bus message File reference request

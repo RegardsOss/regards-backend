@@ -509,7 +509,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         StepProperty stepProperty = event.getStepProperty();
         Assert.assertEquals("This property was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
                             expectedEventProperty.getName(), stepProperty.getStepPropertyInfo().getProperty());
-        Assert.assertEquals("This session was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+        Assert.assertEquals("This value was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
                             expectedValue, stepProperty.getStepPropertyInfo().getValue());
         Assert.assertEquals("This type was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
                             expectedType, event.getType());
