@@ -18,30 +18,33 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- *  Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
- *  @author Kevin Marchois
+ * Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
  *
+ * @author Kevin Marchois
  */
 @Service
 @MultitenantTransactional
 public class DataObjectFeatureService implements IDataObjectFeatureService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataObjectFeatureService.class);
 
     @Autowired
     private IFeatureEntityRepository featureRepo;
@@ -54,6 +57,10 @@ public class DataObjectFeatureService implements IDataObjectFeatureService {
         } else {
             entities = featureRepo.findByModelAndLastUpdateAfter(model, date, pageable);
         }
+        LOGGER.info(
+                "Page {} of max {} entities with model {} and last update after {} requested : {}/{} found (Total page(s):{})",
+                pageable.getPageNumber(), pageable.getPageSize(), model, date, entities.getNumberOfElements(),
+                entities.getTotalElements(), entities.getTotalPages());
 
         List<FeatureEntityDto> elements = entities.stream().map(entity -> initDataObjectFeature(entity))
                 .collect(Collectors.toList());
