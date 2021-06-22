@@ -448,21 +448,11 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         assertEquals(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2), this.featureCreationRequestRepo.count());
 
         this.featureCreationService.scheduleRequests();
+        // Retrieved scheduled requests and verify that the 500 High priority have been scheduled first.
+        List<FeatureCreationRequest> scheduled = featureCreationRequestRepo.findAll().stream().filter(r -> r.getStep() != FeatureRequestStep.LOCAL_DELAYED).collect(
+                Collectors.toList());
+        Assert.assertEquals(properties.getMaxBulkSize().intValue(), scheduled.size());
 
-        // check that half of the FeatureCreationRequest with step to LOCAL_SCHEDULED
-        // have their priority to HIGH and half to AVERAGE
-        List<FeatureCreationRequest> scheduled = Lists.newArrayList();
-        Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
-            runtimeTenantResolver.forceTenant(getDefaultTenant());
-            Page<FeatureCreationRequest> page = featureCreationRequestRepo
-                    .findByStep(FeatureRequestStep.LOCAL_SCHEDULED, PageRequest.of(0, properties.getMaxBulkSize()));
-            if (page.getNumberOfElements() == properties.getMaxBulkSize()) {
-                scheduled.addAll(page.getContent());
-                return true;
-            } else {
-                return false;
-            }
-        });
         int highPriorityNumber = 0;
         int otherPriorityNumber = 0;
         for (FeatureCreationRequest request : scheduled) {
