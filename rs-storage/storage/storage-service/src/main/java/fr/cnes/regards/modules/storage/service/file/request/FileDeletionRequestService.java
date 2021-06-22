@@ -485,6 +485,8 @@ public class FileDeletionRequestService {
         } else {
             // notify deletion requests to the session agent
             this.sessionNotifier.incrementDeleteRequests(sessionOwner, session);
+            // Notify successfully deleted file
+            this.sessionNotifier.notifyDeletedFiles(sessionOwner, session);
         }
     }
 

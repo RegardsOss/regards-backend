@@ -777,6 +777,8 @@ public class FileStorageRequestService {
                                            Sets.newHashSet(request.getOwner()), fileReference);
             LOGGER.trace("[STORAGE REQUESTS] Storage request {} succeded for existing reference {} in {}ms.",
                          request.getFileName(), fileReference.getId(), System.currentTimeMillis() - start);
+            // notify the number of successful created files
+            this.sessionNotifier.incrementStoredFiles(request.getSessionOwner(), request.getSession(), 1);
             return RequestResult.build(fileReference);
         }
     }
