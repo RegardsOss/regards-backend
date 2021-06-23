@@ -1,14 +1,19 @@
 package fr.cnes.regards.modules.feature.service.session;
 
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +48,7 @@ public class FeatureDeleteService {
     private FeatureSessionNotifier sessionNotifier;
 
     @Autowired
-    private FeatureDeleteService self;
+    private IPublisher publisher;
 
     public void scheduleDeletion(String source, Optional<String> session) {
         JobInfo jobInfo = new JobInfo(true);
@@ -53,29 +58,33 @@ public class FeatureDeleteService {
         jobInfoService.createAsQueued(jobInfo);
     }
 
-    public long delete(String source, String session) {
+    public long scheduleDeleteRequests(String source, String session) {
         long deletedFeaturesCount = 0;
         long toDelete = 0;
         Page<ILightFeatureEntity> entityPage;
         Pageable pageable = PageRequest.of(0, properties.getMaxBulkSize(), Sort.by("id"));
-
+        int requestCount = 0;
+        String deletionOwner = "delete-job";
         do {
             if (StringUtils.isEmpty(session)) {
                 entityPage = featureEntityRepository.findBySessionOwner(source, pageable);
+                deletionOwner+="-"+source;
             } else {
                 entityPage = featureEntityRepository.findBySessionOwnerAndSession(source, session, pageable);
+                deletionOwner+="-"+source+"-"+session;
             }
-            if (toDelete == 0) {
-                toDelete = entityPage.getTotalElements();
+            List<FeatureUniformResourceName> featureUrns = entityPage.stream().map(f->f.getUrn()).collect(Collectors.toList());
+            List<FeatureDeletionRequestEvent> events = Lists.newArrayList();
+            for (FeatureUniformResourceName urn : featureUrns) {
+                FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(deletionOwner, urn, PriorityLevel.NORMAL);
+                events.add(event);
+                requestCount++;
             }
-            List<ILightFeatureEntity> entities = entityPage.getContent();
-            if (!entities.isEmpty()) {
-                self.deleteAndNotify(source, entities);
-                deletedFeaturesCount += entities.size();
-            }
+            publisher.publish(events);
+            pageable = entityPage.nextPageable();
         } while (!Thread.currentThread().isInterrupted() && entityPage.hasNext());
 
-        LOGGER.info("[SESSION DELETE EVENT] {}/{} deleted features for {}/{}",deletedFeaturesCount, toDelete, source, session);
+        LOGGER.info("[SESSION DELETE EVENT] {} delete request created for source {} and session {}",requestCount, source, session);
 
         if (Thread.currentThread().isInterrupted()) {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
@@ -83,14 +92,6 @@ public class FeatureDeleteService {
         }
 
         return deletedFeaturesCount;
-    }
-
-    public void deleteAndNotify(String source, List<ILightFeatureEntity> entities) {
-
-        featureEntityRepository.deleteAllByUrnIn(entities.stream().map(ILightFeatureEntity::getUrn).collect(Collectors.toSet()));
-
-        Map<String, Long> countBySession = entities.stream().collect(Collectors.groupingBy(ILightFeatureEntity::getSession, Collectors.counting()));
-        countBySession.forEach((session, count) -> sessionNotifier.decrementCount(source, session, FeatureSessionProperty.REFERENCED_PRODUCTS, count));
     }
 
 }

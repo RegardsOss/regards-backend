@@ -54,7 +54,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTaskScheduler.class);
 
-    private static final Long MAX_TASK_DELAY = 60L; // In second
+    public static final Long MAX_TASK_DELAY = 60L; // In second
 
     private static final String NOTIFICATION_TITLE = "Feature scheduling";
 
@@ -66,9 +66,9 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
 
     private static final String UPDATE_REQUESTS = "FEATURE UPDATE REQUESTS";
 
-    private static final String DELETE_REQUEST_LOCK = "scheduleFDelete";
+    public static final String DELETE_REQUEST_LOCK = "scheduleFDelete";
 
-    private static final String DELETE_REQUESTS = "FEATURE DELETE REQUESTS";
+    public static final String DELETE_REQUESTS = "FEATURE DELETE REQUESTS";
 
     private static final String COPY_REQUEST_LOCK = "scheduleFCopy";
 

@@ -1,12 +1,21 @@
 package fr.cnes.regards.modules.feature.service.session;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.feature.service.task.FeatureTaskScheduler;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -22,6 +31,9 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
 
     @Autowired
     private FeatureDeleteService featureDeleteService;
+
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
 
     public static Set<JobParameter> getParameters(String source, Optional<String> sessionOptional) {
         Set<JobParameter> parameters = Sets.newHashSet();
@@ -39,9 +51,18 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
     @Override
     public void run() {
         logger.trace("[{}] FeatureDeleteJob starts for source {}", jobInfoId, sourceName);
-        long start = System.currentTimeMillis();
-        long nbDeletedRequests = featureDeleteService.delete(sourceName, sessionName);
-        logger.trace("[{}] FeatureDeleteJob ends in {} ms. {} features deleted ", jobInfoId, System.currentTimeMillis() - start, nbDeletedRequests);
+        try {
+            lockingTaskExecutors.executeWithLock(deleteTask, new LockConfiguration(FeatureTaskScheduler.DELETE_REQUEST_LOCK,
+                                                                                       Instant.now().plusSeconds(
+                                                                                               FeatureTaskScheduler.MAX_TASK_DELAY)));
+        } catch (Throwable throwable) {
+            logger.error("Error during deletion job process", throwable);
+        }
     }
+
+    private final LockingTaskExecutor.Task deleteTask = () -> {
+        LockAssert.assertLocked();
+        featureDeleteService.scheduleDeleteRequests(sourceName, sessionName);
+    };
 
 }

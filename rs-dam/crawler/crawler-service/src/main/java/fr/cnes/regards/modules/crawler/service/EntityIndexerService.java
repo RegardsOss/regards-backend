@@ -1051,7 +1051,9 @@ public class EntityIndexerService implements IEntityIndexerService {
         // get object deleted
         DataObject obj = esRepos.get(tenant, EntityType.DATA.toString(), ipId, DataObject.class);
         // decrement the related session
-        sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());
+        if (obj != null && obj.getFeature() != null) {
+            sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());
+        }
         // delete object
         return esRepos.delete(tenant, EntityType.DATA.toString(), ipId);
     }

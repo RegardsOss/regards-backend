@@ -229,6 +229,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
+        } else {
+            existingRequestIds.add(item.getRequestId());
         }
 
         if (errors.hasErrors()) {
