@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.toponyms;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -8,6 +7,7 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -16,8 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.Map;
 
 /**
  * Advice for specific toponyms exceptions
@@ -39,7 +37,6 @@ public class ToponymsControllerAdvice {
     private static final Map<String, HttpStatus> EXCEPTION_CODES = ImmutableMap.<String, HttpStatus>builder()
             .put(EntityNotFoundException.class.getName(), HttpStatus.NOT_FOUND)
             .put(GeometryNotProcessedException.class.getName(), HttpStatus.BAD_REQUEST)
-            .put(JsonProcessingException.class.getName(), HttpStatus.BAD_REQUEST)
             .put(GeometryNotHandledException.class.getName(), HttpStatus.UNSUPPORTED_MEDIA_TYPE)
             .put(MaxLimitPerDayException.class.getName(), HttpStatus.TOO_MANY_REQUESTS).build();
 
@@ -66,17 +63,6 @@ public class ToponymsControllerAdvice {
      */
     @ExceptionHandler(ModuleException.class)
     public ResponseEntity<ServerErrorResponse> moduleException(final ModuleException exception) {
-        return buildError(exception);
-    }
-
-    /**
-     * Exception handler when an error occurs while parsing the feature as a json object
-     *
-     * @param exception {@link JsonProcessingException}
-     * @return {@link ResponseEntity}
-     */
-    @ExceptionHandler(JsonProcessingException.class)
-    public ResponseEntity<ServerErrorResponse> jsonProcessingException(final JsonProcessingException exception) {
         return buildError(exception);
     }
 

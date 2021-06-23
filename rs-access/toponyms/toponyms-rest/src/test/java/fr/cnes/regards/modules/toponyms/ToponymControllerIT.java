@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.toponyms;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -31,6 +30,8 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import fr.cnes.regards.modules.toponyms.service.ToponymsService;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
+import java.io.IOException;
+import java.time.OffsetDateTime;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +39,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import java.io.IOException;
-import java.time.OffsetDateTime;
 
 /**
  * @author Sébastien Binda
@@ -102,13 +100,6 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void testConf() {
-/*        performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING, customizer().expectStatusOk()
-                                  .expectToHaveSize(JSON_PATH_CONTENT, 10).addParameter("page", "0").addParameter("size", "10"),
-                          "should be  ok")*/
-    }
-
-    @Test
     @Purpose("Test the creation of a not visible toponym with a type not handled by REGARDS")
     @ExceptionHandler(GeometryNotProcessedException.class)
     public void createInvalidNotVisibleToponym() throws IOException {
@@ -145,15 +136,14 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Purpose("Test the toponym is only retrieved when the same geometry is posted")
-    public void testSameGeomToponymsSave() throws JsonProcessingException, ModuleException {
+    public void testSameGeomToponymsSave() throws ModuleException {
         ToponymDTO toponymCreated = this.toponymsService
                 .generateNotVisibleToponym(POLYGON, "test_user", "test_project");
         OffsetDateTime expirationDateCreated = toponymCreated.getToponymMetadata().getExpirationDate();
         performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT),
                            customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
         Toponym toponymRetrieved = this.repository.getOne(toponymCreated.getBusinessId());
-        Assert.assertNotEquals("Expiration date should have been updated",
-                               expirationDateCreated,
+        Assert.assertNotEquals("Expiration date should have been updated", expirationDateCreated,
                                toponymRetrieved.getToponymMetadata().getExpirationDate());
 
     }
