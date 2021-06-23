@@ -27,11 +27,13 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,7 +76,13 @@ public class AccessSettingsService extends AbstractSettingService {
         }
     }
 
+    /**
+     * {@link Order} : Initialization needs to be done after RoleService initialization from {@link fr.cnes.regards.modules.accessrights.service.role.RoleEventListener}
+     * @param event
+     * @throws EntityException
+     */
     @EventListener
+    @Order(10)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onTenantConnectionReady(TenantConnectionReady event) throws EntityException {
         runtimeTenantResolver.forceTenant(event.getTenant());

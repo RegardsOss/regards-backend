@@ -24,6 +24,7 @@ import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
@@ -70,7 +71,12 @@ public class RoleEventListener {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    /**
+     * {@link Order} : Needs to be initialize before other bean to creates default roles for new tenant.
+     * @param event
+     */
     @EventListener
+    @Order(0)
     public void processEvent(TenantConnectionReady event) {
         try {
             // Init default role for this tenant
