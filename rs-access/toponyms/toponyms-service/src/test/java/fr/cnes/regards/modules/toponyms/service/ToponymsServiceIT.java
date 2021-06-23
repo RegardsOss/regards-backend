@@ -176,23 +176,23 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
     // --- CREATE INVALID TOPONYMS ---
     // -------------------------------
 
-    @Test(expected = JsonProcessingException.class)
+    @Test(expected = GeometryNotProcessedException.class)
     @Purpose("Parse invalid feature. The json is malformed.")
-    public void parseInvalidFeature() throws ModuleException, JsonProcessingException {
+    public void parseInvalidFeature() throws ModuleException {
         String invalidFeature = "{{\"type\": \"Feature\", \"properties\": {\"test\": 546169.05592760979}, \"geometry\": {\"type\": \"Polygon\",\"coordinates\": []}}";
         this.service.generateNotVisibleToponym(invalidFeature, "test_user", "test_project");
     }
 
     @Test(expected = GeometryNotProcessedException.class)
     @Purpose("Parse invalid feature. The fields are not present as expected (refer to geolatte Feature)")
-    public void parseInvalidFormatFeature() throws ModuleException, JsonProcessingException {
+    public void parseInvalidFormatFeature() throws ModuleException {
         String invalidFeature = "{\"type\": \"Random\", \"properties\": {\"test\" : 42}, \"object\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
         this.service.generateNotVisibleToponym(invalidFeature, "test_user", "test_project");
     }
 
     @Test(expected = GeometryNotHandledException.class)
     @Purpose("Parse not handled geometry (LineString)")
-    public void parseNotHandledGeometry() throws ModuleException, JsonProcessingException {
+    public void parseNotHandledGeometry() throws ModuleException {
         String invalidFeature = "{\"type\": \"Feature\", \"properties\": {\"test\": 546169.05592760979}, \"geometry\": {\"type\": \"LineString\",\"coordinates\": []}}";
         this.service.generateNotVisibleToponym(invalidFeature, "test_user", "test_project");
     }

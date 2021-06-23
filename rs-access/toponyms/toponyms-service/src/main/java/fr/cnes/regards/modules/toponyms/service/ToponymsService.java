@@ -31,6 +31,15 @@ import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledExc
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import fr.cnes.regards.modules.toponyms.service.utils.ToponymsIGeometryHelper;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.geolatte.geom.Feature;
 import org.geolatte.geom.Geometry;
 import org.geolatte.geom.GeometryType;
@@ -40,19 +49,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Service to search {@link ToponymDTO}s from a postgis database
@@ -197,7 +201,7 @@ public class ToponymsService {
      * @throws JsonProcessingException if a problem occurred during the parsing of the geometry
      */
     public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project)
-            throws ModuleException, JsonProcessingException {
+            throws ModuleException {
         // --- GEOMETRY PARSING ---
         Geometry<Position> geometry = parseGeometry(featureString);
         // check geometry is not already present in the database for this project
@@ -260,29 +264,44 @@ public class ToponymsService {
      * @param featureString the feature in string format
      * @return the geometry with {@link Geometry} format
      * @throws ModuleException         if a problem occurred during the parsing of the geometry
-     * @throws JsonProcessingException if a problem occurred during the parsing of the geometry
      */
-    private Geometry<Position> parseGeometry(String featureString) throws ModuleException, JsonProcessingException {
+    private Geometry<Position> parseGeometry(String featureString) throws ModuleException {
         // define mapper
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new GeolatteGeomModule());
         // parse geometry
         LOGGER.debug("Parsing geometry of feature {}", featureString);
-        Feature<?, ?> feature = mapper.readValue(featureString, Feature.class);
-        // if geometry could not be read
-        if (feature.getGeometry() == null || feature.getGeometry().getGeometryType() == null) {
-            throw new GeometryNotProcessedException(
-                    "The geometry could not be processed. The toponym will not be saved. "
-                            + "Check the format of the geojson feature.");
-        } else {
-            Geometry<Position> geometry = (Geometry<Position>) feature.getGeometry();
-            // refuse not handled geometry types
-            GeometryType geometryType = geometry.getGeometryType();
-            if (!geometryType.equals(GeometryType.POLYGON) && !geometryType.equals(GeometryType.MULTIPOLYGON)) {
-                throw new GeometryNotHandledException(geometryType.toString());
-            }
-            return geometry;
+        Feature<?, ?> feature;
+        Geometry<Position> geometry = null;
+        GeometryType geometryType = null;
+        try {
+            feature = mapper.readValue(featureString, Feature.class);
+            geometry = (Geometry<Position>) feature.getGeometry();
+            geometryType = geometry.getGeometryType();
+        } catch (JsonProcessingException | NullPointerException | ClassCastException e) {
+            handleParseGeometryError(e.getCause());
         }
+        // check geometry and type, refuse not handled geometry
+        if (!Objects.requireNonNull(geometryType).equals(GeometryType.POLYGON) && !geometryType
+                .equals(GeometryType.MULTIPOLYGON)) {
+            throw new GeometryNotHandledException(geometryType.toString());
+        }
+        return geometry;
     }
 
+    /**
+     * Handle geometry parsing errors
+     * @param cause of the error
+     * @throws GeometryNotProcessedException exception for geometry not parsed
+     */
+    private void handleParseGeometryError(Throwable cause) throws GeometryNotProcessedException {
+        // if geometry could not be read
+        StringBuilder msg = new StringBuilder(
+                "The geometry could not be processed. The toponym will not be saved. Check the format "
+                        + "of the geojson feature. ");
+        if (cause != null) {
+            msg.append("Cause : ").append(cause.getMessage());
+        }
+        throw new GeometryNotProcessedException(msg.toString());
+    }
 }
