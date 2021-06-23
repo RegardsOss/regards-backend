@@ -208,6 +208,15 @@ public class BasketService implements IBasketService {
                 .orElseThrow(() -> new EntityNotFoundException("Basket selection with id " + datasetId + " doesn't exist"));
     }
 
+    @Override
+    public Basket duplicate(Long id, String owner) {
+        Basket oldBasket = load(id);
+        Basket newBasket = new Basket();
+        newBasket.setOwner(owner);
+        oldBasket.getDatasetSelections().forEach(newBasket::addDatasetSelection);
+        return repos.save(newBasket);
+    }
+
     private Basket attachProcessToDatasetSelectionAndSaveBasket(
             Basket basket,
             BasketDatasetSelection ds,

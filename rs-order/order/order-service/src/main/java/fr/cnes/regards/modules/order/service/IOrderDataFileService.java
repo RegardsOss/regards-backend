@@ -105,4 +105,7 @@ public interface IOrderDataFileService {
      * @param orderId
      */
     void removeAll(Long orderId);
+
+    boolean hasDownloadErrors(Long orderId);
+
 }

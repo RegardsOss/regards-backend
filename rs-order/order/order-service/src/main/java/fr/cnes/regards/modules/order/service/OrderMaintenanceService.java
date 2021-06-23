@@ -60,20 +60,20 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
     private IOrderMaintenanceService self;
 
     private final IOrderService orderService;
-    private final IOrderRepository repos;
-    private final IOrderDataFileService dataFileService;
+    private final IOrderRepository orderRepository;
+    private final IOrderDataFileService orderDataFileService;
     private final IJobInfoService jobInfoService;
     private final ITenantResolver tenantResolver;
     private final IRuntimeTenantResolver runtimeTenantResolver;
     private final TemplateService templateService;
     private final IEmailClient emailClient;
 
-    public OrderMaintenanceService(IOrderService orderService, IOrderRepository repos, IOrderDataFileService dataFileService, IJobInfoService jobInfoService,
+    public OrderMaintenanceService(IOrderService orderService, IOrderRepository orderRepository, IOrderDataFileService orderDataFileService, IJobInfoService jobInfoService,
                                    ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, TemplateService templateService, IEmailClient emailClient
     ) {
         this.orderService = orderService;
-        this.repos = repos;
-        this.dataFileService = dataFileService;
+        this.orderRepository = orderRepository;
+        this.orderDataFileService = orderDataFileService;
         this.jobInfoService = jobInfoService;
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -94,16 +94,23 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     @Override
     public void updateTenantOrdersComputations() {
-        Set<Order> orders = dataFileService.updateCurrentOrdersComputedValues();
+        Set<Order> orders = orderDataFileService.updateCurrentOrdersComputedValues();
         if (!orders.isEmpty()) {
-            repos.saveAll(orders);
+            orderRepository.saveAll(orders);
         }
         // Because previous method (updateCurrentOrdersComputedValues) takes care of CURRENT jobs, it is necessary
         // to update finished ones ie setting availableFilesCount to 0 for finished jobs not waiting for user
-        List<Order> finishedOrders = repos.findFinishedOrdersToUpdate();
+        List<Order> finishedOrders = orderRepository.findFinishedOrdersToUpdate();
         if (!finishedOrders.isEmpty()) {
-            finishedOrders.forEach(o -> o.setAvailableFilesCount(0));
-            repos.saveAll(finishedOrders);
+            // For orders with DONE status and download errors, set status to DONE_WITH_WARNING
+            finishedOrders.stream().filter(order -> OrderStatus.DONE.equals(order.getStatus()))
+                    .forEach(order -> {
+                        if (orderDataFileService.hasDownloadErrors(order.getId())) {
+                            order.setStatus(OrderStatus.DONE_WITH_WARNING);
+                        }
+                    });
+            finishedOrders.forEach(order -> order.setAvailableFilesCount(0));
+            orderRepository.saveAll(finishedOrders);
         }
     }
 
@@ -122,7 +129,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     @Override
     public void sendTenantPeriodicNotifications() {
-        List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
+        List<Order> asideOrders = orderRepository.findAsideOrders(daysBeforeSendingNotifEmail);
 
         Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(),
                                                                     Comparator.comparing(Order::getCreationDate)
@@ -149,7 +156,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
             FeignSecurityManager.reset();
             // Update order availableUpdateDate to avoid another microservice instance sending notification emails
             entry.getValue().forEach(order -> order.setAvailableUpdateDate(now));
-            repos.saveAll(entry.getValue());
+            orderRepository.saveAll(entry.getValue());
         }
     }
 
@@ -172,10 +179,10 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     @Override
     public Optional<Order> findOneOrderAndMarkAsExpired() {
-        Optional<Order> optional = repos.findOneExpiredOrder();
+        Optional<Order> optional = orderRepository.findOneExpiredOrder();
         optional.ifPresent(order -> {
             order.setStatus(OrderStatus.EXPIRED);
-            repos.save(order);
+            orderRepository.save(order);
         });
         return optional;
     }
@@ -206,7 +213,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         }
         // Delete all its data files
         // Don't forget no relation is hardly mapped between OrderDataFile and Order
-        dataFileService.removeAll(order.getId());
+        orderDataFileService.removeAll(order.getId());
         // Delete all filesTasks
         for (DatasetTask dsTask : order.getDatasetTasks()) {
             dsTask.getReliantTasks().clear();
@@ -214,7 +221,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         // Deactivate waitingForUser tag
         order.setWaitingForUser(false);
         // Order is already at EXPIRED state so let it be
-        repos.save(order);
+        orderRepository.save(order);
     }
 
 }

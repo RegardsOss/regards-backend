@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.dao.OrderSpecifications;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -85,7 +84,7 @@ public class OrderService implements IOrderService {
     private IOrderService self;
 
     private final IOrderRepository orderRepository;
-    private final IBasketRepository basketRepository;
+    private final IBasketService basketService;
     private final IOrderCreationService orderCreationService;
     private final IOrderRetryService orderRetryService;
     private final IOrderDataFileService dataFileService;
@@ -97,12 +96,12 @@ public class OrderService implements IOrderService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
     private final IOrderSettingsService orderSettingsService;
 
-    public OrderService(IBasketRepository basketRepository, IOrderRepository orderRepository, IOrderCreationService orderCreationService, IOrderRetryService orderRetryService,
+    public OrderService(IOrderRepository orderRepository, IBasketService basketService, IOrderCreationService orderCreationService, IOrderRetryService orderRetryService,
                         IOrderDataFileService dataFileService, IJobInfoService jobInfoService, IOrderJobService orderJobService, IAuthenticationResolver authResolver,
                         IProjectUsersClient projectUsersClient, ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver,
                         IOrderSettingsService orderSettingsService
     ) {
-        this.basketRepository = basketRepository;
+        this.basketService = basketService;
         this.orderRepository = orderRepository;
         this.orderCreationService = orderCreationService;
         this.orderRetryService = orderRetryService;
@@ -281,16 +280,18 @@ public class OrderService implements IOrderService {
 
         String oldOrderOwner = oldOrder.getOwner();
         String oldOrderOwnerRole = getRole(oldOrderOwner);
+        Basket oldBasket;
 
-        Basket basket = basketRepository.findByOwner(BASKET_OWNER_PREFIX + oldOrderId);
-        if (basket == null) {
+        try {
+            oldBasket = basketService.find(BASKET_OWNER_PREFIX + oldOrderId);
+        } catch (EmptyBasketException e) {
             // This should not happen, since basket is not deleted anymore - check is added for transition period
             throw new CannotRestartOrderException("BASKET_NOT_FOUND");
         }
-        basket.setOwner(oldOrderOwner);
-        basketRepository.save(basket);
 
-        return createOrder(basket, label, successUrl, orderSettingsService.getUserOrderParameters().getSubOrderDuration(), oldOrderOwnerRole);
+        Basket newBasket = basketService.duplicate(oldBasket.getId(), oldOrderOwner);
+
+        return createOrder(newBasket, label, successUrl, orderSettingsService.getUserOrderParameters().getSubOrderDuration(), oldOrderOwnerRole);
     }
 
     @Override
@@ -337,10 +338,7 @@ public class OrderService implements IOrderService {
                 // REMOVED is a final state (order no more exists, this state is unreachable)
                 throw new CannotRemoveOrderException();
         }
-        Basket basket = basketRepository.findByOwner(BASKET_OWNER_PREFIX + order.getId());
-        if (basket != null) {
-            basketRepository.deleteById(basket.getId());
-        }
+        basketService.deleteIfExists(BASKET_OWNER_PREFIX + order.getId());
         orderRepository.deleteById(order.getId());
     }
 
@@ -450,7 +448,14 @@ public class OrderService implements IOrderService {
     }
 
     private String getRole(String user) {
-        return HateoasUtils.unwrap(projectUsersClient.retrieveProjectUserByEmail(user).getBody()).getRole().getName();
+        String role;
+        try {
+            FeignSecurityManager.asSystem();
+            role = HateoasUtils.unwrap(projectUsersClient.retrieveProjectUserByEmail(user).getBody()).getRole().getName();
+        } finally {
+            FeignSecurityManager.reset();
+        }
+        return role;
     }
 
 }

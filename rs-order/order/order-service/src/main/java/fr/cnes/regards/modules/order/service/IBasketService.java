@@ -98,4 +98,6 @@ public interface IBasketService {
      */
     Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescription description);
 
+    Basket duplicate(Long id, String owner);
+
 }
