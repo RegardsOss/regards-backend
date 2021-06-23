@@ -54,6 +54,8 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionStat
                 columnNames = { "project_id", "microservice" }) })
 public class ProjectConnection implements IIdentifiable<Long> {
 
+    public static final int ERROR_MAX_LENGTH = 255;
+
     /**
      * Identifier
      */
@@ -115,7 +117,7 @@ public class ProjectConnection implements IIdentifiable<Long> {
     /**
      * If {@link TenantConnectionState#ERROR}, explains the error cause
      */
-    @Column(name = "cause", length = 255)
+    @Column(name = "cause", length = ERROR_MAX_LENGTH)
     private String errorCause;
 
     /**
