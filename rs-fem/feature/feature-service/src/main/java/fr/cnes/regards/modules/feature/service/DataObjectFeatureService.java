@@ -70,7 +70,7 @@ public class DataObjectFeatureService implements IDataObjectFeatureService {
     private FeatureEntityDto initDataObjectFeature(FeatureEntity entity) {
         FeatureEntityDto dto = new FeatureEntityDto();
         dto.setSession(entity.getSession());
-        dto.setSessionOwner(entity.getSessionOwner());
+        dto.setSource(entity.getSessionOwner());
         dto.setFeature(entity.getFeature());
         return dto;
     }

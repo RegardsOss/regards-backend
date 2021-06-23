@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.hibernate.annotations.Type;
 
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * {@link FeatureEntityDto} dto
@@ -33,7 +32,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 public class FeatureEntityDto {
 
     @NotNull
-    private String sessionOwner;
+    private String source;
 
     @NotNull
     private String session;
@@ -46,7 +45,7 @@ public class FeatureEntityDto {
     public static FeatureEntityDto build(String sessionOwner, String session, Feature feature,
             FeatureUniformResourceName previousVersionUrn, String model) {
         FeatureEntityDto featureEntity = new FeatureEntityDto();
-        featureEntity.setSessionOwner(sessionOwner);
+        featureEntity.setSource(sessionOwner);
         featureEntity.setSession(session);
         featureEntity.setFeature(feature);
         return featureEntity;
@@ -60,12 +59,12 @@ public class FeatureEntityDto {
         this.feature = feature;
     }
 
-    public String getSessionOwner() {
-        return sessionOwner;
+    public String getSource() {
+        return source;
     }
 
-    public void setSessionOwner(String sessionOwner) {
-        this.sessionOwner = sessionOwner;
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getSession() {

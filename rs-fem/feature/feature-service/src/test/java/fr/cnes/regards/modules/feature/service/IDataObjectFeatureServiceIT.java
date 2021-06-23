@@ -90,7 +90,7 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
         // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same
         assertEquals(featureUpdated.getFeature().getProperties(), dof.getFeature().getProperties());
         assertEquals(featureUpdated.getSession(), dof.getSession());
-        assertEquals(featureUpdated.getSessionOwner(), dof.getSessionOwner());
+        assertEquals(featureUpdated.getSessionOwner(), dof.getSource());
         assertEquals(featureUpdated.getFeature().getModel(), dof.getFeature().getModel());
 
     }
