@@ -84,9 +84,12 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
 
     /**
      * Create a new scheduled task for the tenant created
+     * Needs to be run after settings initialization (see {@link DumpSettingsService}, hence lower order
+     *
      * @param event to inform of a new connection see {@link TenantConnectionReady}
      */
     @EventListener
+    @Order(10)
     public void onTenantConnectionReady(TenantConnectionReady event) {
         updateScheduler(event.getTenant());
     }

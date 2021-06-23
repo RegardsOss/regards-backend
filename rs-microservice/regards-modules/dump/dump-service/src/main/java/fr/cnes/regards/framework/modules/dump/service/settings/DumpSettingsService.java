@@ -75,6 +75,7 @@ public class DumpSettingsService extends AbstractSettingService implements IDump
     }
 
     @EventListener
+    @Order(0)
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onTenantConnectionReady(TenantConnectionReady event) throws EntityException {
         runtimeTenantResolver.forceTenant(event.getTenant());
