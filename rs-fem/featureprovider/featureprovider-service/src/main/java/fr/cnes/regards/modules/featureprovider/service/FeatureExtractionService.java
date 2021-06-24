@@ -171,16 +171,12 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         }
 
         String requestOwner = AbstractRequestEvent.getRequestOwner(messageProperties);
-        String sessionOwner = AbstractRequestEvent.getSessionOwner(messageProperties);
-        String session = AbstractRequestEvent.getSession(messageProperties);
 
         // Monitoring log
         LOGGER.error(String.format(REFERENCE_DENIED_FORMAT, requestOwner, requestId, errorMessage));
         // Publish DENIED request
         publisher.publish(new FeatureExtractionResponseEvent(requestId, requestOwner, RequestState.DENIED,
                 Sets.newHashSet(errorMessage)));
-        // Notify denied request to the session agent
-        this.extractionSessionNotifier.incrementRequestRefused(sessionOwner, session);
         return true;
     }
 
