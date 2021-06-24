@@ -290,7 +290,15 @@ public class ProjectConnectionService implements IProjectConnectionService {
             Optional<String> errorCause) throws EntityNotFoundException {
         ProjectConnection connection = retrieveProjectConnection(projectName, microservice);
         connection.setState(state);
-        connection.setErrorCause(errorCause.orElse(null));
+        if (errorCause.isPresent()) {
+            if (errorCause.get().length() > ProjectConnection.ERROR_MAX_LENGTH) {
+                connection.setErrorCause(errorCause.get().substring(0, ProjectConnection.ERROR_MAX_LENGTH));
+            } else {
+                connection.setErrorCause(errorCause.get());
+            }
+        } else {
+            connection.setErrorCause(null);
+        }
         return projectConnectionRepository.save(connection);
     }
 }
