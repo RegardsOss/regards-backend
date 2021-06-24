@@ -42,7 +42,7 @@ public class SessionManagerSpecifications {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (name != null) {
-                predicates.add(cb.equal(root.get("name"), name));
+                predicates.add(cb.like(root.get("name"), "%"+name+"%"));
             }
 
             if (source != null) {
