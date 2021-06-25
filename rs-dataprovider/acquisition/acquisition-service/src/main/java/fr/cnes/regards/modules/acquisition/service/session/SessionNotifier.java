@@ -120,8 +120,16 @@ public class SessionNotifier {
     }
 
     public void notifyProductDeleted(String sessionOwner, Product product) {
-        notifyDecrementSession(sessionOwner, product.getSession(), product.getState(), product.getSipState());
-        notifyDecrementSession(sessionOwner, product.getSession(), SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
+        String session = product.getSession();
+        Optional<SessionProductPropertyEnum> property = notifyDecrementSession(sessionOwner, session,
+                                                                               product.getState(),
+                                                                               product.getSipState());
+        // decrement also generated product if property is ingested
+        if (property.isPresent() && property.get().equals(SessionProductPropertyEnum.PROPERTY_INGESTED)) {
+            notifyDecrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS, 1L);
+        }
+        // decrement number of files acquired
+        notifyDecrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                product.getActiveAcquisitionFiles().size());
     }
 
@@ -208,12 +216,13 @@ public class SessionNotifier {
 
     // DEC
 
-    private void notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
+    private Optional<SessionProductPropertyEnum> notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
         Optional<SessionProductPropertyEnum> property = getProperty(state, sipState);
         if (property.isPresent()) {
             LOGGER.trace("Notify decrement {}:{} property {}", state, sipState, property.get().getName());
             notifyDecrementSession(sessionOwner, session, property.get(), 1L);
         }
+        return property;
     }
 
     /**
@@ -257,7 +266,7 @@ public class SessionNotifier {
     private Optional<SessionProductPropertyEnum> getProperty(ISipState sipState) {
         Optional<SessionProductPropertyEnum> property = Optional.empty();
         if (sipState == ProductSIPState.SUBMITTED) {
-            property = Optional.of(SessionProductPropertyEnum.GENERATED_PRODUCTS);
+            property = Optional.of(SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS);
         } else if (sipState == ProductSIPState.GENERATION_ERROR) {
             property = Optional.of(SessionProductPropertyEnum.PROPERTY_GENERATION_ERROR);
         } else if (sipState == ProductSIPState.INGESTION_FAILED) {

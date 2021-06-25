@@ -93,23 +93,27 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsTest {
         SessionStep step1 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
                                             new StepState(3L, 2L, 5L));
         step1.setLastUpdateDate(UPDATE_DATE.plusMinutes(100L));
+        step1.setRegistrationDate(step1.getLastUpdateDate());
         stepRequests.add(step1);
 
         // REFERENCING
         SessionStep step2 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
                                             new StepState(0L, 1L, 0L));
         step2.setLastUpdateDate(UPDATE_DATE.plusMinutes(1000L));
+        step2.setRegistrationDate(step2.getLastUpdateDate());
         stepRequests.add(step2);
 
         SessionStep step3 = new SessionStep("oais", SOURCE_1, SESSION_2, StepTypeEnum.REFERENCING,
                                             new StepState(1L, 6L, 10L));
         step3.setLastUpdateDate(UPDATE_DATE.minusDays(1));
+        step3.setRegistrationDate(step3.getLastUpdateDate());
         stepRequests.add(step3);
 
         // STORAGE
         SessionStep step4 = new SessionStep("storage", SOURCE_2, SESSION_1, StepTypeEnum.STORAGE,
                                             new StepState(0L, 2L, 0L));
         step4.setLastUpdateDate(UPDATE_DATE.minusSeconds(1L));
+        step4.setRegistrationDate(step4.getLastUpdateDate());
         stepRequests.add(step4);
 
         // SAVE

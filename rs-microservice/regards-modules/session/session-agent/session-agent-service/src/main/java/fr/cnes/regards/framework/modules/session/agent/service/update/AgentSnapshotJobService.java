@@ -70,7 +70,7 @@ public class AgentSnapshotJobService {
                 (process.getLastUpdateDate() == null && stepPropertyUpdateRequestRepo
                         .countBySourceAndRegistrationDateBefore(process.getSource(), schedulerStartDate) == 0) || (
                         process.getLastUpdateDate() != null && stepPropertyUpdateRequestRepo
-                                .countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThanEqual(
+                                .countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(
                                         process.getSource(), process.getLastUpdateDate(), schedulerStartDate) == 0));
 
         snapshotProcessesRetrieved.removeIf(predicateAlreadyProcessed);

@@ -61,7 +61,7 @@ public enum SessionProductPropertyEnum {
     /**
      * Name of the property that collects the number of products generated
      */
-    GENERATED_PRODUCTS("generatedProducts", StepPropertyStateEnum.SUCCESS, false, true),
+    PROPERTY_GENERATED_PRODUCTS("generatedProducts", StepPropertyStateEnum.SUCCESS, false, true),
 
     /**
      * Name of the property that collects the number of products generated

@@ -141,7 +141,7 @@ public class AgentSnapshotService {
         Page<StepPropertyUpdateRequest> stepPropertyPage;
         if (lastUpdated != null) {
             stepPropertyPage = this.stepPropertyRepo
-                    .findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThanEqual(source, lastUpdated, freezeDate, pageToRequest);
+                    .findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(source, lastUpdated, freezeDate, pageToRequest);
         } else {
             stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateBefore(source, freezeDate, pageToRequest);
         }

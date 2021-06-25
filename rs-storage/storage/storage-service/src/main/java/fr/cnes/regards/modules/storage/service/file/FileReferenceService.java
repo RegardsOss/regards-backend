@@ -88,8 +88,13 @@ public class FileReferenceService {
      * @param fileMetaInfo file information
      * @param location file location
      */
-    public FileReference create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation location) {
+    public FileReference create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation location,
+     boolean isReferenced) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
+        // set referenced to true if the file is not stored physically
+        if(isReferenced) {
+            fileRef.setReferenced(true);
+        }
         fileRef = fileRefRepo.save(fileRef);
         return fileRef;
     }
@@ -99,8 +104,8 @@ public class FileReferenceService {
      * This method does not delete file physically.
      *  @param fileRef {@link FileReference} to delete.
      * @param groupId request business identifier
-     * @param sessionOwner
-     * @param session
+     * @param sessionOwner source of data
+     * @param session data management session
      */
     public void delete(FileReference fileRef, String groupId, String sessionOwner, String session) {
         Assert.notNull(fileRef, "File reference to delete cannot be null");
@@ -116,7 +121,7 @@ public class FileReferenceService {
         // Decrement the number of running requests to the session agent
         this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
         // Notify successfully deleted file
-        this.sessionNotifier.notifyDeletedFiles(sessionOwner, session);
+        this.sessionNotifier.notifyDeletedFiles(sessionOwner, session, fileRef.isReferenced());
     }
 
     /**

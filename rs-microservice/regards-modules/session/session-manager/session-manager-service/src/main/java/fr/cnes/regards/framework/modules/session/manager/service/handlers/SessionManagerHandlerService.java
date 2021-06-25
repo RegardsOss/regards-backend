@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +66,7 @@ public class SessionManagerHandlerService {
         // create the list of sources impacted by these events and create snapshot processes if not existing
         for (SessionStepEvent sessionStepEvent : events) {
             SessionStep sessionStep = sessionStepEvent.getSessionStep();
+            sessionStep.setRegistrationDate(OffsetDateTime.now());
             sessionSteps.add(sessionStep);
             sourcesToBeUpdated.add(sessionStep.getSource());
         }

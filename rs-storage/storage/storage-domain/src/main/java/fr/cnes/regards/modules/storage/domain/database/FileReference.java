@@ -94,6 +94,9 @@ public class FileReference {
     @Embedded
     private FileLocation location;
 
+    @Column(name="referenced")
+    private boolean referenced = false;
+
     public FileReference() {
         super();
     }
@@ -178,4 +181,18 @@ public class FileReference {
         return owners;
     }
 
+    /**
+     * @return if the file is referenced (true only the file is not stored physically)
+     */
+    public boolean isReferenced() {
+        return referenced;
+    }
+
+    /**
+     * if the file is referenced (not stored physically), set to true
+     * @param referenced if the file is referenced
+     */
+    public void setReferenced(boolean referenced) {
+        this.referenced = true;
+    }
 }

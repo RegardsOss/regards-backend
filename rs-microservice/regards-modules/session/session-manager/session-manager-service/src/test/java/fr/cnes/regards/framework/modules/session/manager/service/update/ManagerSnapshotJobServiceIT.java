@@ -61,7 +61,7 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
     public void generateSessionStepTest() throws InterruptedException {
         // ---- RUN 1 ----
         // launch the generation of sessionSteps
-        int nbEvents = createRunStepEvents();
+        int nbEvents = createRun1StepEvents();
 
         // wait for sessionStepEvent to be stored in database
         waitForSessionStepEventsStored(nbEvents);
@@ -85,17 +85,10 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
         this.managerSnapshotJobService.scheduleJob();
         waitForJobStates(ManagerSnapshotJob.class.getName(), 3, 20000L, new JobStatus[] { JobStatus.SUCCEEDED });
         waitForSnapshotUpdateSuccesses();
-        // check snapshot process was updated
-        Optional<SnapshotProcess> snapshotProcessOpt = this.snapshotProcessRepo.findBySource(SOURCE_2);
-        Assert.assertTrue("SnapshotProcessDate should have been present", snapshotProcessOpt.isPresent());
-        Assert.assertEquals("SnapshotProcessDate was not updated", LAST_UPDATED.minusSeconds(1),
-                            snapshotProcessOpt.get().getLastUpdateDate());
-
         checkResults2();
-
     }
 
-    private int createRunStepEvents() {
+    private int createRun1StepEvents() {
         List<SessionStep> sessionStepList = new ArrayList<>();
 
         // SOURCE 1 -  SESSION 1
@@ -136,6 +129,7 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
     private int createRun2StepEvents() {
         List<SessionStep> sessionStepList = new ArrayList<>();
         // SOURCE 2 - SESSION 1
+        // change sessionStep3 to simulate a sending of the updated sessionStep
         SessionStep sessionStep3 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.DISSEMINATION,
                                                    new StepState(0, 0, 0));
         sessionStep3.setOutputRelated(10);
@@ -277,5 +271,12 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsTest
                     break;
             }
         }
+        // check snapshot process was updated
+        Optional<SnapshotProcess> snapshotProcessOpt = this.snapshotProcessRepo.findBySource(SOURCE_2);
+        Assert.assertTrue("SnapshotProcessDate should have been present", snapshotProcessOpt.isPresent());
+        Assert.assertEquals("SnapshotProcessDate was not updated",
+                            session.getSteps().stream().findFirst().get().getRegistrationDate(),
+                            snapshotProcessOpt.get().getLastUpdateDate());
+
     }
 }

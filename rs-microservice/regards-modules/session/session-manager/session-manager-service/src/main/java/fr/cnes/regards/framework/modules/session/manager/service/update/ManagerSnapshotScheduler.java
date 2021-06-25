@@ -50,7 +50,7 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
 
     public static final String DEFAULT_INITIAL_DELAY = "10000";
 
-    public static final String DEFAULT_SCHEDULING_DELAY = "30000"; // every 30 seconds
+    public static final String DEFAULT_SCHEDULING_DELAY = "2000"; // every 2 seconds
 
     public static final String MANAGER_SNAPSHOT_PROCESS = "Session manager snapshot";
 

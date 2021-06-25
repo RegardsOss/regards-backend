@@ -145,6 +145,7 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {
             SessionStep sessionStep = new SessionStep("scan", source, "SESSION_1", StepTypeEnum.ACQUISITION,
                                                       new StepState(0, 0, 1));
             sessionStep.setLastUpdateDate(UPDATE_DATE.minusDays(limitStoreSessionSteps + 1));
+            sessionStep.setRegistrationDate(sessionStep.getLastUpdateDate());
             stepList.add(sessionStep);
 
             // snapshot

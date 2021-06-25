@@ -71,6 +71,8 @@ public class ManagerSnapshotService {
     @Autowired
     private ISnapshotProcessRepository snapshotProcessRepo;
 
+    private OffsetDateTime lastSnapshotDate;
+
     @Value("${regards.session.management.session.step.page.size:1000}")
     private int sessionStepPageSize;
 
@@ -94,7 +96,7 @@ public class ManagerSnapshotService {
 
         if (!interrupted && !sessionSet.isEmpty()) {
             // update snapshot process with the most recent SessionStep
-            snapshotProcess.setLastUpdateDate(source.getLastUpdateDate());
+            snapshotProcess.setLastUpdateDate(lastSnapshotDate);
             // save changes
             this.snapshotProcessRepo.save(snapshotProcess);
             this.sessionRepo.saveAll(sessionSet);
@@ -166,14 +168,16 @@ public class ManagerSnapshotService {
         Page<SessionStep> sessionStepPage;
         if (lastUpdateDate != null) {
             sessionStepPage = this.sessionStepRepo
-                    .findBySourceAndLastUpdateDateGreaterThanAndLastUpdateDateLessThanEqual(sourceName, lastUpdateDate,
-                                                                                            freezeDate, pageToRequest);
+                    .findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(sourceName, lastUpdateDate,
+                                                                                           freezeDate, pageToRequest);
         } else {
             sessionStepPage = this.sessionStepRepo
-                    .findBySourceAndLastUpdateDateBefore(sourceName, freezeDate, pageToRequest);
+                    .findBySourceAndRegistrationDateBefore(sourceName, freezeDate, pageToRequest);
         }
 
-        // Iterate on each session step retrieve
+        // Iterate on each session step
+        // The session and the source will be created or updated depending on the existence of the previous step
+        // The snapshot lastUpdateDate will be updated with the sessionStep registration date
         List<SessionStep> sessionSteps = sessionStepPage.getContent();
         for (SessionStep sessionStep : sessionSteps) {
             // initialize delta object which represents the difference between the previous version sessionStep (if it
@@ -183,6 +187,11 @@ public class ManagerSnapshotService {
             updateSession(sessionMap, sourceName, sessionStep, deltaStep);
             // update the source aggregation according to the delta
             updateSourceAgg(aggByStep, source, deltaStep);
+            // update snapshot lastUpdateDate
+            OffsetDateTime sessionStepRegistrationDate = sessionStep.getRegistrationDate();
+            if (lastSnapshotDate == null || lastSnapshotDate.isBefore(sessionStepRegistrationDate)) {
+                lastSnapshotDate = sessionStepRegistrationDate;
+            }
         }
 
         return sessionStepPage.hasNext() ? sessionStepPage.nextPageable() : null;
