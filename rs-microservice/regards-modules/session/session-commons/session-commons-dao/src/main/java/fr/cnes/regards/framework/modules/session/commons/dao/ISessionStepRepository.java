@@ -40,15 +40,15 @@ public interface ISessionStepRepository extends JpaRepository<SessionStep, Long>
     /**
      * Methods to calculate snapshots of SessionSteps
      */
-    int countBySourceAndLastUpdateDateBefore(String source, OffsetDateTime schedulerStartDate);
+    int countBySourceAndRegistrationDateBefore(String source, OffsetDateTime schedulerStartDate);
 
-    Page<SessionStep> findBySourceAndLastUpdateDateBefore(String source, OffsetDateTime freezeDate,
+    Page<SessionStep> findBySourceAndRegistrationDateBefore(String source, OffsetDateTime freezeDate,
             Pageable pageToRequest);
 
-    int countBySourceAndLastUpdateDateGreaterThanAndLastUpdateDateLessThanEqual(String source,
+    int countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source,
             OffsetDateTime lastUpdateDate, OffsetDateTime schedulerStartDate);
 
-    Page<SessionStep> findBySourceAndLastUpdateDateGreaterThanAndLastUpdateDateLessThanEqual(String source,
+    Page<SessionStep> findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source,
             OffsetDateTime lastUpdateDate, OffsetDateTime freezeDate, Pageable pageToRequest);
 
     /**
@@ -62,4 +62,9 @@ public interface ISessionStepRepository extends JpaRepository<SessionStep, Long>
      * Return all names of sources and sessions associated to SessionSteps
      */
     Page<ISessionStepLight> findBy(Pageable pageToRequest);
+
+    // For tests
+    Page<SessionStep> findBySourceAndLastUpdateDateBefore(String source, OffsetDateTime freezeDate,
+            Pageable page);
+
 }

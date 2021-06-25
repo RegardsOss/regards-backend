@@ -38,7 +38,8 @@ import org.hibernate.annotations.TypeDef;
 /**
  * A {@link SessionStep} represents a step in which data are added or processed. Currently 4 steps mainly exist to
  * process data during its life cycle (acquisition/referencing/storage/dissemination). They are created or updated
- * through step property events from the session agent.
+ * through step property events from the session agent. They are then sent to the session manager to be aggregated in
+ * sessions and sources.
  *
  * @author Iliana Ghazali
  **/
@@ -116,6 +117,14 @@ public class SessionStep {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     @NotNull
     private OffsetDateTime lastUpdateDate;
+
+    /**
+     * Date when the SessionStep is registered in the database after the reception SessionStepEvents. Only filled in
+     * SessionManager
+     */
+    @Column(name = "registration_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime registrationDate;
 
     public SessionStep(@NotNull String stepId, @NotNull String source, @NotNull String session,
             @NotNull StepTypeEnum type, @NotNull StepState state) {
@@ -201,6 +210,14 @@ public class SessionStep {
         this.lastUpdateDate = lastUpdateDate;
     }
 
+    public OffsetDateTime getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(OffsetDateTime registrationDate) {
+        this.registrationDate = registrationDate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -220,6 +237,7 @@ public class SessionStep {
     public String toString() {
         return "SessionStep{" + "stepId='" + stepId + '\'' + ", source='" + source + '\'' + ", session='" + session
                 + '\'' + ", type=" + type + ", inputRelated=" + inputRelated + ", outputRelated=" + outputRelated
-                + ", state=" + state + ", properties=" + properties + ", lastUpdateDate=" + lastUpdateDate + '}';
+                + ", state=" + state + ", properties=" + properties + ", lastUpdateDate=" + lastUpdateDate
+                + ", registrationDate=" + registrationDate + '}';
     }
 }

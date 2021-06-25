@@ -407,7 +407,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertEquals(nbFiles, decCompleted.intValue());
 
         Integer incGenerated = callByProperty
-                .get(SessionProductPropertyEnum.GENERATED_PRODUCTS.getName() + "_" + StepPropertyEventTypeEnum.INC);
+                .get(SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName() + "_" + StepPropertyEventTypeEnum.INC);
         Assert.assertNotNull(incGenerated);
         Assert.assertEquals(nbFiles, incGenerated.intValue());
     }

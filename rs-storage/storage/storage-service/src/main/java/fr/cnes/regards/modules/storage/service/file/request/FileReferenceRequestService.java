@@ -155,7 +155,7 @@ public class FileReferenceRequestService {
                             && r.getFileReference().getLocation().getStorage().equals(file.getStorage()))
                     .findFirst();
             try {
-                FileReference fileRef = reference(file, oFileRef, oFileDeletionReq, Sets.newHashSet(groupId));
+                FileReference fileRef = reference(file, oFileRef, oFileDeletionReq, Sets.newHashSet(groupId), true);
                 reqGrpService.requestSuccess(groupId, FileRequestType.REFERENCE, fileRef.getMetaInfo().getChecksum(),
                                              fileRef.getLocation().getStorage(), null,
                                              Lists.newArrayList(file.getOwner()), fileRef);
@@ -205,7 +205,7 @@ public class FileReferenceRequestService {
                        metaInfo.getMimeType().toString(), metaInfo.getFileSize(), owner, location.getStorage(),
                        location.getUrl(), sessionOwner, session)
                 .withHeight(metaInfo.getHeight()).withWidth(metaInfo.getWidth()).withType(metaInfo.getType()), oFileRef,
-                         oFileDelReq, groupIds);
+                         oFileDelReq, groupIds, false);
     }
 
     /**
@@ -213,19 +213,20 @@ public class FileReferenceRequestService {
      * @param request {@link FileReferenceRequestDTO}
      * @param fileRef {@link FileReference} of associated file if already exists
      * @param groupIds Business requests identifiers associated to the new file reference.
+     * @param isReferenced
      * @return {@link FileReference}
      * @throws ModuleException if the file reference can not be created.
      */
     private FileReference reference(FileReferenceRequestDTO request, Optional<FileReference> fileRef,
-            Optional<FileDeletionRequest> fileDelReq, Collection<String> groupIds) throws ModuleException {
+            Optional<FileDeletionRequest> fileDelReq, Collection<String> groupIds, boolean isReferenced) throws ModuleException {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), fileDelReq, request, groupIds);
         } else {
             // If referenced file is associated to a known storage location then validate the reference
             validateReferenceUrl(request);
-            FileReference newFileRef = fileRefService.create(Lists.newArrayList(request.getOwner()),
-                                                             request.buildMetaInfo(),
-                                                             new FileLocation(request.getStorage(), request.getUrl()));
+            FileReference newFileRef = fileRefService
+                    .create(Lists.newArrayList(request.getOwner()), request.buildMetaInfo(),
+                            new FileLocation(request.getStorage(), request.getUrl()), isReferenced);
             String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
                                            newFileRef.getMetaInfo().getFileName(), newFileRef.getLocation().toString(),
                                            newFileRef.getMetaInfo().getChecksum());

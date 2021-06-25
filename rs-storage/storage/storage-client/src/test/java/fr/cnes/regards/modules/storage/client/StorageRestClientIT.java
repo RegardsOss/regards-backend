@@ -128,8 +128,8 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         for (int i = 0; i < 100; i++) {
             fileRefService.create(Sets.newHashSet("someone", "someone-else"),
                                   new FileReferenceMetaInfo("123456" + i, "MD5", "file.test_" + i, 10L,
-                                          MediaType.APPLICATION_JSON),
-                                  new FileLocation("somewhere", "file://plop/plip.file_" + i));
+                                                            MediaType.APPLICATION_JSON),
+                                  new FileLocation("somewhere", "file://plop/plip.file_" + i), false);
         }
         Response response = client.export();
         Assert.assertNotNull(response);

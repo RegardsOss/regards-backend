@@ -100,7 +100,10 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         LOGGER.info("Add file reference duration {}ms", finish - start);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
-        Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
+        Optional<FileReference> fileRef = fileRefService.search(storage, checksum);
+        Assert.assertTrue("File should be present", fileRef.isPresent());
+        Assert.assertTrue("File should be referenced", fileRef.get().isReferenced());
+
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -122,7 +125,6 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
 
     @Test
     public void addFileRefFlowItemsWithSameChecksum() throws InterruptedException {
-
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "somewhere";
@@ -152,7 +154,6 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
-
     }
 
     @Test

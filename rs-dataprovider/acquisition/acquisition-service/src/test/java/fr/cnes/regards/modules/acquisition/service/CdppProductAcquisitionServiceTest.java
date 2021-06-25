@@ -290,7 +290,7 @@ public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantSe
         SessionStepProperties sessionSteps = this.sessionStepRepo
                 .findBySourceAndSessionAndStepId(sessionOwner, session, SessionNotifier.GLOBAL_SESSION_STEP).get()
                 .getProperties();
-        String generatedValue = sessionSteps.get(SessionProductPropertyEnum.GENERATED_PRODUCTS.getName());
+        String generatedValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName());
         String completedValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName());
         String incompleteValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName());
         String acqFilesValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName());
