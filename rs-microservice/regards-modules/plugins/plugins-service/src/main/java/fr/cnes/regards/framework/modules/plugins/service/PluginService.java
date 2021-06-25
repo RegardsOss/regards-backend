@@ -155,7 +155,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
     public PluginConfiguration savePluginConfiguration(PluginConfiguration plgConf)
             throws EntityInvalidException, EncryptionException, EntityNotFoundException {
 
@@ -239,7 +239,7 @@ public class PluginService implements IPluginService {
      * {@link PluginInterface} is configured to allow only one active conf.
      * @param plgConf {@link PluginConfiguration} to save
      */
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
     public void ensureOnlyOneConfIsActive(PluginConfiguration plgConf)
             throws EncryptionException, EntityInvalidException, EntityNotFoundException {
         if (plgConf.isActive()) {
@@ -273,7 +273,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
     public PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException {
         Optional<PluginConfiguration> plgConf = repos.findById(id);
         if (plgConf.isPresent()) {
@@ -285,7 +285,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
     public PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException {
         PluginConfiguration plgConf = repos.findCompleteByBusinessId(businessId);
         if (plgConf == null) {
@@ -318,7 +318,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
     public PluginConfiguration updatePluginConfiguration(PluginConfiguration pluginConf)
             throws EntityNotFoundException, EntityInvalidException, EncryptionException {
         final PluginConfiguration oldConf = repos.findCompleteByBusinessId(pluginConf.getBusinessId());
@@ -402,7 +402,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
     public void deletePluginConfiguration(String businessId) throws ModuleException {
         PluginConfiguration toDelete = repos.findCompleteByBusinessId(businessId);
         if (toDelete == null) {
@@ -525,7 +525,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
     public <T> T getPlugin(Long id, IPluginParam... dynamicPluginParameters)
             throws ModuleException, NotAvailablePluginConfigurationException {
         Optional<PluginConfiguration> plgConf = repos.findById(id);
@@ -567,7 +567,7 @@ public class PluginService implements IPluginService {
      * @param dynamicParameters plugin parameters (including potential dynamic ones)
      * @return plugin instance
      */
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
     private <T> T instanciatePluginAndCache(String businessId, IPluginParam... dynamicParameters)
             throws ModuleException, NotAvailablePluginConfigurationException {
 
@@ -677,7 +677,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @Transactional(noRollbackFor = EntityNotEmptyException.class)
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
     public PluginConfiguration getPluginConfigurationByLabel(String configurationLabel) throws EntityNotFoundException {
         PluginConfiguration conf = repos.findOneByLabel(configurationLabel);
         if (conf == null) {
