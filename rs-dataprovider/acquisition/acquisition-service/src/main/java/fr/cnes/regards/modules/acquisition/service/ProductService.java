@@ -737,9 +737,7 @@ public class ProductService implements IProductService {
     public void handleSipGenerationStart(AcquisitionProcessingChain chain, Collection<Product> products) {
         Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
         for (String session : sessions) {
-            if (!existsByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED)) {
-                sessionNotifier.notifyStartingChain(chain.getLabel(), session);
-            }
+            sessionNotifier.notifyStartingChain(chain.getLabel(), session);
         }
     }
 
