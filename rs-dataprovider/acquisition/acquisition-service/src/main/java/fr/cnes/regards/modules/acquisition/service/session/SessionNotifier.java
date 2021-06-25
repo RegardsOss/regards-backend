@@ -130,6 +130,11 @@ public class SessionNotifier {
                                nbFilesAcquired);
     }
 
+    public void notifyFileInvalid(String session, String sessionOwner, long nbFilesAcquired) {
+        notifyIncrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_INVALID,
+                               nbFilesAcquired);
+    }
+
     /**
      * Notify session to remove a product and its files to the current session
      *

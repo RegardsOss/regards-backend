@@ -920,6 +920,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             Map<String, Object> dataMap = new HashMap<>();
             dataMap.put("invalidFiles", invalidFiles);
             String message;
+            sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(),invalidFiles.size());
             try {
                 message = templateService
                         .render(AcquisitionTemplateConfiguration.ACQUISITION_INVALID_FILES_TEMPLATE, dataMap);

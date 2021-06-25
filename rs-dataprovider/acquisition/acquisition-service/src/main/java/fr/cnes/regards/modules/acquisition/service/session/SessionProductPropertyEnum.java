@@ -34,6 +34,11 @@ public enum SessionProductPropertyEnum {
     PROPERTY_FILES_ACQUIRED("filesAcquired", StepPropertyStateEnum.SUCCESS, true, false),
 
     /**
+     * Name of the property that collects the number of invalid files scanned
+     */
+    PROPERTY_FILES_INVALID("filesInvalid", StepPropertyStateEnum.INFO, false, false),
+
+    /**
      * Name of the property that indicates if a chain is running
      */
     CHAIN_RUNNING("chainRunning", StepPropertyStateEnum.RUNNING, false, false),

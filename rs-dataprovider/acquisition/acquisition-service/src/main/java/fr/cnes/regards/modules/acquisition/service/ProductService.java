@@ -285,6 +285,9 @@ public class ProductService implements IProductService {
         jobInfo.setOwner(authResolver.getUser());
         jobInfo = jobInfoService.createAsPending(jobInfo);
 
+        // Start all session associated to products scheduled
+
+
         // Release lock
         for (Product product : products) {
             if (product.getLastSIPGenerationJobInfo() != null) {
@@ -299,6 +302,8 @@ public class ProductService implements IProductService {
 
         jobInfo.updateStatus(JobStatus.QUEUED);
         jobInfoService.save(jobInfo);
+
+        handleSipGenerationStart(chain, products);
 
         return jobInfo;
     }
@@ -584,6 +589,7 @@ public class ProductService implements IProductService {
                     jobInfo.setClassName(PostAcquisitionJob.class.getName());
                     jobInfo.setOwner(authResolver.getUser());
                     jobInfo = jobInfoService.createAsQueued(jobInfo);
+                    sessionNotifier.notifyStartingChain(product.getProcessingChain().getLabel(), product.getSession());
 
                     // Release lock
                     if (product.getLastPostProductionJobInfo() != null) {
@@ -721,6 +727,20 @@ public class ProductService implements IProductService {
             scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
         }
         return products.hasNext();
+    }
+
+    /**
+     * Notify each session started by scheduled products
+     * @param chain
+     * @param products
+     */
+    public void handleSipGenerationStart(AcquisitionProcessingChain chain, Collection<Product> products) {
+        Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
+        for (String session : sessions) {
+            if (!existsByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED)) {
+                sessionNotifier.notifyStartingChain(chain.getLabel(), session);
+            }
+        }
     }
 
     @Override

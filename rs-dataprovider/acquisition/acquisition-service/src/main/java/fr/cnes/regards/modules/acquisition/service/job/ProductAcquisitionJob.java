@@ -122,13 +122,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             logger.error("Business error", e);
             throw new JobRuntimeException(e);
         } finally {
-            // If no products has been scheduled for generation. The chain is over.
-            if (productsScheduled == 0) {
-                sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
-            }
-            if (Thread.currentThread().isInterrupted()) {
-                sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
-            }
+            sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
             // Job is terminated ... release processing chain
             processingService.unlockChain(processingChain.getId());
         }
