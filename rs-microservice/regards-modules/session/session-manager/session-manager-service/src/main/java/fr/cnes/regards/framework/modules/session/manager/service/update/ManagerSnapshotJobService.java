@@ -79,7 +79,7 @@ public class ManagerSnapshotJobService {
                 HashSet<JobParameter> jobParameters = Sets
                         .newHashSet(new JobParameter(ManagerSnapshotJob.SNAPSHOT_PROCESS, snapshotProcessToUpdate),
                                     new JobParameter(ManagerSnapshotJob.FREEZE_DATE, schedulerStartDate));
-                JobInfo jobInfo = new JobInfo(false, 0, jobParameters, null, ManagerSnapshotJob.class.getName());
+                JobInfo jobInfo = new JobInfo(false, 1000, jobParameters, null, ManagerSnapshotJob.class.getName());
 
                 // create job
                 jobInfo = jobInfoService.createAsQueued(jobInfo);
