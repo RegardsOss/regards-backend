@@ -201,6 +201,8 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
             }
             featureCopyJob.advanceCompletion();
         }
+        doOnSuccess(successCopyRequest);
+        doOnTerminated(successCopyRequest);
 
         // update those with a error status
         this.featureCopyRequestRepo.saveAll(requests.stream().filter(request -> !successCopyRequest.contains(request))
@@ -285,6 +287,11 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
 
     @Override
     public void doOnSuccess(Collection<FeatureCopyRequest> requests) {
+        // Nothing to do
+    }
+
+    @Override
+    public void doOnTerminated(Collection<FeatureCopyRequest> requests) {
         // Nothing to do
     }
 

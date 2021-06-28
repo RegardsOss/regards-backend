@@ -683,28 +683,30 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep(6);
+        computeSessionStep(7);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(3, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(4, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(3, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(2, property("referencingRequests"), requests);
         checkRequests(2, property("runningReferencingRequests"), requests);
         checkRequests(2, property("inErrorReferencingRequests"), requests);
+        checkRequests(1, property("referencedProducts"), requests);
         checkRequests(2, inputRelated(), requests);
-        checkRequests(0, outputRelated(), requests);
+        checkRequests(1, outputRelated(), requests);
 
         // Check Session step
         SessionStep sessionStep = getSessionStep();
         Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
         Assertions.assertEquals(0, sessionStep.getInputRelated());
-        Assertions.assertEquals(0, sessionStep.getOutputRelated());
+        Assertions.assertEquals(1, sessionStep.getOutputRelated());
         SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(3, sessionStepProperties.size());
+        Assertions.assertEquals(4, sessionStepProperties.size());
         checkKey(0, "referencingRequests", sessionStepProperties);
         checkKey(0, "runningReferencingRequests", sessionStepProperties);
         checkKey(0, "inErrorReferencingRequests", sessionStepProperties);
+        checkKey(1, "referencedProducts", sessionStepProperties);
     }
 
     private void createRequestsWithOneFileError(int requestCount) throws InterruptedException {
@@ -760,26 +762,30 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep(4);
+        computeSessionStep(5);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(3, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(4, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(1, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
         checkRequests(2, property("runningReferencingRequests"), requests);
         checkRequests(1, property("inErrorReferencingRequests"), requests);
+        checkRequests(1, property("referencedProducts"), requests);
         checkRequests(1, inputRelated(), requests);
+        checkRequests(1, outputRelated(), requests);
 
         // Check Session step
         SessionStep sessionStep = getSessionStep();
         Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
         Assertions.assertEquals(1, sessionStep.getInputRelated());
         SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(3, sessionStepProperties.size());
+        Assertions.assertEquals(4, sessionStepProperties.size());
         checkKey(1, "referencingRequests", sessionStepProperties);
         checkKey(0, "runningReferencingRequests", sessionStepProperties);
         checkKey(1, "inErrorReferencingRequests", sessionStepProperties);
+        // As error is on notification product is well referenced
+        checkKey(1, "referencedProducts", sessionStepProperties);
     }
 
 }

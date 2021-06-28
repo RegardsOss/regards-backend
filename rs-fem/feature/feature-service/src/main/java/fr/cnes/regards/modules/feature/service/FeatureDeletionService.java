@@ -315,6 +315,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                                                         RequestState.SUCCESS));
         }
 
+        doOnSuccess(successfulRequests.keySet());
         // PREPARE PROPAGATION to NOTIFIER if required
         if (isToNotify) {
             for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : successfulRequests.entrySet()) {
@@ -324,7 +325,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             }
             deletionRepo.saveAll(successfulRequests.keySet());
         } else {
-            sessionInfoUpdateOnSuccess(successfulRequests.values());
+            doOnTerminated(successfulRequests.keySet());
             this.deletionRepo.deleteInBatch(successfulRequests.keySet());
         }
 
@@ -468,6 +469,16 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     }
 
     @Override
+    public void doOnTerminated(Collection<FeatureDeletionRequest> requests) {
+        requests.forEach((r) -> {
+            if (r.getSourceToNotify() != null && r.getSessionToNotify() != null) {
+                featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
+            }
+        });
+    }
+
+    @Override
     public void doOnError(Collection<FeatureDeletionRequest> requests) {
         requests.forEach((r) -> {
             if (r.getSourceToNotify() != null && r.getSessionToNotify() != null) {
@@ -478,13 +489,4 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             }
         });
     }
-
-    private void sessionInfoUpdateOnSuccess(Collection<FeatureEntity> entities) {
-        entities.forEach(entity -> {
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
-            featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.DELETED_PRODUCTS);
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.REFERENCED_PRODUCTS);
-        });
-    }
-
 }

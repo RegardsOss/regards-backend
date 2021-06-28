@@ -374,15 +374,16 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         }
 
         if (!requests.isEmpty()) {
+            doOnSuccess(requests);
             // See if notifications are required
-                if (notificationSettingsService.isActiveNotification()) {
+            if (notificationSettingsService.isActiveNotification()) {
                 // notify creation of feature
                 for (FeatureCreationRequest request : requests) {
                     request.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
                     featureCreationRequestRepo.save(request);
                 }
             } else {
-                doOnSuccess(requests);
+                doOnTerminated(requests);
                 // Successful requests are deleted now!
                 featureCreationRequestRepo.deleteByUrnIn(requests.stream().map(AbstractFeatureRequest::getUrn).collect(Collectors.toSet()));
                 for (FeatureCreationRequest fcr : requests) {
@@ -543,6 +544,12 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     public void doOnSuccess(Collection<FeatureCreationRequest> requests) {
         requests.forEach(request -> {
             featureSessionNotifier.incrementCount(request, FeatureSessionProperty.REFERENCED_PRODUCTS);
+        });
+    }
+
+    @Override
+    public void doOnTerminated(Collection<FeatureCreationRequest> requests) {
+        requests.forEach(request -> {
             featureSessionNotifier.decrementCount(request, FeatureSessionProperty.RUNNING_REFERENCING_REQUESTS);
         });
     }

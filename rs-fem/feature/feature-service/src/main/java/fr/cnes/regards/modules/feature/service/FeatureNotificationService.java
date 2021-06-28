@@ -331,6 +331,11 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     }
 
     @Override
+    public void doOnTerminated(Collection<FeatureNotificationRequest> requests) {
+        // Nothing to do. Termination done in doOnSuccess
+    }
+
+    @Override
     public void doOnError(Collection<FeatureNotificationRequest> requests) {
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
                 .map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
@@ -348,9 +353,9 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     }
 
     private void onSuccess(Collection<AbstractFeatureRequest> requests) {
-        featureCreationService.doOnSuccess(filterRequests(requests, FeatureCreationRequest.class));
-        featureDeletionService.doOnSuccess(filterRequests(requests, FeatureDeletionRequest.class));
-        featureUpdateService.doOnSuccess(filterRequests(requests, FeatureUpdateRequest.class));
+        featureCreationService.doOnTerminated(filterRequests(requests, FeatureCreationRequest.class));
+        featureDeletionService.doOnTerminated(filterRequests(requests, FeatureDeletionRequest.class));
+        featureUpdateService.doOnTerminated(filterRequests(requests, FeatureUpdateRequest.class));
         doOnSuccess(filterRequests(requests, FeatureNotificationRequest.class));
     }
 
