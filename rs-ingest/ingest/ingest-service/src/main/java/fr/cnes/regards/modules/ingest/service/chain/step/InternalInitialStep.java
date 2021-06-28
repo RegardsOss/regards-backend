@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -120,11 +121,15 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
     }
 
     @Override
-    protected void doAfterError(IngestRequest request) {
+    protected void doAfterError(IngestRequest request, Optional<Exception> e)  {
         if ((request.getState() != InternalRequestState.WAITING_VERSIONING_MODE)
                 && (request.getState() != InternalRequestState.IGNORED)) {
-            handleRequestError(String.format("Internal SIP creation from external SIP \"%s\" fails",
-                                             request.getSip().getId()));
+            String error = "unknown cause";
+            if (e.isPresent()) {
+                error = e.get().getMessage();
+            }
+            handleRequestError(String.format("Internal SIP creation from external SIP \"%s\" fails. Cause : %s",
+                                             request.getSip().getId(), error));
         }
     }
 

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -74,7 +75,11 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
     }
 
     @Override
-    protected void doAfterError(SIP sip) {
-        handleRequestError(String.format("Validation fails for SIP \"%s\"", sip.getId()));
+    protected void doAfterError(SIP sip, Optional<Exception> e) {
+        String error = "unknown cause";
+        if (e.isPresent()) {
+            error = e.get().getMessage();
+        }
+        handleRequestError(String.format("Validation fails for SIP \"%s\". Cause : %s", sip.getId(), error));
     }
 }

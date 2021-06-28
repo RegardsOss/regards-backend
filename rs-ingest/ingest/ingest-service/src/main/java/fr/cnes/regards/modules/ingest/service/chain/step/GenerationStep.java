@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -124,7 +125,11 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
     }
 
     @Override
-    protected void doAfterError(SIPEntity sip) {
-        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"%s\"", sip.getSip().getId()));
+    protected void doAfterError(SIPEntity sip, Optional<Exception> e) {
+        String error = "unknown cause";
+        if (e.isPresent()) {
+            error = e.get().getMessage();
+        }
+        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"%s\". Cause : %s", sip.getSip().getId(),error));
     }
 }

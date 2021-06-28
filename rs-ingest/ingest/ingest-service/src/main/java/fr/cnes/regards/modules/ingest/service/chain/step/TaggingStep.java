@@ -62,8 +62,12 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
     }
 
     @Override
-    protected void doAfterError(List<AIP> pIn) {
-        handleRequestError(String.format("Tagging fails for AIP of SIP \"%s\"",
-                                         job.getCurrentEntity().getProviderId()));
+    protected void doAfterError(List<AIP> pIn, Optional<Exception> e) {
+        String error = "unknown cause";
+        if (e.isPresent()) {
+            error = e.get().getMessage();
+        }
+        handleRequestError(String.format("Tagging fails for AIP of SIP \"%s\". Cause : %s",
+                                         job.getCurrentEntity().getProviderId(), error));
     }
 }
