@@ -483,7 +483,7 @@ public class FileDeletionRequestService {
             }
         } else {
             // Notify successfully deleted file
-            this.sessionNotifier.notifyDeletedFiles(sessionOwner, session);
+            this.sessionNotifier.notifyDeletedFiles(sessionOwner, session, fileReference.isReferenced());
         }
     }
 

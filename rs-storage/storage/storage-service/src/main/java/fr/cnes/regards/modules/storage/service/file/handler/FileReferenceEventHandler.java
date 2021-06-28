@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.handler;
 
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
@@ -82,6 +83,9 @@ public class FileReferenceEventHandler
 
     @Autowired(required = false)
     private Collection<IUpdateFileReferenceOnAvailable> updateActions;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -257,13 +261,16 @@ public class FileReferenceEventHandler
             LOGGER.trace("[AVAILABILITY SUCCESS {}] Available file is associated to a copy request {}",
                          availableEvent.getChecksum(), request.get().getGroupId());
             String storageGroupId = UUID.randomUUID().toString();
-            // Create a new storage request associated to the copy request
+            // Notify storage request and create a new storage request associated to the copy request
+            String sessionOwner = copyReq.getSessionOwner();
+            String session = copyReq.getSession();
+            sessionNotifier.incrementStoreRequests(sessionOwner, session);
             fileStorageRequestService.createNewFileStorageRequest(availableEvent.getOwners(), fileMeta,
                                                                   availableEvent.getLocation().getUrl(),
                                                                   copyReq.getStorage(),
                                                                   Optional.ofNullable(copyReq.getStorageSubDirectory()),
                                                                   storageGroupId, Optional.empty(), Optional.empty(),
-                                                                  copyReq.getSessionOwner(), copyReq.getSession());
+                                                                  sessionOwner, session);
             copyReq.setFileStorageGroupId(storageGroupId);
             fileCopyRequestService.update(copyReq);
             LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",

@@ -43,10 +43,10 @@ import org.springframework.stereotype.Repository;
 public interface IStepPropertyUpdateRequestRepository extends JpaRepository<StepPropertyUpdateRequest, Long> {
 
 
-    Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThanEqual(String source, OffsetDateTime lastUpdate,
+    Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source, OffsetDateTime lastUpdate,
             OffsetDateTime freezeDate, Pageable page);
 
-    long countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThanEqual(String source, OffsetDateTime lastUpdate, OffsetDateTime freezeDate);
+    long countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source, OffsetDateTime lastUpdate, OffsetDateTime freezeDate);
 
     Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateBefore(String source, OffsetDateTime freezeDate, Pageable page);
 
@@ -61,8 +61,8 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
             + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
     int deleteUnusedProcess(OffsetDateTime limitDate);
 
-    // for tests
-    Page<StepPropertyUpdateRequest> findBySourceAndCreationDateGreaterThanAndCreationDateLessThanEqual(String source,
+    // For tests
+    Page<StepPropertyUpdateRequest> findBySourceAndCreationDateGreaterThanAndCreationDateLessThan(String source,
             OffsetDateTime lastUpdate, OffsetDateTime freezeDate, Pageable page);
 
 }

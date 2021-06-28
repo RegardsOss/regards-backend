@@ -18,31 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
-import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
@@ -57,6 +41,21 @@ import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test class
@@ -82,6 +81,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     @Before
     @Override
     public void init() throws ModuleException {
+        Mockito.clearInvocations(publisher);
         super.init();
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
@@ -168,6 +168,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
 
+        argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         fileRefEventHandler.handle(TenantWrapper.build(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
@@ -179,6 +180,8 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
         Assert.assertTrue("There should be a copy request in pending state",
                           oReq.get().getStatus() == FileRequestStatus.PENDING);
+
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
 
         // Run storage job
         Mockito.reset(publisher);
@@ -193,18 +196,45 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertTrue("There should be a copy request in pending state",
                           oReq.get().getStatus() == FileRequestStatus.PENDING);
 
-        // Simulate file  stored event
+        // get events published
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+
+        // check copy request is correctly notified
+        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 10, stepEventList.size());
+        checkStepEvent(stepEventList.get(4), SessionNotifierPropertyEnum.COPY_REQUESTS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(5), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(6), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(7), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(8), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(9), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION, "1");
+        Mockito.reset(publisher);
+
+        // Simulate file stored event
         event = getFileReferenceEvent(argumentCaptor.getAllValues());
+        argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         fileRefEventHandler.handle(TenantWrapper.build(event, getDefaultTenant()));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a copy request anymore", oReq.isPresent());
 
         // File should not be in cache anymore
         oCachedFile = cacheService.search(fileRef.getMetaInfo().getChecksum());
         Assert.assertFalse("The cache file should be deleted after copy", oCachedFile.isPresent());
+
+        // check step events are correctly notified
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 1, stepEventList.size());
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
 
         // Check request group is done
         Mockito.reset(publisher);
@@ -226,7 +256,6 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Assert.assertEquals(FlowItemStatus.SUCCESS, frge.getState());
         Assert.assertEquals(1, frge.getSuccess().size());
         Assert.assertEquals(0, frge.getErrors().size());
-
     }
 
     @Test

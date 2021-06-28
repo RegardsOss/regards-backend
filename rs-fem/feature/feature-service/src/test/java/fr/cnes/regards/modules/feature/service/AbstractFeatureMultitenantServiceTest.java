@@ -11,6 +11,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -170,6 +171,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected ISessionStepRepository sessionStepRepository;
 
     @Autowired
+    protected ISnapshotProcessRepository snapshotProcessRepository;
+
+    @Autowired
     protected IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepository;
 
     @Autowired
@@ -215,8 +219,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         this.featureRepo.deleteAllInBatch();
         this.notificationRequestRepo.deleteAllInBatch();
         this.jobInfoRepository.deleteAll();
-        stepPropertyUpdateRequestRepository.deleteAll();
-        sessionStepRepository.deleteAll();
+        this.stepPropertyUpdateRequestRepository.deleteAll();
+        this.sessionStepRepository.deleteAll();
+        this.snapshotProcessRepository.deleteAll();
     }
 
     // ------------------------
@@ -658,9 +663,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                     .filter(sessionStep -> sessionStep.getSession().equals(session)).findFirst().orElse(null);
             if (step != null) {
                 List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository
-                        .findBySourceAndCreationDateGreaterThanAndCreationDateLessThanEqual(source,
-                                                                                            step.getLastUpdateDate(),
-                                                                                            start, Pageable.unpaged())
+                        .findBySourceAndCreationDateGreaterThanAndCreationDateLessThan(source, step.getLastUpdateDate(),
+                                                                                       start, Pageable.unpaged())
                         .getContent().stream().filter(request -> request.getSession().equals(session))
                         .collect(Collectors.toList());
                 if (requests.isEmpty()) {

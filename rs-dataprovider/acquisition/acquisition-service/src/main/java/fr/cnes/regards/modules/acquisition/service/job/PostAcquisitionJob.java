@@ -87,9 +87,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                         doPostProcess(acqProcessingChain, product);
                     }
                 } finally {
-                    if (Thread.currentThread().isInterrupted()) {
-                        sessionNotifier.notifyEndingChain(acqProcessingChain.getLabel(), product.getSession());
-                    }
+                    sessionNotifier.notifyEndingChain(acqProcessingChain.getLabel(), product.getSession());
                 }
             } else {
                 logger.debug("No product associated to SIP id\"{}\"", info.getSipId());

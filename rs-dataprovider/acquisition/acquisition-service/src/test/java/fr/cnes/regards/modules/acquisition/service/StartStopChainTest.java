@@ -305,11 +305,11 @@ public class StartStopChainTest extends DataproviderMultitenantServiceTest {
         // Check notification for generated products files
         Assert.assertEquals(95,
                             notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                          SessionProductPropertyEnum.GENERATED_PRODUCTS.getName(),
+                                                          SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
                                                           StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(0,
                             notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                          SessionProductPropertyEnum.GENERATED_PRODUCTS.getName(),
+                                                          SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
                                                           StepPropertyEventTypeEnum.DEC));
         LOGGER.info("|-----------------------------> END TEST 2 <-----------------------------------------|");
     }
@@ -405,11 +405,11 @@ public class StartStopChainTest extends DataproviderMultitenantServiceTest {
         // Check notification for generated products files
         Assert.assertEquals(100,
                             notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.GENERATED_PRODUCTS.getName(),
+                                                          SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
                                                           StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(0,
                             notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.GENERATED_PRODUCTS.getName(),
+                                                          SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
                                                           StepPropertyEventTypeEnum.DEC));
         // Check notification for completed files
         Assert.assertEquals(100,

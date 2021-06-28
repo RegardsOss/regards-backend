@@ -422,7 +422,6 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         String newBasketOwner = IOrderService.BASKET_OWNER_PREFIX + restartedOrder.getId();
         Basket newBasket = basketRepository.findByOwner(newBasketOwner);
         Assert.assertNotNull(newBasket);
-        Assert.assertEquals(basket.getId(), newBasket.getId());
         Assert.assertEquals(order.getOwner(), restartedOrder.getOwner());
     }
 

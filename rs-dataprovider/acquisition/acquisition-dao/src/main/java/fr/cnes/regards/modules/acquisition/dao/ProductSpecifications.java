@@ -59,6 +59,7 @@ public final class ProductSpecifications {
             String productName, String session, Long processingChainId, OffsetDateTime from, Boolean noSession) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
+            Set<Predicate> statePredicates = Sets.newHashSet();
             if (productName != null) {
                 predicates.add(cb.like(root.get("productName"), LIKE_CHAR + productName + LIKE_CHAR));
             }
@@ -68,7 +69,6 @@ public final class ProductSpecifications {
                 predicates.add(cb.like(root.get("session"), LIKE_CHAR + session + LIKE_CHAR));
             }
             if (states != null && !states.isEmpty()) {
-                Set<Predicate> statePredicates = Sets.newHashSet();
                 for (ProductState state : states) {
                     statePredicates.add(cb.equal(root.get("state"), state));
                 }
@@ -83,11 +83,12 @@ public final class ProductSpecifications {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), from));
             }
             if (sipStates != null && !sipStates.isEmpty()) {
-                Set<Predicate> sipStatesPredicates = Sets.newHashSet();
                 for (ISipState state : sipStates) {
-                    sipStatesPredicates.add(cb.equal(root.get("sipState"), state));
+                    statePredicates.add(cb.equal(root.get("sipState"), state));
                 }
-                predicates.add(cb.or(sipStatesPredicates.toArray(new Predicate[sipStatesPredicates.size()])));
+            }
+            if (!statePredicates.isEmpty()) {
+                predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
             query.orderBy(cb.desc(root.get("lastUpdate")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

@@ -117,11 +117,15 @@ public class SessionNotifier {
     }
 
     // deleted files
-    public void notifyDeletedFiles(String sessionOwner, String session) {
+    public void notifyDeletedFiles(String sessionOwner, String session, boolean isReferenced) {
         // increment the number of files deleted
         incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.DELETED_FILES, 1);
-        // decrement the number of files stored
-        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.STORED_FILES, 1);
+        // decrement the number of files stored or referenced
+        if (isReferenced) {
+            decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REFERENCED_FILES, 1);
+        } else {
+            decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.STORED_FILES, 1);
+        }
     }
 
     // ----------- UTILS -----------
@@ -129,6 +133,14 @@ public class SessionNotifier {
     // GENERIC METHODS TO BUILD NOTIFICATIONS
 
     // INC
+    /**
+     * Send an INC event to {@link ISessionAgentClient}
+     *
+     * @param source   also called sessionOwner, originator of the request
+     * @param session  tags the data processed with the same name
+     * @param property property to be notified
+     * @param nbProducts  value to increment the corresponding property
+     */
     public void incrementCount(String source, String session, SessionNotifierPropertyEnum property,
             int nbProducts) {
         if (source != null && session != null) {
@@ -142,6 +154,14 @@ public class SessionNotifier {
     }
 
     // DEC
+    /**
+     * Send an DEC event to {@link ISessionAgentClient}
+     *
+     * @param source   also called sessionOwner, originator of the request
+     * @param session  tags the data processed with the same name
+     * @param property property to be notified
+     * @param nbProducts  value to decrement the corresponding property
+     */
     public void decrementCount(String source, String session, SessionNotifierPropertyEnum property,
             int nbProducts) {
         if (source != null && session != null) {

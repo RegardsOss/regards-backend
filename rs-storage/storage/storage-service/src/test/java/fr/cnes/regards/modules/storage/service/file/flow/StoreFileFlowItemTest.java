@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.flow;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -128,7 +129,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                                               Lists.newArrayList(ONLINE_CONF_LABEL),
                                                               Lists.newArrayList(owner));
         runAndWaitJob(jobs);
-        Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+        Optional<FileReference> fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksum);
+        Assert.assertTrue("File should be referenced", fileRef.isPresent());
+        Assert.assertFalse("File should in stored state", fileRef.get().isReferenced());
         Assert.assertTrue("File request should be deleted",
                           stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
         // Now check for event published

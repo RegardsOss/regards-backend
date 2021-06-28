@@ -223,8 +223,13 @@ public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantSe
         doAcquire(processingChain, session2, true);
 
         // wait the registration of all StepPropertyUpdateRequests
-        waitStepRegistration("session1", 8);
-        waitStepRegistration("session2", 7);
+        // Session1 : 1requestRunning + 3filesAcquired + 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
+        //       After session2 pass, product change of session from 1 to 2. So +1 (-) productGenerated
+        // ---> 9 steps
+        waitStepRegistration("session1", 9);
+        // Session2 : 1requestRunning + 3filesAcquired + 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
+        // ---> 8 steps
+        waitStepRegistration("session2", 8);
         // launch the generation of sessionStep from StepPropertyUpdateRequests
         this.agentService
                 .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
@@ -252,7 +257,7 @@ public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantSe
 
         // wait the registration of all StepPropertyUpdateRequests
         waitStepRegistration("session1", 4);
-        waitStepRegistration("session2", 7);
+        waitStepRegistration("session2", 8);
         // launch the generation of sessionStep from StepPropertyUpdateRequests
         this.agentService
                 .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
@@ -285,7 +290,7 @@ public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantSe
         SessionStepProperties sessionSteps = this.sessionStepRepo
                 .findBySourceAndSessionAndStepId(sessionOwner, session, SessionNotifier.GLOBAL_SESSION_STEP).get()
                 .getProperties();
-        String generatedValue = sessionSteps.get(SessionProductPropertyEnum.GENERATED_PRODUCTS.getName());
+        String generatedValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName());
         String completedValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName());
         String incompleteValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName());
         String acqFilesValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName());

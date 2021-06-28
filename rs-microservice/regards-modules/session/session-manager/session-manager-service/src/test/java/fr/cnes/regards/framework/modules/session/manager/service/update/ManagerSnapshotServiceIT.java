@@ -91,6 +91,7 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsTest {
         SessionStep sessionStep2Updated = sessionStepsCreated.get(2);
         sessionStep2Updated.getState().setWaiting(2);
         sessionStep2Updated.setLastUpdateDate(LAST_UPDATED.plusMinutes(9));
+        sessionStep2Updated.setRegistrationDate(sessionStep2Updated.getLastUpdateDate());
         this.sessionStepRepo.save(sessionStep2Updated);
 
         // generate sessions for run 2
@@ -106,14 +107,17 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsTest {
         SessionStep sessionStep1Updated = sessionStepsCreated.get(1);
         sessionStep1Updated.getState().setErrors(0);
         sessionStep1Updated.setLastUpdateDate(LAST_UPDATED.plusMinutes(62));
+        sessionStep1Updated.setRegistrationDate(sessionStep1Updated.getLastUpdateDate());
 
         sessionStep2Updated.getState().setWaiting(0);
         sessionStep2Updated.getState().setRunning(0);
         sessionStep2Updated.setLastUpdateDate(LAST_UPDATED.plusMinutes(56));
+        sessionStep2Updated.setRegistrationDate(sessionStep2Updated.getLastUpdateDate());
 
         SessionStep sessionStep4Updated = sessionStepsCreated.get(4);
         sessionStep4Updated.getState().setRunning(0);
         sessionStep4Updated.setLastUpdateDate(LAST_UPDATED.plusMinutes(60));
+        sessionStep4Updated.setRegistrationDate(sessionStep4Updated.getLastUpdateDate());
 
         this.sessionStepRepo.saveAll(sessionStepsCreated);
         managerSnapshotService.generateSnapshots(snapshotProcess, LAST_UPDATED.plusMinutes(70));
@@ -132,17 +136,20 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsTest {
                                                    new StepState(0, 0, 2));
         sessionStep0.setInputRelated(2);
         sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(10));
+        sessionStep0.setRegistrationDate(sessionStep0.getLastUpdateDate());
 
         SessionStep sessionStep1 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
                                                    new StepState(2, 0, 0));
         sessionStep1.setOutputRelated(2);
         sessionStep1.setLastUpdateDate(LAST_UPDATED.minusMinutes(9));
+        sessionStep1.setRegistrationDate(sessionStep1.getLastUpdateDate());
 
         // SESSION 2
         SessionStep sessionStep2 = new SessionStep("storage", SOURCE_1, SESSION_2, StepTypeEnum.STORAGE,
                                                    new StepState(0, 4, 0));
         sessionStep2.setOutputRelated(4);
         sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(8));
+        sessionStep2.setRegistrationDate(sessionStep2.getLastUpdateDate());
 
         // SESSION 3
         // create future event - should not be taken into account until run2
@@ -150,16 +157,23 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsTest {
                                                    new StepState(0, 0, 0));
         sessionStep3.setOutputRelated(10);
         sessionStep3.setLastUpdateDate(LAST_UPDATED.plusMinutes(2));
+        sessionStep3.setRegistrationDate(sessionStep3.getLastUpdateDate());
+
+
         SessionStep sessionStep4 = new SessionStep("metacatalog", SOURCE_1, SESSION_3, StepTypeEnum.DISSEMINATION,
                                                    new StepState(0, 0, 4));
         sessionStep4.setOutputRelated(10);
         sessionStep4.setLastUpdateDate(LAST_UPDATED.plusMinutes(7));
+        sessionStep4.setRegistrationDate(sessionStep4.getLastUpdateDate());
+
 
         // create future event - should not be taken into account until run3
         SessionStep sessionStep5 = new SessionStep("scan", SOURCE_1, SESSION_4, StepTypeEnum.ACQUISITION,
                                                    new StepState(0, 0, 3));
         sessionStep5.setInputRelated(5);
         sessionStep5.setLastUpdateDate(LAST_UPDATED.plusMinutes(52));
+        sessionStep5.setRegistrationDate(sessionStep5.getLastUpdateDate());
+
 
         sessionStepList.add(sessionStep0);
         sessionStepList.add(sessionStep1);
