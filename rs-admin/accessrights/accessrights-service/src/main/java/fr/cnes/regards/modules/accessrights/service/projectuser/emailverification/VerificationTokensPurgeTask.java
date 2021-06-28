@@ -23,8 +23,12 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
 
 /**
@@ -43,7 +47,25 @@ public class VerificationTokensPurgeTask {
     @Autowired
     private IVerificationTokenRepository tokenRepository;
 
+    @Autowired
+    private ITenantResolver tenantResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Scheduled(cron = "${purge.cron.expression}")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void purgeSchedule() {
+        for( String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                purgeExpired();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
     public void purgeExpired() {
         final LocalDateTime now = LocalDateTime.now();
         tokenRepository.deleteAllExpiredSince(now);

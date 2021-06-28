@@ -83,7 +83,7 @@ public class AgentSnapshotJobService {
                 HashSet<JobParameter> jobParameters = Sets
                         .newHashSet(new JobParameter(AgentSnapshotJob.SNAPSHOT_PROCESS, snapshotProcessToUpdate),
                                     new JobParameter(AgentSnapshotJob.FREEZE_DATE, schedulerStartDate));
-                JobInfo jobInfo = new JobInfo(false, 0, jobParameters, null, AgentSnapshotJob.class.getName());
+                JobInfo jobInfo = new JobInfo(false, 1000, jobParameters, null, AgentSnapshotJob.class.getName());
 
                 // create job
                 jobInfo = jobInfoService.createAsQueued(jobInfo);
@@ -101,5 +101,3 @@ public class AgentSnapshotJobService {
         }
     }
 }
-
-
