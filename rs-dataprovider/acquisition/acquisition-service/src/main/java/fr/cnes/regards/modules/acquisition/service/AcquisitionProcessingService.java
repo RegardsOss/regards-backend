@@ -794,7 +794,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     lastUpdateDate = getLastUpdateDate(filePath, lastUpdateDate);
                 }
             } catch (Exception e) { // NOSONAR
-                LOGGER.error("Error parsing file. {}", e.getMessage());
+                LOGGER.error(String.format("Error parsing file. %s", e.getMessage()), e);
             } finally {
                 nextPath = filePaths.hasNext();
             }
