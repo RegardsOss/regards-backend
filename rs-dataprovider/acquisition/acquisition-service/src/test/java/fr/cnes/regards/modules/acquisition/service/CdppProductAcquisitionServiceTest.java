@@ -224,9 +224,8 @@ public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantSe
 
         // wait the registration of all StepPropertyUpdateRequests
         // Session1 : 1requestRunning + 3filesAcquired + 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
-        //       After session2 pass, product change of session from 1 to 2. So +1 (-) productGenerated
-        // ---> 9 steps
-        waitStepRegistration("session1", 9);
+        // ---> 8 steps
+        waitStepRegistration("session1", 8);
         // Session2 : 1requestRunning + 3filesAcquired + 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
         // ---> 8 steps
         waitStepRegistration("session2", 8);
@@ -234,7 +233,7 @@ public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantSe
         this.agentService
                 .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
         // check result
-        assertSessionStep(processingChain.getLabel(), session1, 3L, 0L, null, 0L);
+        assertSessionStep(processingChain.getLabel(), session1, 3L, 0L, null, 1L);
         assertSessionStep(processingChain.getLabel(), session2, 3L, 0L, null, 1L);
     }
 
@@ -256,14 +255,14 @@ public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantSe
         doAcquire(processingChain, session2, false);
 
         // wait the registration of all StepPropertyUpdateRequests
-        waitStepRegistration("session1", 4);
-        waitStepRegistration("session2", 8);
+        waitStepRegistration("session1", 2);
+        waitStepRegistration("session2", 7);
         // launch the generation of sessionStep from StepPropertyUpdateRequests
         this.agentService
                 .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
         // check result
-        assertSessionStep(processingChain.getLabel(), session1, 0L, null, 0L, null);
-        assertSessionStep(processingChain.getLabel(), session2, 3L, 0L, null, 1L);
+        assertSessionStep(processingChain.getLabel(), session1, 1L, null, 1L, null);
+        assertSessionStep(processingChain.getLabel(), session2, 2L, 0L, null, 1L);
     }
 
     private void waitStepRegistration(String session, int nbSteps) throws InterruptedException {
