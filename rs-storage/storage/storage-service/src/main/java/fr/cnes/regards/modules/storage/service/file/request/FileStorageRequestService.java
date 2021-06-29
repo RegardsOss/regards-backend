@@ -277,7 +277,8 @@ public class FileStorageRequestService {
         if (fileRef.isPresent()) {
             // handle file
             return handleFileToStoreAlreadyExists(fileRef.get(), request, oDeletionReq, groupId);
-        } else if (oReq.isPresent()) {
+        } else if (oReq.isPresent() && oReq.get().getStatus() != FileRequestStatus.PENDING) {
+            // If request already exists and is not handled yet, do not create a new request, just add
             FileStorageRequest existingReq = oReq.get();
             existingReq.update(request, groupId);
             if (existingReq.getStatus() == FileRequestStatus.ERROR) {
@@ -291,6 +292,9 @@ public class FileStorageRequestService {
                          existingReq.getMetaInfo().getFileName(), request.getFileName());
             return RequestResult.build(existingReq);
         } else {
+            if (oReq.isPresent() && oReq.get().getStatus() == FileRequestStatus.PENDING) {
+                LOGGER.debug("Request already exists but is already pending. Create a new storage request");
+            }
             Optional<String> cause = Optional.empty();
             Optional<FileRequestStatus> status = Optional.empty();
             // Check that URL is a valid

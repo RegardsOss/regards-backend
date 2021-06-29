@@ -392,12 +392,13 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         featureRepo.saveAll(entities);
         featureUpdateRequestRepo.saveAll(errorRequests);
         doOnError(errorRequests);
+        doOnSuccess(successfulRequest);
 
         // if notifications are required
         if (notificationSettingsService.isActiveNotification()) {
             featureUpdateRequestRepo.saveAll(successfulRequest);
         } else {
-            doOnSuccess(successfulRequest);
+            doOnTerminated(successfulRequest);
             featureUpdateRequestRepo.deleteInBatch(successfulRequest);
         }
 
@@ -474,8 +475,16 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
                 .map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
             featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.UPDATED_PRODUCTS);
+        });
+    }
+
+    @Override
+    public void doOnTerminated(Collection<FeatureUpdateRequest> requests) {
+        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
+                 .map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
+        sessionInfoByUrn.forEach((urn, entity) -> {
+            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
         });
     }
 

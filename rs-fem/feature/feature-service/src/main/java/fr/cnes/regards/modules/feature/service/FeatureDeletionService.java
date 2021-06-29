@@ -300,10 +300,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         successfulRequests.values().forEach(f -> publisher.publish(FeatureEvent.buildFeatureDeleted(f.getUrn().toString())));
 
         // Feedbacks for deleted features
-        Map<FeatureUniformResourceName, FeatureDeletionRequest> requestByUrn = successfulRequests.keySet().stream()
-                .collect(Collectors.toMap(FeatureDeletionRequest::getUrn, Function.identity()));
-        for (FeatureEntity entity : successfulRequests.values()) {
-            FeatureDeletionRequest fdr = requestByUrn.get(entity.getUrn());
+        for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : successfulRequests.entrySet()) {
+            FeatureEntity entity = entry.getValue();
+            FeatureDeletionRequest fdr = entry.getKey();
+            fdr.setToNotify(entity.getFeature(), entity.getSessionOwner(), entity.getSession());
             // Monitoring log
             FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
             if (featureDeletionJob != null) {
@@ -313,18 +313,21 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             // Publish successful request
             publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, fdr.getRequestId(), fdr.getRequestOwner(), entity.getProviderId(), fdr.getUrn(),
                                                         RequestState.SUCCESS));
+            // Update requests in case of notification
+            if (isToNotify) {
+                fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+                fdr.setAlreadyDeleted(false);
+            }
         }
+        doOnSuccess(successfulRequests.keySet());
 
         // PREPARE PROPAGATION to NOTIFIER if required
         if (isToNotify) {
-            for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : successfulRequests.entrySet()) {
-                entry.getKey().setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
-                entry.getKey().setAlreadyDeleted(false);
-                entry.getKey().setToNotify(entry.getValue().getFeature(), entry.getValue().getSessionOwner(), entry.getValue().getSession());
-            }
+            // If notification is required, requests are not over and should be saved.
             deletionRepo.saveAll(successfulRequests.keySet());
         } else {
-            sessionInfoUpdateOnSuccess(successfulRequests.values());
+            // If no notification required, requests are over and can be deleted
+            doOnTerminated(successfulRequests.keySet());
             this.deletionRepo.deleteInBatch(successfulRequests.keySet());
         }
 
@@ -456,8 +459,6 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     public void doOnSuccess(Collection<FeatureDeletionRequest> requests) {
         requests.forEach((r) -> {
             if (r.getSourceToNotify() != null && r.getSessionToNotify() != null) {
-                featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
-                                                      FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
                 featureSessionNotifier.incrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
                                                       FeatureSessionProperty.DELETED_PRODUCTS);
                 featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
@@ -465,6 +466,16 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             }
         });
         featureRepo.deleteAllByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet()));
+    }
+
+    @Override
+    public void doOnTerminated(Collection<FeatureDeletionRequest> requests) {
+        requests.forEach((r) -> {
+            if (r.getSourceToNotify() != null && r.getSessionToNotify() != null) {
+                featureSessionNotifier.decrementCount(r.getSourceToNotify(), r.getSessionToNotify(),
+                                                      FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
+            }
+        });
     }
 
     @Override
@@ -478,13 +489,4 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             }
         });
     }
-
-    private void sessionInfoUpdateOnSuccess(Collection<FeatureEntity> entities) {
-        entities.forEach(entity -> {
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_DELETE_REQUESTS);
-            featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.DELETED_PRODUCTS);
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.REFERENCED_PRODUCTS);
-        });
-    }
-
 }

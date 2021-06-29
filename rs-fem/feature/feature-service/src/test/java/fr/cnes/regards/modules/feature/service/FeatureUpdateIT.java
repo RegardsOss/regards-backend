@@ -507,16 +507,17 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(10);
+        computeSessionStep(11);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(7, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
         checkRequests(2, property("runningReferencingRequests"), requests);
         checkRequests(1, property("referencedProducts"), requests);
         checkRequests(2, property("updateRequests"), requests);
+        checkRequests(1, property("updatedProducts"), requests);
         checkRequests(2, property("runningUpdateRequests"), requests);
         checkRequests(2, property("inErrorUpdateRequests"), requests);
         checkRequests(1, inputRelated(), requests);
@@ -526,12 +527,14 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         SessionStep sessionStep = getSessionStep();
         Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
         Assertions.assertEquals(1, sessionStep.getInputRelated());
+        Assertions.assertEquals(1, sessionStep.getOutputRelated());
         SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(6, sessionStepProperties.size());
+        Assertions.assertEquals(7, sessionStepProperties.size());
         checkKey(1, "referencingRequests", sessionStepProperties);
         checkKey(0, "runningReferencingRequests", sessionStepProperties);
         checkKey(1, "referencedProducts", sessionStepProperties);
         checkKey(0, "updateRequests", sessionStepProperties);
+        checkKey(1, "updatedProducts", sessionStepProperties);
         checkKey(0, "runningUpdateRequests", sessionStepProperties);
         checkKey(0, "inErrorUpdateRequests", sessionStepProperties);
     }
@@ -583,17 +586,18 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         waitForStep(featureUpdateRequestRepository, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep(8);
+        computeSessionStep(9);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        Assertions.assertEquals(8, requests.size());
-        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
+        Assertions.assertEquals(9, requests.size());
+        checkRequests(7, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(2, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
         checkRequests(2, property("runningReferencingRequests"), requests);
         checkRequests(1, property("referencedProducts"), requests);
         checkRequests(1, property("updateRequests"), requests);
+        checkRequests(1, property("updatedProducts"), requests);
         checkRequests(2, property("runningUpdateRequests"), requests);
         checkRequests(1, property("inErrorUpdateRequests"), requests);
         checkRequests(1, inputRelated(), requests);
@@ -603,12 +607,14 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         SessionStep sessionStep = getSessionStep();
         Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
         Assertions.assertEquals(1, sessionStep.getInputRelated());
+        Assertions.assertEquals(1, sessionStep.getOutputRelated());
         SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(6, sessionStepProperties.size());
+        Assertions.assertEquals(7, sessionStepProperties.size());
         checkKey(1, "referencingRequests", sessionStepProperties);
         checkKey(0, "runningReferencingRequests", sessionStepProperties);
         checkKey(1, "referencedProducts", sessionStepProperties);
         checkKey(1, "updateRequests", sessionStepProperties);
+        checkKey(1, "updatedProducts", sessionStepProperties);
         checkKey(0, "runningUpdateRequests", sessionStepProperties);
         checkKey(1, "inErrorUpdateRequests", sessionStepProperties);
     }
