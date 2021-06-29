@@ -53,8 +53,6 @@ public interface IAcquisitionFileRepository
     Page<AcquisitionFile> findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState state, AcquisitionFileInfo fileInfo,
             Pageable pageable);
 
-    Optional<AcquisitionFile> findOneByFilePathIn(Path filePath);
-
     /**
      * Search all acquisition files for the given {@link AcquisitionFileState}
      * @param state {@link AcquisitionFileState}
@@ -83,4 +81,5 @@ public interface IAcquisitionFileRepository
      */
     void deleteByProduct(Product product);
 
+    Optional<Object> findOneByFilePathInAndFileInfo(Path filePath, AcquisitionFileInfo info);
 }
