@@ -342,6 +342,10 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         Set<FeatureCreationRequest> requestWithoutFiles = requests.stream()
                 .filter(request -> (request.getFeature().getFiles() == null) || request.getFeature().getFiles().isEmpty())
                 .collect(Collectors.toSet());
+
+        // Handle session for referenced products
+        doOnSuccess(requests);
+
         // handling of requests without files is already done so they are successful
         handleSuccessfulCreation(requestWithoutFiles);
 
@@ -374,7 +378,6 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         }
 
         if (!requests.isEmpty()) {
-            doOnSuccess(requests);
             // See if notifications are required
             if (notificationSettingsService.isActiveNotification()) {
                 // notify creation of feature
