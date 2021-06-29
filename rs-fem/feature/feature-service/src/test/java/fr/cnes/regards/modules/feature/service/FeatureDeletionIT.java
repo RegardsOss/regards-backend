@@ -437,29 +437,32 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(10);
+        computeSessionStep(12);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(4, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(7, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(5, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
-        checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(2, property("referencedProducts"), requests);
         checkRequests(2, property("runningReferencingRequests"), requests);
         checkRequests(2, property("deleteRequests"), requests);
         checkRequests(2, property("runningDeleteRequests"), requests);
+        checkRequests(1, property("deletedProducts"), requests);
         checkRequests(2, property("inErrorDeleteRequests"), requests);
         checkRequests(1, inputRelated(), requests);
-        checkRequests(1, outputRelated(), requests);
+        checkRequests(2, outputRelated(), requests);
 
         // Check Session step
         SessionStep sessionStep = getSessionStep();
         Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
         Assertions.assertEquals(1, sessionStep.getInputRelated());
+        Assertions.assertEquals(0, sessionStep.getOutputRelated());
         SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(6, sessionStepProperties.size());
+        Assertions.assertEquals(7, sessionStepProperties.size());
         checkKey(1, "referencingRequests", sessionStepProperties);
-        checkKey(1, "referencedProducts", sessionStepProperties);
+        checkKey(0, "referencedProducts", sessionStepProperties);
+        checkKey(1, "deletedProducts", sessionStepProperties);
         checkKey(0, "runningReferencingRequests", sessionStepProperties);
         checkKey(0, "deleteRequests", sessionStepProperties);
         checkKey(0, "runningDeleteRequests", sessionStepProperties);
@@ -508,31 +511,34 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         waitForSate(featureDeletionRequestRepo, RequestState.ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep(8);
+        computeSessionStep(10);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(6, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(2, type(StepPropertyEventTypeEnum.DEC), requests);
+        checkRequests(7, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests(3, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(1, property("referencingRequests"), requests);
-        checkRequests(1, property("referencedProducts"), requests);
+        checkRequests(2, property("referencedProducts"), requests);
         checkRequests(2, property("runningReferencingRequests"), requests);
         checkRequests(1, property("deleteRequests"), requests);
+        checkRequests(1, property("deletedProducts"), requests);
         checkRequests(2, property("runningDeleteRequests"), requests);
         checkRequests(1, property("inErrorDeleteRequests"), requests);
         checkRequests(1, inputRelated(), requests);
-        checkRequests(1, outputRelated(), requests);
+        checkRequests(2, outputRelated(), requests);
 
         // Check Session step
         SessionStep sessionStep = getSessionStep();
         Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
         Assertions.assertEquals(1, sessionStep.getInputRelated());
+        Assertions.assertEquals(0, sessionStep.getOutputRelated());
         SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(6, sessionStepProperties.size());
+        Assertions.assertEquals(7, sessionStepProperties.size());
         checkKey(1, "referencingRequests", sessionStepProperties);
-        checkKey(1, "referencedProducts", sessionStepProperties);
+        checkKey(0, "referencedProducts", sessionStepProperties);
         checkKey(0, "runningReferencingRequests", sessionStepProperties);
         checkKey(1, "deleteRequests", sessionStepProperties);
+        checkKey(1, "deletedProducts", sessionStepProperties);
         checkKey(0, "runningDeleteRequests", sessionStepProperties);
         checkKey(1, "inErrorDeleteRequests", sessionStepProperties);
     }

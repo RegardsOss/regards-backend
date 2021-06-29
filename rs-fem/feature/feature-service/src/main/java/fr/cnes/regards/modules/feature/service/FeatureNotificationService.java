@@ -154,6 +154,10 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
 
+        if (sessionInfo == null) {
+            errors.rejectValue("urn", "request.urn.feature.does.not.exists", "Feature to notify does not exists");
+        }
+
         if (errors.hasErrors()) {
             // Monitoring log
             FeatureLogger.notificationDenied(item.getRequestOwner(), item.getRequestId(), item.getUrn(),
@@ -163,9 +167,10 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                         item.getRequestOwner(), null, item.getUrn(),
                                                         RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             // Update session properties
-            featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.DENIED_NOTIFY_REQUESTS);
+            if (sessionInfo != null) {
+                featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.DENIED_NOTIFY_REQUESTS);
+            }
         } else {
-
             FeatureNotificationRequest request = FeatureNotificationRequest
                     .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
                            FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, item.getPriority(), item.getUrn(),
