@@ -53,19 +53,23 @@ public class VerificationTokensPurgeTask {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private VerificationTokensPurgeTask self;
+
     @Scheduled(cron = "${purge.cron.expression}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void purgeSchedule() {
         for( String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                purgeExpired();
+                self.purgeExpired();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void purgeExpired() {
         final LocalDateTime now = LocalDateTime.now();
         tokenRepository.deleteAllExpiredSince(now);
