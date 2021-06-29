@@ -18,44 +18,19 @@
  */
 package fr.cnes.regards.modules.indexer.dao.builder;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import org.elasticsearch.common.geo.builders.CircleBuilder;
-import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.locationtech.jts.geom.Coordinate;
-
 import com.google.common.base.Joiner;
-
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoQueries;
-import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
-import fr.cnes.regards.modules.indexer.domain.criterion.IMapping;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMultiMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ValueComparison;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
+import org.elasticsearch.common.geo.builders.CircleBuilder;
+import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
+import org.elasticsearch.index.query.*;
+import org.locationtech.jts.geom.Coordinate;
+
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Criterion visitor implementation to generate Elasticsearch QueryBuilder from
@@ -249,9 +224,9 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         if (criterion.getMaxX() < 0 && criterion.getMinX() > criterion.getMaxX()) {
             // Cut BoundaryBoxCriterion into 2 BoundaryBoxCriterion, dateLine west and dateLine east
             return ICriterion
-                    .or(ICriterion.intersectsBbox(criterion.getMinX(), criterion.getMaxY(), 180.0, criterion.getMinY()),
+                    .or(ICriterion.intersectsBbox(criterion.getMinX(), criterion.getMinY(), 180.0, criterion.getMaxY()),
                         ICriterion
-                                .intersectsBbox(-180.0, criterion.getMaxY(), criterion.getMaxX(), criterion.getMinY()))
+                                .intersectsBbox(-180.0, criterion.getMinY(), criterion.getMaxX(), criterion.getMaxY()))
                     .accept(this);
         }
         try {
