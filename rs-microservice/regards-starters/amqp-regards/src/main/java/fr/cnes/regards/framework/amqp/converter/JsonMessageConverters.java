@@ -80,13 +80,14 @@ public class JsonMessageConverters implements MessageConverter {
         }
 
         String tenant = messageProperties.getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+        String type = messageProperties.getHeader(AmqpConstants.REGARDS_TYPE_HEADER);
         String runtimeTenant = runtimeTenantResolver.getTenant();
 
         // Check if tenant already set and match!
         if ((tenant != null) && (runtimeTenant != null) && !runtimeTenant.equals(tenant)) {
             String errorMessage = String
-                    .format("Inconsistent tenant resolution : runtime tenant \"%s\" does not match with message one : \"%s\"",
-                            runtimeTenant, tenant);
+                    .format("Inconsistent tenant resolution : runtime tenant \"%s\" does not match with message (%s) one : \"%s\"",
+                            runtimeTenant, type, tenant);
             LOGGER.warn(errorMessage);
             // FIXME
             // throw new MessageConversionException(errorMessage);
