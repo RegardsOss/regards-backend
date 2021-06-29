@@ -549,7 +549,6 @@ public class ProductService implements IProductService {
                 handleSipGenerationEnd(processingChain.get(), products);
             }
         }
-
     }
 
     @Override
@@ -561,12 +560,22 @@ public class ProductService implements IProductService {
         handleSipGenerationEnd(processingChain.get(), products);
     }
 
+    /**
+     * Notify each session started by scheduled products
+     * @param chain
+     * @param products
+     */
+    public void handleSipGenerationStart(AcquisitionProcessingChain chain, Collection<Product> products) {
+        Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
+        for (String session : sessions) {
+            sessionNotifier.notifyStartingChain(chain.getLabel(), session);
+        }
+    }
+
     public void handleSipGenerationEnd(AcquisitionProcessingChain chain, Collection<Product> products) {
         Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
         for (String session : sessions) {
-            if (!existsByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED)) {
-                sessionNotifier.notifyEndingChain(chain.getLabel(), session);
-            }
+            sessionNotifier.notifyEndingChain(chain.getLabel(), session);
         }
     }
 
@@ -725,18 +734,6 @@ public class ProductService implements IProductService {
             scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
         }
         return products.hasNext();
-    }
-
-    /**
-     * Notify each session started by scheduled products
-     * @param chain
-     * @param products
-     */
-    public void handleSipGenerationStart(AcquisitionProcessingChain chain, Collection<Product> products) {
-        Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
-        for (String session : sessions) {
-            sessionNotifier.notifyStartingChain(chain.getLabel(), session);
-        }
     }
 
     @Override
