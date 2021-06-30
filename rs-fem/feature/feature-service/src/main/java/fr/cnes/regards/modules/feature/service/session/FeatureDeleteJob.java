@@ -53,8 +53,7 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
         logger.trace("[{}] FeatureDeleteJob starts for source {}", jobInfoId, sourceName);
         try {
             lockingTaskExecutors.executeWithLock(deleteTask, new LockConfiguration(FeatureTaskScheduler.DELETE_REQUEST_LOCK,
-                                                                                       Instant.now().plusSeconds(
-                                                                                               FeatureTaskScheduler.MAX_TASK_DELAY)));
+                                                                                       Instant.now().plusSeconds(300)));
         } catch (Throwable throwable) {
             logger.error("Error during deletion job process", throwable);
         }
