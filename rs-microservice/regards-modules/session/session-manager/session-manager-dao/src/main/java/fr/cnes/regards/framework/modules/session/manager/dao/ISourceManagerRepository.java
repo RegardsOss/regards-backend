@@ -58,7 +58,7 @@ public interface ISourceManagerRepository extends JpaRepository<Source, Long>, J
      */
     default Set<String> findAllSourcesNames(String name) {
         if ((name != null) && !name.isEmpty()) {
-            return internalFindAllSourcesNames(name + "%", MAX_SOURCES_NAMES_RESULTS);
+            return internalFindAllSourcesNames("%" + name + "%", MAX_SOURCES_NAMES_RESULTS);
         } else {
             return internalFindAllSourcesNames(MAX_SOURCES_NAMES_RESULTS);
         }

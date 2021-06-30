@@ -61,7 +61,7 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
      */
     default Set<String> findAllSessionsNames(String name) {
         if ((name != null) && !name.isEmpty()) {
-            return internalFindAllSessionsNames(name + "%", MAX_SESSION_NAMES_RESULTS);
+            return internalFindAllSessionsNames( "%" + name + "%", MAX_SESSION_NAMES_RESULTS);
         } else {
             return internalFindAllSessionsNames(MAX_SESSION_NAMES_RESULTS);
         }
