@@ -117,13 +117,6 @@ public interface IAcquisitionProcessingService {
     void deleteChain(Long id) throws ModuleException;
 
     /**
-     * Delete products
-     * @param processingChain
-     * @param products
-     */
-    void deleteProducts(AcquisitionProcessingChain processingChain, Collection<Product> products);
-
-    /**
      * Check if a {@link AcquisitionProcessingChain} deletion is pending
      * @return boolean
      */

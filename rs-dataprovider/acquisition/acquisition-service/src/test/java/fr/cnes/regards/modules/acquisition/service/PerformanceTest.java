@@ -75,7 +75,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 //@Ignore("Performances tests")
 public class PerformanceTest extends AbstractMultitenantServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PerformanceTest.class);
 
     @Autowired
     private IAcquisitionProcessingService acqProService;

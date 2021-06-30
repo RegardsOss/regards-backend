@@ -126,6 +126,11 @@ public class SessionNotifier {
                                nbFilesAcquired);
     }
 
+    public void notifyFileAcquiredDeleted(String session, String sessionOwner, int nbFilesAcquired) {
+        notifyDecrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
+                               nbFilesAcquired);
+    }
+
     public void notifyFileInvalid(String session, String sessionOwner, long nbFilesAcquired) {
         notifyIncrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_INVALID,
                                nbFilesAcquired);

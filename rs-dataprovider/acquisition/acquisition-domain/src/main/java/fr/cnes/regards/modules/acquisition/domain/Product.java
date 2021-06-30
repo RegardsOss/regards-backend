@@ -92,9 +92,9 @@ public class Product {
      * {@link List} of file include in the {@link Product}
      */
     @GsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
-    private final Set<AcquisitionFile> fileList = new HashSet<AcquisitionFile>();
+    private final Set<AcquisitionFile> fileList = new HashSet<>();
 
     /**
      * Unique id
