@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.time.OffsetDateTime;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.hibernate.annotations.Type;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import java.time.OffsetDateTime;
 
 /**
  * {@link FeatureEntityDto} dto

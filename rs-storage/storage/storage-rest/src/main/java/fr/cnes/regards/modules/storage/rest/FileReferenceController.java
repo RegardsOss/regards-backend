@@ -151,10 +151,15 @@ public class FileReferenceController {
         if (!downloadService.checkToken(checksum, token)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        return downloadWithQuota(checksum, response).recover(ModuleException.class, t -> {
-            LOGGER.error(t.getMessage());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }).get();
+        // Do not check for quota, because this endpoint needs to be used internally (storage -> storage) during copy process
+        // with no specific users (public access).
+        return Try.of(() -> downloadService.downloadFile(checksum))
+                .mapTry(Callable::call)
+                .flatMap(dlFile -> downloadFile(dlFile, response))
+                .recover(ModuleException.class, t -> {
+                    LOGGER.error(t.getMessage());
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                }).get();
     }
 
     @VisibleForTesting

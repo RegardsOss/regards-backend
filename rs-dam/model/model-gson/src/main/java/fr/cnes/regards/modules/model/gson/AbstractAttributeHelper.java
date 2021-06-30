@@ -18,24 +18,22 @@
  */
 package fr.cnes.regards.modules.model.gson;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.apache.commons.compress.utils.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 /**
  * Abstract class to wrap retrieve of attributes to generate virtual attributes.
@@ -94,10 +92,10 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
             JsonNode root = mapper.readTree(schema);
             int idx = attributePath.lastIndexOf(".");
             if (idx > 0) {
-                createObjectAttributes(attributePath.substring(idx + 1), attributePath.substring(0, idx), root,
+                createAttributes(attributePath.substring(idx + 1), attributePath.substring(0, idx), root,
                                        jsonSchemaAttributes);
             } else {
-                createObjectAttributes(attributePath, null, root, jsonSchemaAttributes);
+                createAttributes(attributePath, null, root, jsonSchemaAttributes);
             }
 
         } catch (JsonProcessingException e) {

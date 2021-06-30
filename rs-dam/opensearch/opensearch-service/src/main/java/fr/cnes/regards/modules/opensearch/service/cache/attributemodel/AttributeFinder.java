@@ -18,26 +18,9 @@
  */
 package fr.cnes.regards.modules.opensearch.service.cache.attributemodel;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -51,6 +34,16 @@ import fr.cnes.regards.modules.model.domain.event.AttributeModelDeleted;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Implement {@link IAttributeFinder}.
@@ -115,6 +108,11 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
             throw new OpenSearchUnknownParameter(errorMessage);
         }
         return new HashSet<>(ppties);
+    }
+
+    @Override
+    public Set<AttributeModel> findAll() {
+        return getTenantMap() != null ? Sets.newHashSet(getTenantMap().values()) : Sets.newHashSet();
     }
 
     @Override

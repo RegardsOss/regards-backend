@@ -46,6 +46,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
+import org.springframework.web.util.UriUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -181,7 +182,7 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
                 // Retrieve datasource
                 PluginConfiguration datasource = pluginService.getPluginConfiguration(conf.getDatasource());
                 // Validate subsetting clause
-                if (!datasetService.validateOpenSearchSubsettingClause(conf.getSubsetting())) {
+                if (!datasetService.validateOpenSearchSubsettingClause(UriUtils.encode(conf.getSubsetting(), "UTF-8"))) {
                     String message = String.format("Cannot import dataset %s cause to an invalid subsetting clause %s",
                                                    conf.getFeature().getId(), conf.getSubsetting());
                     errors.add(message);

@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
-import java.util.Objects;
-
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
+
+import java.util.Objects;
 
 /**
  * Geometric bbox criterion
@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometr
  */
 public class BoundaryBoxCriterion implements ICriterion {
 
-    private final double minX;
+    private double minX;
 
     private final double minY;
 
@@ -89,11 +89,17 @@ public class BoundaryBoxCriterion implements ICriterion {
     }
 
     /**
-     * This method can be used by QueryBuilderCriterionVisitor to update a > 180 longitude
-     * @param maxX
+     * This method can be used by QueryBuilderCriterionVisitor to update a value crossing dateline
      */
     public void setMaxX(double maxX) {
         this.maxX = maxX;
+    }
+
+    /**
+     * This method can be used by QueryBuilderCriterionVisitor to update a value crossing dateline
+     */
+    public void setMinX(double minX) {
+        this.minX = minX;
     }
 
     @Override
