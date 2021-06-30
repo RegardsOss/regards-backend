@@ -33,8 +33,6 @@ import org.springframework.data.jpa.domain.Specification;
  **/
 public class SessionManagerSpecifications {
 
-    private static final String LIKE_CHAR = "%";
-
     private SessionManagerSpecifications() {
     }
 
@@ -42,11 +40,11 @@ public class SessionManagerSpecifications {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (name != null) {
-                predicates.add(cb.like(root.get("name"), "%"+name+"%"));
+                predicates.add(cb.like(root.get("name"), "%" + name + "%"));
             }
 
             if (source != null) {
-                predicates.add(cb.like(root.get("source"), LIKE_CHAR + source + LIKE_CHAR));
+                predicates.add(cb.equal(root.get("source"), source));
             }
 
             if (state != null) {
