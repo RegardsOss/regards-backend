@@ -81,7 +81,7 @@ public class StartStopChainTest extends DataproviderMultitenantServiceTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(StartStopChainTest.class);
 
     @Autowired
-    private SessionNotificationHandler notifHandler;
+    private SessionNotificationHandler sessionNotificationHandler;
 
     @Override
     public void doAfter() throws ModuleException, InterruptedException {
@@ -110,7 +110,7 @@ public class StartStopChainTest extends DataproviderMultitenantServiceTest {
             }
         });
         Thread.sleep(2_000);
-        notifHandler.clear();
+        sessionNotificationHandler.clear();
     }
 
     /**
@@ -278,39 +278,39 @@ public class StartStopChainTest extends DataproviderMultitenantServiceTest {
         // Check notification for acquired files
         // --- 195 files scanned / 100 data / 95 images
         Assert.assertEquals(195,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                          SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName(),
-                                                          StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         // Check notification for completed files
         // -- 95 products set to COMPLETED status
         Assert.assertEquals(95,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                          SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
-                                                          StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         // -- 95 products pass from COMPLETED to GENERATED
         Assert.assertEquals(95,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                          SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
-                                                          StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         // Check notification for incomplet files
         // --- After All 5 products should be incomplets
-        long inc = notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
-                                                StepPropertyEventTypeEnum.INC);
-        long dec = notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
-                                                StepPropertyEventTypeEnum.DEC);
+        long inc = sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
+                                                               SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
+                                                               StepPropertyEventTypeEnum.INC);
+        long dec = sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
+                                                               SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
+                                                               StepPropertyEventTypeEnum.DEC);
         Assert.assertEquals(5, inc - dec);
 
         // Check notification for generated products files
         Assert.assertEquals(95,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                          SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
-                                                          StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(0,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
-                                                          SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
-                                                          StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         LOGGER.info("|-----------------------------> END TEST 2 <-----------------------------------------|");
     }
 
@@ -326,7 +326,7 @@ public class StartStopChainTest extends DataproviderMultitenantServiceTest {
                                                                            null);
 
         String session = UUID.randomUUID().toString();
-        notifHandler.clear();
+        sessionNotificationHandler.clear();
         // Start chain
         processingService.startManualChain(processingChain.getId(), Optional.of(session), false);
 
@@ -399,36 +399,36 @@ public class StartStopChainTest extends DataproviderMultitenantServiceTest {
 
         // Check notification for acquired files
         Assert.assertEquals(100,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName(),
-                                                          StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                                        SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         // Check notification for generated products files
         Assert.assertEquals(100,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
-                                                          StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                                        SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(0,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
-                                                          StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                                        SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         // Check notification for completed files
         Assert.assertEquals(100,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
-                                                          StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                                        SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(100,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
-                                                          StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                                        SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         // Check notification for incomplet files
         Assert.assertEquals(0,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
-                                                          StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                                        SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(0,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
-                                                          SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
-                                                          StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                                                                        SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         LOGGER.info("|-----------------------------> END TEST 1 <-----------------------------------------|");
     }
 }

@@ -277,10 +277,8 @@ public class CdppProductAcquisitionServiceTest extends DataproviderMultitenantSe
             }
         } while (count != nbSteps && now < end);
 
-        if(count!= nbSteps) {
-            Assert.fail("Unexpected number of step events created. Check the workflow through events collected in "
-                                + "t_step_property_update_request");
-        }
+        Assert.assertEquals("Unexpected number of step events created. Check the workflow through events collected in "
+                                + "t_step_property_update_request", nbSteps, count);
     }
 
     private void assertSessionStep(String sessionOwner, String session, Long acquiredFiles, Long completed,

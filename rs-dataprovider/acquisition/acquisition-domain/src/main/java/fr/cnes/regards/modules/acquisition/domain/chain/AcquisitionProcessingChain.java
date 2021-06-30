@@ -382,4 +382,49 @@ public class AcquisitionProcessingChain {
         this.referenceLocation = referenceLocation;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        AcquisitionProcessingChain that = (AcquisitionProcessingChain) o;
+
+        if (!getLabel().equals(that.getLabel())) {
+            return false;
+        }
+        if (!getIngestChain().equals(that.getIngestChain())) {
+            return false;
+        }
+        if (!getFileInfos().equals(that.getFileInfos())) {
+            return false;
+        }
+        if (!getValidationPluginConf().equals(that.getValidationPluginConf())) {
+            return false;
+        }
+        if (!getProductPluginConf().equals(that.getProductPluginConf())) {
+            return false;
+        }
+        if (!getGenerateSipPluginConf().equals(that.getGenerateSipPluginConf())) {
+            return false;
+        }
+        return getPostProcessSipPluginConf() != null ?
+                getPostProcessSipPluginConf().equals(that.getPostProcessSipPluginConf()) :
+                that.getPostProcessSipPluginConf() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getLabel().hashCode();
+        result = 31 * result + getIngestChain().hashCode();
+        result = 31 * result + getFileInfos().hashCode();
+        result = 31 * result + getValidationPluginConf().hashCode();
+        result = 31 * result + getProductPluginConf().hashCode();
+        result = 31 * result + getGenerateSipPluginConf().hashCode();
+        result = 31 * result + (getPostProcessSipPluginConf() != null ? getPostProcessSipPluginConf().hashCode() : 0);
+        return result;
+    }
 }
