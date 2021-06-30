@@ -37,8 +37,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -123,7 +125,7 @@ public class ProductService implements IProductService {
     @Autowired
     private SessionNotifier sessionNotifier;
 
-    @Value("${regards.acquisition.sip.bulk.request.limit:100}")
+    @Value("${regards.acquisition.product.bulk.request.limit:2000}")
     private Integer bulkRequestLimit;
 
     @Value("${spring.application.name}")
@@ -225,45 +227,52 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void delete(Long id) {
-        productRepository.deleteById(id);
-    }
-
-    @Override
-    public void delete(AcquisitionProcessingChain chain, Product product) {
-        productRepository.delete(product);
-        sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
-    }
-
-    @Override
-    public long deleteBySession(AcquisitionProcessingChain chain, String session) {
-        Pageable page = PageRequest.of(0, 10_000);
-        Page<Product> results;
-        do {
-            results = productRepository.findByProcessingChainAndSession(chain, session, page);
-            self.deleteProducts(chain, results.getContent());
-        } while (results.hasNext() && !Thread.currentThread().isInterrupted());
-        return results.getTotalElements();
-    }
-
-    @Override
-    public long deleteByProcessingChain(AcquisitionProcessingChain chain) {
-        Pageable page = PageRequest.of(0, 10_000);
-        Page<Product> results;
-        do {
-            results = productRepository.findByProcessingChain(chain, page);
-            self.deleteProducts(chain, results.getContent());
-
-        } while (results.hasNext() && !Thread.currentThread().isInterrupted());
-        return results.getTotalElements();
-    }
-
-    @Override
-    public void deleteProducts(AcquisitionProcessingChain chain, Collection<Product> products) {
-        for (Product product : products) {
-            sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
+    public void deleteBySession(AcquisitionProcessingChain chain, String session) {
+        // lets try to handle products per 5 time the ordinary bulk
+        Pageable page = PageRequest.of(0, bulkRequestLimit, Sort.by("id"));
+        while(!Thread.currentThread().isInterrupted() && self.deleteProducts(chain, Optional.of(session), page)) {
+            // do not call page.next() here. We are asking for deletion of the products so we have to only request the first page at each iteration.
         }
-        productRepository.deleteAll(products);
+    }
+
+    @Override
+    public void deleteByProcessingChain(AcquisitionProcessingChain chain) {
+        Pageable page = PageRequest.of(0, bulkRequestLimit, Sort.by("id"));
+        while(!Thread.currentThread().isInterrupted() && self.deleteProducts(chain, Optional.empty(), page)) {
+            // do not call page.next() here. We are asking for deletion of the products so we have to only request the first page at each iteration.
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean deleteProducts(AcquisitionProcessingChain chain, Optional<String> session, Pageable page) {
+        long startTime = System.currentTimeMillis();
+        LOGGER.debug("Finding products to delete for chain {} and session {}", chain.getLabel(), session.orElse("<none>"));
+        Page<Product> productPage;
+        if(session.isPresent()) {
+            productPage = productRepository.findByProcessingChainAndSession(chain, session.get(), page);
+        } else {
+            productPage = productRepository.findByProcessingChain(chain, page);
+        }
+        LOGGER.debug("Found {} products to delete in {} ms", productPage.getSize(), System.currentTimeMillis() - startTime);
+        if(productPage.hasContent()) {
+            Set<Long> productIds = new HashSet<>();
+            for (Product product : productPage) {
+                sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
+                sessionNotifier.notifyFileAcquiredDeleted(product.getSession(),
+                                                          chain.getLabel(),
+                                                          product.getAcquisitionFiles().size());
+                productIds.add(product.getId());
+            }
+            startTime = System.currentTimeMillis();
+            // delete by product ids
+            // first acquisition files that are linked to them
+            acqFileRepository.deleteByProductIdIn(productIds);
+            // then products themselves
+            productRepository.deleteByIdIn(productIds);
+            LOGGER.debug("Deleted {} products in {} ms", productPage.getSize(), System.currentTimeMillis() - startTime);
+        }
+        return productPage.hasNext();
     }
 
     @Override

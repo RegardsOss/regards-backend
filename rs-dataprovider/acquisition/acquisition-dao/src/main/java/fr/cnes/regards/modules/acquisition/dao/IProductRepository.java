@@ -37,6 +37,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -66,8 +67,18 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
 
-    Page<Product> findByProcessingChainAndSession(AcquisitionProcessingChain processingChain, String session,
-            Pageable pageable);
+    default Page<Product> findByProcessingChainAndSession(AcquisitionProcessingChain processingChain, String session,
+            Pageable pageable) {
+        // get Id page
+        Page<Long> productIdPage = findIdByProcessingChainAndSession(processingChain, session, pageable);
+        // get complete products
+        List<Product> pageContent = findAllByIdIn(productIdPage.getContent(), pageable.getSort());
+        //reform the page
+        return new PageImpl<>(pageContent, productIdPage.getPageable(), productIdPage.getTotalElements());
+    }
+
+    @Query("SELECT p.id FROM Product p WHERE p.processingChain = :chain AND p.session = :session")
+    Page<Long> findIdByProcessingChainAndSession(@Param("chain") AcquisitionProcessingChain processingChain, @Param("session") String session, Pageable pageable);
 
     /**
      * Find all products according to specified filters
@@ -200,7 +211,21 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     @EntityGraph("graph.product.complete")
     List<Product> findAllByIdIn(List<Long> productIds, Sort sort);
 
-    Page<Product> findByProcessingChain(AcquisitionProcessingChain chain, Pageable page);
+    default Page<Product> findByProcessingChain(AcquisitionProcessingChain chain, Pageable pageable) {
+        // get Id page
+        Page<Long> productIdPage = findIdByProcessingChain(chain, pageable);
+        // get complete products
+        List<Product> pageContent = findAllByIdIn(productIdPage.getContent(), pageable.getSort());
+        //reform the page
+        return new PageImpl<>(pageContent, productIdPage.getPageable(), productIdPage.getTotalElements());
+    }
+
+    @Query("SELECT p.id FROM Product p WHERE p.processingChain = :chain")
+    Page<Long> findIdByProcessingChain(@Param("chain") AcquisitionProcessingChain chain, Pageable pageable);
 
     void deleteByProcessingChainId(Long id);
+
+    @Modifying
+    @Query("Delete from Product p WHERE p.id IN (:productIds)")
+    void deleteByIdIn(@Param("productIds") Collection<Long> productIds);
 }

@@ -42,6 +42,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
@@ -49,6 +50,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
@@ -88,6 +90,9 @@ public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
     @Autowired
     private IAcquisitionProcessingChainRepository acqChainRepository;
 
+    @Autowired
+    private IAcquisitionFileRepository acquisitionFileRepository;
+
     @Before
     public void beforeEachTest() throws ModuleException {
         afterEachTest();
@@ -105,6 +110,7 @@ public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
     public void afterEachTest() throws ModuleException {
         //clean acquisitionChains
         getLogger().info("START CLEAN UP");
+        acquisitionFileRepository.deleteAll();
         productRepository.deleteAll();
         fileInfoRepository.deleteAll();
         jobInfoRepository.deleteAll();

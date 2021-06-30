@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -107,9 +109,13 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
     @Autowired
     private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
 
+    @Autowired
+    private IProductRepository productRepository;
+
     @Before
     public void before() throws ModuleException {
         acqFileRepository.deleteAll();
+        productRepository.deleteAll();
         fileInfoRepository.deleteAll();
         acquisitionProcessingChainRepository.deleteAll();
         for (PluginConfiguration pc : pluginService.getAllPluginConfigurations()) {

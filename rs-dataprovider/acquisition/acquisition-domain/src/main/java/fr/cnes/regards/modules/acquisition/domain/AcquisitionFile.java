@@ -87,7 +87,7 @@ public class AcquisitionFile {
      * The {@link Product} associated to the data file
      */
     @GsonIgnore
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_acq_file_id"), updatable = false)
     private Product product;
 

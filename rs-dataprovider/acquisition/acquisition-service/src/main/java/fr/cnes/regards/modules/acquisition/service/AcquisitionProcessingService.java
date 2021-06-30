@@ -452,9 +452,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         productService.deleteByProcessingChain(processingChain);
 
-        // Delete acquisition file infos and its plugin configurations
 
+        // Delete acquisition file infos and its plugin configurations
         for (AcquisitionFileInfo afi : processingChain.getFileInfos()) {
+            // Before deleting file info, we have to clean up the database from invalid files that are not linked to any products
+            acqFileRepository.deleteByFileInfoAndStateIn(afi, AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID, AcquisitionFileState.INVALID);
             fileInfoRepository.delete(afi);
         }
 
@@ -463,23 +465,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             jobInfoService.unlock(processingChain.getLastProductAcquisitionJobInfo());
         }
         acqChainRepository.delete(processingChain);
-    }
-
-    @Override
-    @Transactional(value = TxType.REQUIRES_NEW)
-    public void deleteProducts(AcquisitionProcessingChain processingChain, Collection<Product> products) {
-        if ((products != null) && !products.isEmpty()) {
-            for (Product product : products) {
-                // Unlock jobs
-                if (product.getLastPostProductionJobInfo() != null) {
-                    jobInfoService.unlock(product.getLastPostProductionJobInfo());
-                }
-                if (product.getLastSIPGenerationJobInfo() != null) {
-                    jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
-                }
-                productService.delete(processingChain, product);
-            }
-        }
     }
 
     @Override

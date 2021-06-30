@@ -35,12 +35,12 @@
 	<logger name="fr.cnes.regards.framework.jpa.multitenant.resolver" level="INFO" />
 	<logger name="org.hibernate.engine.transaction.internal" level="INFO" />
 	<logger name="org.hibernate" level="INFO" />
-	<logger name="fr.cnes.regards.modules.sessionmanager.client" level="DEBUG" />
+	<logger name="fr.cnes.regards.modules.acquisition.service.ProductService" level="DEBUG" />
 	<logger name="fr.cnes.regards.modules.sessionmanager.client" level="INFO" />
 	
-	<!-- <logger name="org.hibernate.SQL" level="DEBUG" />
-	<logger name="org.hibernate.type.descriptor.sql" level="DEBUG" />
-	 -->
+<!--	<logger name="org.hibernate.SQL" level="DEBUG" />-->
+<!--	<logger name="org.hibernate.type.descriptor.sql" level="TRACE" />-->
+
 
 	<root level="info">
 		<appender-ref ref="STDOUT" />

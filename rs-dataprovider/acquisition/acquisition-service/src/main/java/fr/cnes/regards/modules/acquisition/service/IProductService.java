@@ -26,6 +26,8 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -81,36 +83,28 @@ public interface IProductService {
     Set<Product> retrieve(Collection<String> productNames);
 
     /**
-     * Delete one specified {@link Product}
-     * @param id {@link Product}
-     */
-    void delete(Long id);
-
-    /**
-     * Delete one specified {@link Product}
-     * @param product {@link Product} to delete
-     */
-    void delete(AcquisitionProcessingChain chain, Product product);
-
-    void deleteProducts(AcquisitionProcessingChain chain, Collection<Product> products);
-
-    /**
      * Delete products
      * @param chain
      * @param session
-     * @return number of deleted products
      */
-    long deleteBySession(AcquisitionProcessingChain chain, String session);
+    void deleteBySession(AcquisitionProcessingChain chain, String session);
 
     /**
      *
      * @param chain
-     * @return number of deleted products
      */
-    long deleteByProcessingChain(AcquisitionProcessingChain chain);
+    void deleteByProcessingChain(AcquisitionProcessingChain chain);
 
     JobInfo scheduleProductsDeletionJob(AcquisitionProcessingChain chain, Optional<String> session,
             boolean deleteChain);
+
+    /**
+     * Delete products per page
+     * @param chain chain which product should belong to
+     * @param session if present, delete only product of this session. If not, delete products from all sessions belonging to this chain
+     * @return true if and only if there is a next page to handle
+     */
+    boolean deleteProducts(AcquisitionProcessingChain chain, Optional<String> session, Pageable page);
 
     /**
      * @return page of products related to specified
