@@ -461,6 +461,19 @@ public class ProductService implements IProductService {
                 currentProduct.setProcessingChain(processingChain);
                 currentProduct.setSession(session);
                 productMap.put(productName, currentProduct);
+            } else if(!currentProduct.getProcessingChain().equals(processingChain)) {
+                // this case is forbidden because it breaks everything
+                // files are then declared invalid and product never created
+                for(AcquisitionFile af: productNewValidFiles) {
+                    af.setState(AcquisitionFileState.INVALID);
+                    af.setError(String.format("This file should generate a product(name: %s) which is currently created "
+                                                      + "by another chain %s. So it is invalid.",
+                                              productName,
+                                              currentProduct.getProcessingChain().getLabel()));
+                    sessionNotifier.notifyFileAcquiredDeleted(session, processingChain.getLabel(), 1);
+                    sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(), 1);
+                }
+                continue;
             } else if (!currentProduct.getSession().equals(session)) {
                 // The product is now managed by another session
                 currentProduct.setSession(session);
