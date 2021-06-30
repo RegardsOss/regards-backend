@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.opensearch.service.cache.attributemodel;
 
-import java.util.Set;
-
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+
+import java.util.Set;
 
 /**
  * Retrieve (fake) static or (real) dynamic attributes based on open search parameter name.
@@ -46,6 +46,12 @@ public interface IAttributeFinder {
      * @throws OpenSearchUnknownParameter if no parameter can be found with specified type
      */
     Set<AttributeModel> findByType(PropertyType type) throws OpenSearchUnknownParameter;
+
+    /**
+     *
+     * @return the list of {@link AttributeModel} registered for the current tenant
+     */
+    Set<AttributeModel> findAll();
 
     /**
      * Return the smaller distinct path of the given attribute by removing if possible "feature", "properties" and

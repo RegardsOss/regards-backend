@@ -18,48 +18,24 @@
  */
 package fr.cnes.regards.modules.indexer.dao.builder;
 
+import com.google.common.base.Joiner;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.indexer.dao.spatial.GeoQueries;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
+import org.elasticsearch.common.geo.builders.CircleBuilder;
+import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
+import org.elasticsearch.index.query.*;
+import org.locationtech.jts.geom.Coordinate;
+
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
-import org.elasticsearch.common.geo.builders.CircleBuilder;
-import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.locationtech.jts.geom.Coordinate;
-
-import com.google.common.base.Joiner;
-
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.indexer.dao.spatial.GeoQueries;
-import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
-import fr.cnes.regards.modules.indexer.domain.criterion.IMapping;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMultiMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ValueComparison;
-
 /**
  * Criterion visitor implementation to generate Elasticsearch QueryBuilder from
  * a search criterion
+ *
  * @author oroussel
  */
 public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuilder> {
@@ -68,6 +44,20 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
      * Text subfield mapping used for string search criterions
      */
     private static final String KEYWORD = ".keyword";
+
+    private static final Double WEST_DATELINE = -180.0;
+
+    private static final Double EAST_DATELINE = 180.0;
+
+    private static final Double NORTH_LIMIT = 90.0;
+
+    private static final Double SOUTH_LIMIT = -90.0;
+
+    private static final Double WEST_LIMIT = -360.0;
+
+    private static final Double EAST_LIMIT = 360.0;
+
+    private static final Double RELOCATE_DATELINE = 360.0;
 
     @Override
     public QueryBuilder visitEmptyCriterion(EmptyCriterion criterion) {
@@ -123,7 +113,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     }
 
     private String escape(String searchValue) {
-        return "\""+searchValue+"\"";
+        return "\"" + searchValue + "\"";
     }
 
     @Override
@@ -241,26 +231,85 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
 
     @Override
     public QueryBuilder visitBoundaryBoxCriterion(BoundaryBoxCriterion criterion) {
-        // Manage case when maxX > 180 => 360 - minX (this case can occur for a bbox crossing dateline)
-        if (criterion.getMaxX() > 180) {
-            criterion.setMaxX(criterion.getMaxX() - 360.0);
+
+        // API manages longitude from -360 to 360
+        // Check X constraints
+        if (criterion.getMinX() >= criterion.getMaxX()) {
+            String message = String
+                    .format("MinX must be less than MaxX : %s < %s", criterion.getMinX(), criterion.getMaxX());
+            throw new RsRuntimeException(message);
         }
-        // Manage case when minLon > MaxLon (ie crossing dateline) (if MaxLon is < 0)
-        if (criterion.getMaxX() < 0 && criterion.getMinX() > criterion.getMaxX()) {
-            // Cut BoundaryBoxCriterion into 2 BoundaryBoxCriterion, dateLine west and dateLine east
-            return ICriterion
-                    .or(ICriterion.intersectsBbox(criterion.getMinX(), criterion.getMaxY(), 180.0, criterion.getMinY()),
-                        ICriterion
-                                .intersectsBbox(-180.0, criterion.getMaxY(), criterion.getMaxX(), criterion.getMinY()))
+        checkXLimits(criterion.getMinX());
+        checkXLimits(criterion.getMaxX());
+        // Check Y constraints
+        if (criterion.getMinY() >= criterion.getMaxY()) {
+            String message = String
+                    .format("MinY must be less than MaxY : %s < %s", criterion.getMinY(), criterion.getMaxY());
+            throw new RsRuntimeException(message);
+        }
+        checkYLimits(criterion.getMinY());
+        checkYLimits(criterion.getMaxY());
+
+        // Manage crossing dateline cases
+        if (criterion.getMinX() > EAST_DATELINE) {
+            // bbox is between +180 and +360 : relocate it as single bbox
+            criterion.setMinX(criterion.getMinX() - RELOCATE_DATELINE);
+            criterion.setMaxX(criterion.getMaxX() - RELOCATE_DATELINE);
+            return getEnvelope(criterion);
+        } else if (criterion.getMaxX() < WEST_DATELINE) {
+            // bbox is between -360 and -180 : relocate it as single bbox
+            criterion.setMinX(criterion.getMinX() + RELOCATE_DATELINE);
+            criterion.setMaxX(criterion.getMaxX() + RELOCATE_DATELINE);
+            return getEnvelope(criterion);
+        } else if (criterion.getMinX() < WEST_DATELINE && criterion.getMaxX() > EAST_DATELINE) {
+            // East/West crossing bbox
+            // bbox is between -360 and +360 : relocate into single bbox with max longitude extent
+            criterion.setMinX(WEST_DATELINE);
+            criterion.setMaxX(EAST_DATELINE);
+            return getEnvelope(criterion);
+        } else if (criterion.getMinX() >= WEST_DATELINE && criterion.getMaxX() > EAST_DATELINE) {
+            // East crossing bbox
+            // bbox is between -180 and +360 : cut it into 2 bbox with relocation
+            return ICriterion.or(ICriterion.intersectsBbox(criterion.getMinX(), criterion.getMinY(), EAST_DATELINE,
+                                                           criterion.getMaxY()), ICriterion
+                                         .intersectsBbox(WEST_DATELINE, criterion.getMinY(),
+                                                         criterion.getMaxX() - RELOCATE_DATELINE, criterion.getMaxY()))
                     .accept(this);
+        } else if (criterion.getMinX() < WEST_DATELINE && criterion.getMaxX() <= EAST_DATELINE) {
+            // West crossing bbox
+            // bbox is between -360 and +180 : cut it into 2 bbox with relocation
+            return ICriterion.or(ICriterion.intersectsBbox(WEST_DATELINE, criterion.getMinY(), criterion.getMaxX(),
+                                                           criterion.getMaxY()), ICriterion
+                                         .intersectsBbox(criterion.getMinX() + RELOCATE_DATELINE, criterion.getMinY(),
+                                                         EAST_DATELINE, criterion.getMaxY())).accept(this);
+
+        } else {
+            // bbox is between -180 and +180 : no crossed dateline / basic case
+            return getEnvelope(criterion);
         }
+    }
+
+    private void checkXLimits(double value) {
+        if (value < WEST_LIMIT || value > EAST_LIMIT) {
+            String message = String.format("X value must be between %s and %s : %s", WEST_LIMIT, EAST_LIMIT, value);
+            throw new RsRuntimeException(message);
+        }
+    }
+
+    private void checkYLimits(double value) {
+        if (value < SOUTH_LIMIT || value > NORTH_LIMIT) {
+            String message = String.format("Y value must be between %s and %s : %s", SOUTH_LIMIT, NORTH_LIMIT, value);
+            throw new RsRuntimeException(message);
+        }
+    }
+
+    private QueryBuilder getEnvelope(BoundaryBoxCriterion boundaryBoxCriterion) {
         try {
             // upper left, lower right
             // (minX, maxY), (maxX, minY)
-            EnvelopeBuilder envelopeBuilder = new EnvelopeBuilder(new Coordinate(criterion.getMinX(),
-                                                                                 criterion.getMaxY()),
-                                                                  new Coordinate(criterion.getMaxX(),
-                                                                                 criterion.getMinY()));
+            EnvelopeBuilder envelopeBuilder = new EnvelopeBuilder(
+                    new Coordinate(boundaryBoxCriterion.getMinX(), boundaryBoxCriterion.getMaxY()),
+                    new Coordinate(boundaryBoxCriterion.getMaxX(), boundaryBoxCriterion.getMinY()));
             return QueryBuilders.geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, envelopeBuilder);
         } catch (IOException ioe) {
             throw new RsRuntimeException(ioe);

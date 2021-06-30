@@ -158,7 +158,7 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
 
         // Create a dataset configuration module item
         DatasetConfiguration dsConf = DatasetConfiguration.builder().datasource(datasourceConfiguration.getBusinessId())
-                .subsetting("hydro.data_type:TEST_TYPE").feature(feature).build();
+                .subsetting("hydro.data_type:\"TEST_TYPE\"").feature(feature).build();
         ModuleConfigurationItem<DatasetConfiguration> item = ModuleConfigurationItem.build(dsConf);
 
         // Import configuration
