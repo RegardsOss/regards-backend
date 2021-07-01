@@ -90,11 +90,10 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
     @Test
     public void copyPath() throws InterruptedException, ExecutionException {
         String owner = "first-owner";
-        String pathToCopy = "/rep/one";
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
             generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of(pathToCopy), Optional.of("plop"),
+                                        ONLINE_CONF_LABEL, Optional.of("/rep/one"), Optional.of("plop"),
                                         SESSION_OWNER, SESSION);
         }
         for (int i = 0; i < 5; i++) {
@@ -103,7 +102,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
                                         SESSION_OWNER, SESSION);
         }
         JobInfo ji = fileCopyRequestService
-                .scheduleJob(ONLINE_CONF_LABEL, SimpleOnlineDataStorage.BASE_URL + pathToCopy, NEARLINE_CONF_LABEL,
+                .scheduleJob(ONLINE_CONF_LABEL, "rep/one", NEARLINE_CONF_LABEL,
                              Optional.empty(), Sets.newHashSet("plop"), SESSION_OWNER, SESSION);
         Assert.assertNotNull("A job should be created", ji);
         Mockito.reset(publisher);

@@ -251,11 +251,11 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             Boolean allowPhysicalDeletion) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
-            Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
+            Files.createDirectories(Paths.get(getBaseStorageLocation().getPath()));
 
             Set<IPluginParam> parameters = IPluginParam
                     .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            getBaseStorageLocation().toString()),
+                                            getBaseStorageLocation().getPath()),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.ALLOW_PHYSICAL_DELETION, allowPhysicalDeletion));
@@ -263,7 +263,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                     dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
@@ -271,10 +271,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
-            Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
+            Files.createDirectories(Paths.get(getBaseStorageLocation().getPath()));
             Set<IPluginParam> parameters = IPluginParam
                     .set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            getBaseStorageLocation().toString()),
+                                            getBaseStorageLocation().getPath()),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                             "restoError.*"),
@@ -283,7 +283,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                     dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
@@ -292,7 +292,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         StorageLocationConfiguration conf = storageLocationConfService.getFirstActive(StorageType.ONLINE);
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                        getBaseStorageLocation().toString()),
+                                        getBaseStorageLocation().getPath()),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
         conf.getPluginConfiguration().setParameters(parameters);
@@ -335,13 +335,12 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 1024L,
                 MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.withType(type.orElse(null));
-        FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
         stoReqService.handleRequest(owner, sessionOwner, session, fileMetaInfo, originUrl, storage, subDir,
                                     UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
-        Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
-        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(), checksum);
+        Optional<FileReference> oFileRef = fileRefService.search(storage, checksum);
+        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(storage, checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
         Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TO_DO,
@@ -352,8 +351,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         // Run Job and wait for end
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        fileRefReqs = stoReqService.search(destination.getStorage(), checksum);
-        oFileRef = fileRefService.search(destination.getStorage(), checksum);
+        fileRefReqs = stoReqService.search(storage, checksum);
+        oFileRef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         try {
             Assert.assertTrue("File should be created on disk",

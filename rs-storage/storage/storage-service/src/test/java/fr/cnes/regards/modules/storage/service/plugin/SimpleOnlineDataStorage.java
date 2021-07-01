@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -104,8 +105,6 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     private final String doNotHandlePattern = "doNotHandle.*";
 
-    public final static String BASE_URL = "target/storage-online";
-
     /**
      * Plugin init method
      * @throws IOException
@@ -113,7 +112,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     @PluginInit
     public void init() throws IOException {
         // Clear directory
-        FileUtils.deleteDirectory(Paths.get(BASE_URL).toFile());
+        FileUtils.deleteDirectory(Paths.get(baseStorageLocationAsString).toFile());
     }
 
     @Override
@@ -159,8 +158,8 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
                 directory = fileRefRequest.getStorageSubDirectory();
             }
             String storedUrl = String
-                    .format("%s%s", BASE_URL,
-                            Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()).toString());
+                    .format("%s%s", Paths.get(baseStorageLocationAsString),
+                            Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()));
             try {
                 if (!Files.exists(Paths.get(storedUrl).getParent())) {
                     Files.createDirectories(Paths.get(storedUrl).getParent());
@@ -236,4 +235,8 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
         return true;
     }
 
+    @Override
+    public Optional<Path> getRootPath() {
+        return Optional.ofNullable(Paths.get(baseStorageLocationAsString));
+    }
 }

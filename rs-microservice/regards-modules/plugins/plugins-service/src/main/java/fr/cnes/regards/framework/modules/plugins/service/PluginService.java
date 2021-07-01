@@ -318,7 +318,7 @@ public class PluginService implements IPluginService {
     }
 
     @Override
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class }) 
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
     public PluginConfiguration updatePluginConfiguration(PluginConfiguration pluginConf)
             throws EntityNotFoundException, EntityInvalidException, EncryptionException {
         final PluginConfiguration oldConf = repos.findCompleteByBusinessId(pluginConf.getBusinessId());
@@ -537,8 +537,8 @@ public class PluginService implements IPluginService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
+    @Transactional(noRollbackFor = { ModuleException.class, NotAvailablePluginConfigurationException.class })
     public <T> T getPlugin(String businessId, IPluginParam... dynamicParameters)
             throws ModuleException, NotAvailablePluginConfigurationException {
 
