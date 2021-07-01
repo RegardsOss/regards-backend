@@ -251,7 +251,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             Boolean allowPhysicalDeletion) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
-            Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
+            Files.createDirectories(Paths.get(getBaseStorageLocation().getPath()));
 
             Set<IPluginParam> parameters = IPluginParam
                     .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
@@ -263,7 +263,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                     dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
@@ -271,10 +271,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
-            Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
+            Files.createDirectories(Paths.get(getBaseStorageLocation().getPath()));
             Set<IPluginParam> parameters = IPluginParam
                     .set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            getBaseStorageLocation().toString()),
+                                            getBaseStorageLocation().getPath()),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                             "restoError.*"),
@@ -283,7 +283,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                     dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
@@ -292,7 +292,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         StorageLocationConfiguration conf = storageLocationConfService.getFirstActive(StorageType.ONLINE);
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                        getBaseStorageLocation().toString()),
+                                        getBaseStorageLocation().getPath()),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
         conf.getPluginConfiguration().setParameters(parameters);
