@@ -37,7 +37,7 @@ public class StorageSettingService extends AbstractSettingService {
     @Autowired
     private StorageSettingService self;
 
-    @Value("${regards.storage.default.tenant.cache.path:cache}")
+    @Value("${regards.storage.cache.path:cache}")
     private String defaultCachePath;
 
     protected StorageSettingService(IDynamicTenantSettingService dynamicTenantSettingService) {
