@@ -466,11 +466,10 @@ public class ProductService implements IProductService {
                 // files are then declared invalid and product never created
                 for(AcquisitionFile af: productNewValidFiles) {
                     af.setState(AcquisitionFileState.INVALID);
-                    af.setError(String.format("This file should generate a product(name: %s) which is currently created "
+                    af.setError(String.format("This file should generate a product(name: %s) which has been created "
                                                       + "by another chain %s. So it is invalid.",
                                               productName,
                                               currentProduct.getProcessingChain().getLabel()));
-                    sessionNotifier.notifyFileAcquiredDeleted(session, processingChain.getLabel(), 1);
                     sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(), 1);
                 }
                 continue;
