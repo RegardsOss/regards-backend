@@ -60,8 +60,12 @@ public class ServiceProviderPublicDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ServiceProviderPublicDto that = (ServiceProviderPublicDto) o;
         return Objects.equals(name, that.name)
             && Objects.equals(authUrl, that.authUrl)

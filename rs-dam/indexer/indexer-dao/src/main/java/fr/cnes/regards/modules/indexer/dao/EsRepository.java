@@ -289,6 +289,16 @@ public class EsRepository implements IEsRepository {
      */
     private static final String INDEX_NOT_FOUND_ERROR_MESSAGE = "Research won't work until you've ingested some features into ES";
 
+    public static final String MAPPING = "mapping";
+
+    public static final String DOUBLE = "double";
+
+    public static final String PROPERTIES = "properties";
+
+    public static final String BOOLEAN = "boolean";
+
+    public static final String VERSION = "version";
+
     /**
      * Single scheduled executor service to clean reminder tasks once expiration date is reached
      */
@@ -428,7 +438,7 @@ public class EsRepository implements IEsRepository {
                 for (Object oTypeMap : allTypesMapping.values()) {
                     Map<String, Object> typeMap = toMap(oTypeMap);
                     if (typeMap.containsKey(attribute)) {
-                        return toMap(toMap(toMap(typeMap.get(attribute)).get("mapping")).get(lastPathAttName))
+                        return toMap(toMap(toMap(typeMap.get(attribute)).get(MAPPING)).get(lastPathAttName))
                                 .get("type").equals("text");
                     }
                 }
@@ -469,9 +479,9 @@ public class EsRepository implements IEsRepository {
         //@formatter:off
         return object(kv("dynamic_templates",
                          array(object(kv("doubles",
-                                         object(kv("match_mapping_type", "double"),
-                                                kv("mapping", object("type", "double"))))))),
-                      kv("properties",
+                                         object(kv("match_mapping_type", DOUBLE),
+                                                kv(MAPPING, object("type", DOUBLE))))))),
+                      kv(PROPERTIES,
                          //These are AbstractEntity standard attributes mappings
                          object( // first root attributes from AbstractEntity hierrachy
                                 kv("id", object("type", "long")),
@@ -490,7 +500,7 @@ public class EsRepository implements IEsRepository {
                                 kv("model", modelPropertiesMapping()),
                                 // then DataObject specific attributes
                                 kv("dataSourceId", object("type", "long")),
-                                kv("internal", object("type", "boolean")),
+                                kv("internal", object("type", BOOLEAN)),
                                 kv("datasetModelNames", stringMapping()),
                                 // then metadata attributes
                                 // metadata cannot be mapped that easily because it contains maps
@@ -513,15 +523,15 @@ public class EsRepository implements IEsRepository {
     private JsonElement pluginConfPropertiesMapping() {
         // @formatter:off
         return object(
-               kv("properties", object(
-                      kv("active",object("type", "boolean")),
+               kv(PROPERTIES, object(
+                      kv("active",object("type", BOOLEAN)),
                       kv("businessId",stringMapping()),
                       kv("id",object("type", "long")),
                       kv("label",stringMapping()),
                       kv("pluginId",stringMapping()),
                       kv("priorityOrder",object("type", "long")),
                       kv("parameters",object("type", "nested")),
-                      kv("version",stringMapping())
+                      kv(VERSION,stringMapping())
                )));
         // @formatter:on
     }
@@ -529,12 +539,12 @@ public class EsRepository implements IEsRepository {
     private JsonElement modelPropertiesMapping() {
         // @formatter:off
         return object(
-               kv("properties", object(
+               kv(PROPERTIES, object(
                       kv("description", object("type", "text")),
                       kv("id", object("type", "long")),
                       kv("name", stringMapping()),
                       kv("type", stringMapping()),
-                      kv("version", stringMapping())
+                      kv(VERSION, stringMapping())
                )));
         // @formatter:on
     }
@@ -542,18 +552,18 @@ public class EsRepository implements IEsRepository {
     private JsonElement feautrePropertiesMapping() {
         // @formatter:off
         return  object(
-                kv("properties", object(
+                kv(PROPERTIES, object(
                     kv("entityType", stringMapping()),
                     kv("files", object("type", "object")),
                     kv("id", stringMapping()),
                     kv("label", stringMapping()),
-                    kv("last", object("type", "boolean")),
+                    kv("last", object("type", BOOLEAN)),
                     kv("model", stringMapping()),
                     kv("normalizedGeometry", object("type", "geo_shape")),
-                    kv("properties", object("type", "object")),
+                    kv(PROPERTIES, object("type", "object")),
                     kv("providerId", stringMapping()),
                     kv("type", stringMapping()),
-                    kv("version", stringMapping()),
+                    kv(VERSION, stringMapping()),
                     kv("crs", stringMapping()),
                     kv("tags", stringMapping()),
                     kv("virtualId", stringMapping()),
@@ -744,7 +754,7 @@ public class EsRepository implements IEsRepository {
             for (ObjectObjectCursor<String, Settings> settings : response.getSettings()) {
                 // index starting with . are kibana ones (don't give a shit)
                 if (!settings.key.startsWith(".")) {
-                    String ver = settings.value.getAsSettings("index").getAsSettings("version").get("created");
+                    String ver = settings.value.getAsSettings("index").getAsSettings(VERSION).get("created");
                     Version version = Version.fromId(Integer.parseInt(ver));
                     if (version.before(Version.V_6_0_0)) {
                         long start = System.currentTimeMillis();
@@ -1717,7 +1727,7 @@ public class EsRepository implements IEsRepository {
                     // Indeed, because of Elasticsearch version 6 single type update, some indices are retrieved through
                     // an alias. Asking an alias mapping returned a block with index name, not alias name
                     return toMap(toMap(toMap(toMap(toMap(toMap(map.values().iterator().next()).get("mappings"))
-                            .get(TYPE)).get(attribute)).get("mapping")).get(lastPathAtt)).get("type").equals("text");
+                            .get(TYPE)).get(attribute)).get(MAPPING)).get(lastPathAtt)).get("type").equals("text");
 
                 }
             }
@@ -1770,7 +1780,7 @@ public class EsRepository implements IEsRepository {
 
                 // Add sort to request
                 updatedAscSortMap.forEach((key, value) -> builder.sort(SortBuilders.fieldSort(key)
-                        .order(value ? SortOrder.ASC : SortOrder.DESC).unmappedType("double")));
+                        .order(value ? SortOrder.ASC : SortOrder.DESC).unmappedType(DOUBLE)));
                 // "double" because a type is necessary. This has only an impact when seaching on several indices if
                 // property is mapped on one and no on the other(s). Will see this when it happens (if it happens a day)
                 // entry -> builder.sort(entry.getKey(), entry.getValue() ? SortOrder.ASC : SortOrder.DESC));

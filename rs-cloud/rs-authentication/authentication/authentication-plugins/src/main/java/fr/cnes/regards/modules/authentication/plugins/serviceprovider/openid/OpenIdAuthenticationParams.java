@@ -44,7 +44,9 @@ public class OpenIdAuthenticationParams extends ServiceProviderAuthenticationPar
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) return false;
+        if (!super.equals(o)) {
+            return false;
+        }
         OpenIdAuthenticationParams that = (OpenIdAuthenticationParams) o;
         return Objects.equals(code, that.code);
     }

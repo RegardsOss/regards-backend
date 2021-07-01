@@ -15,6 +15,8 @@ import java.time.OffsetDateTime;
 
 public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
 
+    public static final String VALUE = "value";
+
     public static Decoder selfRegister() {
         Decoder decoder = new ICriterionJsoniterDecoder().nullSafe();
         JsoniterSpi.registerTypeDecoder(ICriterion.class, decoder);
@@ -43,26 +45,26 @@ public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
                 return new StringMatchCriterion(
                         criterion.toString("name"),
                         criterion.as(MatchType.class, "type"),
-                        criterion.toString("value")
+                        criterion.toString(VALUE)
                 );
             }
             else if (critType.equals(StringMatchAnyCriterion.class)) {
                 return new StringMatchAnyCriterion(
                         criterion.toString("name"),
-                        List.ofAll(criterion.get("value").asList()).map(Any::toString).toJavaArray(String[]::new)
+                        List.ofAll(criterion.get(VALUE).asList()).map(Any::toString).toJavaArray(String[]::new)
                 );
             }
             else if (critType.equals(StringMultiMatchCriterion.class)) {
                 return new StringMultiMatchCriterion(
                         List.ofAll(criterion.get("names").asList()).map(Any::toString).toJavaSet(),
                         MultiMatchQueryBuilder.Type.valueOf(criterion.toString("type")),
-                        criterion.toString("value")
+                        criterion.toString(VALUE)
                 );
             }
             else if (critType.equals(DateMatchCriterion.class)) {
                 return new DateMatchCriterion(
                         criterion.toString("name"),
-                        OffsetDateTimeAdapter.parse(criterion.toString("value"))
+                        OffsetDateTimeAdapter.parse(criterion.toString(VALUE))
                 );
             }
             else if (critType.equals(DateRangeCriterion.class)) {
@@ -74,19 +76,19 @@ public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
             else if (critType.equals(IntMatchCriterion.class)) {
                 return new IntMatchCriterion(
                         criterion.toString("name"),
-                        criterion.toInt("value")
+                        criterion.toInt(VALUE)
                 );
             }
             else if (critType.equals(LongMatchCriterion.class)) {
                 return new LongMatchCriterion(
                         criterion.toString("name"),
-                        criterion.toLong("value")
+                        criterion.toLong(VALUE)
                 );
             }
             else if (critType.equals(BooleanMatchCriterion.class)) {
                 return new BooleanMatchCriterion(
                         criterion.toString("name"),
-                        criterion.toBoolean("value")
+                        criterion.toBoolean(VALUE)
                 );
             }
             else if (critType.equals(FieldExistsCriterion.class)) {

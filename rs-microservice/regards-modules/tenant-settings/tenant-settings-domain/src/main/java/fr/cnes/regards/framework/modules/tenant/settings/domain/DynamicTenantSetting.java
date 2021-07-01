@@ -94,7 +94,7 @@ public class DynamicTenantSetting {
         }
     }
 
-    public <T> DynamicTenantSetting setDefaultValue(T defaultValue) {
+    public final <T> DynamicTenantSetting setDefaultValue(T defaultValue) {
         if (defaultValue != null) {
             this.className = defaultValue.getClass().getName();
         }
@@ -114,7 +114,7 @@ public class DynamicTenantSetting {
         }
     }
 
-    public <T> DynamicTenantSetting setValue(T value) {
+    public final <T> DynamicTenantSetting setValue(T value) {
         if (value != null && className == null) {
             this.className = value.getClass().getName();
         }

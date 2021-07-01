@@ -55,10 +55,12 @@ public class SessionStepId implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         SessionStepId that = (SessionStepId) o;
         return stepId.equals(that.stepId) && source.equals(that.source) && session.equals(that.session);
     }

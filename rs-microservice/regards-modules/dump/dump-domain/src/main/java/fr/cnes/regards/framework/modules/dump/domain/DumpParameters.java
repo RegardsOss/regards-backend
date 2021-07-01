@@ -37,8 +37,12 @@ public class DumpParameters {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DumpParameters)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DumpParameters)) {
+            return false;
+        }
         DumpParameters that = (DumpParameters) o;
         return isActiveModule == that.isActiveModule && Objects.equals(cronTrigger, that.cronTrigger) && Objects.equals(dumpLocation, that.dumpLocation);
     }

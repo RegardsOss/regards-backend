@@ -37,8 +37,12 @@ public class UserOrderParameters {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UserOrderParameters)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof UserOrderParameters)) {
+            return false;
+        }
         UserOrderParameters that = (UserOrderParameters) o;
         return subOrderDuration == that.subOrderDuration && delayBeforeEmailNotification == that.delayBeforeEmailNotification;
     }

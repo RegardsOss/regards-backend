@@ -46,6 +46,8 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(AbstractAttributeHelper.class);
 
+    public static final String S_S = "%s.%s";
+
     private static ObjectMapper mapper = new ObjectMapper();
 
     @Override
@@ -149,7 +151,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
             Iterator<Entry<String, JsonNode>> it = properties.fields();
             do {
                 Entry<String, JsonNode> field = it.next();
-                String fieldPath = Optional.ofNullable(path).map(p -> String.format("%s.%s", p, name)).orElse(name);
+                String fieldPath = Optional.ofNullable(path).map(p -> String.format(S_S, p, name)).orElse(name);
                 createAttributes(field.getKey(), fieldPath, field.getValue(), jsonSchemaAttributes);
             } while (it.hasNext());
         });
@@ -186,7 +188,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
                 .orElse(JsonSchemaConstants.DEFAULT_FORMAT);
         AttributeModel attribute = new AttributeModel();
         attribute.setName(name);
-        attribute.setJsonPath(Optional.ofNullable(path).map(p -> String.format("%s.%s", p, name)).orElse(name));
+        attribute.setJsonPath(Optional.ofNullable(path).map(p -> String.format(S_S, p, name)).orElse(name));
         Fragment fragment = new Fragment();
         fragment.setVirtual(true);
         fragment.setName(path);
@@ -224,7 +226,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         String label = Optional.ofNullable(node.get(JsonSchemaConstants.TITLE)).map(JsonNode::asText).orElse(name);
         AttributeModel attribute = new AttributeModel();
         attribute.setName(name);
-        attribute.setJsonPath(String.format("%s.%s", path, name));
+        attribute.setJsonPath(String.format(S_S, path, name));
         Fragment fragment = new Fragment();
         fragment.setName(path);
         fragment.setVirtual(true);
@@ -252,7 +254,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         String label = Optional.ofNullable(node.get(JsonSchemaConstants.TITLE)).map(JsonNode::asText).orElse(name);
         AttributeModel attribute = new AttributeModel();
         attribute.setName(name);
-        attribute.setJsonPath(String.format("%s.%s", path, name));
+        attribute.setJsonPath(String.format(S_S, path, name));
         Fragment fragment = new Fragment();
         fragment.setName(path);
         fragment.setVirtual(true);
@@ -280,7 +282,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         String label = Optional.ofNullable(node.get(JsonSchemaConstants.TITLE)).map(JsonNode::asText).orElse(name);
         AttributeModel attribute = new AttributeModel();
         attribute.setName(name);
-        attribute.setJsonPath(String.format("%s.%s", path, name));
+        attribute.setJsonPath(String.format(S_S, path, name));
         Fragment fragment = new Fragment();
         fragment.setName(path);
         fragment.setVirtual(true);

@@ -15,11 +15,13 @@ public class JsonDeserializeStrategyConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonDeserializeStrategyConfig.class);
 
+    public static final String JSON_DESERIALIZE_STRATEGY_INSTANCE_IS = "JsonDeserializeStrategy instance is {}";
+
     @Bean
     @ConditionalOnExpression("'${regards.elasticsearch.deserialize.hits.strategy}'.equals('GSON')")
     public JsonDeserializeStrategy<IIndexable> gsonDeserializeHitsStrategyIIndexable(Gson gson) {
         GsonDeserializeIIndexableStrategy result = new GsonDeserializeIIndexableStrategy(gson);
-        LOGGER.info("JsonDeserializeStrategy instance is {}", result);
+        LOGGER.info(JSON_DESERIALIZE_STRATEGY_INSTANCE_IS, result);
         return result;
     }
 
@@ -33,7 +35,7 @@ public class JsonDeserializeStrategyConfig {
                 new GsonDeserializeIIndexableStrategy(gson),
                 new JsoniterDeserializeIIndexableStrategy(config)
         );
-        LOGGER.info("JsonDeserializeStrategy instance is {}", result);
+        LOGGER.info(JSON_DESERIALIZE_STRATEGY_INSTANCE_IS, result);
         return result;
     }
 
@@ -41,7 +43,7 @@ public class JsonDeserializeStrategyConfig {
     @ConditionalOnMissingBean
     public JsonDeserializeStrategy<IIndexable> jsoniterDeserializeHitsStrategyIIndexable(IIndexableJsoniterConfig config) {
         JsoniterDeserializeIIndexableStrategy result = new JsoniterDeserializeIIndexableStrategy(config);
-        LOGGER.info("JsonDeserializeStrategy instance is {}", result);
+        LOGGER.info(JSON_DESERIALIZE_STRATEGY_INSTANCE_IS, result);
         return result;
     }
 
