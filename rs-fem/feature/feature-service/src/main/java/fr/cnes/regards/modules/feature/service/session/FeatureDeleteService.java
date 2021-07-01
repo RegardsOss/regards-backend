@@ -34,18 +34,19 @@ import java.util.stream.Collectors;
 
 @Service
 @MultitenantTransactional
+//FIXME naming is error prone and FeatureSessionDeleteService already exist with only one method! go merge those 2 classes!
 public class FeatureDeleteService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeleteService.class);
 
     @Autowired
     private IJobInfoService jobInfoService;
+
     @Autowired
     private FeatureConfigurationProperties properties;
+
     @Autowired
     private IFeatureEntityRepository featureEntityRepository;
-    @Autowired
-    private FeatureSessionNotifier sessionNotifier;
 
     @Autowired
     private IPublisher publisher;
@@ -60,20 +61,22 @@ public class FeatureDeleteService {
 
     public long scheduleDeleteRequests(String source, String session) {
         long deletedFeaturesCount = 0;
-        long toDelete = 0;
         Page<ILightFeatureEntity> entityPage;
         Pageable pageable = PageRequest.of(0, properties.getMaxBulkSize(), Sort.by("id"));
         int requestCount = 0;
-        String deletionOwner = "delete-job";
+        String deletionOwner;
+        if (session == null || session.length() == 0) {
+            deletionOwner="delete-job-"+source;
+        } else {
+            deletionOwner="delete-job-"+source+"-"+session;
+        }
         do {
             if (StringUtils.isEmpty(session)) {
                 entityPage = featureEntityRepository.findBySessionOwner(source, pageable);
-                deletionOwner+="-"+source;
             } else {
                 entityPage = featureEntityRepository.findBySessionOwnerAndSession(source, session, pageable);
-                deletionOwner+="-"+source+"-"+session;
             }
-            List<FeatureUniformResourceName> featureUrns = entityPage.stream().map(f->f.getUrn()).collect(Collectors.toList());
+            List<FeatureUniformResourceName> featureUrns = entityPage.stream().map(ILightFeatureEntity::getUrn).collect(Collectors.toList());
             List<FeatureDeletionRequestEvent> events = Lists.newArrayList();
             for (FeatureUniformResourceName urn : featureUrns) {
                 FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(deletionOwner, urn, PriorityLevel.NORMAL);

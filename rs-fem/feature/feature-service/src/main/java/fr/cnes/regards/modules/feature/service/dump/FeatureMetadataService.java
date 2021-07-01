@@ -263,8 +263,12 @@ public class FeatureMetadataService implements IFeatureMetadataService {
             selection.getFilters().setState(RequestState.ERROR);
             do {
                 requestsPage = findRequests(selection, page);
+                if (total == 0) {
+                    total = requestsPage.getTotalElements();
+                }
                 List<FeatureSaveMetadataRequest> toUpdate = requestsPage.filter(r -> r.isRetryable())
                         .map(this::updateForRetry).toList();
+                nbHandled += toUpdate.size();
                 featureSaveMetadataRepository.saveAll(toUpdate);
                 if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
                     page = requestsPage.nextPageable();

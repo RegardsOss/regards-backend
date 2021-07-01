@@ -65,7 +65,7 @@ public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
                         OffsetDateTimeAdapter.parse(criterion.toString("value"))
                 );
             }
-            else if (criterion.equals(DateRangeCriterion.class)) {
+            else if (critType.equals(DateRangeCriterion.class)) {
                 DateRangeCriterion result = new DateRangeCriterion(criterion.toString("name"));
                 criterion.get("valueComparisons").asList().forEach(vc ->
                         result.addValueComparison(vc.as(new TypeLiteral<ValueComparison<OffsetDateTime>>(){})));

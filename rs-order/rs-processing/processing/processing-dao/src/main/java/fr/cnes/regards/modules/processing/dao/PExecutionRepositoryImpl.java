@@ -19,6 +19,7 @@ package fr.cnes.regards.modules.processing.dao;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -134,16 +135,13 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             OffsetDateTime to,
             Pageable page
     ) {
-        String orderBy = "";
+        StringJoiner orderBy = new StringJoiner(",");
         if ((page.getSort() != null) && !page.getSort().isEmpty()) {
             int count = 0;
-            orderBy = "ORDER BY ";
+            orderBy.add("ORDER BY ");
             for (Order o  : page.getSort().toList()) {
                 count ++;
-                orderBy+= o.getProperty() + " " + o.getDirection().toString();
-                if ((count > 1) && (count < page.getSort().toList().size())) {
-                    orderBy += ",";
-                }
+                orderBy.add(o.getProperty() + " " + o.getDirection().toString());
             }
         }
         DatabaseClient.GenericExecuteSpec execute = databaseClient.execute(
@@ -155,7 +153,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                 "   AND  E.current_status IN (:status) " +
                 "   AND  E.last_updated >= :lastUpdatedFrom " +
                 "   AND  E.last_updated <= :lastUpdatedTo " +
-                orderBy +
+                orderBy.toString() +
                 " LIMIT :limit OFFSET :offset"
         );
 

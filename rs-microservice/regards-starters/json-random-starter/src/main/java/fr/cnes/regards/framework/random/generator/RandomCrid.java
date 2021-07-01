@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class RandomCrid extends AbstractRandomGenerator<String>{
 
-    public static Random random = new Random();
+    private static final Random random = new Random();
 
     public RandomCrid(FunctionDescriptor fd) {
         super(fd);
