@@ -31,9 +31,7 @@ import java.util.UUID;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -72,21 +70,19 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  */
 public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(FileCopyRequestsCreatorJob.class);
+    public static final String STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME = "source";
 
-    public static final String STORAGE_LOCATION_SOURCE_ID = "source";
+    public static final String STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME = "dest";
 
-    public static final String STORAGE_LOCATION_DESTINATION_ID = "dest";
+    public static final String SOURCE_PATH_PARMETER_NAME = "sourcePath";
 
-    public static final String SOURCE_PATH = "sourcePath";
+    public static final String DESTINATION_PATH_PARMETER_NAME = "destinationPath";
 
-    public static final String DESTINATION_PATH = "destinationPath";
+    public static final String FILE_TYPES_PARMETER_NAME = "types";
 
-    public static final String FILE_TYPES = "types";
+    public static final String SESSION_OWNER_PARMETER_NAME = "sessionOwner";
 
-    public static final String SESSION_OWNER = "sessionOwner";
-
-    public static final String SESSION = "session" ;
+    public static final String SESSION_PARMETER_NAME = "session" ;
 
     @Autowired
     private IPublisher publisher;
@@ -124,14 +120,14 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID).getValue();
-        storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
-        sourcePath = parameters.get(SOURCE_PATH).getValue();
-        destinationPath = parameters.get(DESTINATION_PATH).getValue();
-        sessionOwner = parameters.get(SESSION_OWNER).getValue();
-        session = parameters.get(SESSION).getValue();
-        if (parameters.get(FILE_TYPES) != null) {
-            types = parameters.get(FILE_TYPES).getValue();
+        storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME).getValue();
+        storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME).getValue();
+        sourcePath = parameters.get(SOURCE_PATH_PARMETER_NAME).getValue();
+        destinationPath = parameters.get(DESTINATION_PATH_PARMETER_NAME).getValue();
+        sessionOwner = parameters.get(SESSION_OWNER_PARMETER_NAME).getValue();
+        session = parameters.get(SESSION_PARMETER_NAME).getValue();
+        if (parameters.get(FILE_TYPES_PARMETER_NAME) != null) {
+            types = parameters.get(FILE_TYPES_PARMETER_NAME).getValue();
         }
         try {
             sourcePlugin = pluginService.getPlugin(storageLocationSourceId);
@@ -204,8 +200,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             lockingTaskExecutors.executeWithLock(publishCopyFlowItemsTask, new LockConfiguration(
                     FileCopyRequestService.COPY_PROCESS_LOCK, Instant.now().plusSeconds(300)));
         } catch (Throwable e) {
-            LOGGER.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
-            LOGGER.error(e.getMessage(), e);
+            logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
+            logger.error(e.getMessage(), e);
         }
     }
 

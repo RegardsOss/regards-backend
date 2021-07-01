@@ -320,7 +320,6 @@ public class FileCopyRequestService {
     /**
      * Search for a {@link FileCopyRequest} for the given checksum.
      * @param checksum
-     * @param storage
      * @return {@link FileCopyRequest} if any
      */
     @Transactional(readOnly = true)
@@ -380,14 +379,14 @@ public class FileCopyRequestService {
     public JobInfo scheduleJob(String storageLocationId, String sourcePath, String destinationStorageId,
             Optional<String> destinationPath, Collection<String> types, String sessionOwner, String session) {
         Set<JobParameter> parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, storageLocationId));
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID,
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME, storageLocationId));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME,
                 destinationStorageId));
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, sourcePath));
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, destinationPath.orElse("")));
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.FILE_TYPES, types));
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER, sessionOwner));
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION, session));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH_PARMETER_NAME, sourcePath));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH_PARMETER_NAME, destinationPath.orElse("")));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.FILE_TYPES_PARMETER_NAME, types));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER_PARMETER_NAME, sessionOwner));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_PARMETER_NAME, session));
 
         JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(),
                 parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
@@ -426,7 +425,6 @@ public class FileCopyRequestService {
 
     /**
      * Check if a copy request exists for the given file reference
-     * @param fileReferenceToDelete
      * @return
      */
     public boolean existsByChecksumAndStatusIn(String checksum, Collection<FileRequestStatus> status) {
@@ -434,7 +432,6 @@ public class FileCopyRequestService {
     }
 
     /**
-     * @param collect
      * @return
      */
     public boolean isFileCopyRunning(Collection<String> cheksums) {

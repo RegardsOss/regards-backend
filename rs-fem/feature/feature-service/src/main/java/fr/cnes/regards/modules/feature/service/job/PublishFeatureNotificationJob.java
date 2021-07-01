@@ -51,8 +51,6 @@ import fr.cnes.regards.modules.feature.service.IFeatureService;
  */
 public class PublishFeatureNotificationJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PublishFeatureNotificationJob.class);
-
     public static final String SELECTION_PARAMETER = "selection";
 
     public static final String OWNER_PARAMETER = "owner";
@@ -88,20 +86,17 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
             results = featureService.findAll(selection, page);
             if (firstPass) {
                 totalElementCheck = results.getTotalElements();
-                LOGGER.info("Starting scheduling {} feature notification requests.", totalElementCheck);
+                logger.info("Starting scheduling {} feature notification requests.", totalElementCheck);
                 firstPass = false;
             }
             // Scheduling page deletion job
             publishNotificationEvents(results.map(f -> f.getFeature().getUrn()).toList());
-            LOGGER.info("Scheduling job for {} feature notification requests (remaining {}).",
+            logger.info("Scheduling job for {} feature notification requests (remaining {}).",
                         results.getNumberOfElements(), totalElementCheck - results.getNumberOfElements());
             page = page.next();
         } while ((results != null) && results.hasNext());
     }
 
-    /**
-     * @param ids
-     */
     private void publishNotificationEvents(Collection<FeatureUniformResourceName> featureUrns) {
         List<FeatureNotificationRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {

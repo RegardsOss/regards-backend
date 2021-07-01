@@ -120,12 +120,12 @@ public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
         String copyFrom = ONLINE_CONF_LABEL;
         String copyTo = NEARLINE_CONF_LABEL;
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, copyFrom));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID, copyTo));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, "files"));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, "from_online"));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER, "source1"));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION, "session1"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME, copyFrom));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME, copyTo));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH_PARMETER_NAME, "files"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH_PARMETER_NAME, "from_online"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER_PARMETER_NAME, "source1"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_PARMETER_NAME, "session1"));
         JobInfo jobInfo = new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(), jobParameters, null,
                 FileCopyRequestsCreatorJob.class.getName());
         jobInfoService.createAsPending(jobInfo);
@@ -162,12 +162,12 @@ public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
         String copyFrom = ONLINE_CONF_LABEL;
         String copyTo = NEARLINE_CONF_LABEL;
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, copyFrom));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID, copyTo));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, ""));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, ""));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER, "source1"));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION, "session1"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME, copyFrom));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME, copyTo));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH_PARMETER_NAME, ""));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH_PARMETER_NAME, ""));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER_PARMETER_NAME, "source1"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_PARMETER_NAME, "session1"));
         JobInfo jobInfo = new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(), jobParameters, null,
                                       FileCopyRequestsCreatorJob.class.getName());
         jobInfoService.createAsPending(jobInfo);

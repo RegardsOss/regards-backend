@@ -57,8 +57,6 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  */
 public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestsCreatorJob.class);
-
     public static final String STORAGE_LOCATION_ID = "storage";
 
     public static final String FORCE_DELETE = "force";
@@ -135,8 +133,8 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             lockingTaskExecutors.executeWithLock(publishdeletionFlowItemsTask, new LockConfiguration(
                     DeletionFlowItem.DELETION_LOCK, Instant.now().plusSeconds(300)));
         } catch (Throwable e) {
-            LOGGER.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
-            LOGGER.error(e.getMessage(), e);
+            logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
+            logger.error(e.getMessage(), e);
         }
     }
 

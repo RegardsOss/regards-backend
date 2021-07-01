@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class RandomCrid extends AbstractRandomGenerator<String>{
 
-    private static final Random random = new Random();
+    private static final Random RANDOM_GEN = new Random();
 
     public RandomCrid(FunctionDescriptor fd) {
         super(fd);
@@ -38,7 +38,7 @@ public class RandomCrid extends AbstractRandomGenerator<String>{
 
         StringBuilder builder = new StringBuilder();
         for(int i = 0; i < size; i++){
-            int randomInt = random.nextInt(pool.length());
+            int randomInt = RANDOM_GEN.nextInt(pool.length());
             builder.append(pool.charAt(randomInt));
         }
         return builder.toString();

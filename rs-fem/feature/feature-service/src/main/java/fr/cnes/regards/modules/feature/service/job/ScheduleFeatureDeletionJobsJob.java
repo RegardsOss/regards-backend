@@ -49,8 +49,6 @@ import fr.cnes.regards.modules.feature.service.IFeatureService;
  */
 public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduleFeatureDeletionJobsJob.class);
-
     public static final String SELECTION_PARAMETER = "selection";
 
     public static final String OWNER_PARAMETER = "owner";
@@ -87,7 +85,7 @@ public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
             if (!results.isEmpty()) {
                 if (firstPass) {
                     totalElementCheck = results.getTotalElements();
-                    LOGGER.info("Starting scheduling {} feature deletion requests.", totalElementCheck);
+                    logger.info("Starting scheduling {} feature deletion requests.", totalElementCheck);
                     firstPass = false;
                 }
                 // Prepare urns
@@ -98,7 +96,7 @@ public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
                 }
                 // Scheduling page deletion job
                 schedulePageDeletion(ids);
-                LOGGER.info("Scheduling job for {} feature deletion requests (remaining {}).", ids.size(),
+                logger.info("Scheduling job for {} feature deletion requests (remaining {}).", ids.size(),
                             totalElementCheck);
                 page = page.next();
             }
