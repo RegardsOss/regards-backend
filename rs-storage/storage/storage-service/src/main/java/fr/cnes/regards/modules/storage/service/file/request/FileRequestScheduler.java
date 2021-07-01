@@ -142,7 +142,7 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
                 traceScheduling(tenant, STORAGE_ACTIONS);
                 lockingTaskExecutors
                         .executeWithLock(handleRequestsTask,
-                                         new LockConfiguration(STORAGE_LOCK, Instant.now().plusSeconds(120)));
+                                         new LockConfiguration(STORAGE_LOCK, Instant.now().plusSeconds(1200)));
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
             } finally {

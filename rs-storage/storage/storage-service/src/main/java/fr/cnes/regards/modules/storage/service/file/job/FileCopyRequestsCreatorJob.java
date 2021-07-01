@@ -166,7 +166,6 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             String groupId = UUID.randomUUID().toString();
             Set<FileCopyRequestDTO> requests = Sets.newHashSet();
             for (FileReference fileRef : pageResults.getContent()) {
-                LOGGER.info("hihi : {}",fileRef.getLocation().getUrl());
                 try {
                     Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(), sourceRootPath,
                                                                                sourcePath, destinationPath);

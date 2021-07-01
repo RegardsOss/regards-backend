@@ -188,6 +188,8 @@ public class FileStorageRequest {
             this.metaInfo.setFileName(request.getFileName());
             this.metaInfo.setType(request.getType());
         }
+        this.session = request.getSession();
+        this.sessionOwner = request.getSessionOwner();
     }
 
     public Long getId() {

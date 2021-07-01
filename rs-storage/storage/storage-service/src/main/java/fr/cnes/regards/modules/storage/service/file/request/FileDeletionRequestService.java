@@ -157,20 +157,21 @@ public class FileDeletionRequestService {
             this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
         } else {
             // Retry deletion if error
-            request = retry(existingOne.get(), forceDelete);
+            request = retry(existingOne.get(), forceDelete,sessionOwner, session);
         }
         return request;
     }
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
+     * @Param request : existing request to retry
+     * @Param sessionOwner : new request session owner
+     * @Param session : new request session
      */
-    private FileDeletionRequest retry(FileDeletionRequest request, boolean forceDelete) {
+    private FileDeletionRequest retry(FileDeletionRequest request, boolean forceDelete, String sessionOwner, String session) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
-            String sessionOwner = request.getSessionOwner();
-            String session = request.getSession();
-            // decrement error request
-            this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
-            // notify running request to the session agent
+            // decrement error request for previous session
+            this.sessionNotifier.decrementErrorRequests(request.getSessionOwner(), request.getSession());
+            // notify running request to the session agent for new session
             this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
             // reset status
             request.setStatus(FileRequestStatus.TO_DO);

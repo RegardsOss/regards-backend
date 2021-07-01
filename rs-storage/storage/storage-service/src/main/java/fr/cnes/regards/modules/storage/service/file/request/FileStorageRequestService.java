@@ -284,8 +284,9 @@ public class FileStorageRequestService {
             if (existingReq.getStatus() == FileRequestStatus.ERROR) {
                 // Allow retry of error requests when the same request is sent
                 existingReq.setStatus(FileRequestStatus.TO_DO);
-                // decrement errors to the session agent
-                this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
+                // decrement errors to the session agent for the previous request session
+                this.sessionNotifier.decrementErrorRequests(existingReq.getSessionOwner(), existingReq.getSession());
+                // increment new request running for the new session
                 this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
             }
             LOGGER.trace("[STORAGE REQUESTS] Existing request ({}) updated to handle same file of request ({})",
@@ -527,6 +528,7 @@ public class FileStorageRequestService {
      */
     private Collection<JobInfo> scheduleJobsByStorage(String storage,
             Collection<FileStorageRequest> fileStorageRequests) {
+        LOGGER.debug("Nb requests to schedule for storage {} = {}",storage,fileStorageRequests.size());
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         Collection<FileStorageRequest> remainingRequests = Sets.newHashSet();
         remainingRequests.addAll(fileStorageRequests);
@@ -537,6 +539,7 @@ public class FileStorageRequestService {
                     .prepareForStorage(fileStorageRequests);
             for (FileStorageWorkingSubset ws : response.getWorkingSubsets()) {
                 if (!ws.getFileReferenceRequests().isEmpty()) {
+                    LOGGER.debug("Scheduling 1 storage job for {} requests.",ws.getFileReferenceRequests().size());
                     jobInfoList.add(scheduleJob(ws, conf.getBusinessId(), storage));
                     remainingRequests.removeAll(ws.getFileReferenceRequests());
                 }

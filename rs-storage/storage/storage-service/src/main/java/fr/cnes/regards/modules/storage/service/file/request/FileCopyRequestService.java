@@ -214,7 +214,9 @@ public class FileCopyRequestService {
             // decrement the number of errors to the session agent
             String sessionOwner = requestDto.getSessionOwner();
             String session = requestDto.getSession();
-            this.sessionNotifier.decrementErrorRequests(sessionOwner, session);
+            // Decrement error on previous session
+            this.sessionNotifier.decrementErrorRequests(request.getSessionOwner(), request.getSession());
+            // Increment running request on new session
             this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
             // set the new status
             request.setStatus(reqStatusService.getNewStatus(request, Optional.empty()));
