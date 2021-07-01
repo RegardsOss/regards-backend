@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -64,21 +65,48 @@ public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
     @Test
     public void calculateCopyPath() throws MalformedURLException, ModuleException {
         Optional<Path> filePath = FileCopyRequestsCreatorJob
-                .getDestinationFilePath("file:/regards-input/storages/local/e1/f3/42/a1/123456789132456789",
+                .getDestinationFilePath("file:/regards-input/storages/local/e1/f3/42/a1/123456789132456789",Optional.ofNullable(Paths.get("/")),
                                         "/regards-input/storages/local/e1", "copied");
         Assert.assertTrue("Destination copy path should be created as the file is in the path to copy",
                           filePath.isPresent());
         Assert.assertEquals("Invalid copy destination path", "copied/f3/42/a1", filePath.get().toString());
 
         filePath = FileCopyRequestsCreatorJob
-                .getDestinationFilePath("file:/regards-input/storages/local/e1/f3/42/a1/123456789132456789",
+                .getDestinationFilePath("file:/regards-input/storages/local/e1/f3/42/a1/123456789132456789",Optional.ofNullable(Paths.get("/regards-input/storages/local")),
+                                        "", "copied");
+        Assert.assertTrue("Destination copy path should be created as the file is in the path to copy",
+                          filePath.isPresent());
+        Assert.assertEquals("Invalid copy destination path", "copied/e1/f3/42/a1", filePath.get().toString());
+
+        filePath = FileCopyRequestsCreatorJob
+                .getDestinationFilePath("file:/somewhere/referenced/files/test.xml",Optional.ofNullable(Paths.get("/regards-input/storages/local")),
+                                        "/", "copied");
+        Assert.assertTrue("Destination copy path should be created as the file is in the path to copy",
+                          filePath.isPresent());
+        Assert.assertEquals("Invalid copy destination path", "copied/somewhere/referenced/files", filePath.get().toString());
+
+        filePath = FileCopyRequestsCreatorJob
+                .getDestinationFilePath("file:/somewhere/referenced/files/test.xml",Optional.ofNullable(Paths.get("/regards-input/storages/local")),
+                                        "", "copied");
+        Assert.assertFalse("Destination copy path should not be created as the file is not in path to copy. Path to copy is relative from root storage location",
+                          filePath.isPresent());
+
+        filePath = FileCopyRequestsCreatorJob
+                .getDestinationFilePath("file:/somewhere/referenced/files/test.xml",Optional.ofNullable(Paths.get("/regards-input/storages/local")),
+                                        "/somewhere", "copied");
+        Assert.assertTrue("Destination copy path should be created as the file is in the path to copy",
+                          filePath.isPresent());
+        Assert.assertEquals("Invalid copy destination path", "copied/referenced/files", filePath.get().toString());
+
+        filePath = FileCopyRequestsCreatorJob
+                .getDestinationFilePath("file:/regards-input/storages/local/e1/f3/42/a1/123456789132456789",Optional.ofNullable(Paths.get("/")),
                                         "/regards-input/storages/local/e2", "copied");
         Assert.assertFalse("Destination copy path should be not created as the file is not in the path to copy",
                            filePath.isPresent());
     }
 
     @Test
-    public void runJob() throws InterruptedException, ExecutionException {
+    public void runJobWithParameters() throws InterruptedException, ExecutionException {
 
         // Store some files in online conf
         generateRandomStoredOnlineFileReference("file1.txt", Optional.of("files"));
@@ -94,7 +122,7 @@ public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, copyFrom));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID, copyTo));
-        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, "target/storage-online/files"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, "files"));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, "from_online"));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER, "source1"));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION, "session1"));
@@ -117,6 +145,48 @@ public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
         Assert.assertNotNull(copyItem);
         // 3 of the 6 files must be copied (only files in target/files)
         Assert.assertEquals(3, copyItem.getFiles().size());
+    }
+
+    @Test
+    public void runJob() throws InterruptedException, ExecutionException {
+
+        // Store some files in online conf
+        generateRandomStoredOnlineFileReference("file1.txt", Optional.of("files"));
+        generateRandomStoredOnlineFileReference("file2.txt", Optional.of("files"));
+        generateRandomStoredOnlineFileReference("file3.txt", Optional.of("files"));
+        generateRandomStoredOnlineFileReference("data1.txt", Optional.of("datas"));
+        generateRandomStoredOnlineFileReference("data2.txt", Optional.of("datas"));
+        generateRandomStoredOnlineFileReference("data3.txt", Optional.of("datas"));
+        Mockito.reset(publisher);
+        // Schedule job
+        String copyFrom = ONLINE_CONF_LABEL;
+        String copyTo = NEARLINE_CONF_LABEL;
+        Set<JobParameter> jobParameters = Sets.newHashSet();
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID, copyFrom));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID, copyTo));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH, ""));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH, ""));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER, "source1"));
+        jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION, "session1"));
+        JobInfo jobInfo = new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(), jobParameters, null,
+                                      FileCopyRequestsCreatorJob.class.getName());
+        jobInfoService.createAsPending(jobInfo);
+        jobService.runJob(jobInfo, getDefaultTenant()).get();
+
+        // Check event is well publish for copying the files
+        ArgumentCaptor<CopyFlowItem> argumentCaptor = ArgumentCaptor.forClass(CopyFlowItem.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(CopyFlowItem.class));
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        CopyFlowItem copyItem = null;
+        for (Object item : argumentCaptor.getAllValues()) {
+            if (item instanceof CopyFlowItem) {
+                copyItem = (CopyFlowItem) item;
+                break;
+            }
+        }
+        Assert.assertNotNull(copyItem);
+        // All 6 files must be copied
+        Assert.assertEquals(6, copyItem.getFiles().size());
     }
 
 }

@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
+import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -87,5 +89,13 @@ public interface IStorageLocation {
      * @return boolean
      */
     boolean allowPhysicalDeletion();
+
+    /**
+     * Retrieve storage location root path if any
+     * @return Optional<Path>
+     */
+    default Optional<Path> getRootPath() {
+        return Optional.empty();
+    }
 
 }

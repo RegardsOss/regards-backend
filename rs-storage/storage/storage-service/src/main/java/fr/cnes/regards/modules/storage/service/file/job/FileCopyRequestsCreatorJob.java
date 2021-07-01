@@ -28,6 +28,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +98,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     private FileReferenceService fileRefService;
 
     @Autowired
+    private IPluginService pluginService;
+
+    @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
     private String storageLocationSourceId;
@@ -112,6 +119,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     private String session;
 
+    private IStorageLocation sourcePlugin;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -123,6 +132,13 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         session = parameters.get(SESSION).getValue();
         if (parameters.get(FILE_TYPES) != null) {
             types = parameters.get(FILE_TYPES).getValue();
+        }
+        try {
+            sourcePlugin = pluginService.getPlugin(storageLocationSourceId);
+        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+           throw new JobParameterInvalidException(
+                   String.format("Invalid source location plugin %s. Associated storage location plugin not available",
+                                 storageLocationSourceId),e);
         }
     }
 
@@ -136,6 +152,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                     storageLocationSourceId, storageLocationDestinationId);
         Pageable pageRequest = PageRequest.of(0, CopyFlowItem.MAX_REQUEST_PER_GROUP);
         Page<FileReference> pageResults;
+        Optional<Path> sourceRootPath = sourcePlugin.getRootPath();
+        logger.info("[COPY JOB] Origin source location {}", sourceRootPath.orElse(Paths.get("/")));
         long nbFilesToCopy = 0L;
         do {
             // Search for all file references matching the given storage location.
@@ -148,8 +166,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             String groupId = UUID.randomUUID().toString();
             Set<FileCopyRequestDTO> requests = Sets.newHashSet();
             for (FileReference fileRef : pageResults.getContent()) {
+                LOGGER.info("hihi : {}",fileRef.getLocation().getUrl());
                 try {
-                    Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
+                    Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(), sourceRootPath,
                                                                                sourcePath, destinationPath);
                     if (desinationFilePath.isPresent()) {
                         nbFilesToCopy++;
@@ -204,7 +223,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
      * @throws MalformedURLException
      * @throws ModuleException
      */
-    public static Optional<Path> getDestinationFilePath(String fileUrl, String sourcePathToCopy, String destinationPath)
+    public static Optional<Path> getDestinationFilePath(String fileUrl, Optional<Path> sourceRootPath, String sourcePathToCopy, String destinationPath)
             throws MalformedURLException, ModuleException {
         String destinationFilePath = "";
         if (destinationPath == null) {
@@ -218,13 +237,25 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         URL url = new URL(fileUrl);
         Path fileDirectoryPath = Paths.get(url.getPath()).getParent();
         String fileDir = fileDirectoryPath.toString();
-        if (fileDir.startsWith(sourcePathToCopy)) {
-            Path destinationSubDirPath = Paths.get(sourcePathToCopy).relativize(fileDirectoryPath);
+        Path resolvedSourcePathToCopy;
+        // If source path to copy is absolute, copy from the exact given directory
+        if (sourcePathToCopy.startsWith("/")) {
+            resolvedSourcePathToCopy = Paths.get(sourcePathToCopy);
+        } else if (sourcePathToCopy.isEmpty()) {
+            // If source path to copy is empty, copy from the storage location root path
+            resolvedSourcePathToCopy = sourceRootPath.orElse(Paths.get("/"));
+        } else {
+            // If source path to copy is relative, copy from the storage location root path resoved with the source path to copy given
+            resolvedSourcePathToCopy = sourceRootPath.orElse(Paths.get("/")).resolve(sourcePathToCopy);
+        }
+
+        if (fileDir.startsWith(resolvedSourcePathToCopy.toString())) {
+            Path destinationSubDirPath = resolvedSourcePathToCopy.relativize(fileDirectoryPath);
             destinationFilePath = Paths.get(destinationPath, destinationSubDirPath.toString()).toString();
             if (destinationFilePath.length() > FileLocation.URL_MAX_LENGTH) {
                 throw new ModuleException(String
                         .format("Destination path <%s> legnth is too long (> %d). fileUrl=%s,sourcePathToCopy=%s,destinationPath=%s",
-                                destinationFilePath.toString(), FileLocation.URL_MAX_LENGTH, fileUrl, sourcePathToCopy,
+                                destinationFilePath.toString(), FileLocation.URL_MAX_LENGTH, fileUrl, resolvedSourcePathToCopy,
                                 destinationPath));
             }
             return Optional.of(Paths.get(destinationFilePath));
