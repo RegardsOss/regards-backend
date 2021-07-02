@@ -23,12 +23,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.modules.tenant.settings.client.IDynamicTenantSettingClient;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
@@ -82,9 +77,8 @@ public interface IStorageDownloadQuotaRestClient {
     @ResponseBody
     ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
 
-    @GetMapping(path = PATH_CURRENT_QUOTA_LIST, produces = MediaType.APPLICATION_JSON_VALUE,
+    @PostMapping(path = PATH_CURRENT_QUOTA_LIST, produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(
-            @RequestParam(value = USER_EMAIL_PARAM) String[] userEmails);
+    ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails);
 }
