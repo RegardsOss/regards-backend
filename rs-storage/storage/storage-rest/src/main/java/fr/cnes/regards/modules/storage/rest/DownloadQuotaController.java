@@ -152,10 +152,10 @@ public class DownloadQuotaController {
         );
     }
 
-    @GetMapping(path = PATH_CURRENT_QUOTA_LIST)
+    @PostMapping(path = PATH_CURRENT_QUOTA_LIST)
     @ResponseBody
     @ResourceAccess(description = "Get current download quota values for the specified users.", role = DefaultRole.ADMIN)
-    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@RequestParam(value = USER_EMAIL_PARAM) String[] userEmails) {
+    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails) {
         return quotaService.getCurrentQuotas(userEmails)
             .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
             .get();

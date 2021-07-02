@@ -96,9 +96,8 @@ public interface IStorageDownloadQuotaRestClient {
     @ResponseBody
     ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
 
-    @GetMapping(path = PATH_CURRENT_QUOTA_LIST,
-        produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = PATH_CURRENT_QUOTA_LIST, produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@RequestParam(value = USER_EMAIL_PARAM) String[] userEmails);
+    ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails);
 }
