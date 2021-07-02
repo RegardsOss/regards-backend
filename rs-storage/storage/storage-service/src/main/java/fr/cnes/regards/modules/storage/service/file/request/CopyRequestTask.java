@@ -91,6 +91,7 @@ public class CopyRequestTask implements Task {
                     request.setFileCacheGroupId(fileCacheGroupId);
                     request.setStatus(FileRequestStatus.PENDING);
                 }
+                copyRepository.saveAll(pageResp.getContent());
 
                 if (!checksums.isEmpty()) {
                     reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true,

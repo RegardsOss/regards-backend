@@ -154,10 +154,10 @@ public class FileStorageRequestService {
     /**
      * Initialize new storage requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
      * avoid requesting {@link IFileReferenceRepository} on each request.
-     * @param requests
-     * @param groupId
-     * @param existingOnes
-     * @param existingRequests
+     * @param requests requests to handle
+     * @param groupId requests group identifier
+     * @param existingOnes Already existing file references
+     * @param existingRequests Already existing requests
      */
     private void doStore(Collection<FileStorageRequestDTO> requests, String groupId,
             Collection<FileReference> existingOnes, Set<FileStorageRequest> existingRequests,
@@ -199,8 +199,8 @@ public class FileStorageRequestService {
     /**
      * Store a new file to a given storage destination
      * @param owner Owner of the new file
-     * @param sessionOwner
-     * @param session
+     * @param sessionOwner Session information owner
+     * @param session Session information name
      * @param metaInfo information about file
      * @param originUrl current location of file. This URL must be locally accessible to be copied.
      * @param storage name of the storage destination. Must be a existing plugin configuration of a {@link IStorageLocation}
@@ -468,25 +468,10 @@ public class FileStorageRequestService {
         long start = System.currentTimeMillis();
         LOGGER.trace("[STORAGE REQUESTS] Scheduling storage jobs ...");
         for (String storage : storagesToSchedule) {
-            Page<FileStorageRequest> filesPage;
-            Long maxId = 0L;
-            // Always search the first page of requests until there is no requests anymore.
-            // To do so, we order on id to ensure to not handle same requests multiple times.
-            Pageable page = PageRequest.of(0, nbRequestsPerJob, Sort.by("id"));
+            boolean productRemains;
             do {
-                // Always retrieve first page, as request status are updated during job scheduling method.
-                if ((owners != null) && !owners.isEmpty()) {
-                    filesPage = fileStorageRequestRepo
-                            .findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(storage, status, owners, maxId, page);
-                } else {
-                    filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndIdGreaterThan(storage, status, maxId,
-                                                                                                 page);
-                }
-                if (filesPage.hasContent()) {
-                    maxId = filesPage.stream().max(Comparator.comparing(FileStorageRequest::getId)).get().getId();
-                    self.scheduleJobsByStorage(jobList, storage, filesPage.getContent(), status);
-                }
-            } while (filesPage.hasContent());
+                productRemains = self.scheduleJobsByStorage(jobList, storage, owners, status);
+            } while (productRemains);
         }
         LOGGER.debug("[STORAGE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
                      System.currentTimeMillis() - start);
@@ -496,28 +481,46 @@ public class FileStorageRequestService {
     /**
      * @param jobList
      * @param storage
-     * @param fileStorageRequests
+     * @param owners
+     * @param status
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void scheduleJobsByStorage(Collection<JobInfo> jobList, String storage,
-            List<FileStorageRequest> fileStorageRequests, FileRequestStatus requestStatus) {
-        // SESSION HANDLING
-        // if status is in error state decrement the number of requests in error
-        if(requestStatus.equals(FileRequestStatus.ERROR)) {
-            fileStorageRequests.forEach(req -> {
-                String sessionOwner = req.getSessionOwner();
-                String session = req.getSession();
-                sessionNotifier.decrementErrorRequests(sessionOwner, session);
-                sessionNotifier.incrementRunningRequests(sessionOwner, session);
-            });
-        }
-
-        // SCHEDULER - schedule jobs by storage
-        if (storageHandler.isConfigured(storage)) {
-            jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
+    public boolean scheduleJobsByStorage(Collection<JobInfo> jobList, String storage,
+            Collection<String> owners, FileRequestStatus status) {
+        Page<FileStorageRequest> filesPage;
+        Long maxId = 0L;
+        // Always search the first page of requests until there is no requests anymore.
+        // To do so, we order on id to ensure to not handle same requests multiple times.
+        Pageable page = PageRequest.of(0, nbRequestsPerJob, Sort.by("id"));
+        // Always retrieve first page, as request status are updated during job scheduling method.
+        if ((owners != null) && !owners.isEmpty()) {
+            filesPage = fileStorageRequestRepo
+                    .findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(storage, status, owners, maxId, page);
         } else {
-            handleStorageNotAvailable(fileStorageRequests, Optional.empty());
+            filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndIdGreaterThan(storage, status, maxId,
+                                                                                         page);
         }
+        if (filesPage.hasContent()) {
+            maxId = filesPage.stream().max(Comparator.comparing(FileStorageRequest::getId)).get().getId();
+            // SESSION HANDLING
+            // if status is in error state decrement the number of requests in error
+            if(status.equals(FileRequestStatus.ERROR)) {
+                filesPage.getContent().forEach(req -> {
+                    String sessionOwner = req.getSessionOwner();
+                    String session = req.getSession();
+                    sessionNotifier.decrementErrorRequests(sessionOwner, session);
+                    sessionNotifier.incrementRunningRequests(sessionOwner, session);
+                });
+            }
+
+            // SCHEDULER - schedule jobs by storage
+            if (storageHandler.isConfigured(storage)) {
+                jobList.addAll(scheduleJobsByStorage(storage,  filesPage.getContent()));
+            } else {
+                handleStorageNotAvailable(filesPage.getContent(), Optional.empty());
+            }
+        }
+        return filesPage.hasContent();
     }
 
     /**

@@ -234,7 +234,7 @@ public class FileCopyRequestService {
         try {
             lockingTaskExecutors
                     .executeWithLock(new CopyRequestTask(fileCacheReqService, copyRepository, reqGrpService, status),
-                                     new LockConfiguration(COPY_PROCESS_LOCK, Instant.now().plusSeconds(30)));
+                                     new LockConfiguration(COPY_PROCESS_LOCK, Instant.now().plusSeconds(1200)));
         } catch (Throwable e) {
             LOGGER.trace("[COPY FLOW HANDLER] Copy process delayed. A copy process is already running.", e);
         }
