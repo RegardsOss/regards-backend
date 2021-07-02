@@ -34,12 +34,15 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +55,8 @@ import java.util.*;
 @RefreshScope
 @EnableScheduling
 public class OrderMaintenanceService implements IOrderMaintenanceService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderMaintenanceService.class);
 
     @Value("${regards.order.days.before.considering.order.as.aside:7}")
     private int daysBeforeSendingNotifEmail;
@@ -88,11 +93,19 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
     public void updateCurrentOrdersComputations() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            self.updateTenantOrdersComputations();
+            try {
+                self.updateTenantOrdersComputations();
+            } catch (Exception e) {
+                // FIXME - The Spring type of exception is not stable yet
+                // So the catch can be more specific once Spring will be updated 5.3.0
+                // @see https://github.com/spring-projects/spring-framework/issues/24064
+                LOGGER.warn("Failed to update orders as the database returned us a serialisation anomaly", e);
+            }
         }
     }
 
     @Override
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void updateTenantOrdersComputations() {
         Set<Order> orders = orderDataFileService.updateCurrentOrdersComputedValues();
         if (!orders.isEmpty()) {
