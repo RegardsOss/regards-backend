@@ -135,10 +135,9 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             OffsetDateTime to,
             Pageable page
     ) {
-        StringJoiner orderBy = new StringJoiner(",");
+        StringJoiner orderBy = new StringJoiner(",", "ORDER BY ", "");
         if ((page.getSort() != null) && !page.getSort().isEmpty()) {
             int count = 0;
-            orderBy.add("ORDER BY ");
             for (Order o  : page.getSort().toList()) {
                 count ++;
                 orderBy.add(o.getProperty() + " " + o.getDirection().toString());
