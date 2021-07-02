@@ -191,7 +191,10 @@ public class OrderDataFileService implements IOrderDataFileService {
         if (orderId != null) {
             // Update then associated information to order
             Order order = orderRepository.findSimpleById(orderId);
+            boolean wasWaitingForUser = order.isWaitingForUser();
             order.setWaitingForUser(filesTasksRepository.findByOrderId(orderId).anyMatch(t -> t.isWaitingForUser()));
+            LOGGER.debug("Update order {} | WaitingForUser from {} to {} - status {} - available files count {}",
+                         order.getId(), wasWaitingForUser, order.isWaitingForUser(), order.getStatus(), order.getAvailableFilesCount());
             orderRepository.save(order);
         }
     }
@@ -357,16 +360,22 @@ public class OrderDataFileService implements IOrderDataFileService {
         for (Order order : orders) {
             long totalSize = totalSizeMap.get(order.getId());
             long treatedSize = treatedSizeMap.containsKey(order.getId()) ? treatedSizeMap.get(order.getId()) : 0l;
+            int previousPercentCompleted = order.getPercentCompleted();
             order.setPercentCompleted((int) Math.floorDiv(100l * treatedSize, totalSize));
             long errorCount = (errorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l)
                     + (processErrorCountMap.containsKey(order.getId()) ? processErrorCountMap.get(order.getId()) : 0l);
             order.setFilesInErrorCount((int) errorCount);
             long availableCount = availableCountMap.containsKey(order.getId()) ? availableCountMap.get(order.getId())
                     : 0l;
+            int previousAvailableFilesCount = order.getAvailableFilesCount();
             // If number of available files has changed...
             if (order.getAvailableFilesCount() != availableCount) {
                 order.setAvailableFilesCount((int) availableCount);
             }
+            LOGGER.debug("Update order {} | AvailableFilesCount from {} to {} | state {} | is waiting for user {} "
+                                 + "| PercentCompleted from {} to {}",
+                         order.getId(), previousAvailableFilesCount, order.getAvailableFilesCount(),
+                         order.getStatus(), order.isWaitingForUser(), previousPercentCompleted, order.getPercentCompleted());
             updateOrderIfFinished(order, errorCount);
         }
         return orders;

@@ -54,7 +54,9 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
  */
 @Entity
 @Table(name = "t_data_file",
-        indexes = @Index(name = "data_file_idx", columnList = "checksum, order_id, state, data_objects_ip_id"))
+        indexes = { @Index(name = "data_file_idx", columnList = "checksum, order_id, state, data_objects_ip_id"),
+        @Index(name = "idx_data_file_order_id", columnList = "order_id") }
+)
 @NamedNativeQueries({
         @NamedNativeQuery(
                 query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o "

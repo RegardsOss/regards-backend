@@ -75,6 +75,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.util.UriUtils;
@@ -1026,11 +1027,19 @@ public class OrderService implements IOrderService {
     public void updateCurrentOrdersComputations() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            self.updateTenantOrdersComputations();
+            try {
+                self.updateTenantOrdersComputations();
+            } catch (Exception e) {
+                // FIXME - The Spring type of exception is not stable yet
+                // So the catch can be more specific once Spring will be updated 5.3.0
+                // @see https://github.com/spring-projects/spring-framework/issues/24064
+                LOGGER.warn("Failed to update orders as the database returned us a serialisation anomaly", e);
+            }
         }
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional(isolation = Isolation.SERIALIZABLE)
     public void updateTenantOrdersComputations() {
         Set<Order> orders = dataFileService.updateCurrentOrdersComputedValues();
         if (!orders.isEmpty()) {
