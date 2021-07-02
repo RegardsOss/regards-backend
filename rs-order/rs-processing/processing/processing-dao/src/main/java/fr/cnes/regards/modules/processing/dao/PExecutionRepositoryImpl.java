@@ -135,13 +135,15 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             OffsetDateTime to,
             Pageable page
     ) {
-        StringJoiner orderBy = new StringJoiner(",", "ORDER BY ", "");
+        String orderBy = "";
         if ((page.getSort() != null) && !page.getSort().isEmpty()) {
+            StringJoiner sj = new StringJoiner(",", "ORDER BY ", "");
             int count = 0;
             for (Order o  : page.getSort().toList()) {
                 count ++;
-                orderBy.add(o.getProperty() + " " + o.getDirection().toString());
+                sj.add(o.getProperty() + " " + o.getDirection());
             }
+            orderBy = sj.toString();
         }
         DatabaseClient.GenericExecuteSpec execute = databaseClient.execute(
                 " SELECT E.* " +
@@ -152,7 +154,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                 "   AND  E.current_status IN (:status) " +
                 "   AND  E.last_updated >= :lastUpdatedFrom " +
                 "   AND  E.last_updated <= :lastUpdatedTo " +
-                orderBy.toString() +
+                orderBy +
                 " LIMIT :limit OFFSET :offset"
         );
 
