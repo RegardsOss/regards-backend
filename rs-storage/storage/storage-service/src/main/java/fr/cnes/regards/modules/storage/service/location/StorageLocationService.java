@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import java.time.OffsetDateTime;
@@ -65,7 +66,6 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileRequestInfoDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.service.cache.CacheScheduler;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
@@ -124,7 +124,10 @@ public class StorageLocationService {
     private IFileStorageRequestRepository storageReqRepo;
 
     @Autowired
-    private CacheScheduler cacheScheduler;
+    private CacheService cacheService;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Value("${regards.storage.data.storage.threshold.percent:70}")
     private Integer threshold;
@@ -346,7 +349,7 @@ public class StorageLocationService {
      */
     public void deleteFiles(String storageLocationId, Boolean forceDelete, String sessionOwner, String session) throws ModuleException {
         if (storageLocationId.equals(CacheService.CACHE_NAME)) {
-            cacheScheduler.cleanCache();
+            cacheService.scheduleCacheCleanUpForTenant(runtimeTenantResolver.getTenant(), authResolver.getUser());
         } else {
             deletionService.scheduleJob(storageLocationId, forceDelete, sessionOwner, session);
         }

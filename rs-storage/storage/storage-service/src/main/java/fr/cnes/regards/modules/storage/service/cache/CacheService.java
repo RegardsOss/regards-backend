@@ -49,6 +49,10 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
@@ -60,6 +64,8 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
+import fr.cnes.regards.modules.storage.service.JobsPriority;
+import fr.cnes.regards.modules.storage.service.cache.job.CacheCleanJob;
 
 /**
  * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineStorageLocation}
@@ -97,6 +103,9 @@ public class CacheService {
 
     @Autowired
     private IDynamicTenantSettingService dynamicTenantSettingService;
+
+    @Autowired
+    private IJobInfoService jobService;
 
     /**
      * Creates a new cache file if the checksum does not match an existing file.
@@ -382,4 +391,14 @@ public class CacheService {
         return cachedFileRepository.count() == 0;
     }
 
+    public void scheduleCacheCleanUpForTenant(String tenant, String jobOwner) {
+        runtimeTenantResolver.forceTenant(tenant);
+        Set<JobParameter> parameters = Sets.newHashSet();
+        if (jobService.retrieveJobsCount(CacheCleanJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
+                                         JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
+            jobService.createAsQueued(new JobInfo(false, JobsPriority.CACHE_PURGE.getPriority(), parameters,
+                                                  jobOwner, CacheCleanJob.class.getName()));
+        }
+        runtimeTenantResolver.clearTenant();
+    }
 }

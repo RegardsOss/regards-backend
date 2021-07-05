@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.service.JobsPriority;
-import fr.cnes.regards.modules.storage.service.cache.job.CacheCleanJob;
 import fr.cnes.regards.modules.storage.service.cache.job.CacheVerificationJob;
 
 /**
@@ -66,6 +65,9 @@ public class CacheScheduler {
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    @Autowired
+    private CacheService cacheService;
+
     /**
      * Periodically check the cache total size and delete expired files or/and older files if needed.
      * Default : scheduled to be run every hour.
@@ -74,14 +76,7 @@ public class CacheScheduler {
             fixedDelayString = "${regards.cache.cleanup.delay:" + DEFAULT_DELAY + "}")
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            Set<JobParameter> parameters = Sets.newHashSet();
-            if (jobService.retrieveJobsCount(CacheCleanJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
-                                             JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
-                jobService.createAsQueued(new JobInfo(false, JobsPriority.CACHE_PURGE.getPriority(), parameters,
-                        authResolver.getUser(), CacheCleanJob.class.getName()));
-            }
-            runtimeTenantResolver.clearTenant();
+            cacheService.scheduleCacheCleanUpForTenant(tenant, CacheScheduler.class.getName());
         }
     }
 
@@ -96,7 +91,7 @@ public class CacheScheduler {
             if (jobService.retrieveJobsCount(CacheVerificationJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
                                              JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
                 jobService.createAsQueued(new JobInfo(false, JobsPriority.CACHE_VERIFICATION.getPriority(), parameters,
-                        authResolver.getUser(), CacheVerificationJob.class.getName()));
+                                                      CacheScheduler.class.getName(), CacheVerificationJob.class.getName()));
             }
             runtimeTenantResolver.clearTenant();
         }

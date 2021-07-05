@@ -1555,7 +1555,6 @@
 				<version>${modules.ingest.plugins.version}</version>
 				<classifier>shaded</classifier>
 			</dependency>
-
 			<!-- Processing -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.processing</groupId>
