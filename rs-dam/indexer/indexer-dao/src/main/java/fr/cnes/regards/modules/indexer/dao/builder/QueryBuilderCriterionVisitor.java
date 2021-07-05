@@ -49,6 +49,8 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
 
     private static final Double EAST_DATELINE = 180.0;
 
+    private static final Double MAX_X_EXTENT = 360.0;
+
     private static final Double NORTH_LIMIT = 90.0;
 
     private static final Double SOUTH_LIMIT = -90.0;
@@ -239,8 +241,6 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
                     .format("MinX must be less than MaxX : %s < %s", criterion.getMinX(), criterion.getMaxX());
             throw new RsRuntimeException(message);
         }
-        checkXLimits(criterion.getMinX());
-        checkXLimits(criterion.getMaxX());
         // Check Y constraints
         if (criterion.getMinY() >= criterion.getMaxY()) {
             String message = String
@@ -250,8 +250,40 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         checkYLimits(criterion.getMinY());
         checkYLimits(criterion.getMaxY());
 
-        // Manage crossing dateline cases
-        if (criterion.getMinX() > EAST_DATELINE) {
+        // A - Rebounds ranges in -360 360
+        // Cas 1 : EAST -WEST >= 360
+        // Cas 2 : WEST < -360: translate +d*360, where D=Int(WEST/360)
+        // Cas 3 : EAST > 360: : translate -d*360, where D=Int(EAST/360)
+        // Case 4 nominal
+
+        // B - Cut or translate anti meridians
+        // Case 1: west < -180
+        // Case 1.a east <= -180: translate +360
+        // Case 1.b east > -180: cut down [-180 ; east] U [west + 360, 180]
+        // Case 2: east > 180
+        // Case 2.a west > 180: translate -360
+        // Case 2.b west < 180: [west; 180] U [-180; east - 360]
+        // Case 3 nominal
+
+        if (criterion.getMaxX() - criterion.getMinX() >= MAX_X_EXTENT) {
+            // EAST - WEST >= 360
+            // bbox reach the max extent : relocate into single bbox with max longitude extent
+            criterion.setMinX(WEST_DATELINE);
+            criterion.setMaxX(EAST_DATELINE);
+            return getEnvelope(criterion);
+        } else if (criterion.getMinX() < WEST_LIMIT) {
+            // bbox is out of bound minX < -360
+            long ratio = Math.abs(Math.round(criterion.getMinX() / MAX_X_EXTENT));
+            criterion.setMinX(criterion.getMinX() + ratio * MAX_X_EXTENT);
+            criterion.setMaxX(criterion.getMaxX() + ratio * MAX_X_EXTENT);
+            return visitBoundaryBoxCriterion(criterion);
+        } else if (criterion.getMaxX() > EAST_LIMIT) {
+            // bbox is out of bound maxX > 360
+            long ratio = Math.abs(Math.round(criterion.getMaxX() / MAX_X_EXTENT));
+            criterion.setMinX(criterion.getMinX() - ratio * MAX_X_EXTENT);
+            criterion.setMaxX(criterion.getMaxX() - ratio * MAX_X_EXTENT);
+            return visitBoundaryBoxCriterion(criterion);
+        } else if (criterion.getMinX() > EAST_DATELINE) {
             // bbox is between +180 and +360 : relocate it as single bbox
             criterion.setMinX(criterion.getMinX() - RELOCATE_DATELINE);
             criterion.setMaxX(criterion.getMaxX() - RELOCATE_DATELINE);
@@ -261,12 +293,12 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
             criterion.setMinX(criterion.getMinX() + RELOCATE_DATELINE);
             criterion.setMaxX(criterion.getMaxX() + RELOCATE_DATELINE);
             return getEnvelope(criterion);
-        } else if (criterion.getMinX() < WEST_DATELINE && criterion.getMaxX() > EAST_DATELINE) {
-            // East/West crossing bbox
-            // bbox is between -360 and +360 : relocate into single bbox with max longitude extent
-            criterion.setMinX(WEST_DATELINE);
-            criterion.setMaxX(EAST_DATELINE);
-            return getEnvelope(criterion);
+            //        } else if (criterion.getMinX() < WEST_DATELINE && criterion.getMaxX() > EAST_DATELINE) {
+            //            // East/West crossing bbox
+            //            // bbox is between -360 and +360 : relocate into single bbox with max longitude extent
+            //            criterion.setMinX(WEST_DATELINE);
+            //            criterion.setMaxX(EAST_DATELINE);
+            //            return getEnvelope(criterion);
         } else if (criterion.getMinX() >= WEST_DATELINE && criterion.getMaxX() > EAST_DATELINE) {
             // East crossing bbox
             // bbox is between -180 and +360 : cut it into 2 bbox with relocation
@@ -289,13 +321,6 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         }
     }
 
-    private void checkXLimits(double value) {
-        if (value < WEST_LIMIT || value > EAST_LIMIT) {
-            String message = String.format("X value must be between %s and %s : %s", WEST_LIMIT, EAST_LIMIT, value);
-            throw new RsRuntimeException(message);
-        }
-    }
-
     private void checkYLimits(double value) {
         if (value < SOUTH_LIMIT || value > NORTH_LIMIT) {
             String message = String.format("Y value must be between %s and %s : %s", SOUTH_LIMIT, NORTH_LIMIT, value);
@@ -315,5 +340,4 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
             throw new RsRuntimeException(ioe);
         }
     }
-
 }
