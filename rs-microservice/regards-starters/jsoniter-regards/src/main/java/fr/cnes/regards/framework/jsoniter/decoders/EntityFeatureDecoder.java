@@ -2,7 +2,7 @@ package fr.cnes.regards.framework.jsoniter.decoders;
 
 import com.google.common.collect.Range;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.jsoniter.any.Any;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -105,7 +105,7 @@ public interface EntityFeatureDecoder extends SmartDecoder {
                 case OBJECT:
                     return Option.of(IProperty.buildObject(name, toSubProperties(value)));
                 case JSON:
-                    return Option.of(IProperty.buildJson(name, getGson().fromJson(value.toString(), JsonObject.class)));
+                    return Option.of(IProperty.buildJson(name, getGson().fromJson(value.toString(), JsonElement.class)));
 
                 default:
                     return Option.none();
