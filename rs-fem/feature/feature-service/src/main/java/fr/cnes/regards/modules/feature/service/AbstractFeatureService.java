@@ -18,16 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,18 +39,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.Errors;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Marc SORDI
@@ -91,8 +89,9 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         // Monitoring log
         logRequestDenied(requestOwner, requestId, Sets.newHashSet(errorMessage));
         // Publish DENIED request
-        publisher.publish(FeatureRequestEvent.build(getRequestType(), requestId, requestOwner, null, null,
-                                                    RequestState.DENIED, Sets.newHashSet(errorMessage)));
+        publisher.publish(FeatureRequestEvent
+                                  .build(getRequestType(), requestId, requestOwner, null, null, RequestState.DENIED,
+                                         Sets.newHashSet(errorMessage)));
         return true;
     }
 
@@ -142,33 +141,32 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<R> requestsPage;
         boolean stop = false;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
-                && (selection.getFilters().getState() != RequestState.ERROR)) {
-            message = String.format("Requests in state %s are not retryable", selection.getFilters().getState());
-        } else {
-            // Retry only error requests
-            selection.getFilters().setState(RequestState.ERROR);
-            do {
-                requestsPage = findRequests(selection, page);
-                if (total == 0) {
-                    total = requestsPage.getTotalElements();
-                }
-                List<R> toUpdate = requestsPage.map(this::globalUpdateForRetry).toList();
-                sessionInfoUpdateForRetry(toUpdate);
-                toUpdate = getRequestsRepository().saveAll(toUpdate);
-                nbHandled += toUpdate.size();
-                if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
-                    page = requestsPage.nextPageable();
-                } else {
-                    stop = true;
-                }
-            } while (!stop);
-            if (nbHandled < total) {
-                message = String.format("All requests has not been handled. Limit of retryable requests (%d) exceeded",
-                                        MAX_PAGE_TO_RETRY * MAX_ENTITY_PER_PAGE);
-            } else {
-                message = "All retryable requested handled";
+        // Delete only deletable requests
+        for (FeatureRequestStep step : FeatureRequestStep.values()) {
+            if (!step.isProcessing()) {
+                selection.withStep(step);
             }
+        }
+        do {
+            requestsPage = findRequests(selection, page);
+            if (total == 0) {
+                total = requestsPage.getTotalElements();
+            }
+            List<R> toUpdate = requestsPage.map(this::globalUpdateForRetry).toList();
+            sessionInfoUpdateForRetry(toUpdate);
+            toUpdate = getRequestsRepository().saveAll(toUpdate);
+            nbHandled += toUpdate.size();
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
+        if (nbHandled < total) {
+            message = String.format("All requests has not been handled. Limit of retryable requests (%d) exceeded",
+                                    MAX_PAGE_TO_RETRY * MAX_ENTITY_PER_PAGE);
+        } else {
+            message = "All retryable requested handled";
         }
         return RequestHandledResponse.build(total, nbHandled, message);
     }
@@ -188,9 +186,9 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     }
 
     @Override
-    public Map<FeatureUniformResourceName, ILightFeatureEntity> getSessionInfoByUrn(Collection<FeatureUniformResourceName> uniformResourceNames) {
-        return featureEntityRepository.findByUrnIn(uniformResourceNames)
-                .stream()
+    public Map<FeatureUniformResourceName, ILightFeatureEntity> getSessionInfoByUrn(
+            Collection<FeatureUniformResourceName> uniformResourceNames) {
+        return featureEntityRepository.findByUrnIn(uniformResourceNames).stream()
                 .collect(Collectors.toMap(ILightFeatureEntity::getUrn, Function.identity()));
     }
 

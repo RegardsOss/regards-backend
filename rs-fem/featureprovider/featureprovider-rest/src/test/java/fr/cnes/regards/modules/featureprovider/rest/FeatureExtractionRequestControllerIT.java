@@ -160,9 +160,9 @@ public class FeatureExtractionRequestControllerIT extends AbstractRegardsIT {
     @Test
     public void retryRequests() {
         // Create 10 requests scheduled, so they cannot be deleted
-        createRequests("retry_source", "test1", 10, RequestState.GRANTED);
+        createRequests("retry_source", "test1", 10, RequestState.GRANTED, FeatureRequestStep.LOCAL_SCHEDULED);
         // Create 10 requests in error status, so theu can be deleted
-        createRequests("retry_source", "test1", 10, RequestState.ERROR);
+        createRequests("retry_source", "test1", 10, RequestState.ERROR, FeatureRequestStep.LOCAL_ERROR);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
                 .expectValue("$.totalHandled", 10).expectValue("$.totalRequested", 10);
