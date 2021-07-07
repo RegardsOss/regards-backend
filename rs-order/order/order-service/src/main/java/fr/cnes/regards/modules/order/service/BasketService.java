@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -212,8 +213,18 @@ public class BasketService implements IBasketService {
     public Basket duplicate(Long id, String owner) {
         Basket oldBasket = load(id);
         Basket newBasket = new Basket();
+        BeanUtils.copyProperties(oldBasket, newBasket, "id", "owner");
         newBasket.setOwner(owner);
-        oldBasket.getDatasetSelections().forEach(newBasket::addDatasetSelection);
+        oldBasket.getDatasetSelections().forEach(basketDatasetSelection -> {
+            BasketDatasetSelection newBasketDatasetSelection = new BasketDatasetSelection();
+            BeanUtils.copyProperties(basketDatasetSelection, newBasketDatasetSelection, "id");
+            basketDatasetSelection.getItemsSelections().forEach(basketDatedItemsSelection -> {
+                BasketDatedItemsSelection newBasketDatedItemsSelection = new BasketDatedItemsSelection();
+                BeanUtils.copyProperties(basketDatedItemsSelection, newBasketDatedItemsSelection);
+                newBasketDatasetSelection.addItemsSelection(newBasketDatedItemsSelection);
+            });
+            newBasket.addDatasetSelection(newBasketDatasetSelection);
+        });
         return repos.save(newBasket);
     }
 
