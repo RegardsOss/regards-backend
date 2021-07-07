@@ -19,18 +19,13 @@
 package fr.cnes.regards.modules.featureprovider.service;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -498,6 +493,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
     @Override
     public RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection) {
+        // FIXME : Do this in a job !!
         long nbHandled = 0;
         long total = 0;
         String message;
@@ -557,6 +553,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                 }
                 List<FeatureExtractionRequest> toUpdate = requestsPage.map(this::updateForRetry).toList();
                 toUpdate = featureExtractionRequestRepo.saveAll(toUpdate);
+                decrementSessionsErrors(toUpdate);
                 nbHandled += toUpdate.size();
                 if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
                     page = requestsPage.nextPageable();
@@ -591,5 +588,33 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         // Reset errors
         request.setErrors(Sets.newHashSet());
         return request;
+    }
+
+    /**
+     * For each couple source/session from list of given {@link FeatureExtractionRequest} decrements count of errors
+     * @param requestsPage list of {@link FeatureExtractionRequest}
+     */
+    private void decrementSessionsErrors(Collection<FeatureExtractionRequest> requestsPage) {
+        Map<String , Map<String, Long>> sources = Maps.newHashMap();
+        for (FeatureExtractionRequest r : requestsPage) {
+            if (sources.get(r.getMetadata().getSessionOwner()) != null) {
+                if (sources.get(r.getMetadata().getSessionOwner()).get(r.getMetadata().getSession()) != null) {
+                    Long value = sources.get(r.getMetadata().getSessionOwner()).get(r.getMetadata().getSession());
+                    sources.get(r.getMetadata().getSessionOwner()).put(r.getMetadata().getSession(), value+1);
+                } else {
+                    sources.get(r.getMetadata().getSessionOwner()).put(r.getMetadata().getSession(), 1L);
+                }
+            } else {
+                Map<String, Long> sessions = Maps.newHashMap();
+                sessions.put(r.getMetadata().getSession(), 1L);
+                sources.put(r.getMetadata().getSessionOwner(), sessions);
+            }
+        }
+        // Decrement error requests
+        sources.forEach( (source,sessions) -> {
+            sessions.forEach( (session, count) -> {
+                extractionSessionNotifier.decrementRequestErrors(source,session,count);
+            });
+        });
     }
 }
