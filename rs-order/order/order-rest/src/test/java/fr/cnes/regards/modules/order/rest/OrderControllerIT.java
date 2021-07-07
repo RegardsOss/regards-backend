@@ -148,6 +148,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
     private IProjectUsersClient projectUsersClient;
 
     private String projectAdminToken;
+    private String projectUserToken;
+    private String adminEmail = "admin@regards.fr";
 
     @Before
     public void init() {
@@ -169,12 +171,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
-        Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(false));
+        Mockito.when(projectUsersClient.isAdmin(getDefaultUserEmail())).thenReturn(ResponseEntity.ok(false));
+        Mockito.when(projectUsersClient.isAdmin(adminEmail)).thenReturn(ResponseEntity.ok(true));
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
 
         JWTService service = new JWTService();
         service.setSecret("!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
-        projectAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.PROJECT_ADMIN.toString());
+        projectAdminToken = service.generateToken(getDefaultTenant(), adminEmail, DefaultRole.PROJECT_ADMIN.toString());
+        projectUserToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.REGISTERED_USER.toString());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -261,7 +265,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsPending();
 
         // Delete Order
-        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer().expectStatusOk(), "error", order.getId());
+        performDelete(OrderController.REMOVE_ORDER_PATH, projectAdminToken, customizer().expectStatusOk(), "error", order.getId());
     }
 
     /**
@@ -1058,7 +1062,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Test
     public void testHateoasLinks_Running() throws URISyntaxException, InterruptedException {
         Order order = createOrderAsRunning();
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoEntityModel(order.getId());
+        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
+        // Order should have 3 basic links, plus PAUSE
+        checkLinks(orderDtoEntityModel, "pause");
+        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
         // Order should have 3 basic links, plus PAUSE
         checkLinks(orderDtoEntityModel, "pause");
     }
@@ -1068,7 +1075,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsRunning();
         order.setStatus(OrderStatus.PAUSED);
         order = orderRepository.save(order);
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoEntityModel(order.getId());
+        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
+        // Order should have 3 basic links, plus RESUME, DELETE, REMOVE
+        checkLinks(orderDtoEntityModel, "resume", "delete", "remove");
+        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
         // Order should have 3 basic links, plus RESUME, DELETE
         checkLinks(orderDtoEntityModel, "resume", "delete");
     }
@@ -1078,9 +1088,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsRunning();
         order.setStatus(OrderStatus.DONE);
         order = orderRepository.save(order);
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoEntityModel(order.getId());
-        // Order should have 3 basic links, plus RESTART
-        checkLinks(orderDtoEntityModel, "restart");
+        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
+        // Order should have 3 basic links, plus RESTART, DELETE, REMOVE
+        checkLinks(orderDtoEntityModel, "restart", "delete", "remove");
+        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
+        // Order should have 3 basic links, plus RESTART, DELETE
+        checkLinks(orderDtoEntityModel, "restart", "delete");
     }
 
     @Test
@@ -1088,9 +1101,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsRunning();
         order.setStatus(OrderStatus.DONE_WITH_WARNING);
         order = orderRepository.save(order);
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoEntityModel(order.getId());
-        // Order should have 3 basic links, plus RESTART, RETRY
-        checkLinks(orderDtoEntityModel, "restart", "retry");
+        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
+        // Order should have 3 basic links, plus RESTART, RETRY, DELETE, REMOVE
+        checkLinks(orderDtoEntityModel, "restart", "retry", "delete", "remove");
+        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
+        // Order should have 3 basic links, plus RESTART, RETRY, DELETE
+        checkLinks(orderDtoEntityModel, "restart", "retry", "delete");
     }
 
     @Test
@@ -1098,15 +1114,26 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsRunning();
         order.setStatus(OrderStatus.FAILED);
         order = orderRepository.save(order);
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoEntityModel(order.getId());
-        // Order should have 3 basic links, plus RESTART, RETRY
-        checkLinks(orderDtoEntityModel, "restart", "retry");
+        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
+        // Order should have 3 basic links, plus RESTART, RETRY, DELETE, REMOVE
+        checkLinks(orderDtoEntityModel, "restart", "retry", "delete", "remove");
+        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
+        // Order should have 3 basic links, plus RESTART, RETRY, DELETE
+        checkLinks(orderDtoEntityModel, "restart", "retry", "delete");
     }
 
-    private EntityModel<OrderDto> getOrderDtoEntityModel(Long orderId) throws InterruptedException {
+    private EntityModel<OrderDto> getOrderDtoAsAdmin(Long orderId) throws InterruptedException {
+        return getOrderDtoEntityModel(orderId, projectAdminToken);
+    }
+
+    private EntityModel<OrderDto> getOrderDtoAsUser(Long orderId) throws InterruptedException {
+        return getOrderDtoEntityModel(orderId, projectUserToken);
+    }
+
+    private EntityModel<OrderDto> getOrderDtoEntityModel(Long orderId, String token) throws InterruptedException {
         // Seems to fail with no pause here
         TimeUnit.SECONDS.sleep(5);
-        String payload = payload(performGet(OrderController.GET_ORDER_PATH, projectAdminToken, customizer().expectStatusOk(), "error", orderId));
+        String payload = payload(performGet(OrderController.GET_ORDER_PATH, token, customizer().expectStatusOk(), "error", orderId));
         return GsonUtil.fromString(payload, new TypeToken<EntityModel<OrderDto>>() {
         }.getType());
     }

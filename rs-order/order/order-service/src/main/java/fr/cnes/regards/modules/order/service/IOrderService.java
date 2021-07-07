@@ -182,7 +182,7 @@ public interface IOrderService {
      * @param id
      * @throws CannotRemoveOrderException
      */
-    void remove(Long id) throws CannotRemoveOrderException;
+    void remove(Long id) throws ModuleException;
 
     /**
      * Write all orders in CSV format

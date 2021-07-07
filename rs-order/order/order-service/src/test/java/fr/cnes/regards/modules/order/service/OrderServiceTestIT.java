@@ -304,6 +304,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         Assert.assertEquals(OrderStatus.DELETED, orderService.loadComplete(order.getId()).getStatus());
         LOGGER.info("Order has been deleted !!");
 
+        Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(true));
         orderService.remove(order.getId());
         Assert.assertNull(orderService.loadComplete(order.getId()));
         LOGGER.info("Order has been removed !!");
@@ -384,7 +385,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void basketDeletedAfterOrderRemoved() throws EntityInvalidException, InterruptedException, CannotRemoveOrderException {
+    public void basketDeletedAfterOrderRemoved() throws InterruptedException, ModuleException {
 
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("basketOwner");
@@ -396,6 +397,8 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         String basketOwner = IOrderService.BASKET_OWNER_PREFIX + order.getId();
         Assert.assertNotNull(basketRepository.findByOwner(basketOwner));
 
+        Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(true));
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
         orderService.remove(order.getId());
         Assert.assertNull(orderService.loadComplete(order.getId()));
         LOGGER.info("Order has been removed !!");

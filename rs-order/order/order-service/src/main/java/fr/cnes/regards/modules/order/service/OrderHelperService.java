@@ -191,6 +191,10 @@ public class OrderHelperService {
         return isOwnerOrAdmin;
     }
 
+    public boolean isAdmin() {
+        return isAdminCache.getUnchecked(authenticationResolver.getUser());
+    }
+
     public boolean isAdmin(String user) {
         return isAdminCache.getUnchecked(user);
     }
