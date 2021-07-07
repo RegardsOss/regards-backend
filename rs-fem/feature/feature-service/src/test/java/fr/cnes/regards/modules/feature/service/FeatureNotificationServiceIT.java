@@ -228,7 +228,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         // Try delete all requests.
         RequestHandledResponse response = this.featureRequestService.delete(FeatureRequestTypeEnum.NOTIFICATION,
-                                                                            FeatureRequestsSelectionDTO.build());
+                                                                            FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state", 0,
                             response.getTotalHandled());
@@ -239,9 +239,9 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                 .delete(FeatureRequestTypeEnum.NOTIFICATION,
                         FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests", nbValid,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", nbValid,
                             response.getTotalRequested());
 
     }
@@ -261,7 +261,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         // Try delete all requests.
         RequestHandledResponse response = this.featureRequestService.retry(FeatureRequestTypeEnum.NOTIFICATION,
-                                                                           FeatureRequestsSelectionDTO.build());
+                                                                           FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
                             response.getTotalHandled());
@@ -272,9 +272,9 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                 .retry(FeatureRequestTypeEnum.NOTIFICATION,
                        FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests", nbValid,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", nbValid,
                             response.getTotalRequested());
 
     }

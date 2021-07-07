@@ -181,8 +181,8 @@ public class FeatureExtractionServiceIT extends FeatureProviderMultitenantTest {
 
     @Test
     public void testDeleteRequests() {
-        createRequests("source1", "session1", 10, RequestState.GRANTED);
-        createRequests("source1", "session1", 50, RequestState.ERROR);
+        createRequests("source1", "session1", 10, RequestState.GRANTED, FeatureRequestStep.LOCAL_SCHEDULED);
+        createRequests("source1", "session1", 50, RequestState.ERROR, FeatureRequestStep.LOCAL_ERROR);
 
         RequestsPage<FeatureRequestDTO> searchResp = featureExtractionService
                 .findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000));
@@ -200,8 +200,8 @@ public class FeatureExtractionServiceIT extends FeatureProviderMultitenantTest {
     @Test
     public void testRetryRequests() {
 
-        createRequests("source1", "session1", 10, RequestState.GRANTED);
-        createRequests("source1", "session1", 50, RequestState.ERROR);
+        createRequests("source1", "session1", 10, RequestState.GRANTED, FeatureRequestStep.LOCAL_SCHEDULED);
+        createRequests("source1", "session1", 50, RequestState.ERROR, FeatureRequestStep.LOCAL_ERROR);
 
         RequestsPage<FeatureRequestDTO> searchResp = featureExtractionService
                 .findRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED),
@@ -226,6 +226,19 @@ public class FeatureExtractionServiceIT extends FeatureProviderMultitenantTest {
                                                                                          Lists.newArrayList(), true);
             requests.add(FeatureExtractionRequest.build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(),
                                                         state, metadata, FeatureRequestStep.LOCAL_DELAYED,
+                                                        PriorityLevel.NORMAL, new JsonObject(), "factory"));
+        }
+        requests = extractionRequestRepo.saveAll(requests);
+        Assert.assertEquals(nbRequests, requests.size());
+    }
+
+    private void createRequests(String source, String session, int nbRequests, RequestState state, FeatureRequestStep step) {
+        List<FeatureExtractionRequest> requests = Lists.newArrayList();
+        for (int i = 0; i < nbRequests; i++) {
+            FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity.build(source, session,
+                                                                                         Lists.newArrayList(), true);
+            requests.add(FeatureExtractionRequest.build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(),
+                                                        state, metadata, step,
                                                         PriorityLevel.NORMAL, new JsonObject(), "factory"));
         }
         requests = extractionRequestRepo.saveAll(requests);
