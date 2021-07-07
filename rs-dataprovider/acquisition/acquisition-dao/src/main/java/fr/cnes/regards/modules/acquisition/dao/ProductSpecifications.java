@@ -68,19 +68,11 @@ public final class ProductSpecifications {
             } else if (session != null) {
                 predicates.add(cb.like(root.get("session"), LIKE_CHAR + session + LIKE_CHAR));
             }
+            // Caution : state and sipState are handled as a grouped OR criterion.
             if (states != null && !states.isEmpty()) {
                 for (ProductState state : states) {
                     statePredicates.add(cb.equal(root.get("state"), state));
                 }
-                predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
-            }
-            if (processingChainId != null) {
-                AcquisitionProcessingChain chain = new AcquisitionProcessingChain();
-                chain.setId(processingChainId);
-                predicates.add(cb.equal(root.get("processingChain"), chain));
-            }
-            if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), from));
             }
             if (sipStates != null && !sipStates.isEmpty()) {
                 for (ISipState state : sipStates) {
@@ -90,6 +82,16 @@ public final class ProductSpecifications {
             if (!statePredicates.isEmpty()) {
                 predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
+
+            if (processingChainId != null) {
+                AcquisitionProcessingChain chain = new AcquisitionProcessingChain();
+                chain.setId(processingChainId);
+                predicates.add(cb.equal(root.get("processingChain"), chain));
+            }
+            if (from != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), from));
+            }
+
             query.orderBy(cb.desc(root.get("lastUpdate")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
