@@ -243,7 +243,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Remove an order", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.DELETE, path = REMOVE_ORDER_PATH)
-    public ResponseEntity<Void> removeOrder(@PathVariable("orderId") Long orderId) throws CannotRemoveOrderException {
+    public ResponseEntity<Void> removeOrder(@PathVariable("orderId") Long orderId) throws ModuleException {
         orderService.remove(orderId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -400,6 +400,9 @@ public class OrderController implements IResourceController<OrderDto> {
         }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.DELETE)) {
             resourceService.addLink(resource, this.getClass(), "deleteOrder", LinkRels.DELETE, MethodParamFactory.build(Long.class, orderDto.getId()));
+        }
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.REMOVE)) {
+            resourceService.addLink(resource, this.getClass(), "removeOrder", LinkRelation.of("remove"), MethodParamFactory.build(Long.class, orderDto.getId()));
         }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RESTART)) {
             resourceService.addLink(resource, this.getClass(), "restartOrder", LinkRelation.of("restart"),

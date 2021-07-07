@@ -29,4 +29,9 @@ public class CannotRemoveOrderException extends ModuleException {
     public CannotRemoveOrderException() {
         super("ORDER_MUST_NOT_BE_RUNNING");
     }
+
+    public CannotRemoveOrderException(String cause) {
+        super(cause);
+    }
+
 }

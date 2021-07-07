@@ -299,7 +299,8 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void remove(Long id) throws CannotRemoveOrderException {
+    public void remove(Long id) throws ModuleException {
+        checkAction(id, Action.REMOVE);
         Order order = orderRepository.findCompleteById(id);
         switch (order.getStatus()) {
             case PENDING: // not yet run // NOSONAR
@@ -382,9 +383,20 @@ public class OrderService implements IOrderService {
                     }
                     break;
                 case RESUME:
-                case DELETE:
                     if (!isPaused(order.getId())) {
                         message = "ORDER_MUST_BE_PAUSED";
+                    }
+                    break;
+                case DELETE:
+                    if (!Arrays.asList(OrderStatus.DONE, OrderStatus.DONE_WITH_WARNING, OrderStatus.PAUSED, OrderStatus.FAILED).contains(order.getStatus())) {
+                        message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_PAUSED_OR_FAILED";
+                    }
+                    break;
+                case REMOVE:
+                    if (!orderHelperService.isAdmin()) {
+                        message = "USER_NOT_ALLOWED_TO_MANAGE_ORDER";
+                    } else if (OrderStatus.RUNNING.equals(order.getStatus())) {
+                        message = "ORDER_MUST_NOT_BE_RUNNING";
                     }
                     break;
                 case RESTART:
@@ -410,6 +422,7 @@ public class OrderService implements IOrderService {
         PAUSE(CannotPauseOrderException.class),
         RESUME(CannotResumeOrderException.class),
         DELETE(CannotDeleteOrderException.class),
+        REMOVE(CannotRemoveOrderException.class),
         RESTART(CannotRestartOrderException.class),
         RETRY(CannotRetryOrderException.class);
 
