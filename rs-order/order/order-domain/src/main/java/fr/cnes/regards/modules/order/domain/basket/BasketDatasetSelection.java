@@ -142,6 +142,24 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         this.fileTypesCount.put(fileType, filesCount);
     }
 
+    public StringToLongMap getFileTypesSizes() {
+        return fileTypesSizes;
+    }
+
+    public StringToLongMap getFileTypesCount() {
+        return fileTypesCount;
+    }
+
+    public BasketDatasetSelection setFileTypesSizes(StringToLongMap fileTypesSizes) {
+        this.fileTypesSizes = fileTypesSizes;
+        return this;
+    }
+
+    public BasketDatasetSelection setFileTypesCount(StringToLongMap fileTypesCount) {
+        this.fileTypesCount = fileTypesCount;
+        return this;
+    }
+
     public SortedSet<BasketDatedItemsSelection> getItemsSelections() {
         return itemsSelections;
     }
