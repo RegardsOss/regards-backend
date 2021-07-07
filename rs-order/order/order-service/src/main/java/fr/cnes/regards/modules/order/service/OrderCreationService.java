@@ -111,14 +111,15 @@ public class OrderCreationService implements IOrderCreationService {
     @Override
     @Async
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void asyncCompleteOrderCreation(Basket basket, Order order, int subOrderDuration, String role, String tenant) {
+    public void asyncCompleteOrderCreation(Basket basket, Long orderId, int subOrderDuration, String role, String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
-        self.completeOrderCreation(basket, order, role, subOrderDuration, tenant);
+        self.completeOrderCreation(basket, orderId, role, subOrderDuration, tenant);
     }
 
     @Override
-    public void completeOrderCreation(Basket basket, Order order, String role, int subOrderDuration, String tenant) {
+    public void completeOrderCreation(Basket basket, Long orderId, String role, int subOrderDuration, String tenant) {
         boolean hasProcessing = false;
+        Order order = orderRepository.findCompleteById(orderId);
         try {
             String owner = order.getOwner();
 
