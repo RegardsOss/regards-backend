@@ -135,9 +135,9 @@ public class FeatureExtractionRequestControllerIT extends AbstractRegardsIT {
     @Test
     public void deleteRequests() {
         // Create 10 requests scheduled, so they cannot be deleted
-        createRequests("delete_source", "test1", 10, RequestState.GRANTED);
+        createRequests("delete_source", "test1", 10, RequestState.GRANTED, FeatureRequestStep.LOCAL_SCHEDULED);
         // Create 10 requests in error status, so theu can be deleted
-        createRequests("delete_source", "test1", 10, RequestState.ERROR);
+        createRequests("delete_source", "test1", 10, RequestState.ERROR, FeatureRequestStep.LOCAL_ERROR);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
                 .expectValue("$.totalHandled", 10).expectValue("$.totalRequested", 10);
@@ -189,6 +189,19 @@ public class FeatureExtractionRequestControllerIT extends AbstractRegardsIT {
                                                                                          Lists.newArrayList(), true);
             requests.add(FeatureExtractionRequest.build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(),
                                                         state, metadata, FeatureRequestStep.LOCAL_DELAYED,
+                                                        PriorityLevel.NORMAL, new JsonObject(), "factory"));
+        }
+        requests = extractionRequestRepo.saveAll(requests);
+        Assert.assertEquals(nbRequests, requests.size());
+    }
+
+    private void createRequests(String source, String session, int nbRequests, RequestState state, FeatureRequestStep step) {
+        List<FeatureExtractionRequest> requests = Lists.newArrayList();
+        for (int i = 0; i < nbRequests; i++) {
+            FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity.build(source, session,
+                                                                                         Lists.newArrayList(), true);
+            requests.add(FeatureExtractionRequest.build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(),
+                                                        state, metadata, step,
                                                         PriorityLevel.NORMAL, new JsonObject(), "factory"));
         }
         requests = extractionRequestRepo.saveAll(requests);
