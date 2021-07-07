@@ -191,7 +191,7 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
         // To generate orderId
         order = orderRepo.save(order);
 
-        orderCreationService.completeOrderCreation(basket, order, DefaultRole.REGISTERED_USER.toString(), 240, getDefaultTenant());
+        orderCreationService.completeOrderCreation(basket, order.getId(), DefaultRole.REGISTERED_USER.toString(), 240, getDefaultTenant());
 
         // working code here
         long usedMemoryAfter = runtime.totalMemory() - runtime.freeMemory();

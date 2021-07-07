@@ -200,9 +200,9 @@ public class OrderService implements IOrderService {
         order.setStatus(OrderStatus.PENDING);
         // expiration date is set during asyncCompleteOrderCreation execution
         // To generate orderId
-        order = orderRepository.save(order);
+        order = orderRepository.saveAndFlush(order);
         // Asynchronous operation
-        orderCreationService.asyncCompleteOrderCreation(basket, order, subOrderDuration, role, runtimeTenantResolver.getTenant());
+        orderCreationService.asyncCompleteOrderCreation(basket, order.getId(), subOrderDuration, role, runtimeTenantResolver.getTenant());
         return order;
     }
 
