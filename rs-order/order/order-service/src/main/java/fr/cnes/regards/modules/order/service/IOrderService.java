@@ -119,17 +119,7 @@ public interface IOrderService {
      */
     Order createOrder(Basket basket, String label, String url, int subOrderDuration) throws EntityInvalidException;
 
-    /**
-     * Create an order
-     *
-     * @param basket           basket from which order is created
-     * @param label            label, generated when null
-     * @param url              frontend URL
-     * @param subOrderDuration validity period in hours
-     * @param user             user to be used for creation
-     * @return copletely loaded order
-     */
-    Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user) throws EntityInvalidException;
+    Order create(Order order);
 
     /**
      * Pause an order (status is immediately updated but it's an async task)
