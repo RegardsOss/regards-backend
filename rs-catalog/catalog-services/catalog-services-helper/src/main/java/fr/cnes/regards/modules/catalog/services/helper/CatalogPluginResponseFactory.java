@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -147,6 +148,7 @@ public class CatalogPluginResponseFactory {
             default:
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+        headers.set(HttpHeaders.CONTENT_LENGTH, String.valueOf(file.length()));
         return new ResponseEntity<>(toStreamingResponseBody(file), headers, HttpStatus.OK);
     }
 
@@ -159,7 +161,7 @@ public class CatalogPluginResponseFactory {
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createSuccessResponseFromInputStream(
-            HttpServletResponse response, CatalogPluginResponseType type, InputStream is, String fileName) {
+            HttpServletResponse response, CatalogPluginResponseType type, InputStream is, String fileName, Optional<Long> size) {
         HttpHeaders headers = new HttpHeaders();
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
@@ -181,6 +183,9 @@ public class CatalogPluginResponseFactory {
                 break;
             default:
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        if (size.isPresent()) {
+            headers.set(HttpHeaders.CONTENT_LENGTH, size.get().toString());
         }
         return new ResponseEntity<>(toStreamingResponseBody(is), headers, HttpStatus.OK);
     }
