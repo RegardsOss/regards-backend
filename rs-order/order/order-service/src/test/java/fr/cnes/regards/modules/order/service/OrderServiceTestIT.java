@@ -399,6 +399,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
         Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(true));
         Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
+        orderService.delete(order.getId());
         orderService.remove(order.getId());
         Assert.assertNull(orderService.loadComplete(order.getId()));
         LOGGER.info("Order has been removed !!");

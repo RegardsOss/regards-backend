@@ -18,7 +18,10 @@
 package fr.cnes.regards.modules.order.service.processing;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.service.OrderServiceTestIT;
@@ -29,8 +32,12 @@ import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Map;
@@ -62,6 +69,12 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         // For now, the only reliable way to make all three tests run
         // successfully in sequence is to have them in the same spring context
         // and in the same @Test method.
+
+        Role role = new Role();
+        role.setName(DefaultRole.REGISTERED_USER.name());
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(role);
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
 
         simpleOrderWithProcessItemFiles();
         clean();

@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -168,6 +167,10 @@ public class OrderHelperService {
 
     public String getCurrentUserRole() {
         return authenticationResolver.getRole();
+    }
+
+    public String getCurrentUser() {
+        return authenticationResolver.getUser();
     }
 
     public String getRole(String user) {

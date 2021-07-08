@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.exception.*;
+import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +38,7 @@ public interface IOrderService {
     String SCOPE = "scope";
     String ORDER_ID_KEY = "ORDER_ID";
     String BASKET_OWNER_PREFIX = "ORDER_";
+    String BASKET_RESTART_OWNER_PREFIX = "RESTART_ORDER_";
 
     default Page<Order> findAll(int pageSize) {
         return findAll(PageRequest.of(0, pageSize));
@@ -121,14 +122,14 @@ public interface IOrderService {
     /**
      * Create an order
      *
-     * @param basket basket from which order is created
-     * @param label  label, generated when null
-     * @param url    frontend URL
+     * @param basket           basket from which order is created
+     * @param label            label, generated when null
+     * @param url              frontend URL
      * @param subOrderDuration validity period in hours
-     * @param role   role to be used for creation
+     * @param user             user to be used for creation
      * @return copletely loaded order
      */
-    Order createOrder(Basket basket, String label, String url, int subOrderDuration, String role) throws EntityInvalidException;
+    Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user) throws EntityInvalidException;
 
     /**
      * Pause an order (status is immediately updated but it's an async task)
