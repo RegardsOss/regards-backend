@@ -402,7 +402,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         Assert.assertFalse(results.getGranted().isEmpty());
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureUpdateService.retryRequests(FeatureRequestsSelectionDTO.build());
+        RequestHandledResponse response = this.featureUpdateService.retryRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
                             response.getTotalHandled());
@@ -412,9 +412,9 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         response = this.featureUpdateService
                 .retryRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 20 requests retryed as selection set on GRANTED Requests", nbValid,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 20 requests to retry as selection set on GRANTED Requests", nbValid,
                             response.getTotalRequested());
 
     }
