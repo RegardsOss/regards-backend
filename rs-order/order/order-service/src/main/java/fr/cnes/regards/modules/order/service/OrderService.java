@@ -171,8 +171,7 @@ public class OrderService implements IOrderService {
         return createOrder(basket, label, url, subOrderDuration, basket.getOwner());
     }
 
-    @Override
-    public Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user) throws EntityInvalidException {
+    private Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user) throws EntityInvalidException {
 
         LOGGER.info("Generate and / or check label is unique for owner before creating back");
         // generate label when none is provided
@@ -189,20 +188,26 @@ public class OrderService implements IOrderService {
                 throw new EntityInvalidException(OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
             }
         }
-        // In any case: check generated label is unique for owner
-        LOGGER.info("Creating order with owner {}", user);
+
+        // Create order and ensure it's properly persisted
         Order order = new Order();
-        order.setCreationDate(OffsetDateTime.now());
         order.setOwner(user);
         order.setLabel(orderLabel);
         order.setFrontendUrl(url);
-        order.setStatus(OrderStatus.PENDING);
-        // expiration date is set during asyncCompleteOrderCreation execution
-        // To generate orderId
-        order = orderRepository.saveAndFlush(order);
+        order = self.create(order);
+
         // Asynchronous operation
         orderCreationService.asyncCompleteOrderCreation(basket, order.getId(), subOrderDuration, orderHelperService.getRole(user), runtimeTenantResolver.getTenant());
         return order;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Order create(Order order) {
+        LOGGER.info("Creating order with owner {}", order.getOwner());
+        order.setCreationDate(OffsetDateTime.now());
+        order.setStatus(OrderStatus.PENDING);
+        return orderRepository.save(order);
     }
 
     @Override
