@@ -205,7 +205,7 @@ public class RequestsGroupService {
         LOGGER.trace("[REQUEST GROUPS] Start checking request groups ... ");
         // Always search the first page of requests until there is no requests anymore.
         // To do so, we order on id to ensure to not handle same requests multiple times.
-        Pageable page = PageRequest.of(0, maxRequestPerTransaction, Direction.ASC, "creation_date");
+        Pageable page = PageRequest.of(0, maxRequestPerTransaction, Direction.ASC, "creationDate");
         Set<RequestGroup> groupDones = Sets.newHashSet();
         Page<RequestGroup> response;
         int expired = 0;
