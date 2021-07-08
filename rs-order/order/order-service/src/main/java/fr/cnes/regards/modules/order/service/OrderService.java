@@ -168,15 +168,14 @@ public class OrderService implements IOrderService {
 
     @Override
     public Order createOrder(Basket basket, String label, String url, int subOrderDuration) throws EntityInvalidException {
-        return createOrder(basket, label, url, subOrderDuration, orderHelperService.getCurrentUserRole());
+        return createOrder(basket, label, url, subOrderDuration, basket.getOwner());
     }
 
     @Override
-    public Order createOrder(Basket basket, String label, String url, int subOrderDuration, String role) throws EntityInvalidException {
+    public Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user) throws EntityInvalidException {
 
         LOGGER.info("Generate and / or check label is unique for owner before creating back");
         // generate label when none is provided
-        String basketOwner = basket.getOwner();
         String orderLabel = label;
         if (Strings.isNullOrEmpty(orderLabel)) {
             orderLabel = String.format(ORDER_GENERATED_LABEL_FORMAT, ORDER_GENERATED_LABEL_DATE_FORMAT.format(OffsetDateTime.now()));
@@ -185,16 +184,16 @@ public class OrderService implements IOrderService {
         if (orderLabel.length() > Order.LABEL_FIELD_LENGTH) {
             throw new EntityInvalidException(OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL.toString());
         } else { // check unique for current owner
-            Optional<Order> sameOrderLabelOpt = orderRepository.findByLabelAndOwner(orderLabel, basketOwner);
+            Optional<Order> sameOrderLabelOpt = orderRepository.findByLabelAndOwner(orderLabel, user);
             if (sameOrderLabelOpt.isPresent()) {
                 throw new EntityInvalidException(OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
             }
         }
         // In any case: check generated label is unique for owner
-        LOGGER.info("Creating order with owner {}", basketOwner);
+        LOGGER.info("Creating order with owner {}", user);
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
-        order.setOwner(basketOwner);
+        order.setOwner(user);
         order.setLabel(orderLabel);
         order.setFrontendUrl(url);
         order.setStatus(OrderStatus.PENDING);
@@ -202,7 +201,7 @@ public class OrderService implements IOrderService {
         // To generate orderId
         order = orderRepository.saveAndFlush(order);
         // Asynchronous operation
-        orderCreationService.asyncCompleteOrderCreation(basket, order.getId(), subOrderDuration, role, runtimeTenantResolver.getTenant());
+        orderCreationService.asyncCompleteOrderCreation(basket, order.getId(), subOrderDuration, orderHelperService.getRole(user), runtimeTenantResolver.getTenant());
         return order;
     }
 
@@ -268,10 +267,7 @@ public class OrderService implements IOrderService {
     public Order restart(long oldOrderId, String label, String successUrl) throws ModuleException {
 
         checkAction(oldOrderId, Action.RESTART);
-        Order oldOrder = orderRepository.findSimpleById(oldOrderId);
-
-        String oldOrderOwner = oldOrder.getOwner();
-        String oldOrderOwnerRole = orderHelperService.getRole(oldOrderOwner);
+        String oldOrderOwner = orderRepository.findSimpleById(oldOrderId).getOwner();
         Basket oldBasket;
 
         try {
@@ -281,9 +277,9 @@ public class OrderService implements IOrderService {
             throw new CannotRestartOrderException("BASKET_NOT_FOUND");
         }
 
-        Basket newBasket = basketService.duplicate(oldBasket.getId(), oldOrderOwner);
+        Basket newBasket = basketService.duplicate(oldBasket.getId(), BASKET_RESTART_OWNER_PREFIX + oldOrderId);
 
-        return createOrder(newBasket, label, successUrl, orderSettingsService.getUserOrderParameters().getSubOrderDuration(), oldOrderOwnerRole);
+        return createOrder(newBasket, label, successUrl, orderSettingsService.getUserOrderParameters().getSubOrderDuration(), oldOrderOwner);
     }
 
     @Override
@@ -302,35 +298,7 @@ public class OrderService implements IOrderService {
     public void remove(Long id) throws ModuleException {
         checkAction(id, Action.REMOVE);
         Order order = orderRepository.findCompleteById(id);
-        switch (order.getStatus()) {
-            case PENDING: // not yet run // NOSONAR
-                try {
-                    self.pause(order.getId());
-                } catch (ModuleException e) {
-                    // Cannot occur because order has pending state
-                    throw new RsRuntimeException(e); // NOSONAR
-                }
-                if (!OrderHelperService.isOrderEffectivelyInPause(order)) {
-                    // Too late !!! order finally wasn't in PENDING state when asked to be paused
-                    throw new CannotRemoveOrderException();
-                }
-                // No break (deliberately) => Java for dumb
-            case DONE:
-            case DONE_WITH_WARNING:
-            case FAILED:
-            case PAUSED:
-                // Don't forget no relation is hardly mapped between OrderDataFile and Order
-                dataFileService.removeAll(order.getId());
-                break;
-            case DELETED:
-            case EXPIRED:
-                // data files have already been removed so it only remains order to be removed
-                break;
-            default:
-                // RUNNING needs a pause before being removed
-                // REMOVED is a final state (order no more exists, this state is unreachable)
-                throw new CannotRemoveOrderException();
-        }
+        // Data files have already been deleted so there's only the basket and the order to remove
         basketService.deleteIfExists(BASKET_OWNER_PREFIX + order.getId());
         orderRepository.deleteById(order.getId());
     }
@@ -395,8 +363,8 @@ public class OrderService implements IOrderService {
                 case REMOVE:
                     if (!orderHelperService.isAdmin()) {
                         message = "USER_NOT_ALLOWED_TO_MANAGE_ORDER";
-                    } else if (OrderStatus.RUNNING.equals(order.getStatus())) {
-                        message = "ORDER_MUST_NOT_BE_RUNNING";
+                    } else if (!OrderStatus.DELETED.equals(order.getStatus())) {
+                        message = "ORDER_MUST_BE_DELETED";
                     }
                     break;
                 case RESTART:
@@ -409,6 +377,11 @@ public class OrderService implements IOrderService {
                         message = "ORDER_MUST_BE_DONE_WITH_WARNING_OR_FAILED";
                     } else if (hasProcessing(order)) {
                         message = "ORDER_HAS_PROCESSING";
+                    }
+                    break;
+                case DOWNLOAD:
+                    if (OrderStatus.DELETED.equals(order.getStatus()) || order.getAvailableFilesCount() == 0) {
+                        message = "ORDER_MUST_HAVE_AVAILABLE_FILES";
                     }
                     break;
             }
@@ -424,7 +397,8 @@ public class OrderService implements IOrderService {
         DELETE(CannotDeleteOrderException.class),
         REMOVE(CannotRemoveOrderException.class),
         RESTART(CannotRestartOrderException.class),
-        RETRY(CannotRetryOrderException.class);
+        RETRY(CannotRetryOrderException.class),
+        DOWNLOAD(NotYetAvailableException.class);
 
         private final Class<? extends ModuleException> exceptionClass;
 

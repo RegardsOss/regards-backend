@@ -38,7 +38,6 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
-import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.service.*;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
@@ -389,9 +388,12 @@ public class OrderController implements IResourceController<OrderDto> {
 
         resourceService.addLink(resource, this.getClass(), "retrieveOrder", LinkRels.SELF, MethodParamFactory.build(Long.class, orderDto.getId()));
         resourceService.addLink(resource, this.getClass(), "findAll", LinkRels.LIST, MethodParamFactory.build(Pageable.class));
-        resourceService.addLink(resource, this.getClass(), "downloadAllAvailableFiles", LinkRelation.of("download"),
-                                MethodParamFactory.build(Long.class, orderDto.getId()), MethodParamFactory.build(HttpServletResponse.class)
-        );
+
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.DOWNLOAD)) {
+            resourceService.addLink(resource, this.getClass(), "downloadAllAvailableFiles", LinkRelation.of("download"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()), MethodParamFactory.build(HttpServletResponse.class)
+            );
+        }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.PAUSE)) {
             resourceService.addLink(resource, this.getClass(), "pauseOrder", LinkRelation.of("pause"), MethodParamFactory.build(Long.class, orderDto.getId()));
         }

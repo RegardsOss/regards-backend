@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
@@ -91,6 +93,12 @@ public class BasketServiceIT {
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+
+        Role role = new Role();
+        role.setName(DefaultRole.REGISTERED_USER.name());
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(role);
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
     }
 
     private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {

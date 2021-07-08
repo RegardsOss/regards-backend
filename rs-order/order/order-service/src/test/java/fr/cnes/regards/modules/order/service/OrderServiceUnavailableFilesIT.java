@@ -27,6 +27,8 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -126,6 +128,11 @@ public class OrderServiceUnavailableFilesIT {
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+        Role role = new Role();
+        role.setName(DefaultRole.REGISTERED_USER.name());
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(role);
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
     }
 
     public void clean() {

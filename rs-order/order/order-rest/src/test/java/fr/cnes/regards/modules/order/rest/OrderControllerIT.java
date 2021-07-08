@@ -110,8 +110,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import static org.mockito.ArgumentMatchers.any;
-
 /**
  * @author oroussel
  * @author Sébastien Binda
@@ -263,8 +261,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Test
     public void testRemove() throws URISyntaxException {
         Order order = createOrderAsPending();
-
-        // Delete Order
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error", order.getId());
+        performDelete(OrderController.DELETE_ORDER_PATH, projectAdminToken, customizer().expectStatusOk(), "error", order.getId());
+        // Remove Order
         performDelete(OrderController.REMOVE_ORDER_PATH, projectAdminToken, customizer().expectStatusOk(), "error", order.getId());
     }
 
@@ -1061,65 +1060,83 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     @Test
     public void testHateoasLinks_Running() throws URISyntaxException, InterruptedException {
-        Order order = createOrderAsRunning();
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
-        // Order should have 3 basic links, plus PAUSE
-        checkLinks(orderDtoEntityModel, "pause");
-        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
-        // Order should have 3 basic links, plus PAUSE
-        checkLinks(orderDtoEntityModel, "pause");
+        Long id = createOrderAsRunning().getId();
+        checkAdminLinks(id, "download", "pause");
+        checkUserLinks(id, "download", "pause");
+    }
+
+    @Test
+    public void testHateoasLinks_Pending() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAsPending().getId();
+        checkAdminLinks(id, "pause");
+        checkUserLinks(id, "pause");
     }
 
     @Test
     public void testHateoasLinks_Paused() throws URISyntaxException, InterruptedException {
-        Order order = createOrderAsRunning();
-        order.setStatus(OrderStatus.PAUSED);
-        order = orderRepository.save(order);
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
-        // Order should have 3 basic links, plus RESUME, DELETE, REMOVE
-        checkLinks(orderDtoEntityModel, "resume", "delete", "remove");
-        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
-        // Order should have 3 basic links, plus RESUME, DELETE
-        checkLinks(orderDtoEntityModel, "resume", "delete");
+        Long id = createOrderAs(OrderStatus.PAUSED);
+        checkAdminLinks(id, "download", "resume", "delete");
+        checkUserLinks(id, "download", "resume", "delete");
     }
 
     @Test
     public void testHateoasLinks_Done() throws URISyntaxException, InterruptedException {
-        Order order = createOrderAsRunning();
-        order.setStatus(OrderStatus.DONE);
-        order = orderRepository.save(order);
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
-        // Order should have 3 basic links, plus RESTART, DELETE, REMOVE
-        checkLinks(orderDtoEntityModel, "restart", "delete", "remove");
-        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
-        // Order should have 3 basic links, plus RESTART, DELETE
-        checkLinks(orderDtoEntityModel, "restart", "delete");
+        Long id = createOrderAs(OrderStatus.DONE);
+        checkAdminLinks(id, "restart", "delete");
+        checkUserLinks(id, "restart", "delete");
     }
 
     @Test
     public void testHateoasLinks_DoneWithWarning() throws URISyntaxException, InterruptedException {
-        Order order = createOrderAsRunning();
-        order.setStatus(OrderStatus.DONE_WITH_WARNING);
-        order = orderRepository.save(order);
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
-        // Order should have 3 basic links, plus RESTART, RETRY, DELETE, REMOVE
-        checkLinks(orderDtoEntityModel, "restart", "retry", "delete", "remove");
-        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
-        // Order should have 3 basic links, plus RESTART, RETRY, DELETE
-        checkLinks(orderDtoEntityModel, "restart", "retry", "delete");
+        Long id = createOrderAs(OrderStatus.DONE_WITH_WARNING);
+        checkAdminLinks(id, "restart", "retry", "delete");
+        checkUserLinks(id, "restart", "retry", "delete");
     }
 
     @Test
     public void testHateoasLinks_Failed() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAs(OrderStatus.FAILED);
+        checkAdminLinks(id, "restart", "retry", "delete");
+        checkUserLinks(id, "restart", "retry", "delete");
+    }
+
+    @Test
+    public void testHateoasLinks_Deleted() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAs(OrderStatus.DELETED);
+        checkAdminLinks(id, "remove");
+        checkBasicLinks(getOrderDtoAsUser(id));
+    }
+
+    private Long createOrderAs(OrderStatus status) throws URISyntaxException, InterruptedException {
         Order order = createOrderAsRunning();
-        order.setStatus(OrderStatus.FAILED);
+        order.setStatus(status);
         order = orderRepository.save(order);
-        EntityModel<OrderDto> orderDtoEntityModel = getOrderDtoAsAdmin(order.getId());
-        // Order should have 3 basic links, plus RESTART, RETRY, DELETE, REMOVE
-        checkLinks(orderDtoEntityModel, "restart", "retry", "delete", "remove");
-        orderDtoEntityModel = getOrderDtoAsUser(order.getId());
-        // Order should have 3 basic links, plus RESTART, RETRY, DELETE
-        checkLinks(orderDtoEntityModel, "restart", "retry", "delete");
+        // Waiting for maintenance to update order properties
+        TimeUnit.SECONDS.sleep(2);
+        return order.getId();
+    }
+
+    private void checkUserLinks(Long id, String... links) throws InterruptedException {
+        checkLinks(getOrderDtoAsUser(id), links);
+    }
+
+    private void checkAdminLinks(Long id, String... links) throws InterruptedException {
+        checkLinks(getOrderDtoAsAdmin(id), links);
+    }
+
+    private void checkLinks(EntityModel<OrderDto> entityModel, String... links) {
+        checkBasicLinks(entityModel);
+        // Check proper number of links
+        Assertions.assertTrue(entityModel.getLinks().hasSize(2 + links.length));
+        // Check additional links
+        Arrays.stream(links).forEach(link -> Assertions.assertTrue(entityModel.getLink(link).isPresent()));
+
+    }
+
+    private void checkBasicLinks(EntityModel<OrderDto> entityModel) {
+        // Check basic links (always there)
+        Assertions.assertTrue(entityModel.getLink(LinkRels.SELF).isPresent());
+        Assertions.assertTrue(entityModel.getLink(LinkRels.LIST).isPresent());
     }
 
     private EntityModel<OrderDto> getOrderDtoAsAdmin(Long orderId) throws InterruptedException {
@@ -1136,18 +1153,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
         String payload = payload(performGet(OrderController.GET_ORDER_PATH, token, customizer().expectStatusOk(), "error", orderId));
         return GsonUtil.fromString(payload, new TypeToken<EntityModel<OrderDto>>() {
         }.getType());
-    }
-
-    private void checkLinks(EntityModel<OrderDto> entityModel, String... links) {
-        // Check basic links (always there)
-        Assertions.assertTrue(entityModel.getLink(LinkRels.SELF).isPresent());
-        Assertions.assertTrue(entityModel.getLink(LinkRels.LIST).isPresent());
-        Assertions.assertTrue(entityModel.getLink("download").isPresent());
-        // Check proper number of links
-        Assertions.assertTrue(entityModel.getLinks().hasSize(3 + links.length));
-        // Check additional links
-        Arrays.stream(links).forEach(link -> Assertions.assertTrue(entityModel.getLink(link).isPresent()));
-
     }
 
 }
