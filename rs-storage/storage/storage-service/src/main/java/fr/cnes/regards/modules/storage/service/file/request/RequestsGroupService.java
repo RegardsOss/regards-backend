@@ -77,8 +77,8 @@ public class RequestsGroupService {
      * Maximum number of request group to handle in one transaction. This is limited to avoid issue one too much
      * amqp message to send at a time.
      */
-    @Value("${regards.storage.groups.requests.bulk:100}")
-    private final Integer maxRequestPerTransaction = 100;
+    @Value("${regards.storage.groups.requests.bulk:500}")
+    private final Integer maxRequestPerTransaction = 500;
 
     @Autowired
     private IPublisher publisher;
@@ -240,6 +240,12 @@ public class RequestsGroupService {
             LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. Expired groups {}/{}",
                          System.currentTimeMillis() - start, expired, response.getTotalElements());
         }
+    }
+
+    public void checkStorageRequestsGroupsDone() {
+
+        List<String> groupIds = storageReqRepository.checkGroupDones();
+
     }
 
     /**
