@@ -104,7 +104,7 @@ public class OrderConfiguration {
         Map<String, Collection<String>> headers = new HashMap<>();
 
         @SuppressWarnings("unused")
-        public Response downloadFile(String checksum, boolean isContentInline) {
+        public Response downloadFile(String checksum, Boolean isContentInline) {
             return Response.builder().status(200).headers(headers)
                     .request(Request.create(feign.Request.HttpMethod.GET, "", Maps.newHashMap(), null))
                     .body(getClass().getResourceAsStream("/files/" + checksum), 1000).build();

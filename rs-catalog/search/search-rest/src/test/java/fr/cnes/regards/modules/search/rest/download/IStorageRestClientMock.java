@@ -59,7 +59,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public Response downloadFile(String checksum, boolean isContentInline) {
+    public Response downloadFile(String checksum, Boolean isContentInline) {
         Map<String, Collection<String>> map = new HashMap<>();
         Request request = Request.create(Request.HttpMethod.GET, "test", map, Body.empty());
         if (!"checksumOk".equals(checksum)) {
