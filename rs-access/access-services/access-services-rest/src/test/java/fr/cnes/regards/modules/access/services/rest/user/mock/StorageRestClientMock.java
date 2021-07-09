@@ -105,7 +105,7 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public Response downloadFile(String checksum, boolean isContentInline) {
+    public Response downloadFile(String checksum, Boolean isContentInline) {
         return null;
     }
 
