@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -72,7 +71,6 @@ public class OrderCreationService implements IOrderCreationService {
     private IOrderCreationService self;
 
     private final IOrderRepository orderRepository;
-    private final IBasketRepository basketRepository;
     private final IOrderDataFileService dataFileService;
     private final IOrderJobService orderJobService;
     private final BasketSelectionPageSearch basketSelectionPageSearch;
@@ -86,13 +84,12 @@ public class OrderCreationService implements IOrderCreationService {
     private final SuborderSizeCounter suborderSizeCounter;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    public OrderCreationService(IOrderRepository orderRepository, IBasketRepository basketRepository, IOrderDataFileService dataFileService, IOrderJobService orderJobService,
+    public OrderCreationService(IOrderRepository orderRepository, IOrderDataFileService dataFileService, IOrderJobService orderJobService,
                                 BasketSelectionPageSearch basketSelectionPageSearch, SuborderSizeCounter suborderSizeCounter, INotificationClient notificationClient,
                                 IEmailClient emailClient, OrderHelperService orderHelperService, IProjectsClient projectClient, ApplicationEventPublisher applicationEventPublisher,
                                 IRuntimeTenantResolver runtimeTenantResolver, IOrderProcessingService orderProcessingService, TemplateService templateService
     ) {
         this.orderRepository = orderRepository;
-        this.basketRepository = basketRepository;
         this.dataFileService = dataFileService;
         this.orderJobService = orderJobService;
         this.basketSelectionPageSearch = basketSelectionPageSearch;
@@ -182,10 +179,6 @@ public class OrderCreationService implements IOrderCreationService {
             }
             orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
         }
-        // Set basket owner to order (PM54)
-        basket.setOwner(IOrderService.BASKET_OWNER_PREFIX + order.getId());
-        basketRepository.save(basket);
-        LOGGER.info("Basket saved with owner : {}", basket.getOwner());
 
         applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));
     }

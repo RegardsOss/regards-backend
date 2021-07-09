@@ -91,13 +91,30 @@ public interface IBasketService {
 
     /**
      * Attach a process uuid to the dataset selection
-     * @param basket the user's basket
-     * @param datasetId the id of the dataset selection to modify
+     *
+     * @param basket      the user's basket
+     * @param datasetId   the id of the dataset selection to modify
      * @param description the process UUID and parameters to attach to the dataset selection, remove the existing process desc if null
      * @return update {@link Basket}
      */
     Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescription description);
 
+    /**
+     * Duplicates a basket with the exact same content, but with a new owner
+     *
+     * @param id    id of the basket to duplicate
+     * @param owner owner of the new basket
+     * @return the new basket
+     */
     Basket duplicate(Long id, String owner);
+
+    /**
+     * Transfer ownership of the basket owned by "fromOwner" to "toOwner"
+     *
+     * @param fromOwner owner of the basket to transfer ownership of
+     * @param toOwner   new owner to transfer the basket to
+     * @return the modified basket
+     */
+    Basket transferOwnerShip(String fromOwner, String toOwner);
 
 }
