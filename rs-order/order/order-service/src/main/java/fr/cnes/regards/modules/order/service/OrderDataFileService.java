@@ -261,7 +261,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     private ResponseEntity<InputStreamResource> donwloadStoredFile(OrderDataFile dataFile) {
         try {
             InputStreamResource isr = null;
-            Response response = storageClient.downloadFile(dataFile.getChecksum());
+            Response response = storageClient.downloadFile(dataFile.getChecksum(), false);
             if (response.status() != HttpStatus.OK.value()) {
                 LOGGER.error("Error downloading file {} from storage : {} : {}", dataFile.getChecksum(),
                              response.status(), response.reason());

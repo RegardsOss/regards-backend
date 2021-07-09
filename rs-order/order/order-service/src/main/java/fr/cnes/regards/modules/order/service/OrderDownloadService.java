@@ -155,7 +155,7 @@ public class OrderDownloadService implements IOrderDownloadService {
                         FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
                         // To download file with accessrights checked, we should use catalogDownloadClient
                         // but the accessRight have already been checked here.
-                        response = storageClient.downloadFile(dataFile.getChecksum());
+                        response = storageClient.downloadFile(dataFile.getChecksum(), false);
                     } catch (RuntimeException e) {
                         String stack = getStack(e);
                         LOGGER.error(storageDlErrorPrefix, e);

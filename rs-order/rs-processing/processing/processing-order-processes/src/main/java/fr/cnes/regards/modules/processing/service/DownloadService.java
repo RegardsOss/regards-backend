@@ -130,7 +130,7 @@ public class DownloadService implements IDownloadService {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 FeignSecurityManager.asUser(user, DefaultRole.PROJECT_ADMIN.name());
-                Response response = storageClient.downloadFile(checksum);
+                Response response = storageClient.downloadFile(checksum, false);
                 HttpStatus httpStatus = HttpStatus.valueOf(response.status());
                 if (httpStatus.is2xxSuccessful()) {
                     return new ResponseStreamProxy(response);
