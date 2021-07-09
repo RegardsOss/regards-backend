@@ -79,9 +79,12 @@ public class CatalogPluginResponseFactory {
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createStreamSuccessResponse(HttpServletResponse response,
-            StreamingResponseBody responseContent, String fileName, MediaType mimeType) {
+            StreamingResponseBody responseContent, String fileName, MediaType mimeType, Optional<Long> size) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
+        if (size.isPresent()) {
+            headers.set(HttpHeaders.CONTENT_LENGTH, size.toString());
+        }
         if (mimeType == null) {
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
