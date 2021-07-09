@@ -107,7 +107,7 @@ public class CatalogDownloadController {
             FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
             Response response = null;
             try {
-                response = storageRestClient.downloadFile(checksum);
+                response = storageRestClient.downloadFile(checksum, false);
                 InputStreamResource isr = null;
                 HttpHeaders headers = new HttpHeaders();
                 // Add all headers from storage microservice response except for cache control ones.

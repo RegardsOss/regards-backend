@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -51,7 +52,8 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
      */
     @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + DOWNLOAD_PATH,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    Response downloadFile(@PathVariable("checksum") String checksum);
+    Response downloadFile(@PathVariable("checksum") String checksum,
+            @RequestParam(name="isContentInline", required=false) Boolean isContentInline);
 
     @RequestMapping(method = RequestMethod.GET, path = STORAGES_PATH, produces = MediaType.ALL_VALUE)
     ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve();

@@ -118,7 +118,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void donwload() {
-        Response response = client.downloadFile("huhuhuhu");
+        Response response = client.downloadFile("huhuhuhu", false);
         Assert.assertEquals(HttpStatus.NOT_FOUND.value(), response.status());
     }
 

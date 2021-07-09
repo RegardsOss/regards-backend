@@ -120,8 +120,8 @@ public class FileReferenceController {
     @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("checksum") String checksum,
-            HttpServletResponse response) {
-        return downloadWithQuota(checksum, response).recover(EntityOperationForbiddenException.class, t -> {
+            @RequestParam(name="isContentInline", required=false) Boolean isContentInline, HttpServletResponse response) {
+        return downloadWithQuota(checksum, isContentInline, response).recover(EntityOperationForbiddenException.class, t -> {
             LOGGER.error(String.format("File %s is not downloadable for now. Try again later.", checksum));
             LOGGER.debug(t.getMessage(), t);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -147,7 +147,7 @@ public class FileReferenceController {
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<StreamingResponseBody> downloadFileWithToken(@PathVariable("checksum") String checksum,
             @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token,
-            HttpServletResponse response) {
+            boolean isContentInline, HttpServletResponse response) {
         if (!downloadService.checkToken(checksum, token)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -155,7 +155,7 @@ public class FileReferenceController {
         // with no specific users (public access).
         return Try.of(() -> downloadService.downloadFile(checksum))
                 .mapTry(Callable::call)
-                .flatMap(dlFile -> downloadFile(dlFile, response))
+                .flatMap(dlFile -> downloadFile(dlFile, isContentInline, response))
                 .recover(ModuleException.class, t -> {
                     LOGGER.error(t.getMessage());
                     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -164,7 +164,7 @@ public class FileReferenceController {
 
     @VisibleForTesting
     protected Try<ResponseEntity<StreamingResponseBody>> downloadWithQuota(String checksum,
-            HttpServletResponse response) {
+            Boolean isContentInline, HttpServletResponse response) {
         return Try.of(() -> downloadService.downloadFile(checksum)).mapTry(Callable::call).flatMap(dlFile -> {
             if (dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile) {
                 return downloadQuotaService
@@ -172,7 +172,7 @@ public class FileReferenceController {
                                    (quotaHandler) -> Try
                                            .success((FileDownloadService.QuotaLimitedDownloadableFile) dlFile)
                                            .map(impureId(quotaHandler::start)) // map instead of peek to wrap potential errors
-                                           .map(d -> wrap(d, quotaHandler)).flatMap(d -> downloadFile(d, response))) // idempotent close of stream (and quotaHandler) if anything failed, just in case
+                                           .map(d -> wrap(d, quotaHandler)).flatMap(d -> downloadFile(d, isContentInline, response))) // idempotent close of stream (and quotaHandler) if anything failed, just in case
                         .onFailure(ignored -> Try.run(dlFile::close))
                         .recover(DownloadLimitExceededException.class, t -> {
                             quotaExceededReporter.report(t, dlFile, authResolver.getUser(), tenantResolver.getTenant());
@@ -181,7 +181,7 @@ public class FileReferenceController {
                         });
             }
             // no quota handling, just download
-            return downloadFile(dlFile, response);
+            return downloadFile(dlFile, isContentInline, response);
         });
     }
 
@@ -219,13 +219,19 @@ public class FileReferenceController {
 
     @VisibleForTesting
     protected Try<ResponseEntity<StreamingResponseBody>> downloadFile(DownloadableFile downloadFile,
-            HttpServletResponse response) {
+            Boolean isContentInline, HttpServletResponse response) {
         return Try.of(() -> {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentLength(downloadFile.getRealFileSize());
             headers.setContentType(asMediaType(downloadFile.getMimeType()));
-            headers.setContentDisposition(ContentDisposition.builder("attachment").filename(downloadFile.getFileName())
-                    .size(downloadFile.getRealFileSize()).build());
+            // Si attribut noForceDownload passé alors ne pas faire :
+            if (isContentInline == null || !isContentInline) {
+                headers.setContentDisposition(ContentDisposition.builder("attachment").filename(downloadFile.getFileName())
+                                                      .size(downloadFile.getRealFileSize()).build());
+            } else {
+                headers.setContentDisposition(ContentDisposition.builder("inline").filename(downloadFile.getFileName())
+                                                      .size(downloadFile.getRealFileSize()).build());
+            }
             StreamingResponseBody stream = out -> {
                 try (OutputStream outs = response.getOutputStream()) {
                     byte[] bytes = new byte[1024];
