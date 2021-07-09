@@ -196,8 +196,13 @@ public class OrderService implements IOrderService {
         order.setFrontendUrl(url);
         order = self.create(order);
 
+        // Set basket owner to order (PM54)
+        String newBasketOwner = IOrderService.BASKET_OWNER_PREFIX + order.getId();
+        Basket newBasket = basketService.transferOwnerShip(basket.getOwner(), newBasketOwner);
+        LOGGER.info("Basket saved with owner : {}", newBasket.getOwner());
+
         // Asynchronous operation
-        orderCreationService.asyncCompleteOrderCreation(basket, order.getId(), subOrderDuration, orderHelperService.getRole(user), runtimeTenantResolver.getTenant());
+        orderCreationService.asyncCompleteOrderCreation(newBasket, order.getId(), subOrderDuration, orderHelperService.getRole(user), runtimeTenantResolver.getTenant());
         return order;
     }
 

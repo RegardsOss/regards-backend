@@ -228,6 +228,13 @@ public class BasketService implements IBasketService {
         return repos.save(newBasket);
     }
 
+    @Override
+    public Basket transferOwnerShip(String fromOwner, String toOwner) {
+        Basket basket = repos.findByOwner(fromOwner);
+        basket.setOwner(toOwner);
+        return repos.save(basket);
+    }
+
     private Basket attachProcessToDatasetSelectionAndSaveBasket(
             Basket basket,
             BasketDatasetSelection ds,
