@@ -44,18 +44,25 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.ssl.TrustStrategy;
 import org.hibernate.validator.constraints.URL;
 import org.slf4j.Logger;
@@ -70,6 +77,11 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -78,6 +90,7 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static com.google.common.base.Predicates.instanceOf;
 import static io.vavr.API.$;
@@ -120,6 +133,8 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     public static final String OPENID_USER_INFO_LASTNAME_MAPPING = "OpenId_UserInfo_Lastname_Mapping";
 
     public static final String OPENID_REVOKE_ENDPOINT = "OpenId_Revoke_Endpoint";
+
+    public static final String OPENID_ALLOW_INSECURE = "OpenId_Allow_insecure";
 
     @PluginParameter(
         name = OPENID_CLIENT_ID,
@@ -217,7 +232,12 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     @Value("${http.proxy.noproxy:#{T(java.util.Collections).emptyList()}}")
     private List<String> noProxy;
 
-    @Value("${http.ssl.allow_insecure:false}")
+    @PluginParameter(
+            name = OPENID_ALLOW_INSECURE,
+            label = "Allow insecure SSL connection to openId server",
+            description = "Only use this insecure configuration for tests purpose.",
+            defaultValue = "false"
+    )
     private Boolean allowInsecure;
 
     private Feign feign;
@@ -334,7 +354,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     private Try<Unit> revoke(String oauth2Token) {
         if (! Strings.isNullOrEmpty(revokeEndpoint)) {
-            String basicString = String.format("%s:%s", clientId, clientSecret);
+            String basicString = String.format("%s:%s", clientId, Optional.ofNullable(clientSecret).orElse(""));
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
             Map<String, String> headers = HashMap.of(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString);
 
@@ -343,7 +363,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
             // Execute side effect, and then nothing.
             // It's not like we're going to fail the user's logout operation and ask it to retry?
             // Just let the error fall into limbo.
-            Try.run(() -> client.revoke(oauth2Token));
+            Try.run(() -> client.revoke(RevokeBody.build(oauth2Token))).onFailure(e -> LOGGER.error(e.getMessage(),e));
         }
         return Try.success(Unit.UNIT);
     }
@@ -361,9 +381,18 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     private <T> Try<T> mapClientException(Try<T> call) {
         //noinspection unchecked
         return call.mapFailure(
-            Case($(instanceOf(HttpClientErrorException.class)), ex -> new InternalAuthenticationServiceException(ex.getMessage(), ex)),
-            Case($(instanceOf(HttpServerErrorException.class)), ex -> new AuthenticationServiceException(ex.getMessage(), ex)),
-            Case($(instanceOf(FeignException.class)), ex -> new InternalAuthenticationServiceException(ex.getMessage(), ex))
+            Case($(instanceOf(HttpClientErrorException.class)), ex -> {
+                LOGGER.error(ex.getMessage(),ex);
+                return new InternalAuthenticationServiceException(ex.getMessage(), ex);
+            }),
+            Case($(instanceOf(HttpServerErrorException.class)), ex -> {
+                LOGGER.error(ex.getMessage(),ex);
+                return new AuthenticationServiceException(ex.getMessage(), ex);
+            }),
+            Case($(instanceOf(FeignException.class)), ex -> {
+                LOGGER.error(ex.getMessage(),ex);
+                return new InternalAuthenticationServiceException(ex.getMessage(), ex);
+            })
         );
     }
 
@@ -382,10 +411,29 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
         //                                                                          null,
         //                                                                          SSLConnectionSocketFactory
         //                                                                                  .getDefaultHostnameVerifier());
-        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+        HttpClientBuilder builder = HttpClients.custom();
+        SSLContext unChecksslContext = null;
+        SSLConnectionSocketFactory uncheckSslConnectionSocketFactory = null;
+        Registry<ConnectionSocketFactory> sslUncheckedSocketFactoryRegistry = null;
+        if (allowInsecure) {
+            try {
+                unChecksslContext = SSLContexts.custom().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build();
+                uncheckSslConnectionSocketFactory = new SSLConnectionSocketFactory(unChecksslContext,
+                                                                                   NoopHostnameVerifier.INSTANCE);
+                sslUncheckedSocketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create().register("https", uncheckSslConnectionSocketFactory).build();
+            } catch (Exception e) {
+                LOGGER.error("Error creating SSL Context unchecked",e);
+            }
+        }
+        PoolingHttpClientConnectionManager connManager;
+        if (sslUncheckedSocketFactoryRegistry != null) {
+            connManager = new PoolingHttpClientConnectionManager(sslUncheckedSocketFactoryRegistry);
+        } else {
+            connManager = new PoolingHttpClientConnectionManager();
+        }
         connManager.setDefaultMaxPerRoute(10);
         connManager.setMaxTotal(20);
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().setConnectionManager(connManager)
+        builder.setConnectionManager(connManager)
             .setKeepAliveStrategy((httpResponse, httpContext) -> {
                 HeaderElementIterator it = new BasicHeaderElementIterator(httpResponse
                     .headerIterator(HTTP.CONN_KEEP_ALIVE));
@@ -399,15 +447,11 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
                 }
                 return 5 * 1000;
             });
-        HttpClientBuilder builder = HttpClientBuilder.create();
 
-        if (allowInsecure) {
-            try {
-                builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
-                builder.setSSLContext(new SSLContextBuilder().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build());
-            } catch (Exception e) {
-                LOGGER.error("Exception in creating http client instance", e);
-            }
+        if (unChecksslContext!= null && uncheckSslConnectionSocketFactory != null) {
+            builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+            builder.setSSLContext(unChecksslContext);
+            builder.setSSLSocketFactory(uncheckSslConnectionSocketFactory);
         }
 
         if ((proxyHost != null) && !proxyHost.isEmpty()) {
@@ -430,14 +474,15 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
                             // Return direct route
                             return new HttpRoute(host);
                         }
+
                         return super.determineRoute(host, request, context);
                     }
                 };
-                return httpClientBuilder.setProxy(proxy).setRoutePlanner(routePlannerHandlingNoProxy).build();
+                return builder.setProxy(proxy).setRoutePlanner(routePlannerHandlingNoProxy).build();
             }
-            return httpClientBuilder.setProxy(proxy).build();
+            return builder.setProxy(proxy).build();
         } else {
-            return httpClientBuilder.build();
+            return builder.build();
         }
     }
 }
