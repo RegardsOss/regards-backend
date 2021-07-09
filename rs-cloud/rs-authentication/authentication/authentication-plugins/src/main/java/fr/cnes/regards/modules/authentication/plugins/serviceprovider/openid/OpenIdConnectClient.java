@@ -43,5 +43,5 @@ public interface OpenIdConnectClient/*<UserInfoResponse extends OpenIdUserInfoRe
     ResponseEntity<HashMap<String, String>> userInfo();
 
     @PostMapping
-    ResponseEntity<Void> revoke(@RequestParam("token") String token);
+    ResponseEntity<Void> revoke(@RequestBody RevokeBody revokeToken);
 }
