@@ -30,10 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -99,7 +96,8 @@ public class CatalogDownloadController {
     @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
-            @PathVariable(CHECKSUM_PATH_PARAM) String checksum) throws ModuleException, IOException {
+            @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
+            @RequestParam(name="isContentInline", required=false) Boolean isContentInline) throws ModuleException, IOException {
         UniformResourceName urn = UniformResourceName.fromString(aipId);
         if (this.searchService.hasAccess(urn)) {
             // To download through storage client we must be authenticate as user in order to
@@ -107,7 +105,7 @@ public class CatalogDownloadController {
             FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
             Response response = null;
             try {
-                response = storageRestClient.downloadFile(checksum, false);
+                response = storageRestClient.downloadFile(checksum, isContentInline);
                 InputStreamResource isr = null;
                 HttpHeaders headers = new HttpHeaders();
                 // Add all headers from storage microservice response except for cache control ones.
