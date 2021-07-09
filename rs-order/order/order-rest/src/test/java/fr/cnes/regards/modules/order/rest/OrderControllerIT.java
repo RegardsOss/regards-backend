@@ -421,6 +421,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer customizer2 = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY)
                 .expectValue("messages[0]", OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
         // Send second request
+        initForNextOrder();
         performDefaultPost(OrderController.USER_ROOT_PATH,
                            new OrderController.OrderRequest("myDoubleCommand", "http://perdu2.com"), customizer2,
                            "error");
