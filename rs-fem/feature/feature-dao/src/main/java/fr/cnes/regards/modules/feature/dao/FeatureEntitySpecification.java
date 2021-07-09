@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import java.util.List;
+import java.util.Set;
 
 /**
  * JPA {@link Specification} builder for {@link FeatureEntity}
@@ -52,57 +50,53 @@ public class FeatureEntitySpecification {
      * @return {@link Specification}
      */
     public static Specification<FeatureEntity> searchAllByFilters(FeaturesSelectionDTO selection, Pageable page) {
-        return (root, query, cb) -> {
+
+        return (root, query, criteriaBuilder) -> {
 
             Set<Predicate> predicates = Sets.newHashSet();
             FeaturesSearchParameters filters = selection.getFilters();
+            List<Long> featureIds = selection.getFeatureIds();
 
             if (filters != null) {
                 if (filters.getModel() != null) {
-                    predicates.add(cb.equal(root.get("model"), filters.getModel()));
+                    predicates.add(criteriaBuilder.equal(root.get("model"), filters.getModel()));
                 }
                 if (filters.getSource() != null) {
-                    predicates.add(cb.equal(root.get("sessionOwner"), filters.getSource()));
+                    predicates.add(criteriaBuilder.equal(root.get("sessionOwner"), filters.getSource()));
                 }
                 if (filters.getSession() != null) {
-                    predicates.add(cb.equal(root.get("session"), filters.getSession()));
+                    predicates.add(criteriaBuilder.equal(root.get("session"), filters.getSession()));
                 }
                 if (filters.getProviderId() != null) {
-                    predicates.add(cb.like(cb.lower(root.get("providerId")),
-                                           selection.getFilters().getProviderId().toLowerCase() + "%"));
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("providerId")), filters.getProviderId().toLowerCase() + "%"));
                 }
                 if (filters.getFrom() != null) {
-                    predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), filters.getFrom()));
+                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("lastUpdate"), filters.getFrom()));
                 }
                 if (filters.getTo() != null) {
-                    predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), filters.getTo()));
+                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("lastUpdate"), filters.getTo()));
                 }
             }
-            if (!selection.getFeatureIds().isEmpty()) {
+
+            if (!featureIds.isEmpty()) {
                 Set<Predicate> idsPredicates = Sets.newHashSet();
                 switch (selection.getFeatureIdsSelectionMode()) {
                     case EXCLUDE:
-                        selection.getFeatureIds()
-                                .forEach(requestId -> idsPredicates.add(cb.notEqual(root.get("id"), requestId)));
+                        featureIds.forEach(requestId -> idsPredicates.add(criteriaBuilder.notEqual(root.get("id"), requestId)));
+                        predicates.add(criteriaBuilder.and(idsPredicates.toArray(new Predicate[0])));
                         break;
                     case INCLUDE:
-                        selection.getFeatureIds()
-                                .forEach(requestId -> idsPredicates.add(cb.equal(root.get("id"), requestId)));
+                        featureIds.forEach(requestId -> idsPredicates.add(criteriaBuilder.equal(root.get("id"), requestId)));
+                        predicates.add(criteriaBuilder.or(idsPredicates.toArray(new Predicate[0])));
                         break;
                     default:
                         break;
                 }
-                if (!idsPredicates.isEmpty()) {
-                    predicates.add(cb.and(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
-                }
             }
 
-            // Add order
-            Sort.Direction defaultDirection = Sort.Direction.ASC;
-            String defaultAttribute = "id";
-            query.orderBy(SpecificationUtils.buildOrderBy(page, root, cb, defaultAttribute, defaultDirection));
+            query.orderBy(SpecificationUtils.buildOrderBy(page, root, criteriaBuilder, "id", Sort.Direction.ASC));
 
-            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
 

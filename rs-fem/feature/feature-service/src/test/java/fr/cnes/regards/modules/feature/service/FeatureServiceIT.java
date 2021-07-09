@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -88,21 +89,49 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
         assertEquals(2, results.getNumberOfElements());
 
-        // Retrieve with an unknown model
-        selection = FeaturesSelectionDTO.build().withModel("unknown");
-        results = featureService.findAll(selection, page);
-        assertEquals(0, results.getNumberOfElements());
-
-        // Retrieve from model and  lastUpdateDate to retrieve only second feature
-        selection = FeaturesSelectionDTO.build().withModel(model).withFrom(date);
-        results = featureService.findAll(selection, page);
-        assertEquals(1, results.getNumberOfElements());
         FeatureEntityDto dof = results.getContent().get(0);
         // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same
         assertEquals(secondFeature.getFeature().getProperties(), dof.getFeature().getProperties());
         assertEquals(secondFeature.getSession(), dof.getSession());
         assertEquals(secondFeature.getSessionOwner(), dof.getSource());
         assertEquals(secondFeature.getFeature().getModel(), dof.getFeature().getModel());
+
+        // Retrieve with an unknown model
+        selection = FeaturesSelectionDTO.build()
+                .withModel("unknown");
+        results = featureService.findAll(selection, page);
+        assertEquals(0, results.getNumberOfElements());
+
+        // Retrieve from model and  lastUpdateDate to retrieve only second feature
+        selection = FeaturesSelectionDTO.build()
+                .withModel(model)
+                .withFrom(date);
+        results = featureService.findAll(selection, page);
+        assertEquals(1, results.getNumberOfElements());
+
+        selection = FeaturesSelectionDTO.build()
+                .withId(firstFeature.getId())
+                .withId(secondFeature.getId());
+        results = featureService.findAll(selection, page);
+        assertEquals(2, results.getNumberOfElements());
+
+        selection = FeaturesSelectionDTO.build()
+                .withId(secondFeature.getId());
+        results = featureService.findAll(selection, page);
+        assertEquals(1, results.getNumberOfElements());
+
+        selection = FeaturesSelectionDTO.build()
+                .withSelectionMode(SearchSelectionMode.EXCLUDE)
+                .withId(firstFeature.getId())
+                .withId(secondFeature.getId());
+        results = featureService.findAll(selection, page);
+        assertEquals(0, results.getNumberOfElements());
+
+        selection = FeaturesSelectionDTO.build()
+                .withSelectionMode(SearchSelectionMode.EXCLUDE)
+                .withId(secondFeature.getId());
+        results = featureService.findAll(selection, page);
+        assertEquals(1, results.getNumberOfElements());
 
     }
 }
