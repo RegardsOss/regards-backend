@@ -49,7 +49,7 @@ public class FeatureUpdateRequestSpecification {
     public static Specification<FeatureUpdateRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, false, root, query, cb,
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, true, root, query, cb,
                                                                                 page);
             if (selection.getFilters() != null) {
                 if (selection.getFilters().getProviderId() != null) {
