@@ -224,13 +224,15 @@ public class FileReferenceController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentLength(downloadFile.getRealFileSize());
             headers.setContentType(asMediaType(downloadFile.getMimeType()));
-            // Si attribut noForceDownload passé alors ne pas faire :
+            // By default, return the attachment header, forcing browser to download the file
             if (isContentInline == null || !isContentInline) {
                 headers.setContentDisposition(ContentDisposition.builder("attachment").filename(downloadFile.getFileName())
                                                       .size(downloadFile.getRealFileSize()).build());
             } else {
                 headers.setContentDisposition(ContentDisposition.builder("inline").filename(downloadFile.getFileName())
                                                       .size(downloadFile.getRealFileSize()).build());
+                // Allows iframe to display inside REGARDS interface
+                headers.set(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
             }
             StreamingResponseBody stream = out -> {
                 try (OutputStream outs = response.getOutputStream()) {
