@@ -116,9 +116,6 @@ public class SessionNotifier {
         Optional<SessionProductPropertyEnum> property = notifyDecrementSession(sessionOwner, session,
                                                                                product.getState(),
                                                                                product.getSipState());
-        // decrement number of files acquired
-        notifyDecrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
-                               product.getActiveAcquisitionFiles().size());
     }
 
     public void notifyFileAcquired(String session, String sessionOwner, long nbFilesAcquired) {
