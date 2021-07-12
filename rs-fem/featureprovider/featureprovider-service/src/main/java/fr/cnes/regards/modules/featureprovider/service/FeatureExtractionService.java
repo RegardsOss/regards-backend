@@ -349,8 +349,9 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
         Feature feature;
         try {
-            // Extract feature
-            feature = factory.generateFeature(request.getParameters());
+            // Extract feature from duplicate parameters to avoid change request in db
+            JsonObject parameters = request.getParameters().deepCopy();
+            feature = factory.generateFeature(parameters);
             feature.withHistory(request.getRequestOwner());
             FeatureCreationMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
