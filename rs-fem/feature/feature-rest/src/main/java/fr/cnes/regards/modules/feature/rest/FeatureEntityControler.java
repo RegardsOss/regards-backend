@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.rest;
 
 import javax.validation.Valid;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -92,7 +93,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @ApiResponses(
             value = { @ApiResponse(responseCode = "200", description = "Get features according to search parameters") })
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Get features according to search parameters")
+    @ResourceAccess(description = "Get features according to search parameters", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
             @Parameter(description = "Features selection filters") FeaturesSearchParameters selection, Pageable page,
             PagedResourcesAssembler<FeatureEntityDto> assembler) {
@@ -111,7 +112,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @Operation(summary = "Retrieve one feature by its urn", description = "Retrieve one feature by its urn")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retrieve one feature by its urn") })
     @RequestMapping(method = RequestMethod.GET, path = URN_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Retrieve one feature by its urn")
+    @ResourceAccess(description = "Retrieve one feature by its urn", role = DefaultRole.EXPLOIT)
     public ResponseEntity<FeatureEntityDto> getFeature(
             @Parameter(description = "URN of the feature") @PathVariable("urn") String urn) {
         return new ResponseEntity<>(featureService.findOne(FeatureUniformResourceName.fromString(urn)), HttpStatus.OK);
@@ -127,7 +128,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notify features according to search parameters") })
     @RequestMapping(method = RequestMethod.POST, path = NOTIFY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Notify features according to search parameters")
+    @ResourceAccess(description = "Notify features according to search parameters", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> notifyFeatures(
             @Parameter(description = "Features selection filters") @Valid @RequestBody FeaturesSelectionDTO selection) {
         featureService.scheduleNotificationsJob(selection);
@@ -144,7 +145,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Delete features according to search parameters") })
     @RequestMapping(method = RequestMethod.DELETE, path = DELETE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Delete features according to search parameters")
+    @ResourceAccess(description = "Delete features according to search parameters", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteFeatures(
             @Parameter(description = "Features selection filters") @Valid @RequestBody FeaturesSelectionDTO selection) {
         featureService.scheduleDeletionJob(selection);

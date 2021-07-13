@@ -109,7 +109,7 @@ public class AccessSettingsController implements IResourceController<DynamicTena
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the settings managing the access requests",
-            role = DefaultRole.PROJECT_ADMIN)
+            role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAccessSettings() throws ModuleException {
         return toResponse(Validation.combine(Try.run(() -> FeignSecurityManager
                                                      .asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName)))
