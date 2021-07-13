@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.access.services.rest.user;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -26,6 +27,7 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.access.services.domain.user.AccessRequestDto;
 import fr.cnes.regards.modules.access.services.domain.user.ProjectUserDto;
 import fr.cnes.regards.modules.access.services.rest.user.utils.ComposableClientException;
@@ -42,6 +44,7 @@ import io.vavr.control.Validation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -111,7 +114,10 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
      * Retrieve authentication information
      */
     @Autowired
-    private IAuthenticationResolver authResolver;
+    private IAuthenticationResolver authenticationResolver;
+
+    @Value("${spring.application.name}")
+    private String appName;
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUserDto}s.
@@ -171,7 +177,10 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
                 .transform(handleClientFailure(ACCESSRIGHTS_CLIENT))
                 .map(EntityModel::getContent)
                 .flatMap(user ->
-                    Try.of(() -> storageClient.getCurrentQuotas(user.getEmail()))
+                    Try.run(() -> FeignSecurityManager
+                            .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName)))
+                        .map(unused -> storageClient.getCurrentQuotas(user.getEmail()))
+                        .andFinally(FeignSecurityManager::reset)
                         .transform(ignoreStorageQuotaErrors)
                         .map(limits -> new ProjectUserDto(
                             user,
@@ -212,7 +221,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     {
         return combineProjectUserThenQuotaCalls(
             () -> projectUsersClient.retrieveProjectUserByEmail(userEmail),
-            () -> storageClient.getCurrentQuotas(userEmail),
+            () -> {FeignSecurityManager
+                    .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));return storageClient.getCurrentQuotas(userEmail);},
             this::toResource
         );
     }
@@ -244,7 +254,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
 
         return combineQuotaThenProjectUserCalls(
             userEmail,
-            () -> storageClient.upsertQuotaLimits(userEmail, t._2),
+            () -> {FeignSecurityManager
+                    .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));return storageClient.upsertQuotaLimits(userEmail, t._2);},
             () -> projectUsersClient.updateProjectUser(userId, t._1),
             this::toResource
         );
@@ -261,14 +272,15 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     public ResponseEntity<EntityModel<ProjectUserDto>> updateCurrentProjectUser(@RequestBody ProjectUserDto updatedProjectUser)
         throws ModuleException
     {
-        String userEmail = authResolver.getUser();
+        String userEmail = authenticationResolver.getUser();
 
         Tuple2<ProjectUser, DownloadQuotaLimitsDto> t =
             makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
 
         return combineQuotaThenProjectUserCalls(
             userEmail,
-            () -> storageClient.upsertQuotaLimits(userEmail, t._2),
+            () -> {FeignSecurityManager
+                    .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));return storageClient.upsertQuotaLimits(userEmail, t._2);},
             () -> projectUsersClient.updateCurrentProjectUser(t._1),
             this::toResourceRegisteredUser
         );
@@ -303,7 +315,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
 
         return combineQuotaThenProjectUserCalls(
             userEmail,
-            () -> storageClient.upsertQuotaLimits(userEmail, limits),
+            () -> {FeignSecurityManager
+                    .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));return storageClient.upsertQuotaLimits(userEmail, limits);},
             () -> projectUsersClient.createUser(accessRequest),
             this::toResourceRegisteredUser
         );
@@ -390,7 +403,10 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
                     .map(ProjectUser::getEmail)
                     .toArray(String[]::new))
                 .flatMap(a ->
-                    Try.of(() -> storageClient.getCurrentQuotasList(a))
+                    Try.run(() -> FeignSecurityManager
+                            .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName)))
+                        .map(unused -> storageClient.getCurrentQuotasList(a))
+                        .andFinally(FeignSecurityManager::reset)
                         .map(ResponseEntity::getBody)
                         // special value for frontend if any error on storage or storage not deploy
                         .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
@@ -442,7 +458,9 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
                 .transform(handleClientFailure(ACCESSRIGHTS_CLIENT))
                 .map(EntityModel::getContent)
                 .combine(Try.ofSupplier(quotaCall)
-                    .transform(ignoreStorageQuotaErrors))
+                            // add FeignSecurityManager.reset call so that security is properly handled in case quotaSupplier usurp identity. Otherwise, reset just set back the value per default
+                            .andFinally(FeignSecurityManager::reset)
+                            .transform(ignoreStorageQuotaErrors))
                 .ap(ProjectUserDto::new)
                 .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
                 .map(resourceMapper)
@@ -458,7 +476,12 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     ) throws ModuleException {
         return toResponse(
             Try.ofSupplier(quotaLimitsCall)
-                .map(unit -> storageClient.getCurrentQuotas(userEmail))
+                // add FeignSecurityManager.reset call so that security is properly handled in case quotaSupplier usurp identity. Otherwise, reset just set back the value per default
+                .andFinally(FeignSecurityManager::reset)
+                .map(unit -> {FeignSecurityManager
+                        .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));
+                        return storageClient.getCurrentQuotas(userEmail);})
+                .andFinally(FeignSecurityManager::reset)
                 .transform(ignoreStorageQuotaErrors)
                 .combine(Try.ofSupplier(projectUsersCall)
                     .transform(handleClientFailure(ACCESSRIGHTS_CLIENT))
