@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.storage.rest;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import com.google.common.net.HttpHeaders;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
@@ -39,7 +42,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -221,18 +223,17 @@ public class FileReferenceController {
     protected Try<ResponseEntity<StreamingResponseBody>> downloadFile(DownloadableFile downloadFile,
             Boolean isContentInline, HttpServletResponse response) {
         return Try.of(() -> {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentLength(downloadFile.getRealFileSize());
-            headers.setContentType(asMediaType(downloadFile.getMimeType()));
+            response.setContentLength(downloadFile.getRealFileSize().intValue());
+            response.setContentType(downloadFile.getMimeType().toString());
             // By default, return the attachment header, forcing browser to download the file
             if (isContentInline == null || !isContentInline) {
-                headers.setContentDisposition(ContentDisposition.builder("attachment").filename(downloadFile.getFileName())
-                                                      .size(downloadFile.getRealFileSize()).build());
+                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.builder("attachment").filename(downloadFile.getFileName())
+                        .size(downloadFile.getRealFileSize()).build().toString());
             } else {
-                headers.setContentDisposition(ContentDisposition.builder("inline").filename(downloadFile.getFileName())
-                                                      .size(downloadFile.getRealFileSize()).build());
+                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.builder("inline").filename(downloadFile.getFileName())
+                                           .size(downloadFile.getRealFileSize()).build().toString());
                 // Allows iframe to display inside REGARDS interface
-                headers.set(com.google.common.net.HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
+                response.setHeader(HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
             }
             StreamingResponseBody stream = out -> {
                 try (OutputStream outs = response.getOutputStream()) {
@@ -247,7 +248,7 @@ public class FileReferenceController {
                     downloadFile.close();
                 }
             };
-            return new ResponseEntity<>(stream, headers, HttpStatus.OK);
+            return new ResponseEntity<>(stream, HttpStatus.OK);
         });
     }
 
