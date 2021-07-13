@@ -142,7 +142,7 @@ public class AccessGroupController implements IResourceController<AccessGroup> {
      * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.PUT, path = PATH_ACCESS_GROUPS_NAME_EMAIL)
-    @ResourceAccess(description = "associated the user of email specified to the access group of name requested")
+    @ResourceAccess(description = "associated the user of email specified to the access group of name requested", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<AccessGroup>> associateUserToAccessGroup(
             @Valid @PathVariable("name") String groupName, @Valid @PathVariable("email") String userEmail)
             throws EntityNotFoundException {
