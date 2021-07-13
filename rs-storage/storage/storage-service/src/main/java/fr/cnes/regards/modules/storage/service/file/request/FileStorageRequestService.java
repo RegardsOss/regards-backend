@@ -277,33 +277,28 @@ public class FileStorageRequestService {
         if (fileRef.isPresent()) {
             // handle file
             return handleFileToStoreAlreadyExists(fileRef.get(), request, oDeletionReq, groupId);
-        } else if (oReq.isPresent() && oReq.get().getStatus() != FileRequestStatus.PENDING) {
-            // If request already exists and is not handled yet, do not create a new request, just add
+        } else if (oReq.isPresent() && oReq.get().getStatus() == FileRequestStatus.ERROR) {
+            // If request already exists and in ERROR status retry exiting one instead of create a new request
             FileStorageRequest existingReq = oReq.get();
             existingReq.update(request, groupId);
-            if (existingReq.getStatus() == FileRequestStatus.ERROR) {
-                // Allow retry of error requests when the same request is sent
-                existingReq.setStatus(FileRequestStatus.TO_DO);
-                // decrement errors to the session agent for the previous request session
-                this.sessionNotifier.decrementErrorRequests(existingReq.getSessionOwner(), existingReq.getSession());
-                // increment new request running for the new session
-                this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
-            }
-            LOGGER.trace("[STORAGE REQUESTS] Existing request ({}) updated to handle same file of request ({})",
-                         existingReq.getMetaInfo().getFileName(), request.getFileName());
+            // Allow retry of error requests when the same request is sent
+            existingReq.setStatus(FileRequestStatus.TO_DO);
+            // decrement errors to the session agent for the previous request session
+            this.sessionNotifier.decrementErrorRequests(existingReq.getSessionOwner(), existingReq.getSession());
+            // increment new request running for the new session
+            this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
+            LOGGER.trace("[STORAGE REQUESTS] Existing request ({}) in ERROR state updated to handle same file of "
+                                 + "request ({})", existingReq.getId(), request.getFileName());
             return RequestResult.build(existingReq);
         } else {
-            if (oReq.isPresent() && oReq.get().getStatus() == FileRequestStatus.PENDING) {
-                LOGGER.debug("Request already exists but is already pending. Create a new storage request");
-            }
             Optional<String> cause = Optional.empty();
             Optional<FileRequestStatus> status = Optional.empty();
             // Check that URL is a valid
             try {
                 new URL(request.getOriginUrl());
             } catch (MalformedURLException e) {
-                String errorMessage = "Invalid URL for file " + request.getFileName() + "storage. Cause : "
-                        + e.getMessage();
+                String errorMessage =
+                        "Invalid URL for file " + request.getFileName() + "storage. Cause : " + e.getMessage();
                 LOGGER.error(errorMessage);
                 status = Optional.of(FileRequestStatus.ERROR);
                 cause = Optional.of(errorMessage);

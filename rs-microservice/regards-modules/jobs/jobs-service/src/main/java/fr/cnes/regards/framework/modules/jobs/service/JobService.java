@@ -89,6 +89,9 @@ public class JobService implements IJobService {
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
 
+    @Value("${regards.jobs.scan.delay:1000}")
+    private int scanDelay;
+
     @Autowired
     private ISubscriber subscriber;
 
@@ -157,7 +160,7 @@ public class JobService implements IJobService {
                 // Wait for availability of pool if it is overbooked
                 while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(scanDelay);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
                                 + "of the end, pray for your soul", e);

@@ -18,42 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
-import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
-import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -64,6 +30,9 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
@@ -75,6 +44,7 @@ import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
+import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -101,6 +71,33 @@ import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurati
 import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOfflineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 /**
  * @author sbinda
@@ -198,6 +195,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     @Autowired
     protected RequestStatusService reqStatusService;
 
+    @Autowired
+    protected IRequestGroupRepository groupRepo;
+
     protected String originUrl = "file://in/this/directory/file.test";
 
     protected void init() throws ModuleException {
@@ -221,6 +221,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
         downloadTokenRepo.deleteAll();
+        groupRepo.deleteAll();
 
         storageLocationService.getAllLocations().forEach(f -> {
             try {
