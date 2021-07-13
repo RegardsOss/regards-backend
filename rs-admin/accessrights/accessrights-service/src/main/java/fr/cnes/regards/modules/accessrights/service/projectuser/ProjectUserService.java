@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -319,6 +320,7 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUser createProjectUser(AccessRequestDto accessRequestDto)
             throws EntityAlreadyExistsException, EntityInvalidException {
         try {
+            FeignSecurityManager.asInstance();
             ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
                     .retrieveAccounByEmail(accessRequestDto.getEmail());
             if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
@@ -332,6 +334,8 @@ public class ProjectUserService implements IProjectUserService {
             LOG.error(e.getMessage(), e);
             ServerErrorResponse errorResponse = gson.fromJson(e.getResponseBodyAsString(), ServerErrorResponse.class);
             throw new EntityInvalidException(errorResponse.getMessages());
+        } finally {
+            FeignSecurityManager.reset();
         }
 
         if (!existUser(accessRequestDto.getEmail())) {

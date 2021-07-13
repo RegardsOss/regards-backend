@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.rest;
 
 import javax.validation.Valid;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -82,7 +83,7 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
     @Operation(summary = "Publish a new feature and return the request id",
             description = "Publish a new feature and return the request id")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
-    @ResourceAccess(description = "Publish a new feature and return the request id")
+    @ResourceAccess(description = "Publish a new feature and return the request id", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
     public ResponseEntity<EntityModel<RequestInfo<?>>> createFeatures(
             @Parameter(description = "Contain all Features to handle") @Valid @RequestBody
@@ -103,7 +104,7 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
     @RequestMapping(method = RequestMethod.PATCH, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
     @ResourceAccess(
-            description = "Publish a feature collection to update and return urns of granted and denied requests")
+            description = "Publish a feature collection to update and return urns of granted and denied requests", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<RequestInfo<?>>> updateFeatures(
             @Parameter(description = "Contain all Features to handle") @Valid @RequestBody
                     FeatureUpdateCollection collection) {
@@ -122,7 +123,7 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
             description = "Publish urns collection to delete and return urns of granted and denied requests")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
     @ResourceAccess(
-            description = "Publish a feature collection to delete and return urns of granted and denied requests")
+            description = "Publish a feature collection to delete and return urns of granted and denied requests", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.DELETE, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
     public ResponseEntity<EntityModel<RequestInfo<?>>> deleteFeatures(
             @Parameter(description = "Contain all Features to handle") @Valid @RequestBody
