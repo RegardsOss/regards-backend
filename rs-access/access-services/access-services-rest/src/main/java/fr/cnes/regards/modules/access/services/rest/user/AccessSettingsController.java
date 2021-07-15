@@ -101,7 +101,7 @@ public class AccessSettingsController implements IResourceController<DynamicTena
     private IResourceService resourceService;
 
     @Autowired
-    private IAuthenticationResolver authentivationResolver;
+    private IAuthenticationResolver authenticationResolver;
 
     @Value("${spring.application.name}")
     private String appName;
@@ -112,12 +112,12 @@ public class AccessSettingsController implements IResourceController<DynamicTena
             role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAccessSettings() throws ModuleException {
         return toResponse(Validation.combine(Try.run(() -> FeignSecurityManager
-                                                     .asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName)))
+                                                     .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName)))
                                                      .map(unused -> accessSettingsClient.retrieveAll())
                                                      .andFinally(FeignSecurityManager::reset)
                                                      .transform(handleClientFailure("accessrights-client"))
                                                      .map(HateoasUtils::unwrapCollection),
-                                             Try.run(() -> FeignSecurityManager.asUser(authentivationResolver.getUser(),
+                                             Try.run(() -> FeignSecurityManager.asUser(authenticationResolver.getUser(),
                                                                                        RoleAuthority
                                                                                                .getSysRole(appName)))
                                                      .map(unused -> storageSettingClient
