@@ -34,6 +34,9 @@ public class ServiceProviderEntity {
     @Column(name = "auth_url", nullable = false)
     private String authUrl;
 
+    @Column(name = "logout_url")
+    private String logoutUrl;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(
         name = "plugin_conf_id",
@@ -43,9 +46,10 @@ public class ServiceProviderEntity {
 
     public ServiceProviderEntity() {}
 
-    public ServiceProviderEntity(String name, String authUrl, PluginConfiguration configuration) {
+    public ServiceProviderEntity(String name, String authUrl, String logoutUrl, PluginConfiguration configuration) {
         this.name = name;
         this.authUrl = authUrl;
+        this.logoutUrl = logoutUrl;
         this.configuration = configuration;
     }
 
@@ -63,6 +67,14 @@ public class ServiceProviderEntity {
 
     public void setAuthUrl(String authUrl) {
         this.authUrl = authUrl;
+    }
+
+    public String getLogoutUrl() {
+        return logoutUrl;
+    }
+
+    public void setLogoutUrl(String logoutUrl) {
+        this.logoutUrl = logoutUrl;
     }
 
     public PluginConfiguration getConfiguration() {

@@ -152,6 +152,7 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
         ServiceProvider toUpdate = new ServiceProvider(
             saved.getName(),
             "https://chronos.fr/sso/auth.do",
+            "https://chronos.fr/sso/logout.do",
             saved.getConfiguration()
         );
 
@@ -183,6 +184,7 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
             return new ServiceProvider(
                 OpenIdConnectPlugin.ID,
                 "https://sso.theia-land.fr/login",
+                "https://sso.theia-land.fr/logout",
                 conf
             );
         } catch (Exception e) {

@@ -30,6 +30,7 @@ public class DomainEntityMapperImpl implements DomainEntityMapper {
         return new ServiceProviderEntity(
             serviceProvider.getName(),
             serviceProvider.getAuthUrl(),
+            serviceProvider.getLogoutUrl(),
             serviceProvider.getConfiguration()
         );
     }
@@ -39,6 +40,7 @@ public class DomainEntityMapperImpl implements DomainEntityMapper {
         return new ServiceProvider(
             serviceProvider.getName(),
             serviceProvider.getAuthUrl(),
+            serviceProvider.getLogoutUrl(),
             serviceProvider.getConfiguration()
         );
     }
