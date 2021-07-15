@@ -161,6 +161,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
     @Test
     public void storeSameFileFlowItem() {
         String owner = "new-owner";
+        String owner2 = owner+"23";
         String checksum = UUID.randomUUID().toString();
         String storage = "storage";
         // Create a new bus message File reference request
@@ -169,7 +170,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                                    SESSION_OWNER, SESSION,
                                                    originUrl, ONLINE_CONF_LABEL, Optional.empty()), UUID.randomUUID().toString());
         StorageFlowItem item2 = StorageFlowItem
-                .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner+"23",
+                .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner2,
                                                    SESSION_OWNER, SESSION,
                                                    originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                        UUID.randomUUID().toString());
@@ -181,16 +182,25 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
         // Check a file reference request is created
-        Assert.assertEquals("File request should be created", 1,
+        Assert.assertEquals("File request should be created", 2,
                             stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
 
-        // SImulate job schedule
+        // Simulate job schedule for the first storage request
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
                                                               Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                              Lists.newArrayList(owner));
+                                                              Lists.newArrayList( owner));
         runAndWaitJob(jobs);
+
+       /// simulate job for the the second storage request (that has been delayed)
+        reqStatusService.checkDelayedStorageRequests();
+        jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
+                                          Lists.newArrayList(ONLINE_CONF_LABEL),
+                                          Lists.newArrayList(owner2));
+        runAndWaitJob(jobs);
+
+        // Check results
         Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertTrue("File request should be deleted",
                           stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
@@ -203,7 +213,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
 
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 5, stepEventList.size());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 8, stepEventList.size());
         checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
                        SESSION_OWNER, SESSION, "1");
         checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
@@ -211,9 +221,15 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
                        SESSION_OWNER, SESSION, "1");
         checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(4), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
                        StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
-        checkStepEvent(stepEventList.get(4), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER, SESSION, "2");
+        checkStepEvent(stepEventList.get(5), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(6), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(7), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER, SESSION, "1");
     }
 
     @Test
