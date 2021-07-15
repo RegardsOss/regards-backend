@@ -28,11 +28,14 @@ public class ServiceProvider {
 
     private final String authUrl;
 
+    private final String logoutUrl;
+
     private final PluginConfiguration configuration;
 
-    public ServiceProvider(String name, String authUrl, PluginConfiguration configuration) {
+    public ServiceProvider(String name, String authUrl, String logoutUrl, PluginConfiguration configuration) {
         this.name = name;
         this.authUrl = authUrl;
+        this.logoutUrl = logoutUrl;
         this.configuration = configuration;
     }
 
@@ -42,6 +45,10 @@ public class ServiceProvider {
 
     public String getAuthUrl() {
         return authUrl;
+    }
+
+    public String getLogoutUrl() {
+        return logoutUrl;
     }
 
     public PluginConfiguration getConfiguration() {

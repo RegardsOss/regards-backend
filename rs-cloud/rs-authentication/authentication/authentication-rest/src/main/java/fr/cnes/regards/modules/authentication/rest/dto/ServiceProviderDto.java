@@ -33,17 +33,22 @@ public class ServiceProviderDto {
     @URL
     private final String authUrl;
 
+    @URL
+    private final String logoutUrl;
+
     private final PluginConfiguration pluginConfiguration;
 
-    public ServiceProviderDto(String name, String authUrl, PluginConfiguration pluginConfiguration) {
+    public ServiceProviderDto(String name, String authUrl, String logoutUrl, PluginConfiguration pluginConfiguration) {
         this.name = name;
         this.authUrl = authUrl;
+        this.logoutUrl = logoutUrl;
         this.pluginConfiguration = pluginConfiguration;
     }
 
     public ServiceProviderDto(ServiceProvider serviceProvider) {
         this.name = serviceProvider.getName();
         this.authUrl = serviceProvider.getAuthUrl();
+        this.logoutUrl = serviceProvider.getLogoutUrl();
         this.pluginConfiguration = serviceProvider.getConfiguration();
     }
 
@@ -82,6 +87,7 @@ public class ServiceProviderDto {
         return new ServiceProvider(
             name,
             authUrl,
+            logoutUrl,
             pluginConfiguration
         );
     }
