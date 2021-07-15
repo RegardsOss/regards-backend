@@ -187,132 +187,77 @@ public class RequestsGroupService {
         reqGroupRepository.saveAll(toSave);
     }
 
-    /**
-     * Check for all current request groups if all requests are terminated. If so send a SUCCESS or ERROR event on the bus message.
-     */
     public void checkRequestsGroupsDone() {
+        LOGGER.debug("[REQUEST GROUPS] Start checking request groups expired ... ");
         long start = System.currentTimeMillis();
-        LOGGER.trace("[REQUEST GROUPS] Start checking request groups ... ");
-        // Always search the first page of requests until there is no requests anymore.
-        // To do so, we order on id to ensure to not handle same requests multiple times.
-        Pageable page = PageRequest.of(0, maxRequestPerTransaction, Direction.ASC, "creationDate");
-        Set<RequestGroup> groupDones = Sets.newHashSet();
-        Page<RequestGroup> response;
-        int expired = 0;
-        do {
-            response = reqGroupRepository.findAllByOrderByCreationDateAsc(page);
-            if (response.hasContent()) {
-                Iterator<RequestGroup> it = response.getContent().iterator();
-                do {
-                    RequestGroup reqGrp = it.next();
-                    if (checkRequestsGroupDone(reqGrp)) {
-                        groupDones.add(reqGrp);
-                    } else {
-                        expired = checkRequestGroupExpired(reqGrp) ? expired + 1 : expired;
-                    }
-                } while (it.hasNext() && ((groupDones.size() + expired) < maxRequestPerTransaction));
+        // Handle expired groups
+        Page<RequestGroup> expiredGroups = reqGroupRepository.findByExpirationDateLessThanEqual(OffsetDateTime.now(),
+                                                                                                PageRequest.of(0, maxRequestPerTransaction));
+        expiredGroups.forEach(this::groupExpired);
+        int expiredGroupsCount = expiredGroups.getSize();
+        reqGroupRepository.deleteInBatch(expiredGroups);
+        groupReqInfoRepository.deleteByGroupIdIn(expiredGroups.stream().map(RequestGroup::getId).collect(Collectors.toSet()));
+        LOGGER.info("[REQUEST GROUPS] {} expired groups done in {}ms ",expiredGroupsCount, System.currentTimeMillis() - start);
+        start = System.currentTimeMillis();
+        LOGGER.debug("[REQUEST GROUPS] Start checking request groups done ... ");
+        // Handle done groups
+        List<RequestGroup> groupsDone = reqGroupRepository.findGroupDones(maxRequestPerTransaction);
+        List<String> groupsDoneIds = groupsDone.stream().map(RequestGroup::getId).collect(
+                Collectors.toList());
+        Set<RequestResultInfo> requestsInfo = groupReqInfoRepository.findByGroupIdIn(groupsDoneIds);
+        if (!groupsDone.isEmpty()) {
+            for (RequestGroup group : groupsDone) {
+                groupDone(group, requestsInfo.stream().filter(i -> i.getGroupId().equals(group.getId())).collect(Collectors.toSet()));
             }
-            page = response.nextPageable();
-        } while (response.hasNext() && ((groupDones.size() + expired) < maxRequestPerTransaction));
-        if (!groupDones.isEmpty()) {
-            Set<RequestResultInfo> infos = groupReqInfoRepository
-                    .findByGroupIdIn(groupDones.stream().map(g -> g.getId()).collect(Collectors.toSet()));
-            for (RequestGroup group : groupDones) {
-                groupDone(group,
-                          infos.stream().filter(i -> i.getGroupId().equals(group.getId())).collect(Collectors.toSet()));
-            }
-            groupReqInfoRepository
-                    .deleteByGroupIdIn(groupDones.stream().map(RequestGroup::getId).collect(Collectors.toSet()));
-            reqGroupRepository.deleteAll(groupDones);
+            groupReqInfoRepository.deleteByGroupIdIn(groupsDoneIds);
+            reqGroupRepository.deleteAll(groupsDone);
             LOGGER.info(
-                    "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}. Expired groups {}",
-                    System.currentTimeMillis() - start, groupDones.size(), response.getTotalElements(), expired);
+                    "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}. Expired groups {}",
+                    System.currentTimeMillis() - start, groupsDone.size(), expiredGroupsCount);
         } else {
-            LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. Expired groups {}/{}",
-                         System.currentTimeMillis() - start, expired, response.getTotalElements());
+            LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. No groups done.",
+                         System.currentTimeMillis() - start);
         }
     }
 
-    /**
-     * Check if all requests are terminated for the given groupId.
-     */
-    private boolean checkRequestsGroupDone(RequestGroup reqGrp) {
-        boolean isDone = false;
-        // Check if there is remaining request not finished
+    private void groupExpired(RequestGroup reqGrp) {
+        LOGGER.warn(
+                "[REQUEST GROUP {} EXPIRED] . Group {} is expired, it will be deleted and all associated requests will be set in ERROR status",
+                reqGrp.getType(), reqGrp.getId());
+        String errorCause = "Associated group request expired.";
+        // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
         switch (reqGrp.getType()) {
             case AVAILABILITY:
-                isDone = !cacheReqRepository.existsByGroupIdAndStatusNot(reqGrp.getId(), FileRequestStatus.ERROR);
+                cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                    cacheReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                    eventPublisher.notAvailable(req.getChecksum(), null, errorCause, reqGrp.getId());
+                });
                 break;
             case COPY:
-                isDone = !copyReqRepository.existsByGroupIdAndStatusNot(reqGrp.getId(), FileRequestStatus.ERROR);
+                copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                    copyReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                    eventPublisher.copyError(req, errorCause);
+                });
                 break;
             case DELETION:
-                isDone = !delReqRepository.existsByGroupIdAndStatusNot(reqGrp.getId(), FileRequestStatus.ERROR);
+                delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
+                    delReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                    eventPublisher.deletionError(req.getFileReference(), errorCause, reqGrp.getId());
+                });
                 break;
             case STORAGE:
-                isDone = !storageReqRepository.existsByGroupIdsAndStatusNot(reqGrp.getId(), FileRequestStatus.ERROR);
+                storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
+                    storageReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                    eventPublisher.storeError(req.getMetaInfo().getChecksum(), req.getOwners(), req.getStorage(),
+                                              errorCause, reqGrp.getId());
+                });
                 break;
             case REFERENCE:
                 // There is no asynchronous request for reference. If the request is referenced in db, so all requests have been handled
-                isDone = true;
                 break;
             default:
                 break;
         }
-        return isDone;
-    }
-
-    /**
-     * Check if the given requests group has expired (too old) and can be deleted.
-     *
-     * @param reqGrp to check for
-     */
-    private boolean checkRequestGroupExpired(RequestGroup reqGrp) {
-        boolean expired = false;
-        if ((reqGrp.getExpirationDate() != null) && reqGrp.getExpirationDate().isBefore(OffsetDateTime.now())) {
-            LOGGER.warn(
-                    "[REQUEST GROUP {} EXPIRED] . Group {} is expired, it will be deleted and all associated requests will be set in ERROR status",
-                    reqGrp.getType(), reqGrp.getId());
-            String errorCause = "Associated group request expired.";
-            // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
-            switch (reqGrp.getType()) {
-                case AVAILABILITY:
-                    cacheReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
-                        cacheReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                        eventPublisher.notAvailable(req.getChecksum(), null, errorCause, reqGrp.getId());
-                    });
-                    break;
-                case COPY:
-                    copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
-                        copyReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                        eventPublisher.copyError(req, errorCause);
-                    });
-                    break;
-                case DELETION:
-                    delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
-                        delReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                        eventPublisher.deletionError(req.getFileReference(), errorCause, reqGrp.getId());
-                    });
-                    break;
-                case STORAGE:
-                    storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
-                        storageReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                        eventPublisher.storeError(req.getMetaInfo().getChecksum(), req.getOwners(), req.getStorage(),
-                                                  errorCause, reqGrp.getId());
-                    });
-                    break;
-                case REFERENCE:
-                    // There is no asynchronous request for reference. If the request is referenced in db, so all requests have been handled
-                    break;
-                default:
-                    break;
-            }
-            // Clear group info
-            groupReqInfoRepository.deleteByGroupId(reqGrp.getId());
-            reqGroupRepository.delete(reqGrp);
-            expired = true;
-        }
-        return expired;
     }
 
     private void groupDone(RequestGroup reqGrp, Set<RequestResultInfo> infos) {
