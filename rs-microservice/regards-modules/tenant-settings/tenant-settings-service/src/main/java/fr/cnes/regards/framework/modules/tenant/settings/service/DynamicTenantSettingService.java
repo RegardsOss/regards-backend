@@ -50,7 +50,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     @Override
     public DynamicTenantSetting create(DynamicTenantSetting dynamicTenantSetting) throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         dynamicTenantSetting.setId(null);
-        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
+        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting, false);
         DynamicTenantSetting savedDynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
         customizer.doRightNow(dynamicTenantSetting);
         LOGGER.info("Created Tenant Setting {}", savedDynamicTenantSetting);
@@ -77,7 +77,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
         if (!Objects.equals(value, dynamicTenantSetting.getValue())) {
             dynamicTenantSetting.setValue(value);
-            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
+            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting, true);
             dynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
             customizer.doRightNow(dynamicTenantSetting);
             LOGGER.info("Updated Tenant Setting {}", dynamicTenantSetting);
@@ -97,7 +97,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
         if (!dynamicTenantSetting.getDefaultValue().equals(dynamicTenantSetting.getValue())) {
             dynamicTenantSetting.setValue(dynamicTenantSetting.getDefaultValue());
-            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
+            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting, true);
             dynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
             customizer.doRightNow(dynamicTenantSetting);
         }
@@ -110,7 +110,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
         try {
             // we are using getCustomizer exception so we do not have to duplicate research logic
             DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
-            getCustomizer(dynamicTenantSetting);
+            getCustomizer(dynamicTenantSetting, true);
             return true;
         } catch (EntityInvalidException e) {
             // even if value is invalid(which is highly improbable at this point because we are looking for DB value),
@@ -131,7 +131,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
         return read(name).orElseThrow(() -> new EntityNotFoundException(name, DynamicTenantSetting.class));
     }
 
-    private IDynamicTenantSettingCustomizer getCustomizer(DynamicTenantSetting dynamicTenantSetting) throws EntityInvalidException, EntityOperationForbiddenException, EntityNotFoundException {
+    private IDynamicTenantSettingCustomizer getCustomizer(DynamicTenantSetting dynamicTenantSetting, boolean checkModification) throws EntityInvalidException, EntityOperationForbiddenException, EntityNotFoundException {
 
         IDynamicTenantSettingCustomizer settingCustomizer = dynamicTenantSettingCustomizerList
                 .stream()
@@ -139,7 +139,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
                 .findAny()
                 .orElseThrow(() -> new EntityNotFoundException(dynamicTenantSetting.getName(), IDynamicTenantSettingCustomizer.class));
 
-        if (!settingCustomizer.canBeModified(dynamicTenantSetting)) {
+        if (checkModification && !settingCustomizer.canBeModified(dynamicTenantSetting)) {
             throw new EntityOperationForbiddenException("Tenant Setting Modification not allowed");
         }
 
