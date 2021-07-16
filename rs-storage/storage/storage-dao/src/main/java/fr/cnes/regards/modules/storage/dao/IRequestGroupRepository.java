@@ -45,6 +45,13 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
 
     Page<RequestGroup> findAllByOrderByCreationDateAsc(Pageable page);
 
+    /**
+     * Retrieve all terminated {@link RequestGroup}. <br/>
+     * A {@link RequestGroup} is terminated if there is no more running request associated to.
+     *
+     * @param limit Maximum number of terminated groups to return
+     * @return List of terminated {@link RequestGroup}s
+     */
     @Query(value = "SELECT * from t_request_group groups "
             + " WHERE NOT EXISTS (SELECT * "
             + "        FROM (select g.id as groupId, a.file_storage_request_id as requestId FROM"
@@ -53,7 +60,11 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
             + "        LEFT OUTER JOIN t_file_deletion_request d ON result.groupId = d.group_id "
             + "        LEFT OUTER JOIN t_file_cache_request cache ON result.groupId = cache.group_id "
             + "        LEFT OUTER JOIN t_file_copy_request copy ON result.groupId = copy.group_id "
-            + "        WHERE (r.status != 'ERROR' OR d.status!='ERROR') AND groups.id = groupId)"
+            + "        WHERE (r.status != 'ERROR' OR"
+            + "               d.status != 'ERROR' OR "
+            + "               copy.status != 'ERROR' OR "
+            + "               cache.status != 'ERROR') "
+            + "               AND groups.id = groupId)"
             + " LIMIT :limit", nativeQuery = true)
     List<RequestGroup> findGroupDones(@Param("limit") Integer limit);
 

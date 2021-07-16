@@ -194,10 +194,14 @@ public class RequestsGroupService {
         Page<RequestGroup> expiredGroups = reqGroupRepository.findByExpirationDateLessThanEqual(OffsetDateTime.now(),
                                                                                                 PageRequest.of(0, maxRequestPerTransaction));
         expiredGroups.forEach(this::groupExpired);
-        int expiredGroupsCount = expiredGroups.getSize();
-        reqGroupRepository.deleteInBatch(expiredGroups);
-        groupReqInfoRepository.deleteByGroupIdIn(expiredGroups.stream().map(RequestGroup::getId).collect(Collectors.toSet()));
-        LOGGER.info("[REQUEST GROUPS] {} expired groups done in {}ms ",expiredGroupsCount, System.currentTimeMillis() - start);
+        long expiredGroupsCount = expiredGroups.getTotalElements();
+        int expiredGroupsHandledCount = expiredGroups.getNumberOfElements();
+        if (expiredGroupsCount > 0) {
+            reqGroupRepository.deleteInBatch(expiredGroups);
+            groupReqInfoRepository.deleteByGroupIdIn(expiredGroups.stream().map(RequestGroup::getId).collect(Collectors.toSet()));
+            LOGGER.info("[REQUEST GROUPS] {}/{} expired groups done in {}ms ", expiredGroupsHandledCount, expiredGroupsCount,
+                        System.currentTimeMillis() - start);
+        }
         start = System.currentTimeMillis();
         LOGGER.debug("[REQUEST GROUPS] Start checking request groups done ... ");
         // Handle done groups
@@ -212,8 +216,8 @@ public class RequestsGroupService {
             groupReqInfoRepository.deleteByGroupIdIn(groupsDoneIds);
             reqGroupRepository.deleteAll(groupsDone);
             LOGGER.info(
-                    "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}. Expired groups {}",
-                    System.currentTimeMillis() - start, groupsDone.size(), expiredGroupsCount);
+                    "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}.",
+                    System.currentTimeMillis() - start, groupsDone.size());
         } else {
             LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. No groups done.",
                          System.currentTimeMillis() - start);
