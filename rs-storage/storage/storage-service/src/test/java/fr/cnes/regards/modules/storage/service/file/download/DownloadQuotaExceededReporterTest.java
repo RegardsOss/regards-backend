@@ -10,6 +10,7 @@ import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
@@ -19,6 +20,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.MimeTypeUtils;
 import org.testcontainers.shaded.com.google.common.base.Joiner;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -174,7 +176,7 @@ public class DownloadQuotaExceededReporterTest {
         // report a bunch of errors
         // (the cache coherence of one or many clients reporting errors concurrently is ensured by another test)
         String err = "Oh noes!";
-        int errorsProducedOnFirstRound = RAND.nextInt(100)+1;
+        int errorsProducedOnFirstRound = RAND.nextInt(1000)+1;
         CountDownLatch latch = new CountDownLatch(errorsProducedOnFirstRound);
         for (int i = 0; i<errorsProducedOnFirstRound; i++) {
             CompletableFuture.runAsync(
@@ -185,7 +187,7 @@ public class DownloadQuotaExceededReporterTest {
                 executor
             );
         }
-        latch.await(30, TimeUnit.SECONDS);
+        latch.await(60, TimeUnit.SECONDS);
         executor.shutdownNow();
         // errors reported, cache should be filled
 
@@ -209,9 +211,13 @@ public class DownloadQuotaExceededReporterTest {
         IntStream.range(0, clients)
             .forEach(clientIdx -> {
                 QuotaKey key = QuotaKey.make(TENANT, makeInLoopEmail(email, clientIdx));
-                Tuple2<List<String>, Long> userReports = cache.get().get(key).get();
-                assertEquals(1, userReports._1.size());
-                assertEquals(0L, userReports._2);
+                if (cache.get().containsKey(key)) {
+                    Tuple2<List<String>, Long> userReports = cache.get().get(key).get();
+                    assertEquals(1, userReports._1.size());
+                    assertEquals(0L, userReports._2);
+                } else {
+                    Assert.fail(String.format("Missing key in errors report for %s/%s-%s. cache size=%s",TENANT, email, clientIdx, cache.get().size()));
+                }
             });
     }
 
