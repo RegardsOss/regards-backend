@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 import org.slf4j.Logger;
@@ -58,9 +59,6 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderMaintenanceService.class);
 
-    @Value("${regards.order.days.before.considering.order.as.aside:7}")
-    private int daysBeforeSendingNotifEmail;
-
     @Autowired
     private IOrderMaintenanceService self;
 
@@ -72,9 +70,11 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
     private final TemplateService templateService;
     private final IEmailClient emailClient;
+    private final IOrderSettingsService orderSettingsService;
 
     public OrderMaintenanceService(IOrderService orderService, IOrderRepository orderRepository, IOrderDataFileService orderDataFileService, IJobInfoService jobInfoService,
-                                   ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, TemplateService templateService, IEmailClient emailClient
+                                   ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, TemplateService templateService, IEmailClient emailClient,
+                                   IOrderSettingsService orderSettingsService
     ) {
         this.orderService = orderService;
         this.orderRepository = orderRepository;
@@ -84,6 +84,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.templateService = templateService;
         this.emailClient = emailClient;
+        this.orderSettingsService = orderSettingsService;
     }
 
 
@@ -142,11 +143,10 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     @Override
     public void sendTenantPeriodicNotifications() {
-        List<Order> asideOrders = orderRepository.findAsideOrders(daysBeforeSendingNotifEmail);
 
-        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(),
-                                                                    Comparator.comparing(Order::getCreationDate)
-        );
+        List<Order> asideOrders = orderRepository.findAsideOrders(orderSettingsService.getUserOrderParameters().getDelayBeforeEmailNotification());
+
+        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
         asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
 
         // For each owner

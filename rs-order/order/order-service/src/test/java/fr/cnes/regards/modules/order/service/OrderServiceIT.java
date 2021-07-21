@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import feign.form.multipart.ManyFilesWriter;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -50,8 +49,10 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -78,6 +79,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -106,8 +108,6 @@ public class OrderServiceIT {
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
-    private static SimpleMailMessage mailMessage;
-
     @Autowired
     private IOrderService orderService;
     @Autowired
@@ -129,8 +129,6 @@ public class OrderServiceIT {
     @Autowired
     private IProjectsClient projectsClient;
     @Autowired
-    private IEmailClient emailClient;
-    @Autowired
     private IJobService jobService;
     @Autowired
     private IJobInfoRepository jobInfoRepo;
@@ -143,6 +141,8 @@ public class OrderServiceIT {
 
     @MockBean
     private IProjectUsersClient projectUsersClient;
+    @MockBean
+    private IEmailClient emailClient;
 
     @Before
     public void init() {
@@ -361,13 +361,7 @@ public class OrderServiceIT {
     @Requirement("REGARDS_DSL_CMD_ARC_520")
     @Requirement("REGARDS_DSL_CMD_ARC_530")
     @Test
-    @Ignore
     public void testEmailNotifications() {
-
-        Mockito.when(emailClient.sendEmail(Mockito.any())).thenAnswer(invocation -> {
-            mailMessage = (SimpleMailMessage) invocation.getArguments()[0];
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        });
 
         // Create an order with no available files count and no availableUpdateDate (null)
         Order order = new Order();
@@ -378,39 +372,42 @@ public class OrderServiceIT {
         order.setStatus(OrderStatus.PENDING);
         order = orderRepos.save(order);
 
-        // No running order
         orderMaintenanceService.sendPeriodicNotifications();
         // No mail should have been sent (order hasn't even been started)
-        Assert.assertNull(mailMessage);
+        Mockito.verifyNoInteractions(emailClient);
 
+        // Update available files count, availableUpdateDate is updated as well
         order.setAvailableFilesCount(10);
         orderRepos.save(order);
-        // available files count has been updated, available Update date too
+
         orderMaintenanceService.sendPeriodicNotifications();
         // No mail should have been sent (it must have more than 3 days between last available update date and now)
-        Assert.assertNull(mailMessage);
+        Mockito.verifyNoInteractions(emailClient);
 
         // Change available update date (-4 days)
         order.setAvailableUpdateDate(OffsetDateTime.now().minus(4, ChronoUnit.DAYS));
         order.setStatus(OrderStatus.DONE);
         orderRepos.save(order);
 
-        //        orderService.sendPeriodicNotifications();
+        SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
+        ArgumentCaptor<SimpleMailMessage> messageArgumentCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        Mockito.when(emailClient.sendEmail(any(), any(), any(), any())).thenCallRealMethod();
+        Mockito.when(emailClient.sendEmail(messageArgumentCaptor.capture())).thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
 
-        // F%$king test which functions when thez want
-        if (mailMessage != null) {
-            Assert.assertNotNull(mailMessage);
-            Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
-            // Check that email text has been interpreted before being sent
-            SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
-            Assert.assertTrue(mailMessage.getText()
-                    .contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
-            Assert.assertTrue(mailMessage.getText()
-                    .contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
+        OffsetDateTime start = OffsetDateTime.now();
+        orderMaintenanceService.sendPeriodicNotifications();
 
-            Assert.assertFalse(mailMessage.getText().contains("${order}"));
-        }
-
+        // A message should have been sent
+        SimpleMailMessage message = messageArgumentCaptor.getValue();
+        Assertions.assertNotNull(message);
+        Assertions.assertNotNull(message.getText());
+        Assertions.assertNotNull(message.getTo());
+        Assertions.assertEquals(1, message.getTo().length);
+        Assertions.assertEquals(order.getOwner(), message.getTo()[0]);
+        Assertions.assertTrue(message.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
+        Assertions.assertTrue(message.getText().contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
+        // AvailableUpdateDate should have been reset
+        Assertions.assertTrue(orderRepos.findCompleteById(order.getId()).getAvailableUpdateDate().isAfter(start));
     }
 
 }
