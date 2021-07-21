@@ -1012,27 +1012,31 @@ public class OrderControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testCsv() throws URISyntaxException, UnsupportedEncodingException {
+    public void testCsv() throws UnsupportedEncodingException {
+
         createSeveralOrdersWithDifferentOwners();
 
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .addHeader(HttpConstants.CONTENT_TYPE, "application/json").addHeader(HttpConstants.ACCEPT, "text/csv");
+        // Bug 550 - check that a null date somewhere does not break things
+        Order order = orderRepository.findAll().stream().findAny().get();
+        order.setExpirationDate(null);
+        orderRepository.save(order);
 
-        ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV, customizer,
-                                                  "error");
+        String path = OrderController.ADMIN_ROOT_PATH + OrderController.CSV;
+        RequestBuilderCustomizer customizer = customizer()
+                .expectStatusOk()
+                .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
+                .addHeader(HttpConstants.ACCEPT, "text/csv");
+
+        ResultActions results = performDefaultGet(path, customizer, "error");
         // Just test headers are present and CSV format is ok
-        Assert.assertTrue(results.andReturn().getResponse().getContentAsString()
-                .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
+        Assert.assertTrue(results.andReturn().getResponse().getContentAsString().startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
         // now let check that optional parameter are correctly parsed
         // First status
-        performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("status", OrderStatus.DONE.toString()), "error");
+        performDefaultGet(path, customizer.addParameter("status", OrderStatus.DONE.toString()), "error");
         // then from
-        performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("from", OffsetDateTime.now().minusHours(3).toString()), "error");
+        performDefaultGet(path, customizer.addParameter("from", OffsetDateTime.now().minusHours(3).toString()), "error");
         // then to
-        performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("to", OffsetDateTime.now().plusSeconds(3).toString()), "error");
+        performDefaultGet(path, customizer.addParameter("to", OffsetDateTime.now().plusSeconds(3).toString()), "error");
     }
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state)

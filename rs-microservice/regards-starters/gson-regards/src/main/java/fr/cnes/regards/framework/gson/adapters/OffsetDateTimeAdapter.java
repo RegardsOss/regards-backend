@@ -79,7 +79,11 @@ public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
     }
 
     public static String format(OffsetDateTime date) {
-        return ISO_DATE_TIME_UTC.format(date.withOffsetSameInstant(ZoneOffset.UTC));
+        String formattedDate = null;
+        if (date != null) {
+            formattedDate = ISO_DATE_TIME_UTC.format(date.withOffsetSameInstant(ZoneOffset.UTC));
+        }
+        return formattedDate;
     }
 
 }
