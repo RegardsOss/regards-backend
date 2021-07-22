@@ -30,6 +30,8 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.UUID;
+
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.DEBUG_FILTER_ORDER;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 
@@ -40,11 +42,13 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * @author Christophe Mertz
  */
 @Component
-public class ZuulLogFilter extends ZuulFilter {
+public class ZuulInputLogFilter extends ZuulFilter {
+
+    public static final String CORRELATION_ID = "correlation-id";
 
     public static final String COMMA = ", ";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ZuulLogFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZuulInputLogFilter.class);
 
     protected static final int ORDER = DEBUG_FILTER_ORDER;
 
@@ -66,6 +70,9 @@ public class ZuulLogFilter extends ZuulFilter {
     @Override
     public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
+        // Inject correlation id if required
+        ctx.getZuulRequestHeaders().putIfAbsent(CORRELATION_ID, generateCorrelationId());
+
         HttpServletRequest request = ctx.getRequest();
 
         MDC.put(ClassicConstants.REQUEST_REMOTE_HOST_MDC_KEY, request.getRemoteHost());
@@ -82,7 +89,8 @@ public class ZuulLogFilter extends ZuulFilter {
         MDC.put(ClassicConstants.REQUEST_X_FORWARDED_FOR, xForwardedFor);
 
         String remoteAddr = request.getRemoteAddr();
-        LOGGER.info(LogConstants.SECURITY_MARKER + "Request received : {}@{} from {}",
+        LOGGER.info(LogConstants.SECURITY_MARKER + "Inbound request (tracking id {}) : {}@{} from {}",
+                    ctx.getZuulRequestHeaders().get(CORRELATION_ID),
                     requestURI,
                     requestMethod,
                     remoteAddr);
@@ -101,4 +109,7 @@ public class ZuulLogFilter extends ZuulFilter {
         return null;
     }
 
+    private String generateCorrelationId() {
+        return UUID.randomUUID().toString();
+    }
 }
