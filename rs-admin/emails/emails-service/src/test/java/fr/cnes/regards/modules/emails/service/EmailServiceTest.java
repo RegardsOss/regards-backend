@@ -18,27 +18,19 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeTrue;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.mail.Address;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMessage.RecipientType;
-import javax.mail.internet.MimeMultipart;
-
+import com.icegreen.greenmail.junit.GreenMailRule;
+import com.icegreen.greenmail.util.GreenMailUtil;
+import com.icegreen.greenmail.util.ServerSetupTest;
+import com.sun.mail.smtp.SMTPAddressFailedException;
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.emails.dao.IEmailRepository;
+import fr.cnes.regards.modules.emails.domain.Email;
+import nl.altindag.log.LogCaptor;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,21 +43,33 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.InputStreamSource;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.icegreen.greenmail.junit.GreenMailRule;
-import com.icegreen.greenmail.util.GreenMailUtil;
-import com.icegreen.greenmail.util.ServerSetupTest;
+import javax.mail.Address;
+import javax.mail.MessagingException;
+import javax.mail.SendFailedException;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
+import javax.mail.internet.MimeMultipart;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.emails.dao.IEmailRepository;
-import fr.cnes.regards.modules.emails.domain.Email;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Test class for {@link EmailService}.
@@ -80,21 +84,12 @@ public class EmailServiceTest {
      */
     private EmailService emailService;
 
-    /**
-     * Mock repository
-     */
     @Autowired
     private IEmailRepository emailRepository;
 
-    /**
-     * Interface defining a strategy for sending mails
-     */
-    private JavaMailSenderImpl mailSender;
-
-    /**
-     * Test sentDate
-     */
     private static final LocalDateTime SEND_DATE = LocalDateTime.now().minusMinutes(5);
+    private static final String TO = "xavier-alexandre.brochard@c-s.fr";
+    private static final String SUBJECT = "subject";
 
     /**
      * Defines a rule starting an SMTP server before each test. All test emails will be sent to this server instead of
@@ -129,15 +124,11 @@ public class EmailServiceTest {
         }
     }
 
-    /**
-     * Do some setup before each test
-     */
     @Before
     public void setUp() {
         emailRepository.deleteAll();
 
-        mailSender = new JavaMailSenderImpl();
-
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         // Inject the SMTP session from GreenMail server to the JavaMailSender
         final Session smtpSession = greenMail.getSmtp().createSession();
         mailSender.setSession(smtpSession);
@@ -289,16 +280,40 @@ public class EmailServiceTest {
         emailService.deleteEmail(email.getId());
     }
 
+    @Test
+    public void testSendFailureLogging() {
+
+        JavaMailSenderImpl mailSender = Mockito.mock(JavaMailSenderImpl.class);
+        String rootCauseMessage = "User Unknown";
+        SMTPAddressFailedException smtpAddressFailedException = new SMTPAddressFailedException(new InternetAddress(), "cmd", 550, rootCauseMessage);
+        SendFailedException sendFailedException = new SendFailedException("Invalid Adresses", smtpAddressFailedException);
+        MailSendException mailSendException = new MailSendException("Could not Send mail", sendFailedException);
+        Mockito.doThrow(mailSendException).when(mailSender).send(any(MimeMessage.class));
+        Mockito.when(mailSender.createMimeMessage()).thenCallRealMethod();
+
+        emailService = new EmailService(emailRepository, mailSender);
+
+        LogCaptor logCaptor = LogCaptor.forClass(EmailService.class);
+
+        emailService.sendEmail(createDummyMessage());
+
+        Assertions.assertThat(logCaptor.getErrorLogs()).isEmpty();
+        Assertions.assertThat(logCaptor.getWarnLogs()).hasSize(1);
+        String warningMessage = logCaptor.getWarnLogs().get(0);
+        Assertions.assertThat(warningMessage).contains(TO, SUBJECT, rootCauseMessage, smtpAddressFailedException.getClass().getSimpleName());
+    }
+
     /**
      * Creates a {@link SimpleMailMessage} with some random values initialized.
+     *
      * @return The mail
      */
     private SimpleMailMessage createDummyMessage() {
         final SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("sender@test.com");
-        message.setSubject("subject");
+        message.setSubject(SUBJECT);
         message.setText("message");
-        message.setTo("xavier-alexandre.brochard@c-s.fr");
+        message.setTo(TO);
         message.setSentDate(Date.from(SEND_DATE.atZone(ZoneId.systemDefault()).toInstant()));
         return message;
     }
