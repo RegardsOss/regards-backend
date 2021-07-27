@@ -86,6 +86,7 @@ pipeline {
     }
     post {
         failure {
+            tuleapNotifyCommitStatus status: 'failure', repositoryId: '875', credentialId: 'tuleap-ci-token'
             mattermostSend color: 'danger', message: "Build Failed - ${env.JOB_NAME}#${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)", text: "Changes: \n"+getChangeString()
             echo 'The build FAILED, let\'s print all COTS logs'
 
@@ -115,6 +116,9 @@ pipeline {
                      && echo "########################################" \
                      && docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq; \
                    fi'
+        }
+        success {
+            tuleapNotifyCommitStatus status: 'success', repositoryId: '875', credentialId: 'tuleap-ci-token'
         }
         cleanup {
             echo 'lets clean up the mess!'
