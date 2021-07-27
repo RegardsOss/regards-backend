@@ -27,7 +27,6 @@ pipeline {
         // Refresh docker images
         stage('Pull docker images') {
             steps {
-                sh 'exit 1'
                 sh 'cd ' + CI_DIR + ' \
                      && docker-compose -f docker/docker-compose.yml pull'
             }
