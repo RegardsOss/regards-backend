@@ -279,7 +279,7 @@ public class PluginService implements IPluginService {
         if (plgConf.isPresent()) {
             return getPluginConfiguration(plgConf.get().getBusinessId());
         } else {
-            LOGGER.error(String.format("Error while getting the plugin configuration <%d>.", id));
+            LOGGER.error("Error while getting the plugin configuration {}.", id);
             throw new EntityNotFoundException(id, PluginConfiguration.class);
         }
     }
@@ -289,13 +289,12 @@ public class PluginService implements IPluginService {
     public PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException {
         PluginConfiguration plgConf = repos.findCompleteByBusinessId(businessId);
         if (plgConf == null) {
-            LOGGER.error(String.format("Error while getting the plugin configuration <%s>.", businessId));
+            LOGGER.error("Error while getting the plugin configuration {}.", businessId);
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
         PluginMetaData meta = PluginUtils.getPlugins().get(plgConf.getPluginId());
         if (meta == null) {
-            LOGGER.error(String.format("Plugin {} is not available. Plugin is missing or service cannot access it.",
-                                       plgConf.getPluginId()));
+            LOGGER.error("Plugin {} is not available. Plugin is missing or service cannot access it.", plgConf.getPluginId());
             throw new EntityNotFoundException(plgConf.getPluginId(), PluginMetaData.class);
         }
         plgConf.setMetaDataAndPluginId(meta);
@@ -305,6 +304,12 @@ public class PluginService implements IPluginService {
     @Override
     public PluginConfiguration loadPluginConfiguration(String businessId) {
         return repos.findCompleteByBusinessId(businessId);
+    }
+
+    @Override
+    public void setMetadata(PluginConfiguration... pluginConfigurations) {
+        Arrays.stream(pluginConfigurations).forEach(
+                pluginConfiguration -> pluginConfiguration.setMetaDataAndPluginId(PluginUtils.getPlugins().get(pluginConfiguration.getPluginId())));
     }
 
     @Override
@@ -323,7 +328,7 @@ public class PluginService implements IPluginService {
             throws EntityNotFoundException, EntityInvalidException, EncryptionException {
         final PluginConfiguration oldConf = repos.findCompleteByBusinessId(pluginConf.getBusinessId());
         if (oldConf == null) {
-            LOGGER.error(String.format("Error while updating the plugin configuration <%d>.", pluginConf.getId()));
+            LOGGER.error("Error while updating the plugin configuration {}.", pluginConf.getId());
             throw new EntityNotFoundException(pluginConf.getId().toString(), PluginConfiguration.class);
         }
         // Retrieve id
@@ -406,7 +411,7 @@ public class PluginService implements IPluginService {
     public void deletePluginConfiguration(String businessId) throws ModuleException {
         PluginConfiguration toDelete = repos.findCompleteByBusinessId(businessId);
         if (toDelete == null) {
-            LOGGER.error(String.format("Error while deleting the plugin configuration <%s>.", businessId));
+            LOGGER.error("Error while deleting the plugin configuration {}.", businessId);
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
         if (!getDependentPlugins(businessId).isEmpty()) {
@@ -502,7 +507,7 @@ public class PluginService implements IPluginService {
         if (plgConf.isPresent()) {
             return canInstantiate(plgConf.get().getBusinessId());
         } else {
-            LOGGER.warn(String.format("Plugin with configuration %d couldn't be instanciated", id));
+            LOGGER.warn("Plugin with configuration {} couldn't be instantiated", id);
             return false;
         }
     }
@@ -532,7 +537,7 @@ public class PluginService implements IPluginService {
         if (plgConf.isPresent()) {
             return getPlugin(plgConf.get().getBusinessId(), dynamicPluginParameters);
         } else {
-            LOGGER.error(String.format("Error while getting the plugin configuration <%d>.", id));
+            LOGGER.error("Error while getting the plugin configuration {}.", id);
             throw new EntityNotFoundException(id, PluginConfiguration.class);
         }
     }
@@ -637,7 +642,7 @@ public class PluginService implements IPluginService {
      */
     private void logPluginServiceState(String invokingMethod) {
         LOGGER.debug("logPluginServiceState invoked by : {}", invokingMethod);
-        LOGGER.debug("This identifier: {}", this.toString());
+        LOGGER.debug("This identifier: {}", this);
         StringBuilder buf = new StringBuilder();
         for (Entry<String, PluginMetaData> entry : PluginUtils.getPlugins().entrySet()) {
 
@@ -655,7 +660,7 @@ public class PluginService implements IPluginService {
             buf.append("]");
 
             LOGGER.debug("Available pluginMap metadata : {} -> {} / {} / {}", entry.getKey(),
-                         entry.getValue().getPluginId(), entry.getValue().getPluginClassName(), buf.toString());
+                         entry.getValue().getPluginId(), entry.getValue().getPluginClassName(), buf);
         }
     }
 

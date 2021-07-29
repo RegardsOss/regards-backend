@@ -18,8 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
-import java.util.Optional;
-
+import fr.cnes.regards.framework.hateoas.*;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,18 +42,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(MonitoringController.TYPE_PATH)
@@ -55,14 +50,11 @@ public class MonitoringController implements IResourceController<AcquisitionProc
 
     public static final String TYPE_PATH = "/chain-monitoring";
 
-    /**
-     * HATEOAS service
-     */
     @Autowired
     private IResourceService resourceService;
 
     @Autowired
-    private IAcquisitionProcessingService service;
+    private IAcquisitionProcessingService processingService;
 
     /**
      * Build all {@link AcquisitionProcessingChainMonitor} from {@link AcquisitionProcessingChain}s matching given
@@ -79,39 +71,30 @@ public class MonitoringController implements IResourceController<AcquisitionProc
             @RequestParam(name = "running", required = false) Boolean running,
             @RequestParam(name = "label", required = false) String label,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) throws ModuleException {
-        Page<AcquisitionProcessingChainMonitor> results = service
-                .buildAcquisitionProcessingChainSummaries(label, running, mode, pageable);
+            PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) {
+        Page<AcquisitionProcessingChainMonitor> results = processingService.buildAcquisitionProcessingChainSummaries(label, running, mode, pageable);
         return new ResponseEntity<>(toPagedResources(results, assembler), HttpStatus.OK);
     }
 
     @Override
-    public EntityModel<AcquisitionProcessingChainMonitor> toResource(AcquisitionProcessingChainMonitor element,
-            Object... pExtras) {
+    public EntityModel<AcquisitionProcessingChainMonitor> toResource(AcquisitionProcessingChainMonitor element, Object... pExtras) {
+
         EntityModel<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
-        if ((element != null) && (element.getChain() != null) && !service.isDeletionPending(element.getChain())) {
-            resourceService.addLink(resource, AcquisitionProcessingChainController.class, "update", LinkRels.UPDATE,
-                                    MethodParamFactory.build(Long.class, element.getChain().getId()),
-                                    MethodParamFactory.build(AcquisitionProcessingChain.class));
-            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())
-                    && !element.getChain().isLocked() && element.getChain().isActive()) {
-                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain",
-                                        LinkRelation.of("start"),
-                                        MethodParamFactory.build(Long.class, element.getChain().getId()),
-                                        MethodParamFactory.build(Optional.class));
+
+        if ((element != null) && (element.getChain() != null) && !processingService.isDeletionPending(element.getChain())) {
+            MethodParam<Long> idParam = MethodParamFactory.build(Long.class, element.getChain().getId());
+            Class<AcquisitionProcessingChainController> clazz = AcquisitionProcessingChainController.class;
+            resourceService.addLink(resource, clazz, "update", LinkRels.UPDATE, idParam, MethodParamFactory.build(AcquisitionProcessingChain.class));
+            if (processingService.canBeStarted(element)) {
+                resourceService.addLink(resource, clazz, "startManualChain", LinkRelation.of("start"), idParam, MethodParamFactory.build(Optional.class));
             }
             if (element.isActive()) {
-                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "stopChain",
-                                        LinkRelation.of("stop"),
-                                        MethodParamFactory.build(Long.class, element.getChain().getId()));
+                resourceService.addLink(resource, clazz, "stopChain", LinkRelation.of("stop"), idParam);
             }
             if (!element.getChain().isActive()) {
-                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "delete", LinkRels.DELETE,
-                                        MethodParamFactory.build(Long.class, element.getChain().getId()));
+                resourceService.addLink(resource, clazz, "delete", LinkRels.DELETE, idParam);
             }
-            resourceService.addLink(resource, AcquisitionProcessingChainController.class, "updateStateAndMode",
-                                    LinkRelation.of("patch"),
-                                    MethodParamFactory.build(Long.class, element.getChain().getId()),
+            resourceService.addLink(resource, clazz, "updateStateAndMode", LinkRelation.of("patch"), idParam,
                                     MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         }
         return resource;

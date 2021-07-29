@@ -18,15 +18,18 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
+import com.google.common.collect.ImmutableList;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
+import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,19 +47,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.collect.ImmutableList;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
-import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 /**
  * @author oroussel
@@ -258,6 +251,13 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
+    public Long countByClassAndParameterValueAndStatus(String className, String parameterName, String parameterValue, JobStatus... jobStatuses) {
+        return jobInfoRepository.countByClassNameAndParameters_NameAndParameters_ValueAndStatusStatusIn(
+                className, parameterName, parameterValue, jobStatuses
+        );
+    }
+
+    @Override
     public Long retrieveJobsCount(String className, JobStatus... statuses) {
         return jobInfoRepository.countByClassNameAndStatusStatusIn(className, statuses);
     }
@@ -271,4 +271,5 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
+
 }

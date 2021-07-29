@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -32,6 +27,11 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Plugin management service.
@@ -186,10 +186,13 @@ public interface IPluginService {
 
     /**
      * Load a PluginConfiguration with all its relations
-     * @param id {@link Long}
+     *
+     * @param businessId {@link Long}
      * @return {@link PluginConfiguration}
      */
     PluginConfiguration loadPluginConfiguration(String businessId);
+
+    void setMetadata(PluginConfiguration... pluginConfigurations);
 
     /**
      * Does given PluginConfiguration exist ?

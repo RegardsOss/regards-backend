@@ -19,17 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
-import java.time.OffsetDateTime;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -37,7 +26,22 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.plugins.IChainBlockingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This post processing plugin allows to optionally :
@@ -52,45 +56,43 @@ import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
         description = "Optionally clean and/or create an acknowledgement for each product file",
         author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
+public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin, IChainBlockingPlugin {
 
     public static final String CLEAN_FILE_PARAM = "cleanFile";
-
     public static final String CREATE_ACK_PARAM = "createAck";
-
     public static final String FOLDER_ACK_PARAM = "folderAck";
-
     public static final String EXTENSION_ACK_PARAM = "extensionAck";
+    public static final String RECURSIVE_CHECK_PARAM = "recursiveCheck";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CleanAndAcknowledgePlugin.class);
 
-    @PluginParameter(name = CLEAN_FILE_PARAM, label = "Enable product files removal", defaultValue = "false",
-            optional = true)
+    @PluginParameter(name = CLEAN_FILE_PARAM, label = "Enable product files removal", defaultValue = "false", optional = true)
     public Boolean cleanFile;
 
-    @PluginParameter(name = CREATE_ACK_PARAM,
-            label = "An acknowledgement of successful completion of SIP saved by the ingest microservice",
-            defaultValue = "false", optional = true)
+    @PluginParameter(name = CREATE_ACK_PARAM, label = "An acknowledgement of successful completion of SIP saved by the ingest microservice", defaultValue = "false",
+            optional = true)
     public Boolean createAck;
 
-    @PluginParameter(name = FOLDER_ACK_PARAM, label = "The sub folder where the acknowledgement is created",
-            defaultValue = "ack_regards", optional = true)
+    @PluginParameter(name = FOLDER_ACK_PARAM, label = "The sub folder where the acknowledgement is created", defaultValue = "ack_regards", optional = true)
     public String folderAck;
 
-    @PluginParameter(name = EXTENSION_ACK_PARAM,
-            label = "The extension added to the data file to create the acknowledgement file",
-            defaultValue = ".regards", optional = true)
+    @PluginParameter(name = EXTENSION_ACK_PARAM, label = "The extension added to the data file to create the acknowledgement file", defaultValue = ".regards", optional = true)
     public String extensionAck;
+
+    @PluginParameter(name = RECURSIVE_CHECK_PARAM, label = "Enable recursive permission check of scan folders", defaultValue = "false", optional = true)
+    public Boolean recursiveCheck;
+
+    private String className = this.getClass().getSimpleName();
 
     @Autowired
     private INotificationClient notificationClient;
 
     @Override
-    public void postProcess(Product product) throws ModuleException {
+    public void postProcess(Product product) {
 
         // Manage acknowledgement
-        if (createAck) {
-            int nbAckNotCreated = product.getAcquisitionFiles().stream().map(acqFile -> createAck(acqFile))
+        if (Boolean.TRUE.equals(createAck)) {
+            int nbAckNotCreated = product.getAcquisitionFiles().stream().map(this::createAck)
                     .reduce(0, Integer::sum);
             if (nbAckNotCreated > 0) {
                 notificationClient.notify(String.format("%d acknowledgement could not be created for product %s",
@@ -103,7 +105,7 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
         }
 
         // Manage file cleaning
-        if (cleanFile) {
+        if (Boolean.TRUE.equals(cleanFile)) {
             int nbDeletionIssues = product.getAcquisitionFiles().stream().map(acqFile -> {
                 try {
                     Files.delete(acqFile.getFilePath());
@@ -154,4 +156,54 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
             return 1;
         }
     }
+
+    @Override
+    public List<String> getExecutionBlockers(AcquisitionProcessingChain chain) {
+        List<String> executionBlockers = new ArrayList<>();
+        chain.getFileInfos().forEach(
+                acquisitionFileInfo -> acquisitionFileInfo.getScanDirInfo().forEach(
+                        scanDirectoryInfo -> executionBlockers.addAll(getExecutionBlockers(scanDirectoryInfo.getScannedDirectory()))));
+        return executionBlockers;
+    }
+
+    private List<String> getExecutionBlockers(Path scanDirectory) {
+        List<String> executionBlockers = new ArrayList<>();
+        if (!Files.exists(scanDirectory)) {
+            executionBlockers.add(String.format("%s - Scan directory not found : %s", className, scanDirectory));
+        } else {
+            if (Boolean.TRUE.equals(recursiveCheck)) {
+                checkDirectoryTree(scanDirectory, executionBlockers);
+            } else {
+                checkDirectory(scanDirectory, executionBlockers);
+            }
+        }
+        return executionBlockers;
+    }
+
+    private void checkDirectoryTree(Path directory, List<String> executionBlockers) {
+        checkDirectory(directory, executionBlockers);
+        File[] subDirectories = directory.toFile().listFiles(File::isDirectory);
+        if (subDirectories != null) {
+            Arrays.stream(subDirectories)
+                    .filter(file -> !file.getName().equals(folderAck))
+                    .forEach(file -> checkDirectoryTree(file.toPath(), executionBlockers));
+        }
+    }
+
+    private void checkDirectory(Path directory, List<String> executionBlockers) {
+        if (Boolean.TRUE.equals(cleanFile) && !Files.isWritable(directory)) {
+                executionBlockers.add(String.format("%s - Unable to remove product files in directory in : %s", className, directory));
+        }
+        if (Boolean.TRUE.equals(createAck)) {
+            Path ackDirectory = directory.resolve(folderAck);
+            if (!Files.exists(ackDirectory)) {
+                if (!Files.isWritable(directory)) {
+                    executionBlockers.add(String.format("%s - Unable to create ack directory in : %s", className, directory));
+                }
+            } else if (!Files.isWritable(ackDirectory)) {
+                executionBlockers.add(String.format("%s - Unable to write to ack directory : %s", className, ackDirectory));
+            }
+        }
+    }
+
 }

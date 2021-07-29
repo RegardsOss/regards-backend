@@ -167,6 +167,8 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
         return findByOwnerAndStatusStatusAndClassNameOrderByPriorityDesc(user, JobStatus.PENDING, className, PageRequest.of(0, count));
     }
 
+    Long countByClassNameAndParameters_NameAndParameters_ValueAndStatusStatusIn(String className, String parameterName, String parameterValue, JobStatus... jobStatuses);
+
     /**
      * @param className
      * @param statuses
