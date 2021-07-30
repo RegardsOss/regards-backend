@@ -48,6 +48,7 @@ public class CriterionTest {
         ICriterion startsWithCrit = ICriterion.startsWith("attributes.text", "testStartsWith");
         // textAtt strictly equals "testEquals"
         ICriterion equalsCrit = ICriterion.eq("attributes.text", "testEquals");
+
         ICriterionVisitor<String> visitor = new TestCriterionVisitor();
 
         List<ICriterion> numericCritList = new ArrayList<>();
@@ -63,6 +64,7 @@ public class CriterionTest {
         numericCritList.add(ICriterion.ne("attributes.number4", 1000., 1.e0));
 
         numericCritList.add(ICriterion.eq("attributes.number3", Math.PI, 1.e-5));
+
         ICriterion numericAndCriterion = ICriterion.and(numericCritList);
 
         // All theses criterions (AND)
