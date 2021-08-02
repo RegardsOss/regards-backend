@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.util.LinkedMultiValueMap;
@@ -52,6 +53,12 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                 date);
     }
 
+    private SearchRequest createSearchRequestIncludes(String engineType, String datasetUrn, OffsetDateTime date,
+            List<String> includeIds) {
+        return new SearchRequest(engineType, datasetUrn, null, includeIds, Lists.newArrayList(),
+                                 date);
+    }
+
     private SearchRequest createSearchRequest(String engineType, String datasetUrn, String paramKey,
             String paramValue) {
         return createSearchRequest(engineType, datasetUrn, paramKey, paramValue, OffsetDateTime.now(), null);
@@ -62,6 +69,40 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         MultiValueMap<String, String> searchParameters = new LinkedMultiValueMap<>();
         searchParameters.add(paramKey, paramValue);
         return new SearchRequest(engineType, datasetUrn, searchParameters, excludeIds, Lists.newArrayList(), date);
+    }
+
+
+    @Test
+    public void searchWithManyIds() {
+        List<String> ids = Lists.newArrayList();
+        ids.add(astroObjects.get("Venus").getIpId().toString());
+        ids.add(astroObjects.get(MERCURY).getIpId().toString());
+        ids.add("URN:");
+        SearchRequest r = createSearchRequestIncludes(LegacySearchEngine.PLUGIN_ID, null, OffsetDateTime.now(), ids);
+        List<SearchRequest> requests = Lists.newArrayList();
+        requests.add(r);
+        ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
+        request.setRequests(requests);
+
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(2)));
+        performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
+    }
+
+    @Test
+    public void searchWithTooManyIds() {
+        List<String> ids = Lists.newArrayList();
+        for (int i=0; i<2_000;i++) {
+            ids.add(UUID.randomUUID().toString());
+        }
+        SearchRequest r = createSearchRequestIncludes(LegacySearchEngine.PLUGIN_ID, null, OffsetDateTime.now(), ids);
+        List<SearchRequest> requests = Lists.newArrayList();
+        requests.add(r);
+        ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
+        request.setRequests(requests);
+
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
     @Test

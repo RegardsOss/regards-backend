@@ -3,10 +3,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -28,6 +25,18 @@ public class CriterionTest {
 
     @After
     public void tearDown() throws Exception {
+    }
+
+    @Test
+    public void testAny() {
+        final String RESULT = "attributes.text IN (\"TOTO\", \"TITI\", \"TUTU\")";
+                List<String> values = Lists.newArrayList();
+        values.add("TOTO");
+        values.add("TITI");
+        values.add("TUTU");
+        ICriterion crit = ICriterion.in("attributes.text", values);
+        ICriterionVisitor<String> visitor = new TestCriterionVisitor();
+        Assert.assertEquals(RESULT, crit.accept(visitor));
     }
 
     @Test
