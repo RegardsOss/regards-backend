@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.search.service.engine;
 
 import java.util.*;
 
-import fr.cnes.regards.framework.module.rest.exception.OperationForbiddentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
