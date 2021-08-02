@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.search.service.engine;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 
+import fr.cnes.regards.framework.module.rest.exception.OperationForbiddentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +74,8 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     @Autowired
     private ISearchEngineConfigurationService searchEngineService;
+
+    private static int id_limit = 1_000;
 
     /**
      * Business search service
@@ -206,24 +207,22 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
         // Include ids criterion
         if ((searchRequest.getEntityIdsToInclude() != null) && !searchRequest.getEntityIdsToInclude().isEmpty()) {
-            ICriterion idsCrit = null;
+            List<String> values = new ArrayList<>();
             for (String ipId : searchRequest.getEntityIdsToInclude()) {
-                if (idsCrit == null) {
-                    idsCrit = ICriterion.eq(StaticProperties.IP_ID, ipId);
-                } else {
-                    idsCrit = ICriterion.or(idsCrit, ICriterion.eq(StaticProperties.IP_ID, ipId));
-                }
+                values.add(ipId);
             }
-            if (idsCrit != null) {
-                reqCrit = ICriterion.and(reqCrit, idsCrit);
-            }
+            reqCrit = ICriterion.and(reqCrit, ICriterion.in(StaticProperties.IP_ID, values));
+            values.clear();
         }
 
         // Exclude ids criterion
         if ((searchRequest.getEntityIdsToExclude() != null) && !searchRequest.getEntityIdsToExclude().isEmpty()) {
+            List<String> values = new ArrayList<>();
             for (String ipId : searchRequest.getEntityIdsToExclude()) {
-                reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId)));
+                values.add(ipId);
             }
+            reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.in(StaticProperties.IP_ID, values)));
+            values.clear();
         }
 
         return reqCrit;

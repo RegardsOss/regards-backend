@@ -3,10 +3,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -31,6 +28,18 @@ public class CriterionTest {
     }
 
     @Test
+    public void testAny() {
+        final String RESULT = "attributes.text IN (\"TOTO\", \"TITI\", \"TUTU\")";
+                List<String> values = Lists.newArrayList();
+        values.add("TOTO");
+        values.add("TITI");
+        values.add("TUTU");
+        ICriterion crit = ICriterion.in("attributes.text", values);
+        ICriterionVisitor<String> visitor = new TestCriterionVisitor();
+        Assert.assertEquals(RESULT, crit.accept(visitor));
+    }
+
+    @Test
     public void test1() throws IOException {
         final String RESULT = "(attributes.text CONTAINS \"testContains\") AND (attributes.text ENDS_WITH "
                 + "\"testEndsWith\") AND (attributes.text STARTS_WITH \"testStartsWith\") AND (attributes.text "
@@ -48,6 +57,7 @@ public class CriterionTest {
         ICriterion startsWithCrit = ICriterion.startsWith("attributes.text", "testStartsWith");
         // textAtt strictly equals "testEquals"
         ICriterion equalsCrit = ICriterion.eq("attributes.text", "testEquals");
+
         ICriterionVisitor<String> visitor = new TestCriterionVisitor();
 
         List<ICriterion> numericCritList = new ArrayList<>();
@@ -63,6 +73,7 @@ public class CriterionTest {
         numericCritList.add(ICriterion.ne("attributes.number4", 1000., 1.e0));
 
         numericCritList.add(ICriterion.eq("attributes.number3", Math.PI, 1.e-5));
+
         ICriterion numericAndCriterion = ICriterion.and(numericCritList);
 
         // All theses criterions (AND)

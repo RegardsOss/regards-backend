@@ -56,6 +56,8 @@ import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
 import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
 
+import javax.validation.Valid;
+
 /**
  * Complex search controller. Handle complex searches on catalog with multiple search requests. Each request handles :
  *  - search engine implementations (legacy, opensearch, ...)
@@ -132,7 +134,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Get features from a complex search", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<EntityFeature>>> searchDataObjects(
-            @RequestBody ComplexSearchRequest complexSearchRequest, PagedResourcesAssembler<EntityFeature> assembler)
+            @RequestBody @Valid ComplexSearchRequest complexSearchRequest, PagedResourcesAssembler<EntityFeature> assembler)
             throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
         for (SearchRequest request : complexSearchRequest.getRequests()) {
