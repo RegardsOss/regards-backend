@@ -18,19 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.rest.dataaccess;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-
-import org.junit.After;
-import org.junit.Before;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -40,12 +27,7 @@ import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.User;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityFilter;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.*;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
@@ -53,6 +35,17 @@ import fr.cnes.regards.modules.model.dao.IAttributePropertyRepository;
 import fr.cnes.regards.modules.model.dao.IModelAttrAssocRepository;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.junit.After;
+import org.junit.Before;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -100,8 +93,6 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
     protected AccessRight ar3;
 
     protected ProjectUser projectUser;
-
-    protected User user;
 
     protected final String email = "test@email.com";
 
@@ -155,40 +146,47 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
 
         OffsetDateTime now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
         // Replace stubs by mocks
-        ReflectionTestUtils.setField(agService, "projectUserClient", projectUserClientMock, IProjectUsersClient.class);
-        projectUser = new ProjectUser();
-        projectUser.setEmail(email);
-        Mockito.when(projectUserClientMock.retrieveProjectUser(ArgumentMatchers.any()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
 
         qf = new QualityFilter(10, 0, QualityLevel.ACCEPTED);
         dal = DataAccessLevel.NO_ACCESS;
-        user = new User();
-        user.setEmail(email);
 
         Model model = Model.build("model1", "desc", EntityType.DATASET);
         model = modelRepo.save(model);
+
         ds1 = new Dataset(model, "PROJECT", "DS1", ds1Name);
         ds1.setLicence("licence");
         ds1.setCreationDate(now);
+        ds1.getGroups().add(ag1Name);
         ds1 = dsRepo.save(ds1);
+
         ds2 = new Dataset(model, "PROJECT", "DS2", ds2Name);
         ds2.setLicence("licence");
         ds2.setCreationDate(now);
         ds2 = dsRepo.save(ds2);
 
         ag1 = new AccessGroup(ag1Name);
-        ag1.addUser(user);
         ag1 = agRepo.save(ag1);
         ar1 = new AccessRight(qf, al, ds1, ag1);
         ar1.setDataAccessLevel(dal);
         ar1 = arRepo.save(ar1);
+
         ag2 = new AccessGroup(ag2Name);
         ag2 = agRepo.save(ag2);
+
         ar2 = new AccessRight(qf, al, ds2, ag2);
         ar2.setDataAccessLevel(dal);
         ar2 = arRepo.save(ar2);
+
         ar3 = new AccessRight(qf, al, ds1, ag2);
         ar3.setDataAccessLevel(dal);
+
+        projectUser = new ProjectUser();
+        projectUser.setEmail(email);
+        projectUser.setAccessGroups(Collections.singleton(ag1Name));
+
+        ResponseEntity<EntityModel<ProjectUser>> response = ResponseEntity.ok(new EntityModel<>(projectUser));
+        Mockito.when(projectUserClientMock.retrieveProjectUser(ArgumentMatchers.any())).thenReturn(response);
+        Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(email)).thenReturn(response);
     }
+
 }

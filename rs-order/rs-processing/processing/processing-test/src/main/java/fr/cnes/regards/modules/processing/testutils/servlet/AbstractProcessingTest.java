@@ -137,7 +137,7 @@ public class AbstractProcessingTest {
 
     @PostConstruct
     public void setup() {
-        migrationHelper.migrate(dataSource, R2DBCDB_NAME);
+        migrationHelper.migrateSchema(dataSource, R2DBCDB_NAME);
     }
 
     @AfterClass

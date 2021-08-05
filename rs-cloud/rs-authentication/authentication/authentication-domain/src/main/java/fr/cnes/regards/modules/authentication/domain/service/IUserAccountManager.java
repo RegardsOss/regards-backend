@@ -23,5 +23,6 @@ import io.vavr.control.Try;
 
 public interface IUserAccountManager {
 
-    Try<String> createUserWithAccountAndGroups(ServiceProviderAuthenticationInfo.UserInfo userInfo);
+    Try<String> createUserWithAccountAndGroups(ServiceProviderAuthenticationInfo.UserInfo userInfo, String serviceProviderName);
+
 }

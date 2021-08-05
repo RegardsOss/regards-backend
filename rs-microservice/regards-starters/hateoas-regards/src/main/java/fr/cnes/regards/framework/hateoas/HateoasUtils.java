@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -32,6 +26,12 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * General utility methods for working with {@link ResponseEntity}s and {@link EntityModel}s.
@@ -92,7 +92,11 @@ public final class HateoasUtils {
      * @return The unwrapped resource
      */
     public static <T> T unwrap(EntityModel<T> wrapped) {
-        return wrapped.getContent();
+        T content = null;
+        if (wrapped != null) {
+            content = wrapped.getContent();
+        }
+        return content;
     }
 
     /**
@@ -103,8 +107,12 @@ public final class HateoasUtils {
      */
     public static <T> List<T> unwrapList(List<EntityModel<T>> wrapped) {
         List<T> result = new ArrayList<>();
-        for (EntityModel<T> r : wrapped) {
-            result.add(r.getContent());
+        if (wrapped != null) {
+            for (EntityModel<T> entityModel : wrapped) {
+                if (entityModel != null) {
+                    result.add(entityModel.getContent());
+                }
+            }
         }
         return result;
     }
@@ -135,29 +143,23 @@ public final class HateoasUtils {
      * @param request request to execute for each page
      * @return {@link List} of results
      */
-    public static <T> List<T> retrieveAllPages(int pageSize,
-            Function<Pageable, ResponseEntity<PagedModel<EntityModel<T>>>> request) {
+    public static <T> List<T> retrieveAllPages(int pageSize, Function<Pageable, ResponseEntity<PagedModel<EntityModel<T>>>> request) {
         List<T> results = new ArrayList<>();
-        List<EntityModel<T>> pageResources = new ArrayList<>();
+        PagedModel<EntityModel<T>> page = null;
+        PageMetadata metadata = null;
+        ResponseEntity<PagedModel<EntityModel<T>>> response;
         Pageable pageable = PageRequest.of(0, pageSize);
-        boolean newPage;
         do {
-            ResponseEntity<PagedModel<EntityModel<T>>> response = request.apply(pageable);
-            if (response.getStatusCode().equals(HttpStatus.OK)) {
-                PagedModel<EntityModel<T>> page = response.getBody();
-                pageResources.clear();
-                pageResources.addAll(page.getContent());
-                results.addAll(HateoasUtils.unwrapList(pageResources));
-                if (results.size() < page.getMetadata().getTotalElements()) {
-                    pageable = pageable.next();
-                    newPage = true;
-                } else {
-                    newPage = false;
+            response = request.apply(pageable);
+            if (response != null && response.getStatusCode().equals(HttpStatus.OK)) {
+                page = response.getBody();
+                if (page != null) {
+                    results.addAll(HateoasUtils.unwrapList(new ArrayList<>(page.getContent())));
+                    metadata = page.getMetadata();
                 }
-            } else {
-                newPage = false;
             }
-        } while (newPage);
+            pageable = pageable.next();
+        } while (page != null && metadata != null && results.size() < metadata.getTotalElements());
         return results;
     }
 

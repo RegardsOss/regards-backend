@@ -19,13 +19,12 @@
 package fr.cnes.regards.modules.accessrights.instance.service;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.DefaultTenantResolver;
 import fr.cnes.regards.framework.security.autoconfigure.SecureRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -35,9 +34,9 @@ import fr.cnes.regards.modules.accessrights.instance.dao.IPasswordResetTokenRepo
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
-import fr.cnes.regards.modules.templates.domain.Template;
+import fr.cnes.regards.modules.project.service.IProjectService;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,9 +46,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -104,7 +103,7 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
     private Long accountPasswordValidityDuration;
 
     @Autowired
-    private IRuntimeTenantResolver tenantResolver;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private IAccountRepository accountRepository;
@@ -118,11 +117,23 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
     @Autowired
     private IPasswordResetTokenRepository tokenRepository;
 
+    @MockBean
+    private IProjectService projectService;
+
+    @MockBean
+    private ITenantResolver tenantResolver;
+
+    @MockBean
+    private IExternalAuthenticationClient externalAuthenticationClient;
+
+    @MockBean
+    private IEncryptionService encryptionService;
+
     private Account account;
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException {
-        tenantResolver.forceTenant(getDefaultTenant());
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         initDb();
     }
 
@@ -154,8 +165,7 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
 
         Account accountPasswordInvalid = new Account("passwordInvalid@c-s.fr", "Kylian", "Mbappé", "passWord");
         accountPasswordInvalid.setInvalidityDate(LocalDateTime.now().plusDays(5));
-        accountPasswordInvalid
-                .setPasswordUpdateDate(LocalDateTime.now().minusDays(accountPasswordValidityDuration).minusDays(1L));
+        accountPasswordInvalid.setPasswordUpdateDate(LocalDateTime.now().minusDays(accountPasswordValidityDuration).minusDays(1L));
         accountPasswordInvalid.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(accountPasswordInvalid);
 
@@ -166,20 +176,15 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
         accountInvalid = accountRepository.findById(accountInvalid.getId()).get();
         accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
 
-        LOG.info("account :                <{}> - {} - {}", account.getStatus(), account.getInvalidityDate(),
-                 account.getPasswordUpdateDate());
-        LOG.info("accountValid :           <{}> - {} - {}", accountValid.getStatus(), accountValid.getInvalidityDate(),
-                 accountValid.getPasswordUpdateDate());
-        LOG.info("accountInvalid :         <{}> - {} - {}", accountInvalid.getStatus(),
-                 accountInvalid.getInvalidityDate(), accountInvalid.getPasswordUpdateDate());
-        LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
-                 accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());
+        logAccountInfo("account :                <{}> - {} - {}", account);
+        logAccountInfo("accountValid :           <{}> - {} - {}", accountValid);
+        logAccountInfo("accountInvalid :         <{}> - {} - {}", accountInvalid);
+        logAccountInfo("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid);
 
         final Set<Account> toCheck = Sets.newHashSet(accountValid, accountInvalid, accountPasswordInvalid);
         Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.ACTIVE)).count());
         Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.INACTIVE)).count());
-        Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.INACTIVE_PASSWORD))
-                .count());
+        Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.INACTIVE_PASSWORD)).count());
         Assert.assertEquals(AccountStatus.INACTIVE, accountInvalid.getStatus());
         Assert.assertEquals(AccountStatus.INACTIVE_PASSWORD, accountPasswordInvalid.getStatus());
     }
@@ -194,15 +199,13 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
         accountPasswordInvalid.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(accountPasswordInvalid);
 
-        LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
-                 accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());
+        logAccountInfo("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid);
 
         // lets test now that everything is in place
         accountService.checkAccountValidity();
         accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
 
-        LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
-                 accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());
+        logAccountInfo("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid);
         Assert.assertEquals(AccountStatus.INACTIVE_PASSWORD, accountPasswordInvalid.getStatus());
 
         try {
@@ -216,8 +219,7 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
         accountService.checkAccountValidity();
         accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
 
-        LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
-                 accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());
+        logAccountInfo("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid);
         Assert.assertEquals(AccountStatus.ACTIVE, accountPasswordInvalid.getStatus());
     }
 
@@ -229,6 +231,10 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
     private void clearDb() {
         tokenRepository.deleteAll();
         accountRepository.deleteAll();
+    }
+
+    private void logAccountInfo(String s, Account account) {
+        LOG.info(s, account.getStatus(), account.getInvalidityDate(), account.getPasswordUpdateDate());
     }
 
 }

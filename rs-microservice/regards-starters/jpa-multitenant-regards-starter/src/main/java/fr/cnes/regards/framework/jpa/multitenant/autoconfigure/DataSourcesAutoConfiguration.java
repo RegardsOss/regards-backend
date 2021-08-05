@@ -18,36 +18,6 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.persistence.Entity;
-import javax.sql.DataSource;
-
-import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
-import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
-import org.hibernate.cfg.Environment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
-import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
@@ -64,11 +34,36 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
-import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
-import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
-import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
-import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
-import fr.cnes.regards.framework.jpa.utils.MigrationTool;
+import fr.cnes.regards.framework.jpa.utils.*;
+import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
+import org.hibernate.cfg.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.persistence.Entity;
+import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Configuration class to define the default PostgresSQL Data base
@@ -124,6 +119,9 @@ public class DataSourcesAutoConfiguration {
 
     @Autowired
     private IEncryptionService encryptionService;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     /**
      * Create a default TenantConnection resolver if none defined.
@@ -182,7 +180,7 @@ public class DataSourcesAutoConfiguration {
             helper.setOutputFile(daoProperties.getOutputFile());
             return helper;
         } else {
-            return new FlywayDatasourceSchemaHelper(hibernateProperties);
+            return new FlywayDatasourceSchemaHelper(hibernateProperties, applicationContext);
         }
     }
 
@@ -221,32 +219,31 @@ public class DataSourcesAutoConfiguration {
 
         for (TenantConnection tenantConnection : connections) {
             // Prevent duplicates
-            if (!existingDataSources.containsKey(tenantConnection.getTenant())) {
+            String tenant = tenantConnection.getTenant();
+            if (!existingDataSources.containsKey(tenant)) {
                 try {
                     // Retrieve schema name
                     String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
                     // Init data source
                     TenantDataSourceHelper.verifyBatchParameter(jpaProperties, tenantConnection);
-                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection,
-                                                                                  schemaIdentifier);
+                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection, schemaIdentifier);
                     // Update database schema
-                    datasourceSchemaHelper().migrate(dataSource);
+                    datasourceSchemaHelper().migrate(dataSource, tenant);
                     // Register connection
                     if (needRegistration) {
                         tenantConnectionResolver.addTenantConnection(microserviceName, tenantConnection);
                     }
                     // Register data source
-                    existingDataSources.put(tenantConnection.getTenant(), dataSource);
+                    existingDataSources.put(tenant, dataSource);
                     // Register a lock executor
-                    lockingTaskExecutors.registerLockingTaskExecutor(tenantConnection.getTenant(), dataSource);
-                } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException
-                        | IOException e) {
+                    lockingTaskExecutors.registerLockingTaskExecutor(tenant, dataSource);
+                } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException | IOException e) {
                     // Do not block all tenants if for an inconsistent data source
-                    LOGGER.error("Cannot create datasource for tenant {}", tenantConnection.getTenant());
+                    LOGGER.error("Cannot create datasource for tenant {}", tenant);
                     LOGGER.error(e.getMessage(), e);
                 }
             } else {
-                LOGGER.warn(String.format("Datasource for tenant %s already defined.", tenantConnection.getTenant()));
+                LOGGER.warn(String.format("Datasource for tenant %s already defined.", tenant));
             }
         }
     }

@@ -45,6 +45,6 @@ public interface IRegistrationService { //NOSONAR
      *             exists<br>
      *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
      */
-    ProjectUser requestAccess(final AccessRequestDto dto, Boolean isExternalAccess) throws EntityException;
+    ProjectUser requestAccess(final AccessRequestDto dto, boolean isExternalAccess) throws EntityException;
 
 }

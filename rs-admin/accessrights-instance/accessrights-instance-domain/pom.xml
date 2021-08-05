@@ -65,11 +65,16 @@
 			<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
 			<artifactId>tenant-settings-domain</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.project</groupId>
+			<artifactId>project-domain</artifactId>
+			<version>${modules.project.version}</version>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-    </dependencies>
+	</dependencies>
 </project>

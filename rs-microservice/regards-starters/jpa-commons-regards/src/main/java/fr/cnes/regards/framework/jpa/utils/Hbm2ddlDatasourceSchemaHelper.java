@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import javax.sql.DataSource;
-import java.lang.annotation.Annotation;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
@@ -31,6 +25,12 @@ import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.hibernate.tool.schema.TargetType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
+import java.lang.annotation.Annotation;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Help to update datasource schema using hbm2ddl
@@ -104,12 +104,8 @@ public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelpe
 
     }
 
-    public void migrate(final DataSource dataSource, String rootPackageToScan) {
-        migrate(dataSource, rootPackageToScan, null);
-    }
-
     @Override
-    public void migrate(final DataSource dataSource) {
+    public void migrate(final DataSource dataSource, String tenant) {
         migrate(dataSource, DaoUtils.ROOT_PACKAGE, null);
     }
 

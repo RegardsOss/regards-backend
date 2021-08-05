@@ -18,33 +18,41 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserExportService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for ProjectUsers REST Controller.
@@ -77,11 +85,11 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IResourcesAccessRepository resourcesAccessRepository;
 
-    /**
-     * A project user.<br>
-     * We ensure before each test to have only this exactly project user in db for convenience.
-     */
+    @MockBean
+    private IAccessGroupClient accessGroupClient;
+
     private ProjectUser projectUser;
+    private ProjectUser otherUser;
 
     private Role publicRole;
 
@@ -89,9 +97,14 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void setUp() {
+
+        projectUserRepository.deleteAll();
+
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         projectUser = projectUserRepository
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+        otherUser = projectUserRepository
+                .save(new ProjectUser("foo@bar.com", publicRole, new ArrayList<>(), new ArrayList<>()));
 
         // Insert some authorizations
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACCEPT_ACCESS_RELATIVE_PATH,
@@ -226,8 +239,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         // Same id
         performDefaultPut(apiUserId, projectUser, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
 
-        // Wrong id (99L)
-        performDefaultPut(apiUserId, projectUser, customizer().expectStatusBadRequest(), ERROR_MESSAGE, 99L);
+        // Wrong id
+        performDefaultPut(apiUserId, projectUser, customizer().expectStatusBadRequest(), ERROR_MESSAGE, otherUser.getId());
     }
 
     @Test
@@ -311,9 +324,80 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all access requests for a project.")
     public void getAllAccesses() {
-        performDefaultGet(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.PENDINGACCESSES,
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.PENDING_ACCESSES,
                           customizer().expectStatusOk(),
                           ERROR_MESSAGE);
+    }
+
+
+    @Test
+    public void testExport() throws UnsupportedEncodingException {
+
+        // Given
+        ProjectUser testUser = projectUserRepository.findOneByEmail(EMAIL).get();
+        testUser.setFirstName("John");
+        testUser.setLastName("Doe");
+        testUser.setAccessGroups(new HashSet<>(Arrays.asList("group1", "public")));
+        testUser.setMetadata(Arrays.asList(
+                new MetaData("visible1", "foo", UserVisibility.READABLE),
+                new MetaData("visible2", "bar", UserVisibility.READABLE),
+                new MetaData("hidden", "nope", UserVisibility.HIDDEN)
+        ));
+
+        // When
+        String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.EXPORT;
+        RequestBuilderCustomizer customizer = customizer()
+                .expectStatusOk()
+                .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
+                .addHeader(HttpConstants.ACCEPT, "text/csv");
+        ResultActions results = performDefaultGet(path, customizer, "error");
+        String content = results.andReturn().getResponse().getContentAsString();
+
+        //Then
+        assertTrue(content.startsWith((String) Objects.requireNonNull(ReflectionTestUtils.getField(ProjectUserExportService.class, "HEADER"))));
+        assertTrue(content.contains("John"));
+        assertTrue(content.contains("Doe"));
+        assertTrue(content.contains("visible"));
+        assertTrue(content.contains("public"));
+        assertTrue(content.contains("group1"));
+        assertFalse(content.contains("hidden"));
+    }
+
+    @Test
+    public void testCount() throws UnsupportedEncodingException {
+
+        // Given
+        ProjectUser testUser = projectUserRepository.findOneByEmail(EMAIL).get();
+        testUser.setFirstName("John");
+        testUser.setLastName("Doe");
+        testUser.setAccessGroups(new HashSet<>(Arrays.asList("group1", "public")));
+
+        // When
+        String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.COUNT_BY_ACCESS_GROUP;
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+
+        // Then
+        ResultActions results = performDefaultGet(path, customizer, "error");
+        String content = results.andReturn().getResponse().getContentAsString();
+        assertEquals("{\"public\":1,\"group1\":1}", content);
+    }
+
+    @Test
+    public void testGroupFilter() throws UnsupportedEncodingException {
+
+        // Given
+        ProjectUser testUser = projectUserRepository.findOneByEmail(otherUser.getEmail()).get();
+        testUser.setAccessGroups(new HashSet<>(Collections.singletonList("groupFilter")));
+
+        // When
+        String path = ProjectUsersController.TYPE_MAPPING;
+        RequestBuilderCustomizer customizer = customizer().addParameter("accessGroup", "groupFilter").expectStatusOk();
+
+        // Then
+        ResultActions results = performDefaultGet(path, customizer, "error");
+        String content = results.andReturn().getResponse().getContentAsString();
+        assertTrue(content.contains(otherUser.getEmail()));
+        assertFalse(content.contains(projectUser.getEmail()));
     }
 
 }

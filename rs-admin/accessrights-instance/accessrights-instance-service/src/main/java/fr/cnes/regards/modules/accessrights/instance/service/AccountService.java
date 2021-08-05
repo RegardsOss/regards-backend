@@ -18,45 +18,48 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import javax.annotation.PostConstruct;
-
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.instance.dao.AccountSpecificationsBuilder;
+import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParameters;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountSettingsService;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
+import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
+import fr.cnes.regards.modules.authentication.domain.dto.ServiceProviderDto;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.project.service.IProjectService;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
-import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
-import freemarker.template.TemplateException;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
+import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * {@link IAccountService} implementation.
@@ -70,74 +73,60 @@ import io.micrometer.core.instrument.MeterRegistry;
 @EnableScheduling
 public class AccountService implements IAccountService {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
     /**
      * Regex that the password should respect. Provided by property file.
      */
-    private final String passwordRegex;
-
+    @Value("${regards.accounts.password.regex}")
+    private String passwordRegex;
     /**
      * Associated Pattern
      */
-    private final Pattern passwordRegexPattern;
-
+    private Pattern passwordRegexPattern;
     /**
      * Description of the regex to respect in natural language. Provided by property file. Parsed according to "\n" to transform it into a list
      */
-    private final String passwordRules;
+    @Value("${regards.accounts.password.rules}")
+    private String passwordRules;
 
     /**
      * In days. Provided by property file.
      */
-    private final Long accountPasswordValidityDuration;
+    @Value("${regards.accounts.password.validity.duration}")
+    private Long accountPasswordValidityDuration;
 
     /**
      * In days. Provided by property file.
      */
-    private final Long accountValidityDuration;
+    @Value("${regards.accounts.validity.duration}")
+    private Long accountValidityDuration;
 
     /**
      * Root admin user login. Provided by property file.
      */
-    private final String rootAdminUserLogin;
-
+    @Value("${regards.accounts.root.user.login}")
+    private String rootAdminUserLogin;
     /**
      * Root admin user password. Provided by property file.
      */
-    private final String rootAdminUserPassword;
-
+    @Value("${regards.accounts.root.user.password}")
+    private String rootAdminUserPassword;
     /**
      * threshold of failed authentication above which an account should be locked. Provided by property file.
      */
-    private final Long thresholdFailedAuthentication;
+    @Value("${regards.accounts.failed.authentication.max}")
+    private Long thresholdFailedAuthentication;
 
-    /**
-     * CRUD repository handling {@link Account}s. Autowired by Spring.
-     */
     private final IAccountRepository accountRepository;
-
-    /**
-     * Instance tenant name
-     */
+    private final ITenantResolver tenantResolver;
     private final IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
-     * Email Client. Autowired by Spring.
-     */
     private final IEmailClient emailClient;
-
-    /**
-     * Template Service. Autowired by Spring.
-     */
     private final ITemplateService templateService;
-
     private final IInstancePublisher instancePublisher;
-
     private final AccountSettingsService accountSettingsService;
+    private final IExternalAuthenticationClient externalAuthenticationClient;
+    private final IProjectService projectService;
 
     @Autowired
     private MeterRegistry registry;
@@ -145,72 +134,36 @@ public class AccountService implements IAccountService {
     @SuppressWarnings("unused")
     private Counter createdAccountCounter;
 
-    /**
-     * Constructor
-     * @param accountRepository account repository
-     * @param passwordRegex password regex
-     * @param passwordRules password rules
-     * @param accountPasswordValidityDuration account password validity duration
-     * @param accountValidityDuration account validity duration
-     * @param rootAdminUserLogin root admin user login
-     * @param rootAdminUserPassword root admin user password
-     * @param thresholdFailedAuthentication threshold faild autentication
-     * @param pRuntimeTenantResolver runtime tenant resolver
-     * @param instancePublisher
-     * @param accountSettingsService
-     */
-    public AccountService(IAccountRepository accountRepository, //NOSONAR
-                          @Autowired ITemplateService templateService, @Autowired IEmailClient emailClient,
-                          @Value("${regards.accounts.password.regex}") String passwordRegex,
-                          @Value("${regards.accounts.password.rules}") String passwordRules,
-                          @Value("${regards.accounts.password.validity.duration}") Long accountPasswordValidityDuration,
-                          @Value("${regards.accounts.validity.duration}") Long accountValidityDuration,
-                          @Value("${regards.accounts.root.user.login}") String rootAdminUserLogin,
-                          @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
-                          @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication,
-                          @Autowired IRuntimeTenantResolver pRuntimeTenantResolver,
-                          IInstancePublisher instancePublisher, AccountSettingsService accountSettingsService
+    public AccountService(IAccountRepository accountRepository, ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, IEmailClient emailClient,
+            ITemplateService templateService, IInstancePublisher instancePublisher, AccountSettingsService accountSettingsService,
+            IExternalAuthenticationClient externalAuthenticationClient, IProjectService projectService
     ) {
         this.accountRepository = accountRepository;
-        this.passwordRegex = passwordRegex;
-        this.instancePublisher = instancePublisher;
-        this.accountSettingsService = accountSettingsService;
-        this.passwordRegexPattern = Pattern.compile(this.passwordRegex);
-        this.passwordRules = passwordRules;
-        this.accountPasswordValidityDuration = accountPasswordValidityDuration;
-        this.accountValidityDuration = accountValidityDuration;
-        this.rootAdminUserLogin = rootAdminUserLogin;
-        this.rootAdminUserPassword = rootAdminUserPassword;
-        this.thresholdFailedAuthentication = thresholdFailedAuthentication;
-        this.runtimeTenantResolver = pRuntimeTenantResolver;
+        this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
         this.emailClient = emailClient;
         this.templateService = templateService;
+        this.instancePublisher = instancePublisher;
+        this.accountSettingsService = accountSettingsService;
+        this.externalAuthenticationClient = externalAuthenticationClient;
+        this.projectService = projectService;
     }
 
-    /**
-     * Call after Spring successfully build the bean
-     */
     @PostConstruct
-    public void initialize() {
+    public void initialize() throws EntityInvalidException {
+        passwordRegexPattern = Pattern.compile(this.passwordRegex);
         if (!this.existAccount(rootAdminUserLogin)) {
-            Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
-                    rootAdminUserPassword);
+            Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin, rootAdminUserPassword);
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
-            account.setExternal(false);
-            createAccount(account);
+            createAccount(account, null);
         }
         this.createdAccountCounter = registry.counter("regards.created.account");
     }
 
     @Override
-    public Page<Account> retrieveAccountList(Pageable pPageable) {
-        return accountRepository.findAll(pPageable);
-    }
-
-    @Override
-    public Page<Account> retrieveAccountList(AccountStatus pStatus, Pageable pPageable) {
-        return accountRepository.findAllByStatus(pStatus, pPageable);
+    public Page<Account> retrieveAccountList(AccountSearchParameters parameters, Pageable pageable) {
+        return accountRepository.findAll(new AccountSpecificationsBuilder().withParameters(parameters).build(), pageable);
     }
 
     @Override
@@ -219,14 +172,22 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account createAccount(Account account) {
+    public Account createAccount(Account account, String project) throws EntityInvalidException {
         account.setId(null);
         if (account.getPassword() != null) {
+            checkPassword(account);
             account.setPassword(EncryptionUtils.encryptPassword(account.getPassword()));
         }
         account.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
         if (AccountStatus.PENDING.equals(account.getStatus()) && accountSettingsService.isAutoAccept()) {
             activate(account);
+        }
+        if (!StringUtils.isEmpty(project)) {
+            try {
+                account.setProjects(new HashSet<>(Collections.singletonList(projectService.retrieveProject(project))));
+            } catch (ModuleException e) {
+                throw new EntityInvalidException("Invalid project name : " + project);
+            }
         }
         return accountRepository.save(account);
     }
@@ -240,8 +201,12 @@ public class AccountService implements IAccountService {
 
     @Override
     public Account retrieveAccount(Long pAccountId) throws EntityNotFoundException {
-        Optional<Account> account = accountRepository.findById(pAccountId);
-        return account.orElseThrow(() -> new EntityNotFoundException(pAccountId.toString(), Account.class));
+        return accountRepository.findById(pAccountId).orElseThrow(() -> new EntityNotFoundException(pAccountId, Account.class));
+    }
+
+    @Override
+    public Account retrieveAccountByEmail(String email) throws EntityNotFoundException {
+        return accountRepository.findOneByEmail(email).orElseThrow(() -> new EntityNotFoundException(email, Account.class));
     }
 
     @Override
@@ -261,14 +226,7 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account retrieveAccountByEmail(String pEmail) throws EntityNotFoundException {
-        return accountRepository.findOneByEmail(pEmail)
-                .orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class));
-    }
-
-    @Override
-    public boolean validatePassword(String email, String password, boolean checkAccountValidity)
-            throws EntityNotFoundException {
+    public boolean validatePassword(String email, String password, boolean checkAccountValidity) throws EntityNotFoundException {
 
         Optional<Account> toValidate = accountRepository.findOneByEmail(email);
 
@@ -303,13 +261,12 @@ public class AccountService implements IAccountService {
 
     @Override
     public boolean existAccount(String pEmail) {
-        accountRepository.findAll();
         return accountRepository.findOneByEmail(pEmail).isPresent();
     }
 
     @Override
     public void checkPassword(Account pAccount) throws EntityInvalidException {
-        if (!pAccount.getExternal() && !validPassword(pAccount.getPassword())) {
+        if (!pAccount.isExternal() && !validPassword(pAccount.getPassword())) {
             throw new EntityInvalidException(
                     "The provided password doesn't match the configured pattern : " + passwordRegex);
         }
@@ -359,8 +316,54 @@ public class AccountService implements IAccountService {
         accountRepository.save(account);
     }
 
+    @Override
+    public List<String> getOrigins() {
+        List<String> origins = new ArrayList<>();
+        origins.add(Account.REGARDS_ORIGIN);
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                FeignSecurityManager.asSystem();
+                PagedModel<EntityModel<ServiceProviderDto>> requestBody = externalAuthenticationClient.getServiceProviders().getBody();
+                if (requestBody != null) {
+                    origins.addAll(
+                            HateoasUtils.unwrapCollection(requestBody.getContent())
+                                    .stream()
+                                    .map(ServiceProviderDto::getName)
+                                    .collect(Collectors.toList()));
+                }
+            } finally {
+                FeignSecurityManager.reset();
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+        return origins;
+    }
+
+    @Override
+    public void link(String email, String project) throws EntityException {
+        Account account = retrieveAccountByEmail(email);
+        try {
+            account.getProjects().add(projectService.retrieveProject(project));
+        } catch (ModuleException e) {
+            throw new EntityInvalidException("Invalid project name : " + project);
+        }
+
+    }
+
+    @Override
+    public void unlink(String email, String project) throws EntityException {
+        Account account = retrieveAccountByEmail(email);
+        try {
+            account.getProjects().remove(projectService.retrieveProject(project));
+        } catch (ModuleException e) {
+            throw new EntityInvalidException("Invalid project name : " + project);
+        }
+    }
+
     /**
      * Reset the authentication failed counter of an Account without explicitly saving changes into db.
+     *
      * @param account Account which authentication failed counter is to reset
      */
     private void resetAuthenticationFailedCounter(Account account) {
@@ -370,33 +373,37 @@ public class AccountService implements IAccountService {
     @Scheduled(cron = "${regards.accounts.validity.check.cron}")
     @Override
     public void checkAccountValidity() {
-        LOG.info("Start checking accounts inactivity");
-        Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE);
 
-        // Account#equals being on email, we create a fake Account with the INSTANCE_ADMIN login and we remove it from the database result.
-        toCheck.remove(new Account(rootAdminUserLogin, "", "", rootAdminUserPassword));
-        // lets check issues with the invalidity date
+        LOG.info("Start checking accounts inactivity");
+
+        Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE)
+                .stream().filter(account -> !rootAdminUserLogin.equals(account.getEmail())).collect(Collectors.toSet());
+
+        // check issues with the invalidity date
         if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
             LocalDateTime now = LocalDateTime.now();
-            toCheck.stream().filter(a -> a.getInvalidityDate().isBefore(now))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE))
-                    .peek(a -> LOG.info("Account {} set to {} because of its account validity date", a.getEmail(),
-                                        AccountStatus.INACTIVE))
-                    .forEach(accountRepository::save);
+            toCheck.stream()
+                    .filter(account -> account.getInvalidityDate().isBefore(now))
+                    .forEach(account -> {
+                        account.setStatus(AccountStatus.INACTIVE);
+                        LOG.info("Account {} set to {} because of its account validity date", account.getEmail(), AccountStatus.INACTIVE);
+                    });
         }
 
-        // lets check issues with the password
+        // check issues with the password
         if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
             LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
             toCheck.stream()
-                    .filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null)
-                            && a.getPasswordUpdateDate().isBefore(minValidityDate))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE_PASSWORD))
-                    .peek(a -> LOG.info("Account {} set to {} because of its password validity date", a.getEmail(),
-                                        AccountStatus.INACTIVE_PASSWORD))
-                    .forEach(accountRepository::save);
+                    .filter(account -> !account.isExternal()
+                            && account.getPasswordUpdateDate() != null
+                            && account.getPasswordUpdateDate().isBefore(minValidityDate))
+                    .forEach(account -> {
+                        account.setStatus(AccountStatus.INACTIVE_PASSWORD);
+                        LOG.info("Account {} set to {} because of its password validity date", account.getEmail(), AccountStatus.INACTIVE_PASSWORD);
+                    });
         }
+        accountRepository.saveAll(toCheck);
     }
 
 }

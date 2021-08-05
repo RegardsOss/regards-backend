@@ -40,16 +40,17 @@ public class AccessGroupEvent implements ISubscribable {
         // Deserialization constructor
     }
 
-    public AccessGroupEvent(AccessGroup pAccessGroup) {
+    public AccessGroupEvent(AccessGroup accessGroup) {
         super();
-        accessGroup = pAccessGroup;
+        this.accessGroup = accessGroup;
     }
 
     public AccessGroup getAccessGroup() {
         return accessGroup;
     }
 
-    public void setAccessGroup(AccessGroup pAccessGroup) {
-        accessGroup = pAccessGroup;
+    public void setAccessGroup(AccessGroup accessGroup) {
+        this.accessGroup = accessGroup;
     }
+
 }

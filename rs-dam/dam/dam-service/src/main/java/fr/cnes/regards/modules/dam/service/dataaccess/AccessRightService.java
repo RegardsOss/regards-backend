@@ -18,22 +18,11 @@
  */
 package fr.cnes.regards.modules.dam.service.dataaccess;
 
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -48,9 +37,10 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.framwork.logbackappender.LogConstants;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.User;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.event.AccessRightEvent;
@@ -59,6 +49,21 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.IDataOb
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Access right service implementation
@@ -71,64 +76,67 @@ public class AccessRightService implements IAccessRightService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessRightService.class);
 
-    @Autowired
-    private IAccessRightRepository repository;
+    private final IAccessRightRepository accessRightRepository;
+    private final IAccessGroupService accessGroupService;
+    private final IDatasetService datasetService;
+    private final IPublisher eventPublisher;
+    private final IPluginService pluginService;
+    private final INotificationClient notificationClient;
+    private final IAuthenticationResolver authenticationResolver;
+    private final IProjectUsersClient projectUsersClient;
 
-    @Autowired
-    private IAccessGroupService accessGroupService;
-
-    @Autowired
-    private IDatasetService datasetService;
-
-    @Autowired
-    private IPublisher eventPublisher;
-
-    @Autowired
-    private IPluginService pluginService;
-
-    @Autowired
-    private INotificationClient notificationClient;
-
-    @Autowired
-    private IAuthenticationResolver authenticationResolver;
+    public AccessRightService(IAccessRightRepository accessRightRepository, IAccessGroupService accessGroupService,
+            IDatasetService datasetService,
+            IPublisher eventPublisher,
+            IPluginService pluginService,
+            INotificationClient notificationClient,
+            IAuthenticationResolver authenticationResolver,
+            IProjectUsersClient projectUsersClient
+    ) {
+        this.accessRightRepository = accessRightRepository;
+        this.accessGroupService = accessGroupService;
+        this.datasetService = datasetService;
+        this.eventPublisher = eventPublisher;
+        this.pluginService = pluginService;
+        this.notificationClient = notificationClient;
+        this.authenticationResolver = authenticationResolver;
+        this.projectUsersClient = projectUsersClient;
+    }
 
     @Override
-    public Page<AccessRight> retrieveAccessRights(String accessGroupName, UniformResourceName datasetIpId,
-            Pageable pageable) throws ModuleException {
+    public Page<AccessRight> retrieveAccessRights(String accessGroupName, UniformResourceName datasetIpId, Pageable pageable) throws ModuleException {
         if (accessGroupName != null) {
             return retrieveAccessRightsByAccessGroup(datasetIpId, accessGroupName, pageable);
         }
         return retrieveAccessRightsByDataset(datasetIpId, pageable);
     }
 
-    private Page<AccessRight> retrieveAccessRightsByDataset(UniformResourceName datasetIpId, Pageable pageable)
-            throws ModuleException {
+    private Page<AccessRight> retrieveAccessRightsByDataset(UniformResourceName datasetIpId, Pageable pageable) throws ModuleException {
         if (datasetIpId != null) {
             Dataset ds = datasetService.load(datasetIpId);
             if (ds == null) {
                 throw new EntityNotFoundException(datasetIpId.toString(), Dataset.class);
             }
 
-            return repository.findAllByDataset(ds, pageable);
+            return accessRightRepository.findAllByDataset(ds, pageable);
         }
-        return repository.findAll(pageable);
+        return accessRightRepository.findAll(pageable);
     }
 
     @Override
-    public Optional<AccessRight> retrieveAccessRight(String accessGroupName, UniformResourceName datasetIpId)
-            throws ModuleException {
+    public Optional<AccessRight> retrieveAccessRight(String accessGroupName, UniformResourceName datasetIpId) throws ModuleException {
         Preconditions.checkNotNull(accessGroupName);
         Preconditions.checkNotNull(datasetIpId);
         AccessGroup ag = accessGroupService.retrieveAccessGroup(accessGroupName);
         Dataset dataset = datasetService.load(datasetIpId);
 
-        return repository.findAccessRightByAccessGroupAndDataset(ag, dataset);
+        return accessRightRepository.findAccessRightByAccessGroupAndDataset(ag, dataset);
     }
 
     @Override
     public boolean hasAccessRights(AccessGroup accessGroup) {
         Assert.notNull(accessGroup, "Access group is required");
-        Page<AccessRight> accessRights = repository.findAllByAccessGroup(accessGroup, PageRequest.of(0, 1));
+        Page<AccessRight> accessRights = accessRightRepository.findAllByAccessGroup(accessGroup, PageRequest.of(0, 1));
         return accessRights.getTotalElements() > 0;
     }
 
@@ -185,8 +193,7 @@ public class AccessRightService implements IAccessRightService {
 
     }
 
-    private Page<AccessRight> retrieveAccessRightsByAccessGroup(UniformResourceName pDatasetIpId,
-            String pAccessGroupName, Pageable pPageable) throws ModuleException {
+    private Page<AccessRight> retrieveAccessRightsByAccessGroup(UniformResourceName pDatasetIpId, String pAccessGroupName, Pageable pPageable) throws ModuleException {
         AccessGroup ag = accessGroupService.retrieveAccessGroup(pAccessGroupName);
         if (ag == null) {
             throw new EntityNotFoundException(pAccessGroupName, AccessGroup.class);
@@ -197,9 +204,9 @@ public class AccessRightService implements IAccessRightService {
                 throw new EntityNotFoundException(pDatasetIpId.toString(), Dataset.class);
             }
 
-            return repository.findAllByAccessGroupAndDataset(ag, ds, pPageable);
+            return accessRightRepository.findAllByAccessGroupAndDataset(ag, ds, pPageable);
         } else {
-            return repository.findAllByAccessGroup(ag, pPageable);
+            return accessRightRepository.findAllByAccessGroup(ag, pPageable);
         }
     }
 
@@ -226,7 +233,7 @@ public class AccessRightService implements IAccessRightService {
             accessRight.setDataAccessPlugin(createPluginConfiguration(accessRight.getDataAccessPlugin()));
         }
 
-        AccessRight created = repository.save(accessRight);
+        AccessRight created = accessRightRepository.save(accessRight);
         logForSecurity(created);
         eventPublisher.publish(new AccessRightEvent(created, AccessRightEventType.CREATE, authenticationResolver.getRole()));
         return created;
@@ -282,7 +289,7 @@ public class AccessRightService implements IAccessRightService {
 
     @Override
     public AccessRight retrieveAccessRight(Long id) throws EntityNotFoundException {
-        Optional<AccessRight> resultOpt = repository.findById(id);
+        Optional<AccessRight> resultOpt = accessRightRepository.findById(id);
         if (!resultOpt.isPresent()) {
             throw new EntityNotFoundException(id, AccessRight.class);
         }
@@ -294,7 +301,7 @@ public class AccessRightService implements IAccessRightService {
      */
     @Override
     public AccessRight updateAccessRight(Long id, AccessRight accessRight) throws ModuleException {
-        Optional<AccessRight> accessRightFromDbOpt = repository.findById(id);
+        Optional<AccessRight> accessRightFromDbOpt = accessRightRepository.findById(id);
         if (!accessRightFromDbOpt.isPresent()) {
             throw new EntityNotFoundException(id, AccessRight.class);
         }
@@ -302,14 +309,13 @@ public class AccessRightService implements IAccessRightService {
             throw new EntityInconsistentIdentifierException(id, accessRight.getId(), AccessRight.class);
         }
         AccessRight accessRightFromDb = accessRightFromDbOpt.get();
-        Optional<PluginConfiguration> toRemove = updatePluginConfiguration(Optional.ofNullable(accessRight
-                                                                                                       .getDataAccessPlugin()),
-                                                                           Optional.ofNullable(accessRightFromDb
-                                                                                                       .getDataAccessPlugin()));
+        Optional<PluginConfiguration> toRemove = updatePluginConfiguration(
+                Optional.ofNullable(accessRight.getDataAccessPlugin()),
+                Optional.ofNullable(accessRightFromDb.getDataAccessPlugin()));
 
-        repository.save(accessRight);
+        accessRightRepository.save(accessRight);
         // Load access right with dependencies
-        accessRight = repository.findById(accessRight.getId()).orElseThrow(() -> new RsRuntimeException(
+        accessRight = accessRightRepository.findById(accessRight.getId()).orElseThrow(() -> new RsRuntimeException(
                 "There is a big problem with the code and/or database as we could save the access right but not get is back the next code line."));
         logForSecurity(accessRight);
         // Remove unused plugin conf id any
@@ -323,7 +329,7 @@ public class AccessRightService implements IAccessRightService {
 
     @Override
     public void deleteAccessRight(Long id) throws ModuleException {
-        Optional<AccessRight> accessRightOpt = repository.findById(id);
+        Optional<AccessRight> accessRightOpt = accessRightRepository.findById(id);
         if (!accessRightOpt.isPresent()) {
             throw new EntityNotFoundException(id, AccessRight.class);
         }
@@ -336,11 +342,11 @@ public class AccessRightService implements IAccessRightService {
         }
 
         PluginConfiguration confToDelete = accessRight.getDataAccessPlugin();
-        repository.deleteById(id);
+        accessRightRepository.deleteById(id);
         LOGGER.info("{}Dataset {} has no more configured access for users from group {}",
-                    LogConstants.SECURITY_MARKER,
-                    accessRight.getConstrained().getLabel(),
-                    accessRight.getAccessGroup().getName());
+                LogConstants.SECURITY_MARKER,
+                accessRight.getConstrained().getLabel(),
+                accessRight.getAccessGroup().getName());
         if ((confToDelete != null) && (confToDelete.getId() != null)) {
             pluginService.deletePluginConfiguration(confToDelete.getBusinessId());
         }
@@ -351,31 +357,29 @@ public class AccessRightService implements IAccessRightService {
     }
 
     @Override
-    public boolean isUserAutorisedToAccessDataset(UniformResourceName datasetIpId, String userEMail)
-            throws ModuleException {
-        User user = new User(userEMail);
+    public boolean isUserAuthorisedToAccessDataset(UniformResourceName datasetIpId, String userEMail) throws ModuleException {
 
-        Dataset ds = datasetService.load(datasetIpId);
-        if (ds == null) {
-            throw new EntityNotFoundException(datasetIpId.toString(), Dataset.class);
+        boolean isAuthorised = false;
+        Dataset dataset = datasetService.load(datasetIpId);
+
+        Set<AccessGroup> accessGroups = new HashSet<>();
+        ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient.retrieveProjectUserByEmail(userEMail);
+        if (response != null && response.getStatusCode().is2xxSuccessful()) {
+            ProjectUser projectUser = HateoasUtils.unwrap(response.getBody());
+            accessGroups = projectUser.getAccessGroups().stream()
+                                      .map(s -> accessGroupService.getByName(s).orElse(null))
+                                      .filter(Objects::nonNull)
+                                      .collect(Collectors.toSet());
         }
-        Set<AccessGroup> accessGroups = accessGroupService.retrieveAllUserAccessGroupsOrPublicAccessGroups(userEMail);
-        boolean isAutorised = false;
+
         for (AccessGroup accessGroup : accessGroups) {
-            // Check if the user is concerned by the accessGroup
-            if (accessGroup.isPublic() || accessGroup.getUsers().contains(user)) {
-                Optional<AccessRight> accessRightOptional = repository
-                        .findAccessRightByAccessGroupAndDataset(accessGroup, ds);
-                // Check if the accessRight allows to access to that dataset
-                if (accessRightOptional.isPresent() && !AccessLevel.NO_ACCESS
-                        .equals(accessRightOptional.get().getAccessLevel())) {
-                    isAutorised = true;
-                    // Stop loop iteration
-                    break;
-                }
+            Optional<AccessRight> accessRightOptional = accessRightRepository.findAccessRightByAccessGroupAndDataset(accessGroup, dataset);
+            if (accessRightOptional.isPresent() && !AccessLevel.NO_ACCESS.equals(accessRightOptional.get().getAccessLevel())) {
+                isAuthorised = true;
+                break;
             }
         }
-        return isAutorised;
+        return isAuthorised;
     }
 
     /**
@@ -384,7 +388,7 @@ public class AccessRightService implements IAccessRightService {
     @Override
     public void updateDynamicAccessRights() {
         Set<UniformResourceName> datasetsToUpdate = Sets.newHashSet();
-        repository.findByDataAccessPluginNotNull().forEach(ar -> {
+        accessRightRepository.findByDataAccessPluginNotNull().forEach(ar -> {
             try {
                 if (!datasetsToUpdate.contains(ar.getDataset().getIpId())) {
                     IDataObjectAccessFilterPlugin plugin = pluginService

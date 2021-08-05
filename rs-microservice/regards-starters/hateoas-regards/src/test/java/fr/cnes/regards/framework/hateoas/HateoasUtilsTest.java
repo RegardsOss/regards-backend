@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.data.domain.Pageable;
@@ -31,8 +29,9 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Test class for {@link HateoasUtils}.
@@ -119,30 +118,26 @@ public class HateoasUtilsTest {
     public void retrieveAllEnttitiesFromPaginatedEndpoint() {
 
         // First with total elements = 20 and 5 elements per page
-        List<String> allResults = HateoasUtils.retrieveAllPages(5, (final Pageable pPageable) -> {
-            final List<String> entities = new ArrayList<>();
-
-            for (int i = 0; i < pPageable.getPageSize(); i++) {
-                entities.add("value_" + String.valueOf(pPageable.getOffset() + i));
+        List<String> allResults = HateoasUtils.retrieveAllPages(5, (pageable) -> {
+            List<String> entities = new ArrayList<>();
+            for (int i = 0; i < pageable.getPageSize(); i++) {
+                entities.add("value_" + pageable.getOffset() + i);
             }
-
-            final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 20);
-            final PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md,
-                    new ArrayList<>());
+            PageMetadata metadata = new PageMetadata(pageable.getPageSize(), pageable.getPageNumber(), 20);
+            PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), metadata, new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 
         Assert.assertNotNull(allResults);
         Assert.assertEquals(20, allResults.size());
-        Assert.assertEquals("value_0", allResults.get(0));
-        Assert.assertEquals("value_1", allResults.get(1));
+        Assert.assertEquals("value_00", allResults.get(0));
+        Assert.assertEquals("value_01", allResults.get(1));
 
         // Second with no elements in results
         allResults = HateoasUtils.retrieveAllPages(5, (final Pageable pPageable) -> {
-            final List<String> entities = new ArrayList<>();
-            final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 0);
-            final PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md,
-                    new ArrayList<>());
+            List<String> entities = new ArrayList<>();
+            PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 0);
+            PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md, new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 
@@ -150,12 +145,11 @@ public class HateoasUtilsTest {
         Assert.assertEquals(0, allResults.size());
 
         // Third with with 1 elements in results and 5 per page
-        allResults = HateoasUtils.retrieveAllPages(5, (final Pageable pPageable) -> {
-            final List<String> entities = new ArrayList<>();
-            entities.add("value_" + String.valueOf(pPageable.getOffset()));
-            final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 1);
-            final PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md,
-                    new ArrayList<>());
+        allResults = HateoasUtils.retrieveAllPages(5, (pageable) -> {
+            List<String> entities = new ArrayList<>();
+            entities.add("value_" + pageable.getOffset());
+            PageMetadata md = new PageMetadata(pageable.getPageSize(), pageable.getPageNumber(), 1);
+            PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md, new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 

@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.jayway.jsonpath.JsonPath;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,29 +34,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.jayway.jsonpath.JsonPath;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Search engine tests
  *
  * @author Marc Sordi
- *
  */
-@TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "regards.tenant=dosearch", "spring.jpa.properties.hibernate.default_schema=dosearch" })
+@TestPropertySource(locations = {"classpath:test.properties"}, properties = {"regards.tenant=dosearch", "spring.jpa.properties.hibernate.default_schema=dosearch"})
 @MultitenantTransactional
 public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
@@ -65,24 +62,19 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
     private static final String ACCESS_GROUP = "GRANTED";
 
+    private static final String PATH = SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING;
+
     @Autowired
-    protected IUserClient userClient;
+    protected IAccessGroupClient accessGroupClient;
 
     @Override
     protected void manageAccessRights() {
         Mockito.reset(projectUserClientMock);
-        // Do not bypass access rights
+        ProjectUser projectUser = new ProjectUser().setAccessGroups(Collections.singleton(ACCESS_GROUP));
+        AccessGroup accessGroup = new AccessGroup(ACCESS_GROUP);
         Mockito.when(projectUserClientMock.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(Boolean.FALSE));
-
-        // Mock user groups
-        AccessGroup ag = new AccessGroup(ACCESS_GROUP);
-        Collection<EntityModel<AccessGroup>> ags = new ArrayList<>();
-        ags.add(new EntityModel<AccessGroup>(ag));
-
-        PagedModel.PageMetadata md = new PagedModel.PageMetadata(0, 0, 0);
-        PagedModel<EntityModel<AccessGroup>> pagedResources = new PagedModel<>(ags, md, new ArrayList<>());
-        Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(ResponseEntity.ok(pagedResources));
+        Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(any())).thenReturn(ResponseEntity.ok(new EntityModel<>(projectUser)));
+        Mockito.when(accessGroupClient.retrieveAccessGroup(ACCESS_GROUP)).thenReturn(ResponseEntity.ok(new EntityModel<>(accessGroup)));
     }
 
     @Override
@@ -96,8 +88,8 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // 9 data from planets & 2 datas from test datas
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(14)));
-        return performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                                 customizer, "Search all error", ENGINE_TYPE);
+
+        return performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
@@ -113,7 +105,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void dataAccessGranted() throws InterruptedException {
+    public void dataAccessGranted() {
 
         // Add access to mercury
         DataObject mercury = getAstroObject(MERCURY);
@@ -139,8 +131,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         // Add full text search
         customizer.addParameter("q", MERCURY);
 
-        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                          customizer, "Search all error", ENGINE_TYPE);
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
@@ -151,8 +142,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         String value = MERCURY + " OR " + PLANET + ":" + JUPITER;
         customizer.addParameter("q", value);
 
-        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                          customizer, "Search all error", ENGINE_TYPE);
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test(expected = AssertionError.class)
@@ -164,8 +154,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         //        String value = MERCURY + " OR " + JUPITER;
         customizer.addParameter("q", value);
 
-        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                          customizer, "Search all error", ENGINE_TYPE);
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
     }
 
 }

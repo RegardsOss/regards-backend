@@ -21,19 +21,15 @@ package fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.User;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 
 /**
- * Plugin used to check if a {@link DataFile} from a {@link Dataset} is accessible, or not, for an {@link AccessGroup} or a
- * {@link User}
+ * Plugin used to check if a {@link DataFile} from a {@link Dataset} is accessible, or not, for an {@link AccessGroup}
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
-@PluginInterface(
-        description = "plugin used to check if a data from a dataset is accessible, or not, for an access group or a user")
+@PluginInterface(description = "plugin used to check if a data from a dataset is accessible, or not, for an access group or a user")
 public interface ICheckDataAccess extends IIdentifiable<Long> {
 
     boolean isAccessible(DataFile pData);

@@ -109,7 +109,7 @@ public class RegardsInternalAuthenticationPluginTest {
         Assert.assertNotNull(response);
         Assert.assertEquals("test@regards.fr", response.getEmail());
         Assert.assertNull(response.getErrorMessage());
-        Assert.assertTrue(response.getAccessGranted());
+        Assert.assertTrue(response.isAccessGranted());
 
     }
 
@@ -121,7 +121,7 @@ public class RegardsInternalAuthenticationPluginTest {
 
             String email = "test@regards.fr";
             Account extAccount = new Account(email, "firstName", "lastName", "password");
-            extAccount.setExternal(true);
+            extAccount.setOrigin("origin");
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
@@ -141,7 +141,7 @@ public class RegardsInternalAuthenticationPluginTest {
         Assert.assertNotNull(response);
         Assert.assertEquals("test@regards.fr", response.getEmail());
         Assert.assertNotNull(response.getErrorMessage());
-        Assert.assertFalse(response.getAccessGranted());
+        Assert.assertFalse(response.isAccessGranted());
 
     }
 
@@ -173,7 +173,7 @@ public class RegardsInternalAuthenticationPluginTest {
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
         Assert.assertNotNull(response.getErrorMessage());
-        Assert.assertFalse(response.getAccessGranted());
+        Assert.assertFalse(response.isAccessGranted());
 
     }
 
@@ -205,7 +205,7 @@ public class RegardsInternalAuthenticationPluginTest {
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
         Assert.assertNotNull(response.getErrorMessage());
-        Assert.assertFalse(response.getAccessGranted());
+        Assert.assertFalse(response.isAccessGranted());
 
     }
 
@@ -237,7 +237,7 @@ public class RegardsInternalAuthenticationPluginTest {
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
         Assert.assertNotNull(response.getErrorMessage());
-        Assert.assertFalse(response.getAccessGranted());
+        Assert.assertFalse(response.isAccessGranted());
 
     }
 }

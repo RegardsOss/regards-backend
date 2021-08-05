@@ -16,29 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.dam.domain.dataaccess.jpa.converters;
+package fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.User;
+@Event(target = Target.ALL)
+public class AccessGroupDeletionEvent extends AccessGroupEvent{
 
-/**
- * User database converter
- *
- * @author Sylvain Vissiere-Guerinet
- */
-@Converter(autoApply = true)
-public class UserConverter implements AttributeConverter<User, String> {
-
-    @Override
-    public String convertToDatabaseColumn(User attribute) {
-        return attribute.getEmail();
+    public AccessGroupDeletionEvent() {
     }
 
-    @Override
-    public User convertToEntityAttribute(String dbData) {
-        return new User(dbData);
+    public AccessGroupDeletionEvent(AccessGroup pAccessGroup) {
+        super(pAccessGroup);
     }
 
 }

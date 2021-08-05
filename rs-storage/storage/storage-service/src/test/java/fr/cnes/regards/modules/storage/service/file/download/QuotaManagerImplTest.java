@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.storage.service.file.download;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.*;
@@ -19,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -37,23 +39,29 @@ public class QuotaManagerImplTest {
 
     private static final String TENANT = "default";
 
-    private long gaugeExpirationTick = 600;
+    @Mock
+    private ThreadPoolTaskScheduler gaugeExpirationTickingScheduler;
 
-    private long gaugeSyncTick = 30;
+    @Mock
+    private ThreadPoolTaskScheduler gaugeSyncTickingScheduler;
 
-    @Mock private ThreadPoolTaskScheduler gaugeExpirationTickingScheduler;
+    @Mock
+    private IDownloadQuotaRepository quotaRepository;
 
-    @Mock private ThreadPoolTaskScheduler gaugeSyncTickingScheduler;
+    @Mock
+    private ITenantResolver tenantResolver;
 
-    @Mock private IDownloadQuotaRepository quotaRepository;
+    @Mock
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Mock private ITenantResolver tenantResolver;
+    @Mock
+    private ApplicationContext applicationContext;
 
-    @Mock private IRuntimeTenantResolver runtimeTenantResolver;
+    @Mock
+    private IPublisher publisher;
 
-    @Mock private ApplicationContext applicationContext;
-
-    @Mock private Environment env;
+    @Mock
+    private Environment env;
 
     private QuotaManagerImpl quotaManager;
 
@@ -62,27 +70,16 @@ public class QuotaManagerImplTest {
         MockitoAnnotations.initMocks(this);
 
         doNothing()
-            .when(runtimeTenantResolver)
-            .forceTenant(anyString());
+                .when(runtimeTenantResolver)
+                .forceTenant(anyString());
         doReturn(TENANT)
-            .when(runtimeTenantResolver)
-            .getTenant();
+                .when(runtimeTenantResolver)
+                .getTenant();
 
-        quotaManager = spy(
-            new QuotaManagerImpl(
-                gaugeExpirationTick,
-                gaugeSyncTick,
-                gaugeExpirationTickingScheduler,
-                gaugeSyncTickingScheduler,
-                quotaRepository,
-                tenantResolver,
-                runtimeTenantResolver,
-                applicationContext,
-                env
-            )
-        );
+        quotaManager =
+                spy(new QuotaManagerImpl(gaugeExpirationTickingScheduler, gaugeSyncTickingScheduler, quotaRepository, tenantResolver, runtimeTenantResolver, publisher, env));
 
-        quotaManager.setSelf(quotaManager);
+        ReflectionTestUtils.setField(quotaManager, "self", quotaManager);
         quotaManager.setUserDiffsByTenant(new HashMap<>());//HashMap.empty());
         quotaManager.setDiffsAccumulatorByTenant(new HashMap<>());//HashMap.empty());
     }
@@ -110,13 +107,13 @@ public class QuotaManagerImplTest {
         long stubCounter = 0L;
 
         when(quotaRepository.upsertOrCombineDownloadRate(eq(instanceId), eq(email), eq(0L), any()))
-            .thenReturn(new UserDownloadRate(instanceId, TENANT, email, stubGauge, LocalDateTime.now().plusSeconds(gaugeSyncTick)));
+                .thenReturn(new UserDownloadRate(instanceId, TENANT, email, stubGauge, LocalDateTime.now().plusSeconds(30)));
         when(quotaRepository.upsertOrCombineDownloadQuota(eq(instanceId), eq(email), eq(0L)))
-            .thenReturn(new UserDownloadQuota(instanceId, TENANT, email, stubCounter));
+                .thenReturn(new UserDownloadQuota(instanceId, TENANT, email, stubCounter));
         when(quotaRepository.fetchDownloadRatesSum(email))
-            .thenReturn(new UserRateAggregate(stubGauge));
+                .thenReturn(new UserRateAggregate(stubGauge));
         when(quotaRepository.fetchDownloadQuotaSum(email))
-            .thenReturn(new UserQuotaAggregate(stubCounter));
+                .thenReturn(new UserQuotaAggregate(stubCounter));
 
         Tuple2<UserQuotaAggregate, UserRateAggregate> quotaAndRate = quotaManager.get(downloadQuota);
         QuotaManagerImpl.UserDiffs userDiffs = cache.getIfPresent(email);

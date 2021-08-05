@@ -18,21 +18,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.transaction.BeforeTransaction;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -42,6 +27,23 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class LocalAuthoritiesProviderTest
@@ -77,6 +79,12 @@ public class LocalAuthoritiesProviderTest {
 
     @Autowired
     private IRoleRepository roleRepository;
+
+    @MockBean
+    private IAccessGroupClient accessGroupClient;
+
+    @MockBean
+    private IExternalAuthenticationClient externalAuthenticationClient;
 
     @BeforeTransaction
     public void beforeTransaction() {

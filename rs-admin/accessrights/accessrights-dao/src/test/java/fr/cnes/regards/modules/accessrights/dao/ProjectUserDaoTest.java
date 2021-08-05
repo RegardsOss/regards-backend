@@ -18,9 +18,17 @@
  */
 package fr.cnes.regards.modules.accessrights.dao;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,16 +39,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 
 /**
  * Test class for {@link ProjectUser} DAO module
@@ -113,24 +113,20 @@ public class ProjectUserDaoTest {
         projectUserRepository.save(user3);
         projectUserRepository.save(user4);
 
-        Page<ProjectUser> result = projectUserRepository
-                .findAll(ProjectUserSpecification.search(null, "user"), PageRequest.of(0, 4));
-        Assert.assertEquals("search of users which email starts with \"user\" should return 4 user", 4,
-                            result.getContent().size());
+        ProjectUserSearchParameters parameters = new ProjectUserSearchParameters().setEmail("user");
+        Page<ProjectUser> result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters).build(), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users which email contains \"user\" should return 4 users", 4, result.getContent().size());
 
-        result = projectUserRepository.findAll(ProjectUserSpecification.search(null, "user4"), PageRequest.of(0, 4));
-        Assert.assertEquals("search of users which email starts with \"user4\" should return 1 user", 1,
-                            result.getContent().size());
+        parameters = new ProjectUserSearchParameters().setEmail("user4");
+        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters).build(), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users which email contains \"user4\" should return 1 user", 1, result.getContent().size());
 
-        result = projectUserRepository.findAll(ProjectUserSpecification.search(null, null), PageRequest.of(0, 4));
-        Assert.assertEquals("search of users which email starts with NOTHING should return ALL user",
-                            projectUserRepository.findAll().size(), result.getContent().size());
+        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().build(), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users without filters should return ALL users", projectUserRepository.findAll().size(), result.getContent().size());
 
-        result = projectUserRepository
-                .findAll(ProjectUserSpecification.search(UserStatus.WAITING_ACCOUNT_ACTIVE.toString(), null),
-                         PageRequest.of(0, 4));
-        Assert.assertEquals("search of users which email starts with NOTHING should return ALL user",
-                            projectUserRepository.findAll().size(), result.getContent().size());
+        parameters = new ProjectUserSearchParameters().setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE.toString());
+        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters).build(), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users with status active should return ALL users", projectUserRepository.findAll().size(), result.getContent().size());
     }
 
 }

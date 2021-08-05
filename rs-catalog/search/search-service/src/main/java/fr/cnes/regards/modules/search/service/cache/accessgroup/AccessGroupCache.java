@@ -18,23 +18,24 @@
  */
 package fr.cnes.regards.modules.search.service.cache.accessgroup;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * In this implementation, we choose to simply evict the cache for a tenant in response to "create", "delete" and
- * "update" events.<br>
- * Note that we might achieve more subtile, per user, eviction.
+ * In this implementation, we choose to simply evict the cache for a tenant in response to "create", "delete" and "update" events.<br>
+ * Note that we might achieve more subtle, per user, eviction.
+ *
  * @author Xavier-Alexandre Brochard
  * @author oroussel
  * @author Léo Mieulet
@@ -43,68 +44,33 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 @MultitenantTransactional
 public class AccessGroupCache implements IAccessGroupCache {
 
-    /**
-     * Logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessGroupCache.class);
 
-    /**
-     * Feign client returning all access groups for a user. Autowired by Spring.
-     */
-    private final IUserClient userClient;
+    private final IProjectUsersClient projectUsersClient;
+    private final IAccessGroupClient accessGroupClient;
 
-    /**
-     * Allows to retrieve all public groups
-     */
-    private final IAccessGroupClient groupClient;
-
-    public AccessGroupCache(IUserClient userClient, IAccessGroupClient groupClient) {
-        this.userClient = userClient;
-        this.groupClient = groupClient;
+    public AccessGroupCache(IProjectUsersClient projectUsersClient, IAccessGroupClient accessGroupClient) {
+        this.projectUsersClient = projectUsersClient;
+        this.accessGroupClient = accessGroupClient;
     }
 
     @Override
-    public List<AccessGroup> getAccessGroups(String pUserEmail, String pTenant) {
-        return doGetAccessGroups(pUserEmail);
-    }
-
-    /**
-     * Use the feign client to retrieve the access groups of the passed user.<br>
-     * The method is private because it is not expected to be used directly, but via its cached facade "getAccessGroups" method.
-     * @param pUserEmail the user email
-     * @return the list of user's access groups
-     */
-    private List<AccessGroup> doGetAccessGroups(String pUserEmail) {
+    public List<AccessGroup> getAccessGroups(String email, String tenant) {
+        List<AccessGroup> accessGroups = new ArrayList<>();
         try {
-            // Enable system call as follow (thread safe action)
             FeignSecurityManager.asSystem();
-            // Perform client call
-            return HateoasUtils.retrieveAllPages(100, pageable -> userClient
-                    .retrieveAccessGroupsOfUser(pUserEmail, pageable.getPageNumber(), pageable.getPageSize()));
+            ProjectUser projectUser = HateoasUtils.unwrap(projectUsersClient.retrieveProjectUserByEmail(email).getBody());
+            projectUser.getAccessGroups().forEach(accessGroup -> accessGroups.add(HateoasUtils.unwrap(accessGroupClient.retrieveAccessGroup(accessGroup).getBody())));
         } finally {
             FeignSecurityManager.reset();
         }
+
+        return accessGroups;
     }
 
     @Override
-    public void cleanAccessGroups(String userEmail, String tenant) {
-        LOGGER.debug("Rejecting group cache for user {} and tenant {}", userEmail, tenant);
-    }
-
-    @Override
-    public List<AccessGroup> getPublicAccessGroups(String tenant) {
-        try {
-            FeignSecurityManager.asSystem();
-            return HateoasUtils.retrieveAllPages(100, pageable -> groupClient
-                    .retrieveAccessGroupsList(true, pageable.getPageNumber(), pageable.getPageSize()));
-        } finally {
-            FeignSecurityManager.reset();
-        }
-    }
-
-    @Override
-    public void cleanPublicAccessGroups(String tenant) {
-        LOGGER.debug("Rejecting public group cache for tenant {}", tenant);
+    public void cleanAccessGroups(String email, String tenant) {
+        LOGGER.debug("Rejecting group cache for user {} and tenant {}", email, tenant);
     }
 
 }

@@ -18,20 +18,9 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import java.util.ArrayList;
-
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.ResponseEntity;
-
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
@@ -40,6 +29,15 @@ import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
 
 /**
  * Module-wide configuration for integration tests.
@@ -55,17 +53,6 @@ public class SearchClientITConfiguration {
         Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
                 .thenReturn(SearchClientTestUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE);
         return attributeModelClient;
-    }
-
-    @Bean
-    public IUserClient userClient() {
-        IUserClient userClient = Mockito.mock(IUserClient.class);
-        Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(SearchClientTestUtils.USER_CLIENT_RESPONSE);
-        Mockito.when(userClient.retrieveAccessGroupsOfUser(Mockito.eq(SearchClientTestUtils.OTHER_USER_EMAIL),
-                                                           Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(SearchClientTestUtils.USER_CLIENT_OTHER_RESPONSE);
-        return userClient;
     }
 
     @Bean

@@ -15,7 +15,6 @@ import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.Serv
 import fr.cnes.regards.modules.authentication.domain.repository.IServiceProviderRepository;
 import fr.cnes.regards.modules.authentication.domain.service.IUserAccountManager;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
-import io.vavr.Tuple;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
@@ -159,7 +158,7 @@ public class ServiceProviderAuthenticationServiceTest {
             @Override public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) { return null; }
             @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
         })).when(service).getPlugin(PROVIDER_NAME);
-        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO))
+        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO, PROVIDER_NAME))
             .thenReturn(Try.failure(expected));
 
         Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
@@ -187,7 +186,7 @@ public class ServiceProviderAuthenticationServiceTest {
             @Override public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) { return null; }
             @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
         })).when(service).getPlugin(PROVIDER_NAME);
-        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO))
+        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO, PROVIDER_NAME))
             .thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
         OffsetDateTime expirationDate = OffsetDateTime.now();
         when(jwtService.getExpirationDate(any())).thenReturn(expirationDate);
@@ -316,31 +315,23 @@ public class ServiceProviderAuthenticationServiceTest {
         RuntimeException expected = new RuntimeException("Expected");
 
         // Mock plugin 1 verify method to fail
-        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_1 =
-            mock(IServiceProviderPlugin.class);
+        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_1 = mock(IServiceProviderPlugin.class);
         when(plugin_1.verify(anyString())).thenReturn(Try.failure(expected));
         doReturn(Try.success(plugin_1)).when(service).getPlugin(providerName_1);
 
         // Mock plugin 2 verify method to succeed
-        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_2 =
-            mock(IServiceProviderPlugin.class);
-        when(plugin_2.verify(anyString())).thenReturn(Try.success(new ServiceProviderAuthenticationInfo<>(
-            PROVIDER_USER_INFO,
-            new ServiceProviderAuthenticationInfoMock()
-        )));
+        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_2 = mock(IServiceProviderPlugin.class);
+        when(plugin_2.verify(anyString())).thenReturn(Try.success(new ServiceProviderAuthenticationInfo<>(PROVIDER_USER_INFO, new ServiceProviderAuthenticationInfoMock())));
         doReturn(Try.success(plugin_2)).when(service).getPlugin(providerName_2);
 
         // Mock plugin 3 which should never be called
-        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_3 =
-            mock(IServiceProviderPlugin.class);
+        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_3 = mock(IServiceProviderPlugin.class);
         doReturn(Try.success(plugin_3)).when(service).getPlugin(providerName_3);
 
-        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO))
-            .thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
+        when(userAccountManager.createUserWithAccountAndGroups(eq(PROVIDER_USER_INFO), any())).thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
         OffsetDateTime expirationDate = OffsetDateTime.now();
         when(jwtService.getExpirationDate(any())).thenReturn(expirationDate);
-        when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), eq(expirationDate), any()))
-            .thenReturn("token");
+        when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), eq(expirationDate), any())).thenReturn("token");
 
         Try<Authentication> token = service.verifyAndAuthenticate("token");
 

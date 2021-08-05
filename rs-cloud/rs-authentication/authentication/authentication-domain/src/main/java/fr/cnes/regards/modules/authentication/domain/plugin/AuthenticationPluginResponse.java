@@ -11,8 +11,6 @@ package fr.cnes.regards.modules.authentication.domain.plugin;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 
 /**
  * Class AuthenticationPluginResponse
@@ -23,67 +21,47 @@ import javax.validation.constraints.NotNull;
  */
 public class AuthenticationPluginResponse {
 
-    /**
-     * Authentication status
-     */
-    @NotNull
-    private Boolean accessGranted = Boolean.FALSE;
+    private boolean accessGranted;
 
-    /**
-     * User email
-     */
-    @NotNull
     @NotEmpty
     @Email
     private final String email;
 
     /**
      * PluginClassName from the plugin who created this response.
-     * This parameter is automaticly set by the authentication manager.
+     * This parameter is automatically set by the authentication manager.
      * Each plugin don't need to set this value.
      */
     private String pluginClassName = "";
 
-    /**
-     * Error message
-     */
-    private String errorMessage = null;
+    private String errorMessage;
 
-    public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail, final String pErrorMessage) {
-        super();
+    private String serviceProviderName;
+
+    public AuthenticationPluginResponse(boolean accessGranted, String email, String errorMessage, String serviceProviderName) {
+        this.accessGranted = accessGranted;
+        this.email = email;
+        this.errorMessage = errorMessage;
+        this.serviceProviderName = serviceProviderName;
+    }
+
+    public AuthenticationPluginResponse(boolean pAccessGranted, String pEmail, String pErrorMessage) {
         this.accessGranted = pAccessGranted;
         this.email = pEmail;
         this.errorMessage = pErrorMessage;
     }
 
-    public AuthenticationPluginResponse(final Boolean pAccessGranted, final String pEmail) {
+    public AuthenticationPluginResponse(boolean pAccessGranted, String pEmail) {
         this(pAccessGranted, pEmail, null);
     }
 
-    public Boolean getAccessGranted() {
+    public boolean isAccessGranted() {
         return accessGranted;
     }
 
-    public void setAccessGranted(final Boolean pAccessGranted) {
-        accessGranted = pAccessGranted;
-    }
-
-    /**
-     * Get method.
-     * @return the errorMessage
-     * @since 1.0
-     */
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    /**
-     * Set method.
-     * @param pErrorMessage the errorMessage to set
-     * @since 1.0
-     */
-    public void setErrorMessage(final String pErrorMessage) {
-        errorMessage = pErrorMessage;
+    public AuthenticationPluginResponse setAccessGranted(boolean accessGranted) {
+        this.accessGranted = accessGranted;
+        return this;
     }
 
     public String getEmail() {
@@ -94,8 +72,27 @@ public class AuthenticationPluginResponse {
         return pluginClassName;
     }
 
-    public void setPluginClassName(final String pPluginClassName) {
-        pluginClassName = pPluginClassName;
+    public AuthenticationPluginResponse setPluginClassName(String pluginClassName) {
+        this.pluginClassName = pluginClassName;
+        return this;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public AuthenticationPluginResponse setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+        return this;
+    }
+
+    public String getServiceProviderName() {
+        return serviceProviderName;
+    }
+
+    public AuthenticationPluginResponse setServiceProviderName(String serviceProviderName) {
+        this.serviceProviderName = serviceProviderName;
+        return this;
     }
 
 }

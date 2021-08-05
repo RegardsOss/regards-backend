@@ -18,63 +18,48 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessrights.domain.projects.*;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserAction;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserEvent;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
+import fr.cnes.regards.modules.accessrights.service.config.AccessRightsTemplateConfiguration;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
+import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailWrapper;
+import fr.cnes.regards.modules.accessrights.service.utils.AccountUtilsService;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import feign.FeignException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-
 /**
  * {@link IProjectUserService} implementation
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
@@ -82,69 +67,46 @@ import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 @MultitenantTransactional
 public class ProjectUserService implements IProjectUserService {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUserService.class);
 
     /**
-     * CRUD repository managing {@link ProjectUser}s. Autowired by Spring.
+     * A filter on metadata to keep visible ones only
      */
-    private final IProjectUserRepository projectUserRepository;
-
-    /**
-     * Service handling CRUD operation on {@link Role}s
-     */
-    private final IRoleService roleService;
-
-    /**
-     * Account service used to manage accounts.
-     */
-    private final IAccountsClient accountsClient;
-
-    /**
-     * Authentication resolver
-     */
-    private final IAuthenticationResolver authResolver;
-
-    private final AccessSettingsService accessSettingsService;
-
-    private final IUserClient userAccessGroupsClient;
-
-    /**
-     * Gson serializer/deserializer
-     */
-    private final Gson gson;
-
-    /**
-     * A filter on meta data to keep visible ones only
-     */
-    private final Predicate<? super MetaData> keepVisibleMetaData = m -> !UserVisibility.HIDDEN
-            .equals(m.getVisibility());
+    public static final Predicate<? super MetaData> KEEP_VISIBLE_META_DATA = metaData -> !UserVisibility.HIDDEN.equals(metaData.getVisibility());
 
     /**
      * Configured instance administrator user email/login
      */
-    private final String instanceAdminUserEmail;
+    @Value("${regards.accounts.root.user.login}")
+    private String instanceAdminUserEmail;
 
-    public ProjectUserService(IAuthenticationResolver authResolver, IProjectUserRepository projectUserRepository,
-            final IRoleService roleService, IAccountsClient accountsClient, IUserClient userAccessGroupsClient,
-            @Value("${regards.accounts.root.user.login}") String instanceAdminUserEmail,
-            AccessSettingsService accessSettingsService, Gson gson) {
-        super();
-        this.authResolver = authResolver;
+    private final IProjectUserRepository projectUserRepository;
+    private final IRoleService roleService;
+    private final IAuthenticationResolver authenticationResolver;
+    private final ApplicationEventPublisher eventPublisher;
+    private final AccessSettingsService accessSettingsService;
+    private final AccountUtilsService accountUtilsService;
+    private final AccessRightsEmailService accessRightsEmailService;
+    private final ProjectUserGroupService projectUserGroupService;
+
+
+    public ProjectUserService(IAuthenticationResolver authenticationResolver, IProjectUserRepository projectUserRepository, IRoleService roleService,
+            ApplicationEventPublisher eventPublisher, AccessSettingsService accessSettingsService, AccountUtilsService accountUtilsService,
+            AccessRightsEmailService accessRightsEmailService, ProjectUserGroupService projectUserGroupService
+    ) {
+        this.authenticationResolver = authenticationResolver;
         this.projectUserRepository = projectUserRepository;
         this.roleService = roleService;
-        this.instanceAdminUserEmail = instanceAdminUserEmail;
-        this.accountsClient = accountsClient;
-        this.userAccessGroupsClient = userAccessGroupsClient;
+        this.eventPublisher = eventPublisher;
         this.accessSettingsService = accessSettingsService;
-        this.gson = gson;
+        this.accountUtilsService = accountUtilsService;
+        this.accessRightsEmailService = accessRightsEmailService;
+        this.projectUserGroupService = projectUserGroupService;
     }
 
     @Override
-    public Page<ProjectUser> retrieveUserList(String status, String emailStart, final Pageable pageable) {
-        return projectUserRepository.findAll(ProjectUserSpecification.search(status, emailStart), pageable);
+    public Page<ProjectUser> retrieveUserList(ProjectUserSearchParameters parameters, Pageable pageable) {
+        return projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters).build(), pageable);
     }
 
     @Override
@@ -156,29 +118,26 @@ public class ProjectUserService implements IProjectUserService {
         }
         // Filter out hidden meta data
         ProjectUser user = userOpt.get();
-        user.setMetadata(user.getMetadata().stream().filter(keepVisibleMetaData).collect(Collectors.toList()));
+        user.setMetadata(user.getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toList()));
         return user;
     }
 
     @Override
     public ProjectUser retrieveOneByEmail(String userEmail) throws EntityNotFoundException {
-        return retrieveOneOptionalByEmail(userEmail)
-                .orElseThrow(() -> new EntityNotFoundException(userEmail, ProjectUser.class));
+        return retrieveOneOptionalByEmail(userEmail).orElseThrow(() -> new EntityNotFoundException(userEmail, ProjectUser.class));
     }
 
     @Override
     public Optional<ProjectUser> retrieveOneOptionalByEmail(String userEmail) {
         Optional<ProjectUser> user;
         if (instanceAdminUserEmail.equals(userEmail)) {
-            user = Optional.of(new ProjectUser(userEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null),
-                    new ArrayList<>(), new ArrayList<>()));
+            user = Optional.of(new ProjectUser().setEmail(userEmail).setRole(new Role(DefaultRole.INSTANCE_ADMIN.toString(), null)));
         } else {
             user = projectUserRepository.findOneByEmail(userEmail);
             // Filter out hidden meta data
             if (user.isPresent()) {
-                try (Stream<MetaData> stream = user.get().getMetadata().stream()) {
-                    user.get().setMetadata(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
-                }
+                List<MetaData> visibleMetadata = user.get().getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toList());
+                user.get().setMetadata(visibleMetadata);
             }
         }
         return user;
@@ -186,9 +145,8 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser retrieveCurrentUser() throws EntityNotFoundException {
-        String email = authResolver.getUser();
-        return projectUserRepository.findOneByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
+        String email = authenticationResolver.getUser();
+        return projectUserRepository.findOneByEmail(email).orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
     }
 
     @Override
@@ -198,70 +156,65 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser updateUser(Long userId, ProjectUser updatedProjectUser) throws EntityException {
+
+        ProjectUser projectUser = retrieveUser(userId);
         if (!updatedProjectUser.getId().equals(userId)) {
             throw new EntityInconsistentIdentifierException(userId, updatedProjectUser.getId(), ProjectUser.class);
         }
-        if (!existUser(userId)) {
-            throw new EntityNotFoundException(userId.toString(), ProjectUser.class);
+
+        // Check that no public group is removed or added
+        if (CollectionUtils.isEmpty(updatedProjectUser.getAccessGroups())) {
+            projectUserGroupService.validateAccessGroups(projectUser.getAccessGroups(), true);
+        } else {
+            projectUserGroupService.validateAccessGroups(Sets.symmetricDifference(projectUser.getAccessGroups(), updatedProjectUser.getAccessGroups()), true);
         }
 
+        eventPublisher.publishEvent(new ProjectUserEvent(updatedProjectUser.getEmail(), ProjectUserAction.UPDATE));
         return save(updatedProjectUser);
     }
 
     @Override
     public ProjectUser updateUserInfos(Long userId, ProjectUser updatedProjectUser) throws EntityException {
 
+        ProjectUser projectUser = retrieveUser(userId);
         if (!updatedProjectUser.getId().equals(userId)) {
             throw new EntityInconsistentIdentifierException(userId, updatedProjectUser.getId(), ProjectUser.class);
         }
-        if (!existUser(userId)) {
-            throw new EntityNotFoundException(userId.toString(), ProjectUser.class);
+
+        Role newRole = updatedProjectUser.getRole();
+        if (newRole != null && newRole.getId() == null && StringUtils.isNotBlank(newRole.getName())) {
+            newRole = roleService.retrieveRole(updatedProjectUser.getRole().getName());
+        }
+        projectUser.setRole(newRole);
+        projectUser.setMetadata(updatedProjectUser.getMetadata());
+        projectUser.setPermissions(updatedProjectUser.getPermissions());
+        projectUser.setMaxQuota(updatedProjectUser.getMaxQuota());
+
+        // Check that no public group is removed or added
+        Set<String> accessGroups = updatedProjectUser.getAccessGroups();
+        if (!CollectionUtils.isEmpty(accessGroups)) {
+            projectUserGroupService.validateAccessGroups(Sets.symmetricDifference(projectUser.getAccessGroups(), accessGroups), true);
+            projectUser.setAccessGroups(accessGroups);
         }
 
-        ProjectUser user = projectUserRepository.findById(userId).get();
-
-        // Set user role
-        if (updatedProjectUser.getRole() == null) {
-            user.setRole(null);
-        } else if (updatedProjectUser.getRole().getId() != null) {
-            user.setRole(updatedProjectUser.getRole());
-        } else if (updatedProjectUser.getRole().getName() != null) {
-            Role newRole = roleService.retrieveRole(updatedProjectUser.getRole().getName());
-            if (newRole != null) {
-                user.setRole(newRole);
-            } else {
-                throw new EntityNotFoundException(updatedProjectUser.getRole().getName(), Role.class);
-            }
-        }
-
-        // Set user new metadata
-        user.setMetadata(updatedProjectUser.getMetadata());
-        // Set user new permissions
-        user.setPermissions(updatedProjectUser.getPermissions());
-        // Save new user informations
-        return save(user);
+        eventPublisher.publishEvent(new ProjectUserEvent(updatedProjectUser.getEmail(), ProjectUserAction.UPDATE));
+        return save(projectUser);
     }
 
     @Override
-    public void updateUserAccessRights(String login, List<ResourcesAccess> updatedUserAccessRights)
-            throws EntityNotFoundException {
-        ProjectUser user = projectUserRepository.findOneByEmail(login)
-                .orElseThrow(() -> new EntityNotFoundException(login, ProjectUser.class));
-
+    public void updateUserAccessRights(String login, List<ResourcesAccess> updatedUserAccessRights) throws EntityNotFoundException {
+        ProjectUser user = projectUserRepository.findOneByEmail(login).orElseThrow(() -> new EntityNotFoundException(login, ProjectUser.class));
         try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
-                Stream<ResourcesAccess> updated = updatedUserAccessRights.stream();
-                Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
-            user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(ResourcesAccess::getId))
-                    .collect(Collectors.toList()));
+             Stream<ResourcesAccess> updated = updatedUserAccessRights.stream();
+             Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
+            user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(ResourcesAccess::getId)).collect(Collectors.toList()));
         }
-
         save(user);
     }
 
     @Override
     public void removeUserAccessRights(String login) throws EntityNotFoundException {
-        ProjectUser user = projectUserRepository.findOneByEmail(login)
-                .orElseThrow(() -> new EntityNotFoundException(login, ProjectUser.class));
+        ProjectUser user = projectUserRepository.findOneByEmail(login).orElseThrow(() -> new EntityNotFoundException(login, ProjectUser.class));
         user.setPermissions(new ArrayList<>());
         save(user);
     }
@@ -273,8 +226,7 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public List<MetaData> updateUserMetaData(Long userId, List<MetaData> updatedUserMetaData)
-            throws EntityNotFoundException {
+    public List<MetaData> updateUserMetaData(Long userId, List<MetaData> updatedUserMetaData) throws EntityNotFoundException {
         ProjectUser user = retrieveUser(userId);
         user.setMetadata(updatedUserMetaData);
         ProjectUser savedUser = save(user);
@@ -289,8 +241,8 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public List<ResourcesAccess> retrieveProjectUserAccessRights(String email, String borrowedRoleName)
-            throws EntityException {
+    public List<ResourcesAccess> retrieveProjectUserAccessRights(String email, String borrowedRoleName) throws EntityException {
+
         ProjectUser projectUser = retrieveOneByEmail(email);
         Role returnedRole = projectUser.getRole();
 
@@ -299,8 +251,7 @@ public class ProjectUserService implements IProjectUserService {
             if (roleService.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
             } else {
-                throw new EntityOperationForbiddenException(borrowedRoleName, Role.class,
-                        "Borrowed role must be hierachically inferior to the project user's role");
+                throw new EntityOperationForbiddenException(borrowedRoleName, Role.class, "Borrowed role must be hierachically inferior to the project user's role");
             }
         }
 
@@ -317,63 +268,84 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public ProjectUser createProjectUser(AccessRequestDto accessRequestDto)
-            throws EntityAlreadyExistsException, EntityInvalidException {
-        try {
-            FeignSecurityManager.asInstance();
-            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
-                    .retrieveAccounByEmail(accessRequestDto.getEmail());
-            if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
-                Account newAccount = new Account(accessRequestDto.getEmail(), accessRequestDto.getFirstName(),
-                        accessRequestDto.getLastName(), accessRequestDto.getPassword());
-                newAccount.setStatus(AccountStatus.ACTIVE);
-                AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
-                accountsClient.createAccount(newAccountWithPassword);
-            }
-        } catch (HttpServerErrorException | HttpClientErrorException e) {
-            LOG.error(e.getMessage(), e);
-            ServerErrorResponse errorResponse = gson.fromJson(e.getResponseBodyAsString(), ServerErrorResponse.class);
-            throw new EntityInvalidException(errorResponse.getMessages());
-        } finally {
-            FeignSecurityManager.reset();
+    public ProjectUser createProjectUser(AccessRequestDto accessRequestDto) throws EntityException {
+        return create(accessRequestDto, false, UserStatus.ACCESS_GRANTED, AccountStatus.ACTIVE);
+    }
+
+    @Override
+    public ProjectUser create(AccessRequestDto accessRequestDto, boolean isExternal, UserStatus userStatus, AccountStatus accountStatus) throws EntityException {
+
+        String email = accessRequestDto.getEmail();
+        if (projectUserRepository.findOneByEmail(email).isPresent()) {
+            throw new EntityAlreadyExistsException("The email address '" + email + "' is already in use.");
         }
 
-        if (!existUser(accessRequestDto.getEmail())) {
-            String defaultRoleName = accessSettingsService.defaultRole();
-            // Get role for projectUser to create
-            Role role;
-            try {
-                if ((accessRequestDto.getRoleName() != null) && !accessRequestDto.getRoleName().isEmpty()) {
-                    role = roleService.retrieveRole(accessRequestDto.getRoleName());
-                } else {
-                    role = roleService.retrieveRole(defaultRoleName);
-                }
-            } catch (EntityNotFoundException e) {
-                role = roleService.getDefaultRole();
-                LOG.warn("Request role does not exists, the new user is associated to default role");
-                LOG.debug(e.getMessage(), e);
-            }
-            ProjectUser newProjectUser = new ProjectUser();
-            newProjectUser.setEmail(accessRequestDto.getEmail());
-            newProjectUser.setRole(role);
-            if (accessRequestDto.getMetadata() != null) {
-                newProjectUser.setMetadata(accessRequestDto.getMetadata());
-            }
-            newProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
-            return save(newProjectUser);
+        Account account = accountUtilsService.retrieveAccount(email);
+        if (account != null) {
+            LOG.info("Creating user with an existing account - no new account created");
         } else {
-            throw new EntityAlreadyExistsException("Project user already exists");
+            account = accountUtilsService.createAccount(accessRequestDto, isExternal, accountStatus);
         }
-    }
 
-    @Override
-    public boolean existUser(String email) {
-        return projectUserRepository.findOneByEmail(email).isPresent();
-    }
+        Role role;
+        try {
+            if (StringUtils.isNotBlank(accessRequestDto.getRoleName())) {
+                role = roleService.retrieveRole(accessRequestDto.getRoleName());
+            } else {
+                role = roleService.retrieveRole(accessSettingsService.defaultRole());
+            }
+        } catch (EntityNotFoundException e) {
+            LOG.debug(e.getMessage(), e);
+            role = roleService.getDefaultRole();
+            LOG.warn("Requested role does not exist : default role is set");
+        }
 
-    @Override
-    public boolean existUser(Long id) {
-        return projectUserRepository.existsById(id);
+        Set<String> accessGroups = new HashSet<>(accessSettingsService.defaultGroups());
+        accessGroups.addAll(projectUserGroupService.getPublicGroups());
+        Set<String> inputAccessGroups = accessRequestDto.getAccessGroups();
+        if (!CollectionUtils.isEmpty(inputAccessGroups)) {
+            projectUserGroupService.validateAccessGroups(inputAccessGroups, false);
+            accessGroups.addAll(inputAccessGroups);
+        }
+
+        ProjectUser projectUser = new ProjectUser()
+                .setEmail(email)
+                .setLastName(account.getLastName())
+                .setFirstName(account.getFirstName())
+                .setRole(role)
+                .setAccessGroups(accessGroups)
+                .setMaxQuota(accessRequestDto.getMaxQuota());
+
+        if (accessRequestDto.getMetadata() != null) {
+            projectUser.setMetadata(accessRequestDto.getMetadata());
+        }
+
+        if (isExternal) {
+            projectUser.setOrigin(accessRequestDto.getOrigin());
+            // External authenticated accounts don't need to validate email.
+            projectUser.setStatus(UserStatus.ACCESS_GRANTED);
+        } else if (userStatus != null) {
+            projectUser.setStatus(userStatus);
+        }
+
+        projectUser = save(projectUser);
+
+        // Once project user is properly created, link project to account
+        accountUtilsService.addProject(email);
+
+        eventPublisher.publishEvent(new ProjectUserEvent(email, ProjectUserAction.CREATE));
+
+        if (!CollectionUtils.isEmpty(accessSettingsService.userCreationMailRecipients())) {
+            AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper()
+                    .setProjectUser(projectUser)
+                    .setSubject("[REGARDS] Project User created")
+                    .setTo(accessSettingsService.userCreationMailRecipients())
+                    .setTemplate(AccessRightsTemplateConfiguration.USER_CREATED_TEMPLATE_NAME)
+                    .setDefaultMessage("User account created : " + projectUser.getEmail());
+            accessRightsEmailService.sendEmail(wrapper);
+        }
+
+        return projectUser;
     }
 
     /**
@@ -400,30 +372,40 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public void deleteByEmail(String Email) throws EntityNotFoundException {
-        ProjectUser projectUser = retrieveOneByEmail(Email);
-        projectUserRepository.delete(projectUser);
+    public boolean canDelete(ProjectUser projectUser) {
+        boolean canDelete = false;
+        try {
+            canDelete = roleService.isCurrentRoleSuperiorTo(projectUser.getRole().getName());
+        } catch (EntityNotFoundException e) {
+            LOG.warn("Invalid project user : {}", projectUser.getEmail());
+        }
+        return canDelete;
     }
 
     @Override
-    public void configureAccessGroups(ProjectUser projectUser) {
-        FeignSecurityManager.asSystem();
-        try {
-            List<String> defaultGroups = accessSettingsService.defaultGroups();
-            if ((defaultGroups != null) && !defaultGroups.isEmpty()) {
-                defaultGroups.forEach(group -> {
-                    try {
-                        userAccessGroupsClient.associateAccessGroupToUser(projectUser.getEmail(), group);
-                    } catch (HttpServerErrorException | HttpClientErrorException e) {
-                        LOG.error(String.format("Error associating group %s to user %s.", group,
-                                                projectUser.getEmail()),
-                                  e);
-                    }
-                });
-            }
-        } finally {
-            FeignSecurityManager.reset();
+    public void sendVerificationEmail(String email) throws EntityNotFoundException {
+        ProjectUser projectUser = retrieveOneByEmail(email);
+        if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(projectUser.getStatus())) {
+            eventPublisher.publishEvent(new OnGrantAccessEvent(projectUser));
         }
+    }
+
+    @Override
+    public void updateQuota(Map<String, Long> currentQuotaByEmail) {
+
+        AtomicInteger counter = new AtomicInteger();
+        int pageSize = 100;
+        currentQuotaByEmail.keySet()
+                           .stream()
+                           .collect(Collectors.groupingBy(x -> counter.getAndIncrement() / pageSize))
+                           .values()
+                           .forEach(emailList -> projectUserRepository.findByEmailIn(emailList)
+                                                                      .forEach(projectUser -> projectUser.setCurrentQuota(currentQuotaByEmail.get(projectUser.getEmail()))));
+    }
+
+    @Override
+    public Map<String, Long> getUserCountByAccessGroup() {
+        return projectUserRepository.getUserCountByAccessGroup();
     }
 
 }

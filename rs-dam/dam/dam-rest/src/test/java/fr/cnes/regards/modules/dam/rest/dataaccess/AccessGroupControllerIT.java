@@ -18,6 +18,15 @@
  */
 package fr.cnes.regards.modules.dam.rest.dataaccess;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.rest.DamRestConfiguration;
+import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,17 +38,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.rest.DamRestConfiguration;
-import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 
 /**
  * REST module controller
@@ -85,7 +83,6 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
 
         runtimetenantResolver.forceTenant(getDefaultTenant());
         // Replace stubs by mocks
-        ReflectionTestUtils.setField(agService, "projectUserClient", projectUserClientMock, IProjectUsersClient.class);
         Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(ArgumentMatchers.any()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(new ProjectUser()), HttpStatus.OK));
         Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(ArgumentMatchers.any()))
@@ -135,24 +132,6 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
         performDefaultPost(AccessGroupController.PATH_ACCESS_GROUPS, toBeCreated,
                            customizer().expectStatusCreated().expectIsNotEmpty(JSON_PATH_ROOT),
                            ACCESS_GROUPS_ERROR_MSG);
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_DAM_SET_820")
-    public void testAssociateUserToAccessGroup() {
-        performDefaultPut(AccessGroupController.PATH_ACCESS_GROUPS
-                + AccessGroupController.PATH_ACCESS_GROUPS_NAME_EMAIL, null,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_GROUPS_ERROR_MSG,
-                          AG1_NAME, USER1_EMAIL);
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_DAM_SET_830")
-    public void testDissociateUserFromAccessGroup() {
-        performDefaultDelete(AccessGroupController.PATH_ACCESS_GROUPS
-                + AccessGroupController.PATH_ACCESS_GROUPS_NAME_EMAIL,
-                             customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_GROUPS_ERROR_MSG,
-                             AG1_NAME, USER1_EMAIL);
     }
 
 }

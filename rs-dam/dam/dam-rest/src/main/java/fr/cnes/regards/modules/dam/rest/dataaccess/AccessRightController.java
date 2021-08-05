@@ -18,11 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.rest.dataaccess;
 
-import java.beans.PropertyEditorSupport;
-import java.util.Optional;
-
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
+import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,26 +44,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
+import javax.validation.Valid;
+import java.beans.PropertyEditorSupport;
+import java.util.Optional;
 
 /**
  * Access right REST controller
@@ -198,7 +190,7 @@ public class AccessRightController implements IResourceController<AccessRight> {
     public ResponseEntity<Boolean> isUserAutorisedToAccessDataset(
             @RequestParam(name = "dataset") OaisUniformResourceName datasetIpId,
             @RequestParam(name = "user") String userEMail) throws ModuleException {
-        boolean hasAccessToDataset = accessRightService.isUserAutorisedToAccessDataset(datasetIpId, userEMail);
+        boolean hasAccessToDataset = accessRightService.isUserAuthorisedToAccessDataset(datasetIpId, userEMail);
         return new ResponseEntity<>(hasAccessToDataset, HttpStatus.OK);
     }
 

@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.event;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.Optional;
-
-import org.hibernate.cfg.Environment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-
 import com.zaxxer.hikari.HikariDataSource;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -43,6 +31,17 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionStat
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
+import org.hibernate.cfg.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+
+import javax.sql.DataSource;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * This class manages JPA event workflow.
@@ -135,9 +134,10 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
      */
     private void handleTenantConnection(String eventMicroserviceName, TenantConnection tenantConnection) {
         if (microserviceName.equals(eventMicroserviceName)) {
+            String tenant = tenantConnection.getTenant();
             try {
                 // Trying to connect data source
-                updateConnectionState(tenantConnection.getTenant(), TenantConnectionState.CONNECTING, Optional.empty());
+                updateConnectionState(tenant, TenantConnectionState.CONNECTING, Optional.empty());
 
                 // Retrieve schema name
                 String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
@@ -145,32 +145,27 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 // before initiating data source, lets decrypt password
                 tenantConnection.setPassword(encryptionService.decrypt(tenantConnection.getPassword()));
                 TenantDataSourceHelper.verifyBatchParameter(jpaProperties, tenantConnection);
-                DataSource dataSource = TenantDataSourceHelper
-                        .initDataSource(daoProperties, tenantConnection, schemaIdentifier);
+                DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection, schemaIdentifier);
                 // Remove existing one
-                DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
+                DataSource oldDataSource = dataSources.remove(tenant);
                 // Remove related lock executor
-                lockingTaskExecutors.removeLockingTaskExecutor(tenantConnection.getTenant());
+                lockingTaskExecutors.removeLockingTaskExecutor(tenant);
                 if (oldDataSource != null) {
                     oldDataSource.unwrap(HikariDataSource.class).close();
                 }
                 // Update schema
-                datasourceSchemaHelper.migrate(dataSource);
+                datasourceSchemaHelper.migrate(dataSource, tenant);
                 // Enable data source
-                updateConnectionState(tenantConnection.getTenant(), TenantConnectionState.ENABLED, Optional.empty());
+                updateConnectionState(tenant, TenantConnectionState.ENABLED, Optional.empty());
                 // Register data source
-                dataSources.put(tenantConnection.getTenant(), dataSource);
+                dataSources.put(tenant, dataSource);
                 // Register a lock executor
-                lockingTaskExecutors.registerLockingTaskExecutor(tenantConnection.getTenant(), dataSource);
+                lockingTaskExecutors.registerLockingTaskExecutor(tenant, dataSource);
                 // Broadcast connection ready with a Spring event
-                localPublisher.publishConnectionReady(tenantConnection.getTenant());
+                localPublisher.publishConnectionReady(tenant);
             } catch (Exception ex) {
-                LOGGER.error(String.format("Cannot handle tenant connection for project %s and microservice %s",
-                                           tenantConnection.getTenant(),
-                                           eventMicroserviceName), ex);
-                updateConnectionState(tenantConnection.getTenant(),
-                                      TenantConnectionState.ERROR,
-                                      Optional.ofNullable(ex.getMessage()));
+                LOGGER.error(String.format("Cannot handle tenant connection for project %s and microservice %s", tenant, eventMicroserviceName), ex);
+                updateConnectionState(tenant, TenantConnectionState.ERROR, Optional.ofNullable(ex.getMessage()));
             }
         }
     }

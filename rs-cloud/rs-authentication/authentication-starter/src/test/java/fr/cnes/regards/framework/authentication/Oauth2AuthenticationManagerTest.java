@@ -52,6 +52,8 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+
 /**
  * Class Oauth2AuthenticationManagerTest
  *
@@ -199,7 +201,7 @@ public class Oauth2AuthenticationManagerTest {
         }
 
         // Account creation is done only for plugins. No for regards internal plugin
-        Mockito.verify(userAccountManagerMock, Mockito.times(0)).createUserWithAccountAndGroups(Mockito.any());
+        Mockito.verify(userAccountManagerMock, Mockito.times(0)).createUserWithAccountAndGroups(any(), any());
 
     }
 

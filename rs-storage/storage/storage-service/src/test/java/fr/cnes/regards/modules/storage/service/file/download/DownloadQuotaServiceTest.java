@@ -7,8 +7,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserAction;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserEvent;
 import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
@@ -17,7 +17,6 @@ import fr.cnes.regards.modules.storage.service.settings.StorageSettingService;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import io.vavr.collection.HashMap;
-import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.assertj.core.api.ThrowableAssert;
@@ -608,7 +607,7 @@ public class DownloadQuotaServiceTest {
         quotaService.handleBatch(
             TENANT,
             Lists.newArrayList(
-                new ProjectUserEvent(userEmail, ProjectUserAction.DELETION))
+                new ProjectUserEvent(userEmail, ProjectUserAction.DELETE))
         );
 
         // then

@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -45,7 +31,18 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.ITenantService;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.*;
 
 /**
  * Test class for {@link AccountWorkflowManager}.
@@ -159,6 +156,7 @@ public class AccountWorkflowManagerTest {
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACTIVE);
+        account.setProjects(Collections.singleton(new Project()));
 
         // Mock
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
@@ -213,6 +211,7 @@ public class AccountWorkflowManagerTest {
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACTIVE);
+        account.setProjects(Collections.singleton(new Project()));
 
         // Mock
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
@@ -239,6 +238,7 @@ public class AccountWorkflowManagerTest {
         // Prepare the case
         account.setId(ID);
         account.setStatus(AccountStatus.ACTIVE);
+        account.setProjects(null);
 
         // Mock
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));

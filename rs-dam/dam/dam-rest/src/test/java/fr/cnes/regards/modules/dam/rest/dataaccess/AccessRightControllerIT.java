@@ -75,12 +75,12 @@ public class AccessRightControllerIT extends AbstractAccessRightControllerIT {
     public void testCreateAccessRight() {
         // Associated dataset must be updated
         performDefaultPost(AccessRightController.PATH_ACCESS_RIGHTS, ar3, customizer().expectStatusCreated()
-                .expectIsNotEmpty(JSON_PATH_ROOT).expectValue("$.content.dataset.groups[0]", ag2.getName()),
+                .expectIsNotEmpty(JSON_PATH_ROOT).expectValue("$.content.dataset.groups[1]", ag2.getName()),
                            ACCESS_RIGHTS_ERROR_MSG);
     }
 
     @Test
-    public void testIsUserAutorisedToAccessDataset() {
+    public void testIsUserAuthorisedToAccessDataset() {
 
         performDefaultGet(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_IS_DATASET_ACCESSIBLE,
                           customizer().expectStatusOk().expect(MockMvcResultMatchers.content().string("true"))
@@ -95,4 +95,5 @@ public class AccessRightControllerIT extends AbstractAccessRightControllerIT {
                                   .addParameter("user", notExistingUser),
                           ACCESS_RIGHTS_ERROR_MSG);
     }
+
 }

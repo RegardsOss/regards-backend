@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.storage.service.file.download;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -9,13 +10,10 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
-import fr.cnes.regards.modules.storage.service.file.flow.AvailabilityUpdateCustomTestAction;
-import io.vavr.Tuple2;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,10 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +54,9 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
     @Autowired private ITenantResolver tenantResolver;
 
     @Autowired private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @MockBean
+    private IPublisher publisher;
 
     @Autowired @InjectMocks
     private QuotaManagerImpl quotaManager;

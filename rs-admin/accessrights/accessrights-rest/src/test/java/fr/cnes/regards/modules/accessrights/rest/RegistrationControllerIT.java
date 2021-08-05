@@ -44,7 +44,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Integration tests for the accesses functionalities.
@@ -89,6 +91,10 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
      * The error message TODO: Remove this? We should not shadow the error message thrown by the caught exception.
      */
     private static final String ERROR_MESSAGE = "Cannot reach model attributes";
+
+    private static final String ORIGIN = "origin";
+
+    private static final Set<String> ACCESS_GROUPS = Collections.emptySet();
 
     /**
      * A project user.<br>
@@ -150,8 +156,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         MetaData metadata = new MetaData("plop", "test", UserVisibility.READABLE);
         List<MetaData> metas = new ArrayList<>();
         metas.add(metadata);
-        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, metas, PASSWORD,
-                ORIGIN_URL, REQUEST_LINK);
+        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, metas, PASSWORD, ORIGIN_URL, REQUEST_LINK, ORIGIN, ACCESS_GROUPS, 0L);
         requestAccess(newAccessRequest);
 
     }
@@ -173,8 +178,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void requestAccessConflict() {
-        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, new ArrayList<>(),
-                PASSWORD, ORIGIN_URL, REQUEST_LINK);
+        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, new ArrayList<>(), PASSWORD, ORIGIN_URL, REQUEST_LINK, ORIGIN, ACCESS_GROUPS
+                , 0L);
         requestAccess(newAccessRequest);
         performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusConflict(), ERROR_MESSAGE);
     }

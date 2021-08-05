@@ -18,11 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.dao.projects;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,8 +32,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import java.math.BigInteger;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing {@link ProjectUser}s.<br>
@@ -46,15 +44,13 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
-public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>,
-        JpaSpecificationExecutor<ProjectUser> {
+public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>, JpaSpecificationExecutor<ProjectUser> {
 
     /**
      * Find the single {@link ProjectUser} with passed <code>email</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pEmail
-     *            The {@link ProjectUser}'s <code>email</code>
+     * @param pEmail The {@link ProjectUser}'s <code>email</code>
      * @return The optional {@link ProjectUser} with passed <code>email</code>
      */
     @EntityGraph(value = "graph.user.metadata")
@@ -143,14 +139,22 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     Page<Long> findIdPage(Pageable pageable);
 
     /**
-     * Find all project users respecting the given specification
+     * Find all project users according to the given specification
      *
-     * @param spec project user specification
-     * @param pageable
-     *            the pagination information
+     * @param spec     project user specification
+     * @param pageable the pagination information
      * @return all project users with this role
      */
     @Override
     @EntityGraph(value = "graph.user.metadata")
     Page<ProjectUser> findAll(Specification<ProjectUser> spec, Pageable pageable);
+
+
+    @Query(nativeQuery = true, value = "SELECT access_group, count(*) FROM {h-schema}ta_project_user_access_group GROUP BY access_group")
+    List<Object[]> getCountByAccessGroup();
+
+    default Map<String, Long> getUserCountByAccessGroup() {
+        return getCountByAccessGroup().stream().collect(Collectors.toMap(count -> (String) count[0], count -> ((BigInteger) count[1]).longValue()));
+    }
+
 }

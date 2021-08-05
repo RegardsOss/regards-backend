@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects.listeners;
 
-import java.time.OffsetDateTime;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import java.time.OffsetDateTime;
 
 /**
  * Entity listener<br>
@@ -33,16 +32,15 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  */
 public class ProjectUserListener {
 
-    /**
-     * Automatically set lastUpate before any database persistence. This is intended to be the only place where lastUpdate
-     * is updated.
-     *
-     * @param pProjectUser
-     *            The listened project user
-     */
     @PreUpdate
-    @PrePersist
-    public void setLastUpdate(final ProjectUser pProjectUser) {
-        pProjectUser.setLastUpdate(OffsetDateTime.now());
+    public void setLastUpdate(ProjectUser ProjectUser) {
+        ProjectUser.setLastUpdate(OffsetDateTime.now());
     }
+
+    @PrePersist
+    public void setCreated(ProjectUser projectUser) {
+        projectUser.setCreated(OffsetDateTime.now());
+        projectUser.setLastUpdate(OffsetDateTime.now());
+    }
+
 }

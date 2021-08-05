@@ -10,11 +10,11 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
+import fr.cnes.regards.modules.authentication.domain.dto.ServiceProviderDto;
 import fr.cnes.regards.modules.authentication.domain.exception.serviceprovider.ServiceProviderPluginIllegalParameterException;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationParams;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderAuthenticationService;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderCrudService;
-import fr.cnes.regards.modules.authentication.rest.dto.ServiceProviderDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.PersistenceException;
 import javax.validation.Valid;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
@@ -62,7 +61,6 @@ public class ServiceProviderController implements IResourceController<ServicePro
     @Autowired
     private IResourceService resourceService;
 
-    @ResponseBody
     @GetMapping(value = PATH_SERVICE_PROVIDERS)
     @ResourceAccess(description = "Retrieves the list of service providers.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ServiceProviderDto>>> getServiceProviders(
@@ -76,81 +74,62 @@ public class ServiceProviderController implements IResourceController<ServicePro
     }
 
     @PostMapping(path = PATH_SERVICE_PROVIDERS)
-    @ResponseBody
     @ResourceAccess(description = "Save service provider.", role = DefaultRole.PROJECT_ADMIN)
     @SuppressWarnings("rawtypes")
-    public ResponseEntity<EntityModel<ServiceProviderDto>> saveServiceProvider(
-        @Valid @RequestBody ServiceProviderDto serviceProvider
-    ) throws ModuleException {
+    public ResponseEntity<EntityModel<ServiceProviderDto>> saveServiceProvider(@Valid @RequestBody ServiceProviderDto serviceProvider) {
         //noinspection unchecked
         return serviceProviderCrud.save(serviceProvider.toDomain())
-            .map(ServiceProviderDto::new)
-            .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.CREATED))
-            .mapFailure(
-                Case($(), (Function<Throwable, ModuleException>) ModuleException::new)
-            )
-            .get();
+                .map(ServiceProviderDto::new)
+                .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.CREATED))
+                .mapFailure(Case($(), (Function<Throwable, ModuleException>) ModuleException::new))
+                .get();
     }
 
     @PutMapping(path = PATH_SERVICE_PROVIDER_BY_NAME)
-    @ResponseBody
     @ResourceAccess(description = "Update service provider.", role = DefaultRole.PROJECT_ADMIN)
     @SuppressWarnings("rawtypes")
-    public ResponseEntity<EntityModel<ServiceProviderDto>> updateServiceProvider(
-        @PathVariable("name") String name,
-        @Valid @RequestBody ServiceProviderDto serviceProvider
-    ) throws ModuleException {
+    public ResponseEntity<EntityModel<ServiceProviderDto>> updateServiceProvider(@PathVariable("name") String name, @Valid @RequestBody ServiceProviderDto serviceProvider) {
         //noinspection unchecked
         return serviceProviderCrud.update(name, serviceProvider.toDomain())
-            .map(ServiceProviderDto::new)
-            .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.CREATED))
-            .mapFailure(
-                Case($(), (Function<Throwable, ModuleException>) ModuleException::new)
-            )
-            .get();
+                .map(ServiceProviderDto::new)
+                .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.CREATED))
+                .mapFailure(Case($(), (Function<Throwable, ModuleException>) ModuleException::new))
+                .get();
     }
 
-    @ResponseBody
     @GetMapping(value = PATH_SERVICE_PROVIDER_BY_NAME)
     @ResourceAccess(description = "Retrieve the service provider.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<EntityModel<ServiceProviderDto>> getServiceProvider(@PathVariable("name") String name)
-    {
+    public ResponseEntity<EntityModel<ServiceProviderDto>> getServiceProvider(@PathVariable("name") String name) {
         //noinspection unchecked
         return serviceProviderCrud.findByName(name)
-            .map(ServiceProviderDto::new)
-            .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.OK))
-            .mapFailure(
-                Case($(instanceOf(NoSuchElementException.class)), ex -> new EntityNotFoundException(name, ServiceProvider.class)),
-                Case($(), (Function<Throwable, ModuleException>) ModuleException::new)
-            )
-            .get();
+                .map(ServiceProviderDto::new)
+                .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.OK))
+                .mapFailure(
+                        Case($(instanceOf(NoSuchElementException.class)), ex -> new EntityNotFoundException(name, ServiceProvider.class)),
+                        Case($(), (Function<Throwable, ModuleException>) ModuleException::new)
+                )
+                .get();
     }
 
-    @ResponseBody
     @DeleteMapping(value = PATH_SERVICE_PROVIDER_BY_NAME)
     @ResourceAccess(description = "Delete the service provider.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> deleteServiceProvider(@PathVariable("name") String name)
-        throws ModuleException
-    {
+    public ResponseEntity<Void> deleteServiceProvider(@PathVariable("name") String name) throws ModuleException {
         return serviceProviderCrud.delete(name)
-            .map(u -> new ResponseEntity<Void>(HttpStatus.NO_CONTENT))
-            .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
+                .map(u -> new ResponseEntity<Void>(HttpStatus.NO_CONTENT))
+                .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
     @PostMapping(value = PATH_AUTHENTICATE)
     @ResourceAccess(description = "Authenticate with the given service provider.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Authentication> authenticate(
-        @PathVariable("name") String name,
-        @RequestBody ServiceProviderAuthenticationParams params
-    ) throws ModuleException {
+    public ResponseEntity<Authentication> authenticate(@PathVariable("name") String name, @RequestBody ServiceProviderAuthenticationParams params) throws ModuleException {
         return serviceProviderAuthentication.authenticate(name, params)
-            .map(ResponseEntity::ok)
-            .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().build())
-            .recover(AuthenticationException.class, ex -> {
-                LOGGER.error(ex.getMessage(), ex);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            })
-            .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
+                .map(ResponseEntity::ok)
+                .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().build())
+                .recover(AuthenticationException.class, ex -> {
+                    LOGGER.error(ex.getMessage(), ex);
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                })
+                .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
     @PostMapping(value = PATH_DEAUTHENTICATE)
@@ -163,9 +142,7 @@ public class ServiceProviderController implements IResourceController<ServicePro
 
     @GetMapping(value = PATH_VERIFY_AUTHENTICATION)
     @ResourceAccess(description = "Verify and authenticate token through service providers.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Authentication> verifyAndAuthenticate(
-        @RequestParam(value = "externalToken", required = true) String externalToken
-    ) throws ModuleException {
+    public ResponseEntity<Authentication> verifyAndAuthenticate(@RequestParam(value = "externalToken", required = true) String externalToken) throws ModuleException {
         return serviceProviderAuthentication.verifyAndAuthenticate(externalToken)
             .map(ResponseEntity::ok)
             .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().build())

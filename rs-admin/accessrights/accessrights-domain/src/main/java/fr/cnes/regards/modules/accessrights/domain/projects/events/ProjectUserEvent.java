@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.accessrights.domain.projects;
+package fr.cnes.regards.modules.accessrights.domain.projects.events;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;

@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public final class AccessSettings {
@@ -33,6 +34,7 @@ public final class AccessSettings {
     public static final String MODE = "acceptance_mode";
     public static final String DEFAULT_ROLE = "default_role";
     public static final String DEFAULT_GROUPS = "default_groups";
+    public static final String USER_CREATION_MAIL_RECIPIENTS = "user_creation_mail_recipients";
 
     public static final AcceptanceMode DEFAULT_MODE = AcceptanceMode.AUTO_ACCEPT;
 
@@ -51,10 +53,16 @@ public final class AccessSettings {
             "Default Groups",
             new ArrayList<>()
     );
+    public static final DynamicTenantSetting USER_CREATION_MAIL_RECIPIENTS_SETTING = new DynamicTenantSetting(
+            USER_CREATION_MAIL_RECIPIENTS,
+            "User creation mail recipients",
+            new HashSet<>()
+    );
     public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
             MODE_SETTING,
             DEFAULT_ROLE_SETTING,
-            DEFAULT_GROUPS_SETTING
+            DEFAULT_GROUPS_SETTING,
+            USER_CREATION_MAIL_RECIPIENTS_SETTING
     );
 
     public enum AcceptanceMode {

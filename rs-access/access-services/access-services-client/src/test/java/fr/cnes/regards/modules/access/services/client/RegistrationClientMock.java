@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.access.services.client;
 
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -9,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.validation.Valid;
-import java.util.List;
 
 /**
  * Make Spring DI happy.
@@ -17,10 +15,6 @@ import java.util.List;
 @Primary
 @Component
 public class RegistrationClientMock implements IRegistrationClient {
-    @Override
-    public ResponseEntity<List<EntityModel<ProjectUser>>> retrieveAccessRequestList(int pPage, int pSize) {
-        return null;
-    }
 
     @Override
     public ResponseEntity<EntityModel<AccessRequestDto>> requestAccess(@Valid AccessRequestDto pAccessRequest) {

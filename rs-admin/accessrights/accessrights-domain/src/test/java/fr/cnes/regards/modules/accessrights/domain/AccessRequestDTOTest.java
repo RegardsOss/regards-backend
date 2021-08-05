@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.accessrights.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit test for {@link AccessRequestDto}
@@ -80,7 +79,7 @@ public class AccessRequestDTOTest {
      */
     @Before
     public void setUp() {
-        access = new AccessRequestDto(email, firstName, lastName, null, metaDatas, password, originUrl, requestLink);
+        access = new AccessRequestDto(email, firstName, lastName, null, metaDatas, password, originUrl, requestLink, null, null, 0L);
     }
 
     /**

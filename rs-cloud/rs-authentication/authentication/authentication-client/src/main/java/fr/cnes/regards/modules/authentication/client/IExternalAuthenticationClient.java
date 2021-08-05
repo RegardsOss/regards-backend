@@ -20,6 +20,9 @@ package fr.cnes.regards.modules.authentication.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
+import fr.cnes.regards.modules.authentication.domain.dto.ServiceProviderDto;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,14 +31,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestClient(name = "rs-authentication", contextId = "rs-authentication.external-authentication-client")
 @RequestMapping(
-    path = "/serviceproviders",
-    consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE
+        path = "/serviceproviders",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
 )
 public interface IExternalAuthenticationClient {
 
     String ACCEPT_ACCOUNT_RELATIVE_PATH = "/verify";
 
     @GetMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH)
-    ResponseEntity<Authentication> verifyAndAuthenticate(@RequestParam(value = "externalToken") String externalToken);
+    ResponseEntity<Authentication> verifyAndAuthenticate(@RequestParam String externalToken);
+
+    @GetMapping
+    ResponseEntity<PagedModel<EntityModel<ServiceProviderDto>>> getServiceProviders();
+
 }

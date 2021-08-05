@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
-import javax.sql.DataSource;
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.jpa.exception.JpaException;
+import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
+import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.jpa.utils.*;
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
@@ -38,6 +37,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
@@ -45,17 +45,12 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.google.gson.Gson;
-import fr.cnes.regards.framework.jpa.exception.JpaException;
-import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
-import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
-import fr.cnes.regards.framework.jpa.json.GsonUtil;
-import fr.cnes.regards.framework.jpa.utils.DaoUtils;
-import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
-import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
-import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
-import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
-import fr.cnes.regards.framework.jpa.utils.MigrationTool;
+import javax.sql.DataSource;
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class AbstractJpaAutoConfiguration
@@ -120,6 +115,9 @@ public abstract class AbstractJpaAutoConfiguration {
     @Autowired
     private EntityManagerFactoryBuilder builder;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
     /**
      * Constructor. Check for classpath errors.
      */
@@ -146,7 +144,7 @@ public abstract class AbstractJpaAutoConfiguration {
             helper.setOutputFile(daoProperties.getOutputFile());
             return helper;
         } else {
-            FlywayDatasourceSchemaHelper helper = new FlywayDatasourceSchemaHelper(hibernateProperties);
+            FlywayDatasourceSchemaHelper helper = new FlywayDatasourceSchemaHelper(hibernateProperties, applicationContext);
             helper.setDataSource(instanceDataSource);
             return helper;
         }

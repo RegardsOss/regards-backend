@@ -1,14 +1,32 @@
 package fr.cnes.regards.modules.storage.service.file.download;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.annotations.VisibleForTesting;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserAction;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserEvent;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
+import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
+import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
+import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.storage.service.settings.StorageSettingService;
+import io.vavr.Tuple;
+import io.vavr.Tuple3;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -20,38 +38,14 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.common.annotations.VisibleForTesting;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+
 import static fr.cnes.regards.modules.storage.dao.entity.download.DownloadQuotaLimitsEntity.UK_DOWNLOAD_QUOTA_LIMITS_EMAIL;
-import fr.cnes.regards.modules.storage.domain.StorageSetting;
-import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
-import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import static fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException.buildDownloadQuotaExceededException;
 import static fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException.buildDownloadRateExceededException;
-import fr.cnes.regards.modules.storage.service.settings.StorageSettingService;
-import io.vavr.Tuple;
-import io.vavr.Tuple3;
-import io.vavr.collection.HashMap;
-import io.vavr.collection.Map;
-import io.vavr.collection.Seq;
-import io.vavr.control.Either;
-import io.vavr.control.Option;
-import io.vavr.control.Try;
 
 @Service
 @MultitenantTransactional
@@ -211,7 +205,7 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
         runtimeTenantResolver.forceTenant(tenant);
         Set<String> emailsToRemove = new HashSet<>();
         messages.forEach(event -> {
-            if (event.getAction() == ProjectUserAction.DELETION) {
+            if (event.getAction() == ProjectUserAction.DELETE) {
                 emailsToRemove.add(event.getEmail());
             }
         });

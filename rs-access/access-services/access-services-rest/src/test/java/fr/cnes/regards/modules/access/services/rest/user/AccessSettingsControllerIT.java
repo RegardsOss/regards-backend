@@ -22,52 +22,30 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.access.services.domain.user.AccessSettingsDto;
-
-import org.hamcrest.Matchers;
-import org.junit.Ignore;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageSettingClientMock.DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA;
-import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageSettingClientMock.DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 /**
  * Integration tests for AccessSettings REST Controller.
  */
 @MultitenantTransactional
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=access"},
-    locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=access"}, locations = {"classpath:application-test.properties"})
 public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void retrieveAccessSettings() {
         String api = AccessSettingsController.REQUEST_MAPPING_ROOT;
-
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectIsArray("$")
-                .expectToHaveSize("$", 5)
-            ;
-
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expectIsArray("$").expectToHaveSize("$", 5);
         performDefaultGet(api, customizer, "Failed to retrieve access settings");
     }
 
     @Test
     public void updateAccessSettings() {
         String api = AccessSettingsController.REQUEST_MAPPING_ROOT + AccessSettingsController.NAME_PATH;
-
-        DynamicTenantSettingDto dto = new DynamicTenantSettingDto<>(AccessSettings.MODE_SETTING);
-
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-            ;
-
+        DynamicTenantSettingDto<String> dto = new DynamicTenantSettingDto<>(AccessSettings.MODE_SETTING);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         performDefaultPut(api, dto, customizer, "Failed to update access settings", dto.getName());
     }
+
 }

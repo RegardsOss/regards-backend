@@ -5,6 +5,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.modules.access.services.rest.user.ProjectUsersController;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 @Primary
@@ -36,16 +38,23 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     public static final Long PROJECT_USER_STUB_ID = (long) r.nextInt(10_000);
     public static final String PROJECT_USER_STUB_EMAIL = "foo@bar.com";
     public static final ProjectUser PROJECT_USER_STUB;
+    public static final String FIRST_NAME = "firstName";
+    public static final String LAST_NAME = "lastName";
 
     static {
         ROLE_STUB = new Role(ROLE_STUB_NAME);
         ROLE_STUB.setId(ROLE_STUB_ID);
         PROJECT_USER_STUB = new ProjectUser(
-            PROJECT_USER_STUB_EMAIL,
-            ROLE_STUB,
-            Collections.emptyList(),
-            Collections.emptyList()
+                PROJECT_USER_STUB_EMAIL,
+                ROLE_STUB,
+                Collections.emptyList(),
+                Collections.emptyList()
         );
+        PROJECT_USER_STUB.setMaxQuota(StorageRestClientMock.USER_QUOTA_LIMITS_STUB_MAX_QUOTA);
+        PROJECT_USER_STUB.setCurrentQuota(StorageRestClientMock.CURRENT_USER_QUOTA_STUB);
+        PROJECT_USER_STUB.setFirstName(FIRST_NAME);
+        PROJECT_USER_STUB.setLastName(LAST_NAME);
+        PROJECT_USER_STUB.setAccessGroups(Collections.singleton("group"));
         PROJECT_USER_STUB.setId(PROJECT_USER_STUB_ID);
     }
 
@@ -64,7 +73,7 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     private PagedResourcesAssembler<ProjectUser> assembler;
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(String pStatus, String pEmailStart, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, int pPage, int pSize) {
         return singleProjectUserPagedResponse();
     }
 
@@ -121,6 +130,11 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     @Override
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage, int pSize) {
         return singleProjectUserPagedResponse();
+    }
+
+    @Override
+    public ResponseEntity<Void> linkAccessGroups(String email, List<String> groups) {
+        return null;
     }
 
     @Override

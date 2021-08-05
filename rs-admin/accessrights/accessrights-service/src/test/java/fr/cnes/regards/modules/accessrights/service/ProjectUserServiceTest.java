@@ -18,296 +18,220 @@
  */
 package fr.cnes.regards.modules.accessrights.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMethod;
-
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.json.GsonUtil;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import fr.cnes.regards.modules.accessrights.domain.projects.*;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.AccessSettingsService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserGroupService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
+import fr.cnes.regards.modules.accessrights.service.utils.AccountUtilsService;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for {@link ProjectUserService}.
+ *
  * @author xbrochar
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ProjectUserServiceTest {
 
-    /**
-     * A sample id
-     */
     private static final Long ID = 0L;
-
-    /**
-     * A sample email
-     */
     private static final String EMAIL = "user@email.com";
-
-    /**
-     * A sample last connection date
-     */
     private static final OffsetDateTime LAST_CONNECTION = OffsetDateTime.now().minusDays(2);
-
-    /**
-     * A sample last update date
-     */
     private static final OffsetDateTime LAST_UPDATE = OffsetDateTime.now().minusHours(1);
-
-    /**
-     * A sample status
-     */
     private static final UserStatus STATUS = UserStatus.ACCESS_GRANTED;
-
-    /**
-     * A sample meta data list
-     */
     private static final List<MetaData> META_DATA = new ArrayList<>();
-
-    /**
-     * A sample role
-     */
     private static final Role ROLE = new Role(DefaultRole.ADMIN.toString(), null);
+    private static final String LASTNAME = "lastName";
+    private static final String FIRSTNAME = "firstName";
+    private static final String ROLE_NAME = "roleName";
+    private static final String PASSWORD = "password";
+    private static final String DEFAULT_ROLE_NAME = DefaultRole.REGISTERED_USER.name();
+    private static final ResourcesAccess PERMISSION_0 = new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller", RequestMethod.GET, DefaultRole.ADMIN);
+    private static final ResourcesAccess PERMISSION_1 = new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller", RequestMethod.PUT, DefaultRole.ADMIN);
+    private static final List<ResourcesAccess> PERMISSIONS = Arrays.asList(PERMISSION_0, PERMISSION_1);
 
-    /**
-     * A sample list of permissions
-     */
-    private static final List<ResourcesAccess> PERMISSIONS = new ArrayList<>();
+    private ProjectUser projectUser;
+    private AccessRequestDto accessRequest;
+    private AccessRequestDto accessRequestFull;
+    private Account account;
 
-    /**
-     * A sample project user
-     */
-    private static ProjectUser projectUser = new ProjectUser();
+    @InjectMocks
+    private ProjectUserService projectUserService;
 
-    /**
-     * The tested service
-     */
-    private IProjectUserService projectUserService;
 
-    /**
-     * Mocked CRUD repository managing {@link ProjectUser}s
-     */
+    @Mock
     private IProjectUserRepository projectUserRepository;
-
-    /**
-     * Mocked service handling CRUD operation on {@link Role}s
-     */
+    @Mock
     private IRoleService roleService;
-
-    private IAccountsClient accountsClient;
-
-    private IAuthenticationResolver authResolver;
-
-    private IUserClient userAccessGroupsClient;
-
+    @Mock
+    private IAuthenticationResolver authenticationResolver;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+    @Mock
     private AccessSettingsService accessSettingsService;
+    @Mock
+    private AccountUtilsService accountUtilsService;
+    @Mock
+    private AccessRightsEmailService accessRightsEmailService;
+    @Mock
+    private ProjectUserGroupService projectUserGroupService;
 
-
-    /**
-     * Do some setup before each test
-     */
     @Before
-    public void setUp() {
-        // Initialize a sample user
-        projectUser.setId(ID);
-        projectUser.setEmail(EMAIL);
-        projectUser.setLastConnection(LAST_CONNECTION);
-        projectUser.setLastUpdate(LAST_UPDATE);
-        projectUser.setStatus(STATUS);
-        projectUser.setMetadata(META_DATA);
-        projectUser.setPermissions(PERMISSIONS);
-        projectUser.getPermissions().add(new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN));
-        projectUser.getPermissions().add(new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller",
-                RequestMethod.PUT, DefaultRole.ADMIN));
-        projectUser.setRole(ROLE);
+    public void init() throws EntityException {
 
-        // Mock untested services & repos
-        projectUserRepository = Mockito.mock(IProjectUserRepository.class);
-        roleService = Mockito.mock(IRoleService.class);
-        accountsClient = Mockito.mock(IAccountsClient.class);
-        authResolver = Mockito.mock(IAuthenticationResolver.class);
-        userAccessGroupsClient = Mockito.mock(IUserClient.class);
-        accessSettingsService = Mockito.mock(AccessSettingsService.class);
+        String accessGroup = "group69";
+        ReflectionTestUtils.setField(projectUserService, "instanceAdminUserEmail", "admin@regards.com");
+        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(invocation -> ((ProjectUser) invocation.getArgument(0)).setId(ID));
+        when(accessSettingsService.defaultRole()).thenReturn(DEFAULT_ROLE_NAME);
+        when(accessSettingsService.defaultGroups()).thenReturn(Arrays.asList("group1", "group2", "groupDontKnowWhat"));
+        when(accessSettingsService.userCreationMailRecipients()).thenReturn(Collections.singleton("admin@regards.fr"));
+        when(roleService.retrieveRole(DEFAULT_ROLE_NAME)).thenReturn(new RoleFactory().doNotAutoCreateParents().createRegisteredUser());
+        when(projectUserGroupService.getPublicGroups()).thenReturn(Collections.singleton("public"));
 
-        GsonUtil.setGson(new Gson());
-
-        // Construct the tested service
-        projectUserService = new ProjectUserService(authResolver, projectUserRepository, roleService, accountsClient,
-                userAccessGroupsClient, "instance_admin@regards.fr", accessSettingsService, new Gson());
+        projectUser = new ProjectUser()
+                .setId(ID)
+                .setEmail(EMAIL)
+                .setFirstName(FIRSTNAME)
+                .setLastName(LASTNAME)
+                .setLastConnection(LAST_CONNECTION)
+                .setLastUpdate(LAST_UPDATE)
+                .setStatus(STATUS)
+                .setMetadata(META_DATA)
+                .setPermissions(PERMISSIONS)
+                .setRole(ROLE);
+        accessRequest = new AccessRequestDto()
+                .setEmail(EMAIL)
+                .setFirstName(FIRSTNAME)
+                .setLastName(LASTNAME)
+                .setPassword("password")
+                .setOriginUrl("url")
+                .setRequestLink("link");
+        accessRequestFull = new AccessRequestDto()
+                .setEmail(EMAIL)
+                .setFirstName(FIRSTNAME)
+                .setLastName(LASTNAME)
+                .setPassword("password")
+                .setOriginUrl("url")
+                .setRequestLink("link")
+                .setRoleName(ROLE_NAME)
+                .setAccessGroups(Collections.singleton(accessGroup));
+        account = new Account(EMAIL, FIRSTNAME, LASTNAME, PASSWORD);
     }
 
     @Test
     @Purpose("Check that the system allows to create a new projectUser and the associated account.")
-    public void createUserByBypassingRegristrationProcess() throws EntityNotFoundException, EntityInvalidException {
-        Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-        Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
-        String defaultRoleName = AccessSettings.DEFAULT_ROLE_SETTING.getValue(String.class);
-        Mockito.when(accessSettingsService.defaultRole()).thenReturn(defaultRoleName);
-        Mockito.when(accessSettingsService.defaultGroups()).thenReturn(Arrays.asList("group1", "group2", "groupDontKnowWhat"));
-        Mockito.when(roleService.retrieveRole(defaultRoleName)).thenReturn(new RoleFactory().doNotAutoCreateParents().createRegisteredUser());
-        ProjectUser user = new ProjectUser();
-        user.setEmail("test@regards.fr");
-        Mockito.when(projectUserRepository.save(Mockito.any(ProjectUser.class))).thenAnswer(args -> {
-            return args.getArgument(0, ProjectUser.class);
-        });
+    public void createUserByBypassingRegistrationProcess() throws EntityException {
 
-        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName", null,
-                null, "pPassword", "pOriginUrl", "pRequestLink");
+        // Given
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(args -> args.getArgument(0, ProjectUser.class));
+        when(accountUtilsService.retrieveAccount(EMAIL)).thenReturn(null);
+        when(accountUtilsService.createAccount(accessRequest, false, AccountStatus.ACTIVE)).thenReturn(account);
 
-        try {
-            ProjectUser newUser = projectUserService.createProjectUser(accessRequest);
-            projectUserService.configureAccessGroups(newUser);
-            Assert.assertEquals(accessSettingsService.defaultRole(), newUser.getRole().getName());
 
-            // Check group association
-            Assert.assertTrue("This test needs some groups configured id default settings",
-                              !accessSettingsService.defaultGroups().isEmpty());
-            accessSettingsService.defaultGroups().forEach(g -> {
-                Mockito.verify(userAccessGroupsClient, Mockito.times(1)).associateAccessGroupToUser(user.getEmail(), g);
-            });
+        // When
+        ProjectUser createdProjectUser = projectUserService.createProjectUser(accessRequest);
 
-            // Check that createAccount method is called
-            Mockito.verify(accountsClient).createAccount(Mockito.any());
-            Mockito.verify(projectUserRepository).save(Mockito.any(ProjectUser.class));
-
-        } catch (final EntityAlreadyExistsException e) {
-            Assert.fail(e.getMessage());
-        }
+        // Then
+        Assert.assertEquals(DEFAULT_ROLE_NAME, createdProjectUser.getRole().getName());
+        Set<String> accessGroups = createdProjectUser.getAccessGroups();
+        assertEquals(4, accessGroups.size());
+        assertEquals(ProjectUser.REGARDS_ORIGIN, createdProjectUser.getOrigin());
+        verify(accountUtilsService).createAccount(accessRequest, false, AccountStatus.ACTIVE);
+        verify(projectUserRepository).save(any(ProjectUser.class));
+        verify(accessRightsEmailService).sendEmail(any());
     }
 
     @Test
     @Purpose("Check that the system allows to create a new projectUser with the associated account.")
-    public void createUserByBypassingRegristrationProcessWithoutAccount()
-            throws EntityNotFoundException, EntityInvalidException {
-        Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
-                .thenReturn(new ResponseEntity<>(
-                        new EntityModel<>(new Account("test@regards.fr", "pFirstName", "pLastName", "pPassword")),
-                        HttpStatus.OK));
-        Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
-        ProjectUser user = new ProjectUser();
-        user.setEmail("test@regards.fr");
-        Mockito.when(projectUserRepository.save(Mockito.any())).thenReturn(user);
+    public void createUserByBypassingRegistrationProcessWithoutAccount() throws EntityException {
 
-        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
-                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
+        // Given
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(roleService.retrieveRole(ROLE_NAME)).thenReturn(new Role());
+        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(args -> args.getArgument(0, ProjectUser.class));
+        when(accountUtilsService.retrieveAccount(EMAIL)).thenReturn(new Account(EMAIL, FIRSTNAME, LASTNAME, null));
 
-        try {
-            ProjectUser newuser = projectUserService.createProjectUser(accessRequest);
-            projectUserService.configureAccessGroups(newuser);
+        // When
+        ProjectUser createdProjectUser = projectUserService.createProjectUser(accessRequestFull);
 
-            // Check group association
-            accessSettingsService.defaultGroups().forEach(g -> {
-                Mockito.verify(userAccessGroupsClient, Mockito.times(1)).associateAccessGroupToUser(user.getEmail(), g);
-            });
-
-            // Chcek that createAccount method is called
-            Mockito.verify(accountsClient, Mockito.never()).createAccount(Mockito.any());
-            Mockito.verify(projectUserRepository).save(Mockito.any(ProjectUser.class));
-
-        } catch (final EntityAlreadyExistsException e) {
-            Assert.fail(e.getMessage());
-        }
+        // Then
+        Set<String> accessGroups = createdProjectUser.getAccessGroups();
+        assertEquals(5, accessGroups.size());
+        assertTrue(accessGroups.contains("group69"));
+        assertEquals(ProjectUser.REGARDS_ORIGIN, createdProjectUser.getOrigin());
+        verify(accountUtilsService, Mockito.never()).createAccount(any(AccessRequestDto.class), any(boolean.class), any(AccountStatus.class));
+        verify(projectUserRepository).save(any(ProjectUser.class));
+        verify(accessRightsEmailService).sendEmail(any());
     }
 
     @Test
     @Purpose("Check that the system allows to create a new projectUser with the associated account.")
-    public void createUserByBypassingRegristrationProcessError()
-            throws EntityNotFoundException, EntityInvalidException {
-
-        Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
-                .thenReturn(new ResponseEntity<>(
-                        new EntityModel<>(new Account("test@regards.fr", "pFirstName", "pLastName", "pPassword")),
-                        HttpStatus.OK));
-        Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr"))
-                .thenReturn(Optional.of(new ProjectUser()));
-        Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
-
-        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
-                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
-
-        try {
-            projectUserService.createProjectUser(accessRequest);
-            Assert.fail("ProjectUser already exists. There should be an exception thronw here.");
-        } catch (final EntityAlreadyExistsException e) {
-            // Nothing to do. There should be an exception
-        }
+    public void createUserByBypassingRegistrationProcessError() {
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.of(new ProjectUser()));
+        assertThrows(EntityAlreadyExistsException.class, () -> projectUserService.createProjectUser(accessRequest));
     }
 
     /**
      * Check that the system allows to retrieve the users of a project.
      */
-    @SuppressWarnings("unchecked")
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve the users of a project.")
     public void retrieveUserListByStatus() {
+
         // Define expected
-        final List<ProjectUser> expected = new ArrayList<>();
+        List<ProjectUser> expected = new ArrayList<>();
         expected.add(projectUser);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final Pageable pageable = PageRequest.of(0, 100);
-        final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
+        Pageable pageable = PageRequest.of(0, 100);
+        Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findAll(Mockito.any(Specification.class), Mockito.eq(pageable)))
-                .thenReturn(expectedPage);
+        when(projectUserRepository.findAll(any(Specification.class), Mockito.eq(pageable))).thenReturn(expectedPage);
 
         // Retrieve actual value
-        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED.toString(), null,
-                                                                             pageable);
+        Page<ProjectUser> actual = projectUserService.retrieveUserList(new ProjectUserSearchParameters().setStatus(UserStatus.ACCESS_GRANTED.toString()), pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);
@@ -316,29 +240,29 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to retrieve the users of a project.
      */
-    @SuppressWarnings("unchecked")
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve the users of a project.")
     public void retrieveAllUserList() {
+
         // Define expected
-        final List<ProjectUser> expected = new ArrayList<>();
+        List<ProjectUser> expected = new ArrayList<>();
         expected.add(projectUser);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final Pageable pageable = PageRequest.of(0, 100);
-        final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
+        Pageable pageable = PageRequest.of(0, 100);
+        Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findAll(Mockito.any(Specification.class), Mockito.eq(pageable)))
-                .thenReturn(expectedPage);
+        when(projectUserRepository.findAll((Specification<ProjectUser>) null, pageable)).thenReturn(expectedPage);
 
         // Retrieve actual value
-        final Page<ProjectUser> actual = projectUserService.retrieveUserList(null, null, pageable);
+        Page<ProjectUser> actual = projectUserService.retrieveUserList(null, pageable);
 
         // Check that the expected and actual role have same values
+        verify(projectUserRepository).findAll((Specification<ProjectUser>) null, pageable);
         Assert.assertEquals(expectedPage, actual);
     }
 
@@ -352,42 +276,45 @@ public class ProjectUserServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system allows to retrieve a specific user without exposing hidden meta data.")
     public void retrieveUser() throws EntityNotFoundException {
+
         // Define user as in db
-        final MetaData metaData0 = new MetaData();
+        MetaData metaData0 = new MetaData();
         metaData0.setVisibility(UserVisibility.HIDDEN);
         projectUser.getMetadata().add(metaData0);
-        final MetaData metaData1 = new MetaData();
+        MetaData metaData1 = new MetaData();
         metaData1.setVisibility(UserVisibility.READABLE);
         projectUser.getMetadata().add(metaData1);
-        final MetaData metaData2 = new MetaData();
+        MetaData metaData2 = new MetaData();
         metaData2.setVisibility(UserVisibility.WRITEABLE);
         projectUser.getMetadata().add(metaData2);
 
         // Define user as expected
-        final ProjectUser expected = new ProjectUser();
-        final List<MetaData> visibleMetaData = new ArrayList<>();
+        List<MetaData> visibleMetaData = new ArrayList<>();
         visibleMetaData.add(metaData1);
         visibleMetaData.add(metaData2);
-        expected.setId(ID);
-        expected.setEmail(EMAIL);
-        expected.setLastUpdate(LAST_UPDATE);
-        expected.setLastConnection(LAST_CONNECTION);
-        expected.setStatus(STATUS);
-        expected.setPermissions(PERMISSIONS);
-        expected.setRole(ROLE);
-        expected.setMetadata(visibleMetaData);
+        ProjectUser expected = new ProjectUser()
+                .setId(ID)
+                .setEmail(EMAIL)
+                .setFirstName(FIRSTNAME)
+                .setLastName(LASTNAME)
+                .setLastUpdate(LAST_UPDATE)
+                .setLastConnection(LAST_CONNECTION)
+                .setStatus(STATUS)
+                .setPermissions(PERMISSIONS)
+                .setRole(ROLE)
+                .setMetadata(visibleMetaData);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findById(ID)).thenReturn(Optional.of(projectUser));
+        when(projectUserRepository.findById(ID)).thenReturn(Optional.of(projectUser));
 
         // Retrieve actual value
-        final ProjectUser actual = projectUserService.retrieveUser(ID);
+        ProjectUser actual = projectUserService.retrieveUser(ID);
 
         // Check same values
         Assert.assertThat(actual, Matchers.samePropertyValuesAs(expected));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findById(ID);
+        verify(projectUserRepository).findById(ID);
     }
 
     /**
@@ -401,16 +328,16 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to retrieve a specific user by email.")
     public void retrieveOneByEmail() throws EntityNotFoundException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Retrieve actual value
-        final ProjectUser actual = projectUserService.retrieveOneByEmail(EMAIL);
+        ProjectUser actual = projectUserService.retrieveOneByEmail(EMAIL);
 
         // Check same values
         Assert.assertThat(actual, Matchers.samePropertyValuesAs(projectUser));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findOneByEmail(EMAIL);
+        verify(projectUserRepository).findOneByEmail(EMAIL);
     }
 
     /**
@@ -424,7 +351,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when trying to retrieve a user with unknown email.")
     public void retrieveOneByEmailNotFound() throws EntityNotFoundException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
 
         // Trigger the exception
         projectUserService.retrieveOneByEmail(EMAIL);
@@ -441,19 +368,19 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to retrieve the current logged user.")
     public void retrieveCurrentUser() throws EntityNotFoundException {
 
-        Mockito.when(authResolver.getUser()).thenReturn(EMAIL);
+        when(authenticationResolver.getUser()).thenReturn(EMAIL);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Retrieve actual value
-        final ProjectUser actual = projectUserService.retrieveCurrentUser();
+        ProjectUser actual = projectUserService.retrieveCurrentUser();
 
         // Check
         Assert.assertThat(actual, Matchers.is(Matchers.equalTo(projectUser)));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findOneByEmail(EMAIL);
+        verify(projectUserRepository).findOneByEmail(EMAIL);
     }
 
     /**
@@ -463,33 +390,29 @@ public class ProjectUserServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all access requests for a project.")
     public void retrieveAccessRequestList() {
+
         // Populate all projects users (which can be access requests or not)
-        final List<ProjectUser> accessRequests = new ArrayList<>();
+        List<ProjectUser> accessRequests = new ArrayList<>();
         accessRequests.add(new ProjectUser(null, null, null, null));
         accessRequests.add(new ProjectUser(null, null, null, null));
 
-        final Pageable pageable = PageRequest.of(0, 100);
+        Pageable pageable = PageRequest.of(0, 100);
 
-        try (final Stream<ProjectUser> stream = accessRequests.stream()) {
-            // Prepare the list of expect values
-            final List<ProjectUser> expected = stream.filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
-                    .collect(Collectors.toList());
+        // Prepare the list of expected values
+        List<ProjectUser> expected = accessRequests.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS)).collect(Collectors.toList());
 
-            final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 2);
+        Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 2);
 
-            Mockito.when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS, pageable))
-                    .thenReturn(expectedPage);
+        when(projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS, pageable)).thenReturn(expectedPage);
 
-            // Retrieve actual values
-            final Page<ProjectUser> actual = projectUserService.retrieveAccessRequestList(pageable);
+        // Retrieve actual values
+        Page<ProjectUser> actual = projectUserService.retrieveAccessRequestList(pageable);
 
-            // Lists must be equal
-            Assert.assertEquals(expectedPage, actual);
+        // Lists must be equal
+        Assert.assertEquals(expectedPage, actual);
 
-            // Check that the repository's method was called with right arguments
-            Mockito.verify(projectUserRepository).findByStatus(UserStatus.WAITING_ACCESS, pageable);
-
-        }
+        // Check that the repository's method was called with right arguments
+        verify(projectUserRepository).findByStatus(UserStatus.WAITING_ACCESS, pageable);
     }
 
     /**
@@ -502,7 +425,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when trying to update a non existing project user.")
     public void updateUserEntityNotFound() throws EntityException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.existsById(ID)).thenReturn(false);
+        when(projectUserRepository.findById(ID)).thenReturn(Optional.empty());
 
         // Trigger the exception
         projectUserService.updateUser(ID, projectUser);
@@ -517,9 +440,7 @@ public class ProjectUserServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_320")
     @Purpose("Check that the system fails when user id differs from the passed id.")
     public void updateUserInvalidValue() throws EntityException {
-        // Mock the repository returned value
-        Mockito.when(projectUserRepository.existsById(ID)).thenReturn(true);
-
+        when(projectUserRepository.findById(1L)).thenReturn(Optional.of(new ProjectUser().setId(1L)));
         // Trigger the exception
         projectUserService.updateUser(1L, projectUser);
     }
@@ -534,13 +455,13 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to update a project user.")
     public void updateUser() throws EntityException {
         // Mock repository
-        Mockito.when(projectUserRepository.existsById(ID)).thenReturn(true);
+        when(projectUserRepository.findById(ID)).thenReturn(Optional.of(projectUser));
 
         // Try to update a user
         projectUserService.updateUser(ID, projectUser);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).save(projectUser);
+        verify(projectUserRepository).save(projectUser);
     }
 
     /**
@@ -553,7 +474,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when trying to override a not exisiting user's access rights.")
     public void updateUserAccessRightsEntityNotFound() throws EntityNotFoundException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
 
         // Trigger the exception
         projectUserService.updateUserAccessRights(EMAIL, new ArrayList<>());
@@ -569,38 +490,33 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to override role's access rights for a user.")
     public void updateUserAccessRights() throws EntityNotFoundException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Define updated permissions
-        final List<ResourcesAccess> input = new ArrayList<>();
-        // Updating an existing one
-        final ResourcesAccess updatedPermission = new ResourcesAccess(0L, "updated desc0", "updated ms0",
-                "updated res0", "Controller", RequestMethod.POST, DefaultRole.ADMIN);
-        input.add(updatedPermission);
-        // Adding a new permission
-        final ResourcesAccess newPermission = new ResourcesAccess(2L, "desc2", "ms2", "res2", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
-        input.add(newPermission);
+        ResourcesAccess updatedPermission =
+                new ResourcesAccess(0L, "updated desc0", "updated ms0", "updated res0", "Controller", RequestMethod.POST, DefaultRole.ADMIN);
+        ResourcesAccess newPermission =
+                new ResourcesAccess(2L, "desc2", "ms2", "res2", "Controller", RequestMethod.GET, DefaultRole.ADMIN);
+        List<ResourcesAccess> input = Arrays.asList(updatedPermission, newPermission);
 
         // Define expected result
-        final ProjectUser expected = new ProjectUser();
+        ProjectUser expected = new ProjectUser();
         expected.setId(ID);
         expected.setEmail(EMAIL);
+        expected.setFirstName(FIRSTNAME);
+        expected.setLastName(LASTNAME);
         expected.setLastConnection(LAST_CONNECTION);
         expected.setLastUpdate(LAST_UPDATE);
         expected.setStatus(STATUS);
         expected.setMetadata(META_DATA);
         expected.setRole(ROLE);
-        expected.setPermissions(new ArrayList<>());
-        expected.getPermissions().add(updatedPermission);
-        expected.getPermissions().add(newPermission);
-        expected.getPermissions().add(projectUser.getPermissions().get(1));
+        expected.setPermissions(Arrays.asList(updatedPermission, newPermission, PERMISSION_1));
 
         // Call method
         projectUserService.updateUserAccessRights(EMAIL, input);
 
         // Check
-        Mockito.verify(projectUserRepository).save(Mockito.refEq(expected, "lastConnection", "lastUpdate"));
+        verify(projectUserRepository).save(Mockito.refEq(expected, "lastConnection", "lastUpdate"));
     }
 
     /**
@@ -613,14 +529,14 @@ public class ProjectUserServiceTest {
             + "a user's permissions using a role not hierarchically inferior.")
     public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior() throws EntityException {
         // Define borrowed role
-        final String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
-        final Role borrowedRole = new Role();
+        String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
+        Role borrowedRole = new Role();
 
         // Mock the repository
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
-        Mockito.when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
         // Make sure the borrowed role is not hierarchically inferior
-        Mockito.when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(false);
+        when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(false);
 
         // Trigger the exception
         projectUserService.retrieveProjectUserAccessRights(EMAIL, borrowedRoleName);
@@ -647,12 +563,12 @@ public class ProjectUserServiceTest {
         borrowedRole.setPermissions(borrowedRolePermissions);
 
         // Mock the repository
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
-        Mockito.when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
-        Mockito.when(roleService.retrieveRoleResourcesAccesses(borrowedRoleId)).thenReturn(borrowedRolePermissions);
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
+        when(roleService.retrieveRoleResourcesAccesses(borrowedRoleId)).thenReturn(borrowedRolePermissions);
 
         // Make sure the borrowed role is hierarchically inferior
-        Mockito.when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(true);
+        when(roleService.isHierarchicallyInferior(borrowedRole, projectUser.getRole())).thenReturn(true);
 
         // Define expected permissions
         final List<ResourcesAccess> expected = new ArrayList<>();
@@ -686,8 +602,8 @@ public class ProjectUserServiceTest {
         projectUser.getRole().setPermissions(permissions);
 
         // Mock the repository
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
-        Mockito.when(roleService.retrieveRoleResourcesAccesses(projectUser.getRole().getId())).thenReturn(permissions);
+        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(roleService.retrieveRoleResourcesAccesses(projectUser.getRole().getId())).thenReturn(permissions);
 
         // Define expected permissions
         final List<ResourcesAccess> expected = new ArrayList<>();

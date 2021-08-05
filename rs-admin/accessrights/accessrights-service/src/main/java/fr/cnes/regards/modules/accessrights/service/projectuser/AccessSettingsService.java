@@ -27,9 +27,6 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -39,6 +36,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RegardsTransactional
@@ -103,6 +101,10 @@ public class AccessSettingsService extends AbstractSettingService {
 
     public boolean isAutoAccept() {
         return AccessSettings.AcceptanceMode.AUTO_ACCEPT.equals(AccessSettings.AcceptanceMode.fromName(getValue(AccessSettings.MODE)));
+    }
+
+    public Set<String> userCreationMailRecipients() {
+        return getValue(AccessSettings.USER_CREATION_MAIL_RECIPIENTS);
     }
 
 }

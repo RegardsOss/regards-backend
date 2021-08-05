@@ -18,18 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.persistence.Entity;
-import javax.sql.DataSource;
-
+import fr.cnes.regards.framework.jpa.utils.*;
+import fr.cnes.regards.framework.modules.person.Person;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,16 +27,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
-import fr.cnes.regards.framework.jpa.utils.DatabaseModule;
-import fr.cnes.regards.framework.jpa.utils.DatabaseModuleComparator;
-import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
-import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
-import fr.cnes.regards.framework.modules.person.Person;
+import javax.persistence.Entity;
+import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Test updating multiple schema. Just run migration tools
@@ -54,12 +47,12 @@ import fr.cnes.regards.framework.modules.person.Person;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("/multipleSchema.properties")
-public class MultipleSchemaUpdate {
+public class MultipleSchemaUpdateTest {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(MultipleSchemaUpdate.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultipleSchemaUpdateTest.class);
 
     @Value("${multiple.schema.test.url}")
     private String url;
@@ -82,6 +75,9 @@ public class MultipleSchemaUpdate {
      * Hibernate properties that may impact migration configuration
      */
     private Map<String, Object> hibernateProperties;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Before
     public void setup() throws PropertyVetoException, IOException {
@@ -121,23 +117,24 @@ public class MultipleSchemaUpdate {
 
     @Test
     public void testWithFlyway() {
-        FlywayDatasourceSchemaHelper migrationHelper = new FlywayDatasourceSchemaHelper(hibernateProperties);
+
+        FlywayDatasourceSchemaHelper migrationHelper = new FlywayDatasourceSchemaHelper(hibernateProperties, applicationContext);
 
         String moduleName = "module0";
-        migrationHelper.migrate(dataSource, "flyway1", moduleName);
-        migrationHelper.migrate(dataSource, "flyway2", moduleName);
-        migrationHelper.migrate(dataSource, "flyway3", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway1", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway2", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway3", moduleName);
 
         moduleName = "module1";
-        migrationHelper.migrate(dataSource, "flyway1", moduleName);
-        migrationHelper.migrate(dataSource, "flyway2", moduleName);
-        migrationHelper.migrate(dataSource, "flyway3", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway1", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway2", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway3", moduleName);
     }
 
     @Test
     public void testScanModuleScripts() {
-        FlywayDatasourceSchemaHelper migrationHelper = new FlywayDatasourceSchemaHelper(hibernateProperties);
-        migrationHelper.migrate(dataSource, "scan");
+        FlywayDatasourceSchemaHelper migrationHelper = new FlywayDatasourceSchemaHelper(hibernateProperties, applicationContext);
+        migrationHelper.migrateSchema(dataSource, "scan");
     }
 
     @Test

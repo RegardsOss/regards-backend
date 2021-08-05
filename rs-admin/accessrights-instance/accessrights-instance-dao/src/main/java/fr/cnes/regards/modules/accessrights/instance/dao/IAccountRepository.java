@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.dao;
 
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing {@link Account}s.<br>
@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
  * @author Sylvain Vissiere-Guerinet
  */
 @InstanceEntity
-public interface IAccountRepository extends JpaRepository<Account, Long> {
+public interface IAccountRepository extends JpaRepository<Account, Long>, JpaSpecificationExecutor<Account> {
 
     /**
      * Find the single {@link Account} with passed <code>email</code>.<br>

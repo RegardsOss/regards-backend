@@ -18,19 +18,13 @@
  */
 package fr.cnes.regards.modules.dam.dao.dataaccess;
 
-import java.util.Set;
-
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.User;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -45,8 +39,6 @@ public class AccessGroupRepositoryIT extends AbstractDaoTransactionalTest {
 
     private static final String AG3_NAME = "AG3";
 
-    private static final User USER1 = new User("user1@user1.user1");
-
     @Autowired
     private IAccessGroupRepository dao;
 
@@ -59,10 +51,8 @@ public class AccessGroupRepositoryIT extends AbstractDaoTransactionalTest {
     @Before
     public void init() {
         ag1 = new AccessGroup(AG1_NAME);
-        ag1.addUser(USER1);
         ag1 = dao.save(ag1);
         ag2 = new AccessGroup(AG2_NAME);
-        ag2.addUser(USER1);
         ag2 = dao.save(ag2);
         ag3 = new AccessGroup(AG3_NAME);
         ag3.setPublic(Boolean.TRUE);
@@ -75,22 +65,6 @@ public class AccessGroupRepositoryIT extends AbstractDaoTransactionalTest {
         Assert.assertEquals(ag1, agOfNameAG1);
         AccessGroup agOfNameAG2 = dao.findOneByName(AG2_NAME);
         Assert.assertEquals(ag2, agOfNameAG2);
-    }
-
-    @Test
-    public void testFindAllByUsers() {
-        Set<AccessGroup> accessGroupsOfUser = dao.findAllByUsers(USER1);
-        Assert.assertTrue(accessGroupsOfUser.contains(ag1));
-        Assert.assertTrue(accessGroupsOfUser.contains(ag2));
-        Assert.assertFalse(accessGroupsOfUser.contains(ag3));
-    }
-
-    @Test
-    public void testFindAllByUsersAndIsPrivate() {
-        Page<AccessGroup> accessGroupsOfUser = dao.findAllByUsersOrIsPublic(USER1, Boolean.TRUE, PageRequest.of(0, 10));
-        Assert.assertTrue(accessGroupsOfUser.getContent().contains(ag1));
-        Assert.assertTrue(accessGroupsOfUser.getContent().contains(ag2));
-        Assert.assertTrue(accessGroupsOfUser.getContent().contains(ag3));
     }
 
 }

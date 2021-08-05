@@ -23,7 +23,7 @@ public class DefaultGroupsSettingCustomizer implements IDynamicTenantSettingCust
     }
 
     private boolean isProperValue(Object value) {
-        return value instanceof List && ((List<?>) value).stream().allMatch(m -> m instanceof String);
+        return value instanceof List && ((List<?>) value).stream().allMatch(String.class::isInstance);
     }
 
 }

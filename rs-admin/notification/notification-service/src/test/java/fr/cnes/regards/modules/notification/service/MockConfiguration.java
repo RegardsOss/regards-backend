@@ -18,13 +18,11 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  * @author sbinda
@@ -46,11 +44,6 @@ public class MockConfiguration {
     @Bean
     IAccountsClient accountsClient() {
         return Mockito.mock(IAccountsClient.class);
-    }
-
-    @Bean
-    IUserClient userClient() {
-        return Mockito.mock(IUserClient.class);
     }
 
 }

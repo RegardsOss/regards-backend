@@ -18,9 +18,21 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.IPoller;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.catalog.services.helper.ServiceHelper;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,22 +42,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.amqp.IPoller;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.catalog.services.helper.ServiceHelper;
-import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.model.client.IAttributeModelClient;
-import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
-import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Module-wide configuration for integration tests.
@@ -67,11 +65,6 @@ public class CatalogServicesITConfiguration {
     @Bean
     public IAttributeModelClient attributeModelClient() {
         return Mockito.mock(IAttributeModelClient.class);
-    }
-
-    @Bean
-    public IUserClient userClient() {
-        return Mockito.mock(IUserClient.class);
     }
 
     @Bean

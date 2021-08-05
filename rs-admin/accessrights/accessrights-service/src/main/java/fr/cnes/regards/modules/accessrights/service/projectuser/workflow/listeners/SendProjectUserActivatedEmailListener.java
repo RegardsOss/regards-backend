@@ -18,26 +18,15 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.cnes.regards.modules.accessrights.service.config.AccessRightsTemplateConfiguration;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnActiveEvent;
+import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
+import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailWrapper;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import feign.FeignException;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnActiveEvent;
-import fr.cnes.regards.modules.emails.service.IEmailService;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
-import freemarker.template.TemplateException;
+import java.util.Collections;
 
 /**
  * Listen to {@link OnActiveEvent} in order to warn the user its account request was re-activated.
@@ -48,54 +37,23 @@ import freemarker.template.TemplateException;
 @Component
 public class SendProjectUserActivatedEmailListener implements ApplicationListener<OnActiveEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SendProjectUserActivatedEmailListener.class);
+    private final AccessRightsEmailService accessRightsEmailService;
 
-    private final ITemplateService templateService;
-
-    private final IEmailService emailService;
-
-    private final IAccountsClient accountsClient;
-
-    public SendProjectUserActivatedEmailListener(ITemplateService templateService, IEmailService emailService,
-            IAccountsClient accountsClient) {
-        this.templateService = templateService;
-        this.emailService = emailService;
-        this.accountsClient = accountsClient;
+    public SendProjectUserActivatedEmailListener(AccessRightsEmailService accessRightsEmailService) {
+        this.accessRightsEmailService = accessRightsEmailService;
     }
 
     @Override
-    public void onApplicationEvent(final OnActiveEvent event) {
-        // Retrieve the user
-        ProjectUser projectUser = event.getProjectUser();
+    public void onApplicationEvent(OnActiveEvent event) {
 
-        // Create a hash map in order to store the data to inject in the mail
-        Map<String, String> data = new HashMap<>();
-        // lets retrive the account
-        try {
-            FeignSecurityManager.asSystem();
-            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
-                    .retrieveAccounByEmail(projectUser.getEmail());
-            if (accountResponse.getStatusCode().is2xxSuccessful()) {
-                data.put("name", accountResponse.getBody().getContent().getFirstName());
-            } else {
-                LOGGER.error("Could not find the associated Account for templating the email content.");
-                data.put("name", "");
-            }
-        } catch (FeignException e) {
-            LOGGER.error("Could not find the associated Account for templating the email content.", e);
-            data.put("name", "");
-        } finally {
-            FeignSecurityManager.reset();
-        }
+        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper()
+                .setProjectUser(event.getProjectUser())
+                .setSubject("[REGARDS] User access enabled")
+                .setTo(Collections.singleton(event.getProjectUser().getEmail()))
+                .setTemplate(AccessRightsTemplateConfiguration.USER_ACTIVATED_TEMPLATE_NAME)
+                .setDefaultMessage("Your access has been enabled.");
 
-        String message;
-        try {
-            message = templateService.render(AccessRightTemplateConf.USER_ACTIVATED_TEMPLATE_NAME, data);
-        } catch (final TemplateException e) {
-            LOGGER.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
-                         e);
-            message = "Your access has been enabled.";
-        }
-        emailService.sendEmail(message, "[REGARDS] User access enabled", null, projectUser.getEmail());
+        accessRightsEmailService.sendEmail(wrapper);
     }
+
 }

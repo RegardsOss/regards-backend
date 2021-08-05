@@ -19,47 +19,17 @@
 package fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event;
 
 import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 
-/**
- * Published when a group is dissociated from a user
- *
- * @author Marc Sordi
- */
 @Event(target = Target.ALL)
-public class AccessGroupDissociationEvent implements ISubscribable {
+public class AccessGroupCreationEvent extends AccessGroupEvent{
 
-    /**
-     * The source of the event
-     */
-    private AccessGroup accessGroup;
-
-    private String userEmail;
-
-    public AccessGroupDissociationEvent() {
-        // Deserialization constructor
+    public AccessGroupCreationEvent() {
     }
 
-    public AccessGroupDissociationEvent(AccessGroup accessGroup, String userEmail) {
-        this.accessGroup = accessGroup;
-        this.userEmail = userEmail;
+    public AccessGroupCreationEvent(AccessGroup pAccessGroup) {
+        super(pAccessGroup);
     }
 
-    public AccessGroup getAccessGroup() {
-        return accessGroup;
-    }
-
-    public void setAccessGroup(AccessGroup pAccessGroup) {
-        accessGroup = pAccessGroup;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String pUserEmail) {
-        userEmail = pUserEmail;
-    }
 }

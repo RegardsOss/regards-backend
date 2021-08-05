@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.framework.authentication;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -29,10 +31,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class ProjectUsersClientStub
@@ -50,8 +50,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     private static List<ProjectUser> users = new ArrayList<>();
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(String pStatus,
-            String pEmailStart, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, int pPage, int pSize) {
         final PageMetadata metadata = new PageMetadata(pSize, pPage, users.size());
         final PagedModel<EntityModel<ProjectUser>> resource = new PagedModel<>(HateoasUtils.wrapList(users), metadata,
                 new ArrayList<>());
@@ -99,6 +98,11 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     @Override
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage,
             int pSize) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Void> linkAccessGroups(String email, List<String> groups) {
         return null;
     }
 

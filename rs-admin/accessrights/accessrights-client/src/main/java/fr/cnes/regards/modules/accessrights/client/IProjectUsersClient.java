@@ -18,36 +18,23 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import static fr.cnes.regards.modules.accessrights.client.IProjectUsersClient.TARGET_NAME;
-
-import java.util.List;
-
-import javax.validation.Valid;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import javax.validation.Valid;
+import java.util.List;
+
+import static fr.cnes.regards.modules.accessrights.client.IProjectUsersClient.TARGET_NAME;
 
 /**
- *
  * Class IProjectUsersClient
  *
  * Feign client for rs-admin ProjectUsers controller.
@@ -56,135 +43,120 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @author Christophe Mertz
  */
 @RestClient(name = TARGET_NAME, contextId = "rs-admin.project-user-client")
-@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface IProjectUsersClient {
 
     String TARGET_NAME = "rs-admin";
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
+     *
+     * @param page       page index
+     * @param size       page size
+     * @param parameters search parameters as request params
+     * @return a {@link List} of {@link ProjectUser}
      */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(@RequestParam(value = "status", required = false) String pStatus,
-                                                                                 @RequestParam(value = "partialEmail", required = false) String pEmailStart,
-                                                                                 @RequestParam("page") int pPage,
-                                                                                 @RequestParam("size") int pSize);
+    @GetMapping
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
+            @RequestParam ProjectUserSearchParameters parameters, @RequestParam("page") int page, @RequestParam("size") int size
+    );
 
     /**
-     * Retrieve all users with a pending access requests.
+     * Retrieve all users with a pending access request.
      *
-     * @param pPage
-     * @param pSize
-     *
+     * @param page page index
+     * @param size page size
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
      */
-    @ResponseBody
-    @RequestMapping(value = "/pendingaccesses", method = RequestMethod.GET)
-    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int pPage,
-            @RequestParam("size") int pSize);
+    @GetMapping("/pendingaccesses")
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int page, @RequestParam("size") int size);
 
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody final AccessRequestDto pDto);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      *
-     * @param pUserId
-     *            The {@link ProjectUser}'s <code>id</code>
+     * @param pUserId The {@link ProjectUser}'s <code>id</code>
      * @return {@link ProjectUser}
      */
-    @ResponseBody
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.GET)
+    @GetMapping("/{user_id}")
     ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long pUserId);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
      *
-     * @param pUserEmail
-     *            The {@link ProjectUser}'s <code>email</code>
+     * @param pUserEmail The {@link ProjectUser}'s <code>email</code>
      * @return {@link ProjectUser}
      */
-    @ResponseBody
-    @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
+    @GetMapping("/email/{user_email}")
     ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("user_email") String pUserEmail);
 
-    @ResponseBody
-    @RequestMapping(value = "/email/{user_email}/admin", method = RequestMethod.GET)
+    @GetMapping("/email/{user_email}/admin")
     ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") String userEmail);
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
      *
-     * @param pUserId
-     *            The {@link ProjectUser} <code>id</code>
-     * @param pUpdatedProjectUser
-     *            The new {@link ProjectUser}
+     * @param pUserId             The {@link ProjectUser} <code>id</code>
+     * @param pUpdatedProjectUser The new {@link ProjectUser}
      * @return{@link ProjectUser}
      */
-    @ResponseBody
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.PUT)
-    ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long pUserId,
-            @RequestBody ProjectUser pUpdatedProjectUser);
+    @PutMapping("/{user_id}")
+    ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long pUserId, @RequestBody ProjectUser pUpdatedProjectUser);
 
     /**
      * Delete the {@link ProjectUser} of passed <code>id</code>.
      *
-     * @param pUserId
-     *            The {@link ProjectUser}'s <code>id</code>
+     * @param pUserId The {@link ProjectUser}'s <code>id</code>
      * @return void
      */
-    @ResponseBody
-    @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE)
+    @DeleteMapping("/{user_id}")
     ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long pUserId);
 
     /**
      * Retrieve the {@link ProjectUser} of current authenticated user
      * @return a {@link ProjectUser}
      */
-    @ResponseBody
-    @RequestMapping(value = "/myuser", method = RequestMethod.GET)
+    @GetMapping("/myuser")
     ResponseEntity<EntityModel<ProjectUser>> retrieveCurrentProjectUser();
 
     /**
      * Update the {@link ProjectUser} of current projet user authenticated.
+     *
      * @param updatedProjectUser The new {@link ProjectUser}
      * @return a {@link ProjectUser}
      */
-    @ResponseBody
-    @RequestMapping(value = "/myuser", method = RequestMethod.PUT)
-    ResponseEntity<EntityModel<ProjectUser>> updateCurrentProjectUser(
-        @RequestBody ProjectUser updatedProjectUser);
+    @PutMapping("/myuser")
+    ResponseEntity<EntityModel<ProjectUser>> updateCurrentProjectUser(@RequestBody ProjectUser updatedProjectUser);
 
     /**
      * retrieveRoleProjectUserList
      *
-     * @param pRoleId
-     *            role identifier to retrieve users.
-     * @param pPage
-     *            page index
-     * @param pSize
-     *            page size
+     * @param pRoleId role identifier to retrieve users.
+     * @param page    page index
+     * @param size    page size
      * @return {@link PagedModel} of {@link ProjectUser}
-    
      */
-    @ResponseBody
-    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
+    @GetMapping("/roles/{role_id}")
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(
-            @PathVariable("role_id") final Long pRoleId, @RequestParam("page") int pPage,
-            @RequestParam("size") int pSize);
+            @PathVariable("role_id") final Long pRoleId, @RequestParam("page") int page, @RequestParam("size") int size
+    );
 
     /**
      * Retrieve pages of project user which role, represented by its name, is the one provided
      *
      * @param pRole role name
-     * @param pPage
-     * @param pSize
+     * @param page  page index
+     * @param size  page size
      * @return page of project user which role, represented by its name, is the one provided
      */
-    @RequestMapping(value = "/roles", method = RequestMethod.GET)
+    @GetMapping("/roles")
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(
-            @RequestParam("role_name") String pRole, @RequestParam("page") int pPage, @RequestParam("size") int pSize);
+            @RequestParam("role_name") String pRole, @RequestParam("page") int page, @RequestParam("size") int size
+    );
+
+    @PostMapping("/email/{email}/groups")
+    ResponseEntity<Void> linkAccessGroups(@PathVariable("email") String email, @RequestBody List<String> groups);
+
 }

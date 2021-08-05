@@ -29,9 +29,11 @@ public interface IDatasourceSchemaHelper {
 
     /**
      * Migrate datasource
+     *
      * @param dataSource datasource to migrate
+     * @param tenant     associated tenant
      */
-    void migrate(DataSource dataSource);
+    void migrate(DataSource dataSource, String tenant);
 
     /**
      * Set datasource before {@link IDatasourceSchemaHelper#migrate()}

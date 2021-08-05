@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.mockito.Mockito;
@@ -59,7 +59,8 @@ public class FeignClientConfiguration {
     }
 
     @Bean
-    public IUserClient userClient() {
-        return Mockito.mock(IUserClient.class);
+    public IAccessGroupClient accessGroupClient() {
+        return Mockito.mock(IAccessGroupClient.class);
     }
+
 }

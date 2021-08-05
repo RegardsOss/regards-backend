@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import com.google.common.annotations.VisibleForTesting;
+import fr.cnes.regards.modules.storage.dao.entity.download.DownloadQuotaLimitsEntity;
 import fr.cnes.regards.modules.storage.dao.entity.download.UserDownloadQuotaEntity;
 import fr.cnes.regards.modules.storage.dao.entity.download.UserDownloadRateEntity;
 import fr.cnes.regards.modules.storage.dao.entity.mapping.DomainEntityMapper;
@@ -30,7 +31,9 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
@@ -67,6 +70,11 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
     public Optional<DownloadQuotaLimits> findByEmail(String email) {
         return delegateQuotaLimitsRepo.findByEmail(email)
             .map(mapper::toDomain);
+    }
+
+    @Override
+    public Map<String, Long> fetchMaxQuotaByUser() {
+        return delegateQuotaLimitsRepo.findAll().stream().collect(Collectors.toMap(DownloadQuotaLimitsEntity::getEmail, DownloadQuotaLimitsEntity::getMaxQuota));
     }
 
     @Override

@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.accessrights.domain.projects;
+package fr.cnes.regards.modules.accessrights.domain.projects.events;
 
 /**
  * Constants used to send AMQP event to microservices. Those constants state what changement is being applied
@@ -6,5 +6,5 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
  * @author Sylvain VISSIERE-GUERINET
  */
 public enum ProjectUserAction {
-    DELETION
+    CREATE, DELETE, UPDATE
 }

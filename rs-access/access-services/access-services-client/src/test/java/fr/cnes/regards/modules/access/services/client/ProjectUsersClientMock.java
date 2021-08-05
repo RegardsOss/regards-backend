@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.access.services.client;
 
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Make Spring DI happy.
@@ -19,7 +21,7 @@ import javax.validation.Valid;
 public class ProjectUsersClientMock implements IProjectUsersClient {
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(String pStatus, String pEmailStart, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, int pPage, int pSize) {
         return null;
     }
 
@@ -77,4 +79,10 @@ public class ProjectUsersClientMock implements IProjectUsersClient {
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage, int pSize) {
         return null;
     }
+
+    @Override
+    public ResponseEntity<Void> linkAccessGroups(String email, List<String> groups) {
+        return null;
+    }
+
 }

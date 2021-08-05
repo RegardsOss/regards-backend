@@ -18,22 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -47,6 +32,19 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test project endpoint client
@@ -107,7 +105,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Ignore
     @Test
     public void retrieveProjectUserListFromFeignClient() {
-        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(null, null,0, 10);
+        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(null, 0, 10);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
@@ -174,7 +172,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Ignore
     public void isAdminProjectUserFromFeignClient() throws EntityException {
         final AccessRequestDto accessRequest = new AccessRequestDto("test@c-s.fr", "pFirstName", "pLastName",
-                DefaultRole.ADMIN.toString(), null, "pPassword", "pOriginUrl", "pRequestLink");
+                DefaultRole.ADMIN.toString(), null, "pPassword", "pOriginUrl", "pRequestLink", "origin", null, 0L);
 
         projectUserService.createProjectUser(accessRequest);
         final ResponseEntity<Boolean> response = client.isAdmin("test@c-s.fr");

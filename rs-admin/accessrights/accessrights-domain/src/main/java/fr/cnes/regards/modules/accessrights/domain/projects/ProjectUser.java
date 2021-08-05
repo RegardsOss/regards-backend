@@ -18,42 +18,25 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUserListener;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+import org.hibernate.validator.constraints.Length;
+
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Domain class representing a REGARDS project user.
@@ -61,276 +44,248 @@ import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUse
  * @author CS
  */
 @Entity
-@Table(name = "t_project_user",
-        uniqueConstraints = @UniqueConstraint(name = "uk_project_user_email", columnNames = { "email" }))
+@Table(name = "t_project_user", uniqueConstraints = @UniqueConstraint(name = "uk_project_user_email", columnNames = {"email"}))
 @EntityListeners(ProjectUserListener.class)
 @SequenceGenerator(name = "projectUserSequence", initialValue = 1, sequenceName = "seq_project_user")
-@NamedEntityGraph(name = "graph.user.metadata", attributeNodes = @NamedAttributeNode(value = "metadata"))
+@NamedEntityGraph(name = "graph.user.metadata", attributeNodes = {@NamedAttributeNode(value = "metadata"), @NamedAttributeNode(value = "accessGroups")})
 public class ProjectUser implements IIdentifiable<Long> {
 
-    /**
-     * The id
-     */
+    public static final String REGARDS_ORIGIN = "Regards";
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "projectUserSequence")
     @Column(name = "id")
     private Long id;
 
-    /**
-     * The user's email. Used to associate the Project User to its Account.
-     */
     @Email
     @Column(name = "email", length = 128)
     private String email;
 
-    /**
-     * The last connection date
-     */
+    @Valid
+    @Length(max = 128)
+    @Column(name = "firstName", length = 128)
+    private String firstName;
+
+    @Valid
+    @Length(max = 128)
+    @Column(name = "lastName", length = 128)
+    private String lastName;
+
     @PastOrNow
     @Column(name = "last_connection")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastConnection;
 
-    /**
-     * The last update date
-     */
     @PastOrNow
     @Column(name = "last_update")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdate;
 
-    /**
-     * The status of the user
-     */
+    @PastOrNow
+    @Column(name = "created")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime created;
+
+    @NotBlank
+    @Length(max = 128)
+    @Column(length = 128)
+    private String origin = REGARDS_ORIGIN;
+
+    @ElementCollection
+    @Column(name = "access_group")
+    @CollectionTable(
+            name = "ta_project_user_access_group",
+            joinColumns = @JoinColumn(name = "project_user_id", foreignKey = @ForeignKey(name = "fk_ta_project_user_access_group_t_project_user")))
+    private Set<String> accessGroups;
+
+    @Column(name = "max_quota")
+    private Long maxQuota;
+
+    @Column(name = "current_quota")
+    private Long currentQuota;
+
     @NotNull
     @Column(name = "status", length = 30)
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
-    /**
-     * The list of meta data on the user
-     */
     @Valid
     @OneToMany
-    @Cascade(value = { CascadeType.ALL })
+    @Cascade(value = {CascadeType.ALL})
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_metadata"))
     private List<MetaData> metadata;
 
-    /**
-     * The user's role.
-     */
     @Valid
     @ManyToOne
     @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "fk_user_role"))
     private Role role;
 
-    /**
-     * The list of specific permissions for this user, augmenting the permissions granted by the role.
-     */
     @Valid
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_permissions"))
     @GsonIgnore
     private List<ResourcesAccess> permissions;
 
-    /**
-     * whether the project user accepted the licence or not.
-     */
     @Column(name = "licence_accepted")
     private boolean licenseAccepted = false;
 
-    /**
-     * Create a new {@link ProjectUser} with empty values.
-     */
     public ProjectUser() {
-        super();
         permissions = new ArrayList<>();
         metadata = new ArrayList<>();
         status = UserStatus.WAITING_ACCOUNT_ACTIVE;
     }
 
-    /**
-     * Creates a new {@link ProjectUser}
-     *
-     * @param pEmail
-     *            The email
-     * @param pRole
-     *            The role
-     * @param pPermissions
-     *            The list of permissions
-     * @param pMetaData
-     *            The list of meta data
-     */
-    public ProjectUser(final String pEmail, final Role pRole, final List<ResourcesAccess> pPermissions,
-            final List<MetaData> pMetaData) {
-        email = pEmail;
-        role = pRole;
-        permissions = pPermissions;
-        metadata = pMetaData;
+    public ProjectUser(String email, Role role, List<ResourcesAccess> permissions, List<MetaData> metaData) {
+        this.email = email;
+        this.role = role;
+        this.permissions = permissions;
+        this.metadata = metaData;
         status = UserStatus.WAITING_ACCOUNT_ACTIVE;
     }
 
-    /**
-     * Get <code>id</code>
-     */
     @Override
     public Long getId() {
         return id;
     }
 
-    /**
-     * Set <code>id</code>
-     *
-     * @param pId
-     *            The id
-     */
-    public void setId(final Long pId) {
-        id = pId;
+    public ProjectUser setId(Long id) {
+        this.id = id;
+        return this;
     }
 
-    /**
-     * Get <code>lastConnection</code>
-     *
-     * @return The last connection date
-     */
-    public OffsetDateTime getLastConnection() {
-        return lastConnection;
-    }
-
-    /**
-     * Set <code>lastConnection</code>
-     *
-     * @param pLastConnection
-     *            The last connection date
-     */
-
-    public void setLastConnection(final OffsetDateTime pLastConnection) {
-        lastConnection = pLastConnection;
-    }
-
-    /**
-     * Get <code>lastUpdate</code>
-     *
-     * @return The last update date
-     */
-    public OffsetDateTime getLastUpdate() {
-        return lastUpdate;
-    }
-
-    /**
-     * Set <code>lastUpdate</code>
-     *
-     * @param pLastUpdate
-     *            The last update date
-     */
-    public void setLastUpdate(final OffsetDateTime pLastUpdate) {
-        lastUpdate = pLastUpdate;
-    }
-
-    /**
-     * Get <code>status</code>
-     *
-     * @return The status
-     */
-    public UserStatus getStatus() {
-        return status;
-    }
-
-    /**
-     * Set <code>status</code>
-     *
-     * @param pStatus
-     *            The status
-     */
-    public void setStatus(final UserStatus pStatus) {
-        status = pStatus;
-    }
-
-    /**
-     * Get <code>metadata</code>
-     *
-     * @return The {@link List} of {@link MetaData}
-     */
-    public List<MetaData> getMetadata() {
-        return metadata;
-    }
-
-    /**
-     * Set <code>metadata</code>
-     *
-     * @param pMetaData
-     *            {@link List} of {@link MetaData}
-     */
-    public void setMetadata(final List<MetaData> pMetaData) {
-        metadata = pMetaData;
-    }
-
-    /**
-     * Get <code>role</code>
-     *
-     * @return The role
-     */
-    public Role getRole() {
-        return role;
-    }
-
-    /**
-     * Set <code>role</code>
-     *
-     * @param pRole
-     *            The role
-     */
-    public void setRole(final Role pRole) {
-        role = pRole;
-    }
-
-    /**
-     * Get <code>permissions</code>
-     *
-     * @return The {@link List} of {@link ResourcesAccess}
-     */
-    public List<ResourcesAccess> getPermissions() {
-        return permissions;
-    }
-
-    /**
-     * Set <code>permissions</code>
-     *
-     * @param pPermissions
-     *            The {@link List} of {@link ResourcesAccess}
-     */
-    public void setPermissions(final List<ResourcesAccess> pPermissions) {
-        permissions = pPermissions;
-    }
-
-    /**
-     * Set <code>email</code>
-     *
-     * @return The project user's email.
-     */
     public String getEmail() {
         return email;
     }
 
-    /**
-     * Set the project user's <code>email</code>.
-     *
-     * @param pEmail
-     *            Must be a valid email format.
-     */
-    public void setEmail(final String pEmail) {
-        email = pEmail;
+    public ProjectUser setEmail(String email) {
+        this.email = email;
+        return this;
     }
 
-    /**
-     * @return whether the license is accepted or not
-     */
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public ProjectUser setFirstName(String firstName) {
+        this.firstName = firstName;
+        return this;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public ProjectUser setLastName(String lastName) {
+        this.lastName = lastName;
+        return this;
+    }
+
+    public OffsetDateTime getLastConnection() {
+        return lastConnection;
+    }
+
+    public ProjectUser setLastConnection(OffsetDateTime lastConnection) {
+        this.lastConnection = lastConnection;
+        return this;
+    }
+
+    public OffsetDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public ProjectUser setLastUpdate(OffsetDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
+        return this;
+    }
+
+    public OffsetDateTime getCreated() {
+        return created;
+    }
+
+    public ProjectUser setCreated(OffsetDateTime created) {
+        this.created = created;
+        return this;
+    }
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public ProjectUser setOrigin(String origin) {
+        this.origin = origin;
+        return this;
+    }
+
+    public Set<String> getAccessGroups() {
+        return accessGroups;
+    }
+
+    public ProjectUser setAccessGroups(Set<String> accessGroups) {
+        this.accessGroups = accessGroups;
+        return this;
+    }
+
+    public Long getMaxQuota() {
+        return maxQuota;
+    }
+
+    public ProjectUser setMaxQuota(Long maxQuota) {
+        this.maxQuota = maxQuota;
+        return this;
+    }
+
+    public Long getCurrentQuota() {
+        return currentQuota;
+    }
+
+    public ProjectUser setCurrentQuota(Long usedQuota) {
+        this.currentQuota = usedQuota;
+        return this;
+    }
+
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public ProjectUser setStatus(UserStatus status) {
+        this.status = status;
+        return this;
+    }
+
+    public List<MetaData> getMetadata() {
+        return metadata;
+    }
+
+    public ProjectUser setMetadata(List<MetaData> metadata) {
+        this.metadata = metadata;
+        return this;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public ProjectUser setRole(Role role) {
+        this.role = role;
+        return this;
+    }
+
+    public List<ResourcesAccess> getPermissions() {
+        return permissions;
+    }
+
+    public ProjectUser setPermissions(List<ResourcesAccess> permissions) {
+        this.permissions = permissions;
+        return this;
+    }
+
     public boolean isLicenseAccepted() {
         return licenseAccepted;
     }
 
-    public void setLicenseAccepted(final boolean pLicenceAccepted) {
-        licenseAccepted = pLicenceAccepted;
+    public ProjectUser setLicenseAccepted(boolean licenseAccepted) {
+        this.licenseAccepted = licenseAccepted;
+        return this;
     }
 
     @Override

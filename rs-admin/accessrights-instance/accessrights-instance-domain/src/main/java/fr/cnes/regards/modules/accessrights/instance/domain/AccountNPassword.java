@@ -1,8 +1,9 @@
 package fr.cnes.regards.modules.accessrights.instance.domain;
 
-import javax.validation.Valid;
-
 import org.hibernate.validator.constraints.Length;
+
+import javax.validation.Valid;
+import java.util.Objects;
 
 /**
  * DTO used to comunicate between rs-admin and rs-admin-instance. This allows us to pass the password for account creation which is not serialized otherwise.
@@ -18,6 +19,10 @@ public class AccountNPassword {
     @Length(max = 255)
     private String password;
 
+    @Valid
+    @Length(max = 128)
+    private String project;
+
     public AccountNPassword() {
     }
 
@@ -26,20 +31,37 @@ public class AccountNPassword {
         this.password = password;
     }
 
+    public AccountNPassword(Account account, String password, String project) {
+        this.account = account;
+        this.password = password;
+        this.project = project;
+    }
+
     public Account getAccount() {
         return account;
     }
 
-    public void setAccount(Account account) {
+    public AccountNPassword setAccount(Account account) {
         this.account = account;
+        return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public AccountNPassword setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public AccountNPassword setProject(String project) {
+        this.project = project;
+        return this;
     }
 
     @Override
@@ -53,10 +75,10 @@ public class AccountNPassword {
 
         AccountNPassword that = (AccountNPassword) o;
 
-        if (account != null ? !account.equals(that.account) : that.account != null) {
+        if (!Objects.equals(account, that.account)) {
             return false;
         }
-        return password != null ? password.equals(that.password) : that.password == null;
+        return Objects.equals(password, that.password);
     }
 
     @Override

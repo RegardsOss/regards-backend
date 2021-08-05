@@ -1,27 +1,6 @@
 package fr.cnes.regards.modules.notification.rest;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
-import javax.mail.internet.MimeMessage;
-
-import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDTO;
@@ -30,7 +9,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -39,6 +18,25 @@ import fr.cnes.regards.modules.notification.service.INotificationService;
 import fr.cnes.regards.modules.notification.service.SendingScheduler;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import javax.mail.internet.MimeMessage;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -72,11 +70,6 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
             return Mockito.mock(IProjectsClient.class);
         }
 
-        @Bean
-        IUserClient userClient() {
-            return Mockito.mock(IUserClient.class);
-        }
-
     }
 
     @Autowired
@@ -93,6 +86,9 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private INotificationSettingsRepository notificationSettingsRepo;
+
+    @MockBean
+    private IAccessGroupClient accessGroupClient;
 
     @Override
     protected Logger getLogger() {

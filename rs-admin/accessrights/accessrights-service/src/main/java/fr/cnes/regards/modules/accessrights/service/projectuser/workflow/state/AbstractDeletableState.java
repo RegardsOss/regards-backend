@@ -19,11 +19,14 @@
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserAction;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserEvent;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 
 /**
@@ -50,17 +53,18 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
      */
     private final IPublisher publisher;
 
-    /**
-     * @param pProjectUserRepository
-     * @param pEmailVerificationTokenService
-     * @param publisher
-     */
-    public AbstractDeletableState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService, IPublisher publisher) {
-        super();
-        projectUserRepository = pProjectUserRepository;
-        emailVerificationTokenService = pEmailVerificationTokenService;
+    private final IAccountsClient accountsClient;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    protected AbstractDeletableState(IProjectUserRepository projectUserRepository, IEmailVerificationTokenService emailVerificationTokenService, IPublisher publisher,
+            IAccountsClient accountsClient, IRuntimeTenantResolver runtimeTenantResolver
+    ) {
+        this.projectUserRepository = projectUserRepository;
+        this.emailVerificationTokenService = emailVerificationTokenService;
         this.publisher = publisher;
+        this.accountsClient = accountsClient;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -87,9 +91,15 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
      *            the project user
      */
     protected void doDelete(final ProjectUser projectUser) {
+        try {
+            FeignSecurityManager.asSystem();
+            accountsClient.unlink(projectUser.getEmail(), runtimeTenantResolver.getTenant());
+        } finally {
+            FeignSecurityManager.reset();
+        }
         emailVerificationTokenService.deleteTokenForProjectUser(projectUser);
         projectUserRepository.deleteById(projectUser.getId());
-        publisher.publish(new ProjectUserEvent(projectUser.getEmail(), ProjectUserAction.DELETION));
+        publisher.publish(new ProjectUserEvent(projectUser.getEmail(), ProjectUserAction.DELETE));
     }
 
     /**

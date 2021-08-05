@@ -18,26 +18,22 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.*;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Strategy interface to handle Read an Update operations on access settings.
@@ -47,12 +43,12 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the paged {@link List} of all {@link ProjectUser}s filtered by given properties.
-     * @param status
-     * @param emailStart
-     * @param pPageable the paging information
+     *
+     * @param pageable  the paging information
+     * @param parameters search parameters as request params
      * @return The list of project users
      */
-    Page<ProjectUser> retrieveUserList(String status, String emailStart, Pageable pPageable);
+    Page<ProjectUser> retrieveUserList(ProjectUserSearchParameters parameters, Pageable pageable);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
@@ -86,20 +82,26 @@ public interface IProjectUserService {
     ProjectUser retrieveCurrentUser() throws EntityNotFoundException;
 
     /**
-     * Create a new projectUser (and account if missing) without resitration process.
-     * @param pDto
+     * Create a new projectUser (and account if missing) without registration process.
+     *
+     * @param dto request
      * @return {@link ProjectUser}
-     * @throws EntityAlreadyExistsException
-     * @throws EntityInvalidException
+     * @throws EntityException
      */
-    ProjectUser createProjectUser(final AccessRequestDto pDto)
-            throws EntityAlreadyExistsException, EntityInvalidException;
+    ProjectUser createProjectUser(AccessRequestDto dto) throws EntityException;
 
     /**
-     * Associated user to AccessRights default groups.
-     * @param projectUser {@link ProjectUser}
+     * Create a new project user.
+     * Create a new account if necessary.
+     *
+     * @param accessRequestDto user information
+     * @param isExternal
+     * @param userStatus
+     * @param accountStatus
+     * @return
+     * @throws EntityException
      */
-    void configureAccessGroups(ProjectUser projectUser);
+    ProjectUser create(AccessRequestDto accessRequestDto, boolean isExternal, UserStatus userStatus, AccountStatus accountStatus) throws EntityException;
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
@@ -184,20 +186,6 @@ public interface IProjectUserService {
     void removeUserMetaData(Long pUserId) throws EntityNotFoundException;
 
     /**
-     * Return true when {@link ProjectUser} of passed <code>id</code> exists in db.
-     * @param pId The {@link ProjectUser}'s <code>id</code>
-     * @return <code>True</code> exists, else <code>False</code>
-     */
-    boolean existUser(Long pId);
-
-    /**
-     * Return true when {@link ProjectUser} of passed <code>email</code> exists in db.
-     * @param pEmail The {@link ProjectUser}'s <code>email</code>
-     * @return <code>True</code> exists, else <code>False</code>
-     */
-    boolean existUser(String pEmail);
-
-    /**
      * Retrieve all access requests.
      * @param pPageable the pagination information
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
@@ -216,9 +204,14 @@ public interface IProjectUserService {
     Collection<ProjectUser> retrieveUserByRole(Role role);
 
     /**
-     * Deletes the project user of given email
-     * @param pEmail the email of the user to delete
-     * @throws EntityNotFoundException if no project user with given email can be found
+     * Determine whether current user has sufficient privilege to delete a user
      */
-    void deleteByEmail(String pEmail) throws EntityNotFoundException;
+    boolean canDelete(ProjectUser projectUser);
+
+    void sendVerificationEmail(String email) throws EntityNotFoundException;
+
+    void updateQuota(Map<String, Long> currentQuotaByEmail);
+
+    Map<String, Long> getUserCountByAccessGroup();
+
 }

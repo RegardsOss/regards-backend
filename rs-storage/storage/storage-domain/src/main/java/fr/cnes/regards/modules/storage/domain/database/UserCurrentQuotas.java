@@ -22,15 +22,15 @@ import java.util.Objects;
 
 public class UserCurrentQuotas {
 
-    private final String email;
+    private String email;
 
-    private final Long maxQuota;
+    private Long maxQuota;
 
-    private final Long rateLimit;
+    private Long rateLimit;
 
-    private final Long currentQuota;
+    private Long currentQuota;
 
-    private final Long currentRate;
+    private Long currentRate;
 
     public UserCurrentQuotas(String email, Long maxQuota, Long rateLimit, Long currentQuota, Long currentRate) {
         this.email = email;
@@ -38,6 +38,13 @@ public class UserCurrentQuotas {
         this.rateLimit = rateLimit;
         this.currentQuota = currentQuota;
         this.currentRate = currentRate;
+    }
+
+    public UserCurrentQuotas(String email) {
+        this.email = email;
+    }
+
+    public UserCurrentQuotas() {
     }
 
     public String getEmail() {
@@ -80,4 +87,5 @@ public class UserCurrentQuotas {
     public int hashCode() {
         return Objects.hash(email, maxQuota, rateLimit, currentQuota, currentRate);
     }
+
 }

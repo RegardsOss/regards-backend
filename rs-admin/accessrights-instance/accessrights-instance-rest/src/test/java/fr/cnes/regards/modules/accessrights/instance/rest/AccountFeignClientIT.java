@@ -18,22 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.rest;
 
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -44,6 +28,23 @@ import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.CodeType;
+import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.Optional;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class AccountFeignClientIT extends AbstractRegardsWebIT {
@@ -60,6 +61,9 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
 
     @Autowired
     private IAccountRepository accountRepo;
+
+    @MockBean
+    private IExternalAuthenticationClient externalAuthenticationClient;
 
     private IAccountsClient accountsClient;
 
@@ -89,7 +93,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveAccountListFromFeignClient() {
         try {
-            final ResponseEntity<PagedModel<EntityModel<Account>>> accounts = accountsClient.retrieveAccountList(0, 10);
+            final ResponseEntity<PagedModel<EntityModel<Account>>> accounts = accountsClient.retrieveAccountList(null, 0, 10);
             Assert.assertEquals(accounts.getStatusCode(), HttpStatus.OK);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);

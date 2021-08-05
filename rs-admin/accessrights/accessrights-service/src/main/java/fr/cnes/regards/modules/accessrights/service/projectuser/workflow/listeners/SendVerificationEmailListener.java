@@ -18,11 +18,17 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.config.AccessRightsTemplateConfiguration;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
+import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
+import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailWrapper;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,21 +40,15 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.util.UriUtils;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
-import fr.cnes.regards.modules.emails.service.IEmailService;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
-import freemarker.template.TemplateException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Listen to {@link OnGrantAccessEvent} in order to warn the user its account request was refused.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @Profile("!nomail")
@@ -57,43 +57,27 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SendVerificationEmailListener.class);
 
-    private final ITemplateService templateService;
+    @Value("${regards.mails.noreply.address:regards@noreply.fr}")
+    private String noreply;
 
-    private final IEmailService emailService;
-
-    private final IStorageRestClient storageClient;
-
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-
-    private final String noreply;
-
-    /**
-     * Service to manage email verification tokens for project users.
-     */
     private final IEmailVerificationTokenService emailVerificationTokenService;
+    private final IStorageRestClient storageClient;
+    private final AccessRightsEmailService accessRightsEmailService;
 
-    public SendVerificationEmailListener(ITemplateService templateService, IEmailService emailService,
-            IStorageRestClient storageClient, IRuntimeTenantResolver runtimeTenantResolver,
-            IEmailVerificationTokenService emailVerificationTokenService,
-            @Value("${regards.mails.noreply.address:regards@noreply.fr}") String noreply) {
-        super();
-        this.templateService = templateService;
-        this.emailService = emailService;
+    public SendVerificationEmailListener(IStorageRestClient storageClient, IEmailVerificationTokenService emailVerificationTokenService,
+            AccessRightsEmailService accessRightsEmailService
+    ) {
         this.storageClient = storageClient;
-        this.runtimeTenantResolver = runtimeTenantResolver;
         this.emailVerificationTokenService = emailVerificationTokenService;
-        this.noreply = noreply;
+        this.accessRightsEmailService = accessRightsEmailService;
     }
 
     @Override
     public void onApplicationEvent(final OnGrantAccessEvent event) {
-        // Retrieve the project user
-        ProjectUser projectUser = event.getProjectUser();
 
-        // Retrieve the address
+        ProjectUser projectUser = event.getProjectUser();
         String userEmail = projectUser.getEmail();
 
-        // Retrieve the token
         EmailVerificationToken token;
         try {
             token = emailVerificationTokenService.findByProjectUser(projectUser);
@@ -102,19 +86,15 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             return;
         }
 
-        // Create a hash map in order to store the data to inject in the mail
         Map<String, Object> data = new HashMap<>();
-
-        data.put("project", runtimeTenantResolver.getTenant());
         String linkUrlTemplate;
         if (token.getRequestLink().contains("?")) {
             linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
         } else {
             linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
         }
-        String confirmationUrl = String.format(linkUrlTemplate, token.getRequestLink(),
-                                               UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()),
-                                               token.getToken(), userEmail);
+        String confirmationUrl =
+                String.format(linkUrlTemplate, token.getRequestLink(), UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()), token.getToken(), userEmail);
         data.put("confirmationUrl", confirmationUrl);
 
         // quota management: unlimited / not interesting while storage does not answer
@@ -136,14 +116,15 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             FeignSecurityManager.reset();
         }
 
-        String message;
-        try {
-            message = templateService.render(AccessRightTemplateConf.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME, data);
-        } catch (TemplateException e) {
-            LOGGER.warn("Could not find the template for registration confirmation. Falling back to default template.",
-                        e);
-            message = "Please click on the following link to confirm your registration: " + data.get("confirmationUrl");
-        }
-        emailService.sendEmail(message, "[REGARDS] Account Confirmation", noreply, userEmail);
+        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper()
+                .setProjectUser(projectUser)
+                .setSubject("[REGARDS] Account Confirmation")
+                .setFrom(noreply)
+                .setTo(Collections.singleton(userEmail))
+                .setTemplate(AccessRightsTemplateConfiguration.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME)
+                .setData(data)
+                .setDefaultMessage("Please click on the following link to confirm your registration: " + data.get("confirmationUrl"));
+
+        accessRightsEmailService.sendEmail(wrapper);
     }
 }

@@ -27,9 +27,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
-import fr.cnes.regards.modules.search.domain.Terms;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,41 +38,28 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link IAccessRightFilter}.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Service
 public class AccessRightFilter implements IAccessRightFilter {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessRightFilter.class);
 
-    private static final String CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP = "Cannot set access right filter because user %s does not have any access group";
+    private static final String CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP =
+            "Cannot set access right filter because user %s does not have any access group";
 
-    /**
-     * Provides access groups for a user with cache facilities. Autowired by Spring.
-     */
     private final IAccessGroupCache cache;
-
-    /**
-     * Get current tenant at runtime. Autowired by Spring.
-     */
     private final IRuntimeTenantResolver runtimeTenantResolver;
-
     private final IProjectUsersClient projectUserClient;
-
     private final IAuthenticationResolver authResolver;
 
-    public AccessRightFilter(final IAuthenticationResolver authResolver, IAccessGroupCache pCache,
-                             IRuntimeTenantResolver pRuntimeTenantResolver, IProjectUsersClient pProjectUserClient) {
-        super();
+    public AccessRightFilter(final IAuthenticationResolver authResolver, IAccessGroupCache pCache, IRuntimeTenantResolver pRuntimeTenantResolver,
+            IProjectUsersClient pProjectUserClient
+    ) {
         this.authResolver = authResolver;
         this.cache = pCache;
         this.runtimeTenantResolver = pRuntimeTenantResolver;
@@ -82,9 +67,9 @@ public class AccessRightFilter implements IAccessRightFilter {
     }
 
     /**
-     * First, check current user role. If role is a custom one, call admin to know if its an admin role.
+     * First, check current user role. If role is a custom one, call admin to know if it is an admin role.
      *
-     * @return true if current authentified user is an admin
+     * @return true if current authenticated user is an admin
      */
     private boolean isAdmin() {
 
@@ -124,12 +109,10 @@ public class AccessRightFilter implements IAccessRightFilter {
         Set<String> accessGroupNames = getUserAccessGroups();
         if (accessGroupNames != null) {
 
-
             List<ICriterion> searchCriterion = new ArrayList<>();
 
             // Add security filter
-            ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS, StringMatchType.KEYWORD,
-                    accessGroupNames);
+            ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS, StringMatchType.KEYWORD,accessGroupNames);
             searchCriterion.add(groupCriterion);
 
             // Add user criterion (theorically, userCriterion should not be null at this point but...)
@@ -143,7 +126,7 @@ public class AccessRightFilter implements IAccessRightFilter {
         return userCriterion;
     }
 
-    // TODO : by now, is the same as previous method
+    // FIXME : for now, same as above
     @Override
     public ICriterion addDataAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
         return addAccessRights(userCriterion);
@@ -151,27 +134,22 @@ public class AccessRightFilter implements IAccessRightFilter {
 
     @Override
     public Set<String> getUserAccessGroups() throws AccessRightFilterException {
-
+        Set<String> userAccessGroups = null;
         if (!isAdmin()) {
-
-            // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(
-                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
-
-            // Add explicitly associated group
-            accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
-
-            // Throw an error if no access group
-            if (accessGroups.isEmpty()) {
-                String errorMessage = String
-                        .format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
-                                authResolver.getUser());
-                LOGGER.error(errorMessage);
-                throw new AccessRightFilterException(errorMessage);
-            }
-
-            return accessGroups.stream().map(AccessGroup::getName).collect(Collectors.toSet());
+            Set<AccessGroup> accessGroups = getAccessGroups();
+            userAccessGroups = accessGroups.stream().map(AccessGroup::getName).collect(Collectors.toSet());
         }
-        return null;
+        return userAccessGroups;
     }
+
+    private Set<AccessGroup> getAccessGroups() throws AccessRightFilterException {
+        Set<AccessGroup> accessGroups = new HashSet<>(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
+        if (accessGroups.isEmpty()) {
+            String errorMessage = String.format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP, authResolver.getUser());
+            LOGGER.error(errorMessage);
+            throw new AccessRightFilterException(errorMessage);
+        }
+        return accessGroups;
+    }
+
 }

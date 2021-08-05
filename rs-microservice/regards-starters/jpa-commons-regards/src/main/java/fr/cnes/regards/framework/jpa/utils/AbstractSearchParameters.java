@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * @author Sylvain Vissiere-Guerinet
- *
- */
-package fr.cnes.regards.modules.dam.domain.dataaccess.jpa.converters;
+package fr.cnes.regards.framework.jpa.utils;
+
+public interface AbstractSearchParameters<T> {
+
+}

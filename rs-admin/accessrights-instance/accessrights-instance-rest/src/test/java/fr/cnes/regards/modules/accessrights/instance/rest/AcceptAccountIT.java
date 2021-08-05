@@ -18,20 +18,21 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.rest;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Specific integration test for 'accesses/acceptAccount' endpoint
@@ -74,6 +75,9 @@ public class AcceptAccountIT extends AbstractRegardsIT {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @MockBean
+    private IExternalAuthenticationClient externalAuthenticationClient;
+
     /**
      * Do some setup before each test
      */
@@ -96,7 +100,7 @@ public class AcceptAccountIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows an admin to manually accept an account.")
     public void acceptAccount() {
-        String endpoint = AccountsController.TYPE_MAPPING + AccountsController.ACCEPT_ACCOUNT_RELATIVE_PATH;
+        String endpoint = AccountsController.TYPE_MAPPING + AccountsController.ACCEPT_ACCOUNT_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), "Unable to accept the account", EMAIL);
     }

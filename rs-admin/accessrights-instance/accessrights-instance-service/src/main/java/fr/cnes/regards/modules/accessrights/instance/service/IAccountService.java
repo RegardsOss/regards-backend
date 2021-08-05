@@ -24,9 +24,12 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParameters;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * Define the base interface for any implementation of an Account Service.
@@ -38,10 +41,11 @@ public interface IAccountService {
     /**
      * Create an account.
      *
-     * @param pAccount The {@link Account}
+     * @param Account The {@link Account}
+     * @param project
      * @return The account
      */
-    Account createAccount(Account pAccount);
+    Account createAccount(Account Account, String project) throws EntityInvalidException;
 
     /**
      * Set Account status to {@link AccountStatus#ACTIVE}
@@ -52,23 +56,13 @@ public interface IAccountService {
     void activate(Account account);
 
     /**
-     * Retrieve the list of all {@link Account}s.
+     * Retrieve a list of all {@link Account}s, with optional search parameters.
      *
-     * @param pPageable pagination informations
-     * @return The accounts list
+     * @param parameters search parameters
+     * @param pageable   paging information
+     * @return A list of accounts
      */
-    Page<Account> retrieveAccountList(final Pageable pPageable);
-
-    /**
-     * Retrieve the list of all {@link Account}s with given status.
-     *
-     * @param pPageable
-     *            pagination informations
-     * @param pStatus
-     *            status required for retrieved accounts
-     * @return The accounts list
-     */
-    Page<Account> retrieveAccountList(AccountStatus pStatus, final Pageable pPageable);
+    Page<Account> retrieveAccountList(AccountSearchParameters parameters, Pageable pageable);
 
     /**
      * Retrieve the {@link Account} of passed <code>id</code>.
@@ -179,9 +173,35 @@ public interface IAccountService {
 
     /**
      * Allows to reset an account Authentication Failed Counter
-     * @param id
-     * @throws EntityNotFoundException
+     *
+     * @param id account id
+     * @throws EntityNotFoundException if no account exists with this id
      */
     void resetAuthenticationFailedCounter(Long id) throws EntityNotFoundException;
+
+    /**
+     * Lists all possible origins (Service Provider or Regards) for any account
+     *
+     * @return list of origins as String
+     */
+    List<String> getOrigins();
+
+    /**
+     * Link a project to an account
+     *
+     * @param email   email of the account to link
+     * @param project name of the project to link
+     * @throws EntityException if either account or project is invalid
+     */
+    void link(String email, String project) throws EntityException;
+
+    /**
+     * Unlink a project from an account
+     *
+     * @param email   email of the account to link
+     * @param project name of the project to link
+     * @throws EntityException if either account or project is invalid
+     */
+    void unlink(String email, String project) throws EntityException;
 
 }

@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.dam.service.dataaccess;
 
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
 
 /**
  * Access right service
@@ -87,5 +86,5 @@ public interface IAccessRightService {
 
     void deleteAccessRight(Long id) throws ModuleException;
 
-    boolean isUserAutorisedToAccessDataset(UniformResourceName datasetIpId, String userEMail) throws ModuleException;
+    boolean isUserAuthorisedToAccessDataset(UniformResourceName datasetIpId, String userEMail) throws ModuleException;
 }

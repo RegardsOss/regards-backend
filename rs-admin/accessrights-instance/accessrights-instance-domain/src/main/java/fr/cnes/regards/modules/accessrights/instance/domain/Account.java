@@ -18,29 +18,19 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain;
 
-import java.time.LocalDateTime;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.project.domain.Project;
+import org.hibernate.validator.constraints.Length;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Length;
-
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * Account entity
@@ -53,8 +43,7 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 @SequenceGenerator(name = "accountSequence", initialValue = 1, sequenceName = "seq_account")
 public class Account implements IIdentifiable<Long> {
 
-    @Transient
-    private static final int RANDOM_STRING_LENGTH = 10;
+    public static final String REGARDS_ORIGIN = "Regards";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountSequence")
@@ -70,26 +59,22 @@ public class Account implements IIdentifiable<Long> {
     @Valid
     @Length(max = 128)
     @NotBlank
-    @Column(name = "firstName", length = 128)
+    @Column(name = "firstname", length = 128)
     private String firstName;
 
     @Valid
     @Length(max = 128)
     @NotBlank
-    @Column(name = "lastName", length = 128)
+    @Column(name = "lastname", length = 128)
     private String lastName;
 
-    /**
-     * invalidity date of the account
-     */
     @Column
     private LocalDateTime invalidityDate;
 
-    /**
-     * By default an account is considered internal and not relying on an external identity service provider
-     */
-    @Column
-    private Boolean external = false;
+    @NotBlank
+    @Length(max = 128)
+    @Column(length = 128)
+    private String origin = REGARDS_ORIGIN;
 
     @Column(name = "authentication_failed_counter")
     private Long authenticationFailedCounter = 0L;
@@ -97,12 +82,9 @@ public class Account implements IIdentifiable<Long> {
     @Valid
     @Length(max = 255)
     @GsonIgnore
-    @Column(name = "password", length = 255)
+    @Column(name = "password")
     private String password;
 
-    /**
-     * last password update date
-     */
     @Column(name = "password_update_date")
     private LocalDateTime passwordUpdateDate;
 
@@ -110,6 +92,14 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "status", length = 20)
     @Enumerated(value = EnumType.STRING)
     private AccountStatus status;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "ta_account_project",
+            joinColumns = @JoinColumn(name = "account_id"),
+            foreignKey = @ForeignKey(name = "fk_account_project__account_id"),
+            inverseJoinColumns = @JoinColumn(name = "project_id"),
+            inverseForeignKey = @ForeignKey(name = "fk_account_project__project_id"))
+    private Set<Project> projects;
 
     /**
      * Default empty constructor used by serializers
@@ -120,20 +110,7 @@ public class Account implements IIdentifiable<Long> {
         status = AccountStatus.PENDING;
     }
 
-    /**
-     * Creates new Account
-     *
-     * @param email
-     *            the email
-     * @param firstName
-     *            the first name
-     * @param lastName
-     *            the last name
-     * @param password
-     *            the password
-     */
     public Account(final String email, final String firstName, final String lastName, final String password) {
-        super();
         status = AccountStatus.PENDING;
         this.email = email;
         this.firstName = firstName;
@@ -141,9 +118,6 @@ public class Account implements IIdentifiable<Long> {
         setPassword(password);
     }
 
-    /**
-     * @return the id
-     */
     @Override
     public Long getId() {
         return id;
@@ -153,9 +127,6 @@ public class Account implements IIdentifiable<Long> {
         this.id = id;
     }
 
-    /**
-     * @return the email
-     */
     public String getEmail() {
         return email;
     }
@@ -164,47 +135,26 @@ public class Account implements IIdentifiable<Long> {
         this.email = email;
     }
 
-    /**
-     * @return the firstName
-     */
     public String getFirstName() {
         return firstName;
     }
 
-    /**
-     * @param firstName
-     *            the firstName to set
-     */
     public void setFirstName(final String firstName) {
         this.firstName = firstName;
     }
 
-    /**
-     * @return the lastName
-     */
     public String getLastName() {
         return lastName;
     }
 
-    /**
-     * @param lastName
-     *            the lastName to set
-     */
     public void setLastName(final String lastName) {
         this.lastName = lastName;
     }
 
-    /**
-     * @return the password
-     */
     public String getPassword() {
         return password;
     }
 
-    /**
-     * @param password
-     *            the password to set
-     */
     public final void setPassword(final String password) {
         if (password != null) {
             passwordUpdateDate = LocalDateTime.now();
@@ -212,24 +162,14 @@ public class Account implements IIdentifiable<Long> {
         }
     }
 
-    /**
-     * @return the status
-     */
     public AccountStatus getStatus() {
         return status;
     }
 
-    /**
-     * @param status
-     *            the status to set
-     */
     public void setStatus(final AccountStatus status) {
         this.status = status;
     }
 
-    /**
-     * @return the last password update date
-     */
     public LocalDateTime getPasswordUpdateDate() {
         return passwordUpdateDate;
     }
@@ -238,20 +178,10 @@ public class Account implements IIdentifiable<Long> {
         this.passwordUpdateDate = passwordUpdateDate;
     }
 
-    /**
-     * @return whether this account is external to REGARDS
-     */
-    public Boolean getExternal() {
-        return external;
+    public boolean isExternal() {
+        return !REGARDS_ORIGIN.equals(getOrigin());
     }
 
-    public void setExternal(final Boolean external) {
-        this.external = external;
-    }
-
-    /**
-     * @return the authentication failed counter
-     */
     public Long getAuthenticationFailedCounter() {
         return authenticationFailedCounter;
     }
@@ -260,15 +190,30 @@ public class Account implements IIdentifiable<Long> {
         this.authenticationFailedCounter = authenticationFailedCounter;
     }
 
-    /**
-     * @return the account invalidity date
-     */
     public LocalDateTime getInvalidityDate() {
         return invalidityDate;
     }
 
     public void setInvalidityDate(final LocalDateTime invalidityDate) {
         this.invalidityDate = invalidityDate;
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public Account setProjects(Set<Project> projectList) {
+        this.projects = projectList;
+        return this;
+    }
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public Account setOrigin(String origin) {
+        this.origin = origin;
+        return this;
     }
 
     @Override

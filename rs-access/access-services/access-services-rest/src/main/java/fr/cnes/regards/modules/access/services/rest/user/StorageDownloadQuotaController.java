@@ -107,7 +107,7 @@ public class StorageDownloadQuotaController {
     public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() throws ModuleException {
         return wrapStorageErrorForFrontend(
             () -> storageClient.getCurrentQuotas(),
-            () -> new UserCurrentQuotas(authResolver.getUser(), null, null, null, null)
+            () -> new UserCurrentQuotas(authResolver.getUser())
         );
     }
 

@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import javax.sql.DataSource;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
+import java.util.Map;
 
 /**
  * Common helper features
@@ -62,7 +62,8 @@ public abstract class AbstractDataSourceSchemaHelper implements IDatasourceSchem
     @Override
     public void migrate() {
         if (dataSource != null) {
-            migrate(dataSource);
+            // FIXME use regards.instance.tenant.name instead of default value"instance" OR remove that property everywhere
+            migrate(dataSource, "instance");
         } else {
             LOGGER.warn("No datasource found for migration. Use setDataSource to specify it before");
         }

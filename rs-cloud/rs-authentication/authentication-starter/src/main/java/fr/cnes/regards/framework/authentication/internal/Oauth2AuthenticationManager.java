@@ -161,32 +161,31 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         }
 
         // If authentication is not valid, try with the default plugin
-        if (!response.getAccessGranted()) {
+        if (!response.isAccessGranted()) {
             // Use default REGARDS internal plugin
             response = doPluginAuthentication(defaultAuthenticationPlugin, login, password, scope);
         }
 
         // Before returning generating token, check user status.
         AuthenticationStatus status = checkUserStatus(response.getEmail(), scope);
+
         // If authentication is granted and user does not exists and plugin is not the regards internal authentication.
-        if (response.getAccessGranted()
-                && (status.equals(AuthenticationStatus.USER_UNKNOWN)
-                        || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
-                && !response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName())) {
-            this.createExternalProjectUser(response.getEmail());
+        if (Boolean.TRUE.equals(response.isAccessGranted())
+                && (status.equals(AuthenticationStatus.USER_UNKNOWN) || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
+                && !response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName())
+        ) {
+            this.createExternalProjectUser(response.getEmail(), response.getServiceProviderName());
             status = checkUserStatus(response.getEmail(), scope);
         }
 
         if (!status.equals(AuthenticationStatus.ACCESS_GRANTED)) {
-            String message = String.format("Access denied for user %s. cause : user status is %s", response.getEmail(),
-                                           status.name());
+            String message = String.format("Access denied for user %s. cause : user status is %s", response.getEmail(), status.name());
             throw new AuthenticationException(message, status);
         }
 
         // If access is not allowed then return an unknown account error response
-        if (!response.getAccessGranted()) {
-            String message = String.format("Access denied for user %s. cause: %s", response.getEmail(),
-                                           response.getErrorMessage());
+        if (!response.isAccessGranted()) {
+            String message = String.format("Access denied for user %s. cause: %s", response.getEmail(), response.getErrorMessage());
             throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
         }
 
@@ -209,13 +208,12 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         try {
             IPluginService pluginService = beanFactory.getBean(IPluginService.class);
             // Get all available authentication plugins
-            List<PluginConfiguration> plgConfs = pluginService
-                    .getPluginConfigurationsByType(IAuthenticationPlugin.class);
+            List<PluginConfiguration> plgConfs = pluginService.getPluginConfigurationsByType(IAuthenticationPlugin.class);
             for (PluginConfiguration pluginConfiguration : plgConfs) {
-                if (!pluginResponse.getAccessGranted()) {
+                if (!pluginResponse.isAccessGranted()) {
                     try {
-                        pluginResponse = doPluginAuthentication(pluginService.getPlugin(pluginConfiguration.getBusinessId()),
-                                                                login, password, scope);
+                        pluginResponse = doPluginAuthentication(pluginService.getPlugin(pluginConfiguration.getBusinessId()), login, password, scope);
+                        pluginResponse.setServiceProviderName(pluginConfiguration.getBusinessId());
                     } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                         LOG.info(e.getMessage(), e);
                     }
@@ -251,17 +249,14 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     /**
      * Create new account and project user by bypassing validation process
      */
-    private void createExternalProjectUser(String userEmail) {
+    private void createExternalProjectUser(String userEmail, String serviceProviderName) {
         Try.of(() -> beanFactory.getBean(IUserAccountManager.class))
-            .flatMap(userAccountManager -> userAccountManager
-                .createUserWithAccountAndGroups(
-                    new ServiceProviderAuthenticationInfo.UserInfo.Builder()
-                        .withEmail(userEmail)
-                        .withFirstname(userEmail)
-                        .withLastname(userEmail)
-                        .build()
-                )
-            );
+                .flatMap(userAccountManager -> userAccountManager
+                        .createUserWithAccountAndGroups(
+                                new ServiceProviderAuthenticationInfo.UserInfo.Builder().withEmail(userEmail).withFirstname(userEmail).withLastname(userEmail).build(),
+                                serviceProviderName
+                        )
+                );
     }
 
     /**

@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -41,7 +41,8 @@ public class DownloadQuotaServiceIT extends AbstractRegardsTransactionalIT {
 
     private IDownloadQuotaRepository quotaRepositoryDelegate;
 
-    @SpyBean private IQuotaManager quotaManager;
+    @MockBean
+    private IQuotaManager quotaManager;
 
     @Autowired private IRuntimeTenantResolver tenantResolver;
 

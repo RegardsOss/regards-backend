@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,143 +39,118 @@ import javax.validation.Valid;
 @RequestMapping(RegistrationController.REQUEST_MAPPING_ROOT)
 public class RegistrationController {
 
-    /**
-     * Root mapping for requests of this rest controller
-     */
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
 
-    /**
-     * Relative path to the endpoint to request an access wit external account
-     */
     public static final String EXTERNAL_ACCESS_PATH = "/external";
-
-    /**
-     * Relative path to the endpoint accepting accesses (project users)
-     */
     public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";
-
-    /**
-     * Relative path to the endpoint denying accesses (project users)
-     */
     public static final String DENY_ACCESS_RELATIVE_PATH = "/{access_id}/deny";
-
-    /**
-     * Relative path to the endpoint for verifying the email
-     */
     protected static final String VERIFY_EMAIL_RELATIVE_PATH = "/verifyEmail/{token}";
-
-    /**
-     * Relative path to the endpoint activating accesses (project users)
-     */
     public static final String ACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/active";
-
-    /**
-     * Relative path to the endpoint deactivating accesses (project users)
-     */
     public static final String INACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/inactive";
 
-    @Autowired
-    private IRegistrationClient registrationClient;
+    private final IRegistrationClient registrationClient;
+
+    public RegistrationController(IRegistrationClient registrationClient) {
+        this.registrationClient = registrationClient;
+    }
 
     /**
      * Request a new access, i.e. a new project user
+     *
      * @param accessRequestDto A Dto containing all information for creating the account/project user and sending the activation link
      * @return the passed Dto
      */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto) {
-        ResponseEntity<EntityModel<AccessRequestDto>> response =
-            registrationClient.requestAccess(accessRequestDto);
-        return response.getStatusCode().is2xxSuccessful()
-        ? new ResponseEntity<>(HttpStatus.CREATED)
-        : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Void> requestAccess(@Valid @RequestBody AccessRequestDto accessRequestDto) {
+        ResponseEntity<EntityModel<AccessRequestDto>> response = registrationClient.requestAccess(accessRequestDto);
+        HttpStatus status = response.getStatusCode().is2xxSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(status).build();
     }
 
     /**
      * Request a new access, i.e. a new project user with external authentication system.
+     *
      * @param accessRequestDto A Dto containing all information for creating the account/project user and sending the activation link
      * @return the passed Dto
      */
-    @ResponseBody
-    @RequestMapping(value = EXTERNAL_ACCESS_PATH, method = RequestMethod.POST)
+    @PostMapping(EXTERNAL_ACCESS_PATH)
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> requestExternalAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto) {
-        ResponseEntity<EntityModel<AccessRequestDto>> response =
-            registrationClient.requestAccess(accessRequestDto);
-        return response.getStatusCode().is2xxSuccessful()
-            ? new ResponseEntity<>(HttpStatus.CREATED)
-            : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Void> requestExternalAccess(@Valid @RequestBody AccessRequestDto accessRequestDto) {
+        ResponseEntity<EntityModel<AccessRequestDto>> response = registrationClient.requestExternalAccess(accessRequestDto);
+        HttpStatus status = response.getStatusCode().is2xxSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(status).build();
     }
 
     /**
      * Confirm the registration by email.
+     *
      * @param token the token
      * @return void
      */
-    @RequestMapping(value = VERIFY_EMAIL_RELATIVE_PATH, method = RequestMethod.GET)
+    @GetMapping(VERIFY_EMAIL_RELATIVE_PATH)
     @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> verifyEmail(@PathVariable("token") final String token) {
+    public ResponseEntity<Void> verifyEmail(@PathVariable("token") String token) {
         return registrationClient.verifyEmail(token);
     }
 
     /**
      * Grants access to the project user
+     *
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @RequestMapping(value = ACCEPT_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
+    @PutMapping(ACCEPT_ACCESS_RELATIVE_PATH)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long accessId) {
+    public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long accessId) {
         return registrationClient.acceptAccessRequest(accessId);
     }
 
     /**
      * Denies access to the project user
+     *
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @ResponseBody
-    @RequestMapping(value = DENY_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
+    @PutMapping(DENY_ACCESS_RELATIVE_PATH)
     @ResourceAccess(description = "Denies the access request", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long accessId) {
+    public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") Long accessId) {
         return registrationClient.denyAccessRequest(accessId);
     }
 
     /**
      * Activates an inactive user
+     *
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @ResponseBody
-    @RequestMapping(value = ACTIVE_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
+    @PutMapping(ACTIVE_ACCESS_RELATIVE_PATH)
     @ResourceAccess(description = "Activates an inactive user", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> activeAccess(@PathVariable("access_id") final Long accessId) {
+    public ResponseEntity<Void> activeAccess(@PathVariable("access_id") Long accessId) {
         return registrationClient.activeAccess(accessId);
     }
 
     /**
      * Deactivates an active user
+     *
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @ResponseBody
-    @RequestMapping(value = INACTIVE_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Desactivates an active user", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") final Long accessId) {
+    @PutMapping(INACTIVE_ACCESS_RELATIVE_PATH)
+    @ResourceAccess(description = "Deactivates an active user", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") Long accessId) {
         return registrationClient.inactiveAccess(accessId);
     }
 
     /**
      * Rejects the access request
+     *
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @ResponseBody
-    @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE)
+    @DeleteMapping("/{access_id}")
     @ResourceAccess(description = "Rejects the access request", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long accessId) {
+    public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") Long accessId) {
         return registrationClient.removeAccessRequest(accessId);
     }
 

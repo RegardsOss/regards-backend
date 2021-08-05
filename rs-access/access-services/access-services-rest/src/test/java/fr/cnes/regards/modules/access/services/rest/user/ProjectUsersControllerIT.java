@@ -4,6 +4,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.access.services.domain.user.ProjectUserCreateDto;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
@@ -124,7 +125,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
             customizer()
                 .expectStatusOk();
 
-        performDefaultPost(api, PROJECT_USER_STUB, customizer, "Failed to create user");
+        performDefaultPost(api, new ProjectUserCreateDto().setRoleName(ROLE_STUB_NAME).setEmail(PROJECT_USER_STUB_EMAIL), customizer, "Failed to create user");
     }
 
     @Test
