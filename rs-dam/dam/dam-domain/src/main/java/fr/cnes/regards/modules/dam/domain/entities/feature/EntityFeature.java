@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
@@ -40,6 +41,7 @@ import java.util.*;
 
 /**
  * Public and common entity feature properties
+ *
  * @author Marc Sordi
  */
 public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, UniformResourceName> {
@@ -78,6 +80,10 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
     @GsonIgnore
     private Map<String, IProperty<?>> propertyMap = null;
 
+    @Transient
+    @GsonIgnore
+    private Map<String, IProperty<?>> staticPropertyMap = null;
+
     @ConfigIgnore
     private boolean last = false;
 
@@ -87,7 +93,7 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
     public EntityFeature(UniformResourceName id, String providerId, EntityType entityType, String label) {
         Assert.notNull(entityType, "Entity type is required");
         this.id = id;
-        this.version = id == null? 0 :id.getVersion();
+        this.version = id == null ? 0 : id.getVersion();
         this.providerId = providerId;
         this.entityType = entityType;
         this.label = label;
@@ -118,6 +124,31 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
             }
             return null;
         }
+    }
+
+    public IProperty<?> getStaticProperty(String name) {
+        if (staticPropertyMap == null) {
+            Set<IProperty<?>> staticProperties = new HashSet<>();
+            // Unique identifier
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_ID,id.toString()));
+            // Virtual identifier
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_VIRTUAL_ID, virtualId.toString()));
+            // Version
+            staticProperties.add(IProperty.buildInteger(StaticProperties.FEATURE_VERSION,version));
+            // Is last version
+            staticProperties.add(IProperty.buildBoolean(StaticProperties.FEATURE_IS_LAST_VERSION, last));
+            // SIP identifier alias provider identifier
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_PROVIDER_ID,providerId));
+            // Required label for minimal display purpose
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_LABEL,label));
+            // Related model name
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_MODEL,model));
+            // Tags
+            staticProperties.add(IProperty.buildStringArray(StaticProperties.FEATURE_TAGS, tags.toArray(new String[0])));
+
+            staticPropertyMap = Maps.uniqueIndex(staticProperties, IProperty::getName);
+        }
+        return this.staticPropertyMap.get(name);
     }
 
     public void removeProperty(IProperty<?> property) {
