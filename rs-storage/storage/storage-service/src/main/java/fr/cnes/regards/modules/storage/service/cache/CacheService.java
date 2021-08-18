@@ -166,9 +166,14 @@ public class CacheService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @EventListener
     public void processEvent(TenantConnectionReady event) {
+        LOGGER.info("Initializing CacheService for tenant {}", event.getTenant());
         initCacheFileSystem(event.getTenant());
+        LOGGER.info("CacheService Initialization done for tenant {}", event.getTenant());
     }
 
+    /**
+     * Initialize the cache file system for the given tenant
+     */
     public void initCacheFileSystem(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
         Path tenantCachePath = getTenantCachePath();
@@ -280,7 +285,7 @@ public class CacheService {
                                  cachedFile.getExpirationDate().toString(),
                                  fileLocation);
                 } catch (NoSuchFileException e) {
-                    // File does not exists, just log a warning and do delet file in db.
+                    // File does not exists, just log a warning and do delete file in db.
                     LOGGER.warn(e.getMessage(), e);
                     cachedFileRepository.delete(cachedFile);
                     LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
