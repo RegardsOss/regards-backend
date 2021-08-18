@@ -120,7 +120,6 @@ public class CacheService {
 
     /**
      * Search for a file in cache with the given checksum.
-     * @param checksum
      * @return {@link CacheFile}
      */
     public Optional<CacheFile> search(String checksum) {
@@ -129,7 +128,6 @@ public class CacheService {
 
     /**
      * Check coherence between database and physical files in cache location.
-     * @throws IOException
      */
     public void checkDiskDBCoherence() {
         Page<CacheFile> shouldBeAvailableSet;
@@ -140,7 +138,7 @@ public class CacheService {
             for (CacheFile shouldBeAvailable : shouldBeAvailableSet) {
                 Path path = Paths.get(shouldBeAvailable.getLocation().getPath());
                 if (Files.notExists(path)) {
-                    LOGGER.warn("Dirty cache file in database : {}", path.toString());
+                    LOGGER.warn("Dirty cache file in database : {}", path);
                     toDelete.add(shouldBeAvailable.getId());
                 }
             }
@@ -163,12 +161,13 @@ public class CacheService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @EventListener
     public void processEvent(TenantConnectionReady event) {
+        LOGGER.info("Initializing CacheService for tenant {}", event.getTenant());
         initCacheFileSystem(event.getTenant());
+        LOGGER.info("CacheService Initialization done for tenant {}", event.getTenant());
     }
 
     /**
      * Initialize the cache file system for the given tenant
-     * @param tenant
      */
     public void initCacheFileSystem(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
@@ -197,8 +196,7 @@ public class CacheService {
      * @return {@link CacheFile}
      */
     public Optional<CacheFile> getCacheFile(String checksum) {
-        Optional<CacheFile> ocf = cachedFileRepository.findOneByChecksum(checksum);
-        return ocf;
+        return cachedFileRepository.findOneByChecksum(checksum);
     }
 
     /**
@@ -242,7 +240,7 @@ public class CacheService {
      */
     public int purge() {
         int nbPurged = 0;
-        LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now().toString());
+        LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now());
         Pageable page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
         Page<CacheFile> files;
         do {
@@ -282,10 +280,10 @@ public class CacheService {
                                  cachedFile.getExpirationDate().toString(),
                                  fileLocation);
                 } catch (NoSuchFileException e) {
-                    // File does not exists, just log a warning and do delet file in db.
+                    // File does not exists, just log a warning and do delete file in db.
                     LOGGER.warn(e.getMessage(), e);
                     cachedFileRepository.delete(cachedFile);
-                    LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).",
+                    LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}) from {}.",
                                  cachedFile.getChecksum(),
                                  cachedFile.getExpirationDate().toString(),
                                  fileLocation);
