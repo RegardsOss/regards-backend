@@ -27,6 +27,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
+ * POJO to handle result from ingest post processing plugins
  *
  * @author Iliana Ghazali
  */
@@ -37,14 +38,24 @@ public class PostProcessResult {
 
     private final Set<String> successes = Sets.newHashSet();
 
-    private boolean interupted = false;
+    private boolean interrupted = false;
 
     /**
-     * Build postprocess result of sipad post processing plugin
+     * Build postprocess errors of sipad post processing plugin
+     *
      * @param errors map of aipId and related errors encountered during process
      */
     public void buildErrors(Map<String, Set<String>> errors) {
         this.errors.putAll(errors);
+    }
+
+    /**
+     * Build postprocess successes of sipad post processing plugin
+     *
+     * @param aipIdsInSuccess set of aipIds in success state
+     */
+    public void buildSuccesses(Set<String> aipIdsInSuccess) {
+        this.successes.addAll(aipIdsInSuccess);
     }
 
     public void addError(String aip, Set<String> errorMessages) {
@@ -64,10 +75,16 @@ public class PostProcessResult {
     }
 
     public boolean isInterrupted() {
-        return this.interupted;
+        return this.interrupted;
     }
 
     public void setInterrupted() {
-        this.interupted = true;
+        this.interrupted = true;
+    }
+
+    @Override
+    public String toString() {
+        return "PostProcessResult{" + "errors=" + errors + ", successes=" + successes + ", interrupted=" + interrupted
+                + '}';
     }
 }
