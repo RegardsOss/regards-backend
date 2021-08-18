@@ -51,8 +51,9 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
  * @author Sylvain Vissiere-Guerinet
  */
 @Entity
-@Table(name = "t_access_right", uniqueConstraints = @UniqueConstraint(columnNames = { "access_group_id", "dataset_id" },
-        name = "uk_access_right_access_group_id_dataset_id"))
+@Table(name = "t_access_right",
+        uniqueConstraints = @UniqueConstraint(columnNames = { "access_group_id", "dataset_id" },
+                name = "uk_access_right_access_group_id_dataset_id"))
 @NamedEntityGraphs({
         @NamedEntityGraph(name = "graph.accessright.dataset.and.accessgroup", attributeNodes = {
                 @NamedAttributeNode(value = "dataset", subgraph = "subgraph.dataset"),
@@ -105,6 +106,7 @@ public class AccessRight implements IIdentifiable<Long> {
      */
     @Column(length = 30, name = "data_access_level")
     @Enumerated(EnumType.STRING)
+    @NotNull
     private DataAccessLevel dataAccessLevel;
 
     /**

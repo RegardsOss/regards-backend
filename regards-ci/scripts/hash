@@ -15,24 +15,30 @@ source ${SCRIPTS}/variables
 function dependencyTree {
     echo -e "\nCalculating hash for dependency tree..."
     local pomsHash
+    # lets find all pom
+    # sort to walk an entire sub directory tree at once and not move back and forth and always walk hierarchy in the same order(important for sha1 consistency)
+    # compute each found pom sha1
+    # compute sha1 of this pom wise version
+    # print only sha1 and not noise from sha1sum
     pomsHash=$(find . -type f -name pom.xml -print0 \
-            ! -path '*/rs-doc*/*' \
             | sort -z | xargs -0 sha1sum | sha1sum | awk '{ print $1 }')
 
     mkdir -p ${DATADIR}
 
-    # Try downloading an existing dependency tree
+    # Try downloading an existing dependency tree of this pom wise version
     set -x
     curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} ${NEXUS_RAW}/tests/regards/dependencyTree-${pomsHash}.txt -o ${DATADIR}/dependencyTree.txt --noproxy '*' -k --fail
     dlResult=$?
     set +x
 
+    # no existing dependency tree => lets make it!
     if [ "${dlResult}" -ge 1 ]; then
        echo -e "\nBuilding dependency tree..."
 
        cd "${SERVICES}" || exit
 
        set -x
+       # we just want the dependecy tree so we deactivate everything we can think of (and version is not important here so we use JOB_ID)
        mvn -B -P CI,oracle process-classes dependency:tree \
            -Dregards.version="ci-${JOB_ID}" \
            -Dmaven.multiModuleProjectDirectory=${SERVICES} \
@@ -40,7 +46,6 @@ function dependencyTree {
            -DcmdLineTarget=target \
            -Dincludes='fr.cnes.*' \
            -Dmaven.test.skip=true \
-           -DskipTests=true \
            -Dmaven.javadoc.skip=true \
            -Dmaven.source.skip=true \
            -Dmaven-deploy.skip=true \
@@ -56,11 +61,15 @@ function dependencyTree {
        failCheck $?
        set +x
 
+       # parse mvn-deptree.log to find all maven module names
        if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-deptree.log"; then
+           # first remove maven log noise (timestamp, thread, etc)
+           # parse the dependency tree (check result in nexus to understand)
            sed -r 's/^[0-9:,]*\s?\[[A-Z]*\]\s//' ${DATADIR}/mvn-deptree.log \
                 | awk '$6 ~ /^-+</ && $7 ~ /^fr\.cnes.*:/ {sub(/fr\.cnes.*:/, "", $7); print "module:" $7} $6=="+-" || $6=="\\-" { print $7 }' \
                 | awk -F: '/fr.cnes/ { print "+" $2 } $1=="module" { print }' \
                 > ${DATADIR}/dependencyTree.txt
+           # upload to nexus for the next time
            curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/dependencyTree.txt ${NEXUS_RAW}/tests/regards/dependencyTree-${pomsHash}.txt --noproxy '*' -k --fail
        else
             echo "Error while building dependency tree"
@@ -72,6 +81,7 @@ function dependencyTree {
    fi
 }
 
+# allows to map between maven module name and directory name
 function relativePath {
     cd ${SERVICES}
     if [[ "$1" == "regards-oss-backend" ]]; then
@@ -114,7 +124,7 @@ function relativePath {
                 moduleDir="$1"
             ;;
         esac
-        echo $(find . -maxdepth 4 -type d -name "${moduleDir}" ! -path '*.git*' -print | grep -v "rs-doc.*/" | head -n 1)
+        echo $(find . -maxdepth 5 -type d -name "${moduleDir}" ! -path '*.git*' -print | grep -v "rs-doc.*/" | grep -v "/target" | head -n 1)
     fi
 }
 
@@ -203,7 +213,8 @@ function calculateHash {
             echo ${moduleHash} > ${modulePath}/.hash
             treated=1
         else
-            echo ERRROR "Failed to compute hash for module ${module}. Did not find a **directory** named: \"${module}\" to hash."
+            echo ERROR "Failed to compute hash for module ${module}. Did not find a **directory** named:
+            \"${module}\" to hash, module path : \"${modulePath}\"."
             exit 1
         fi
     fi
@@ -223,7 +234,7 @@ function displayModule {
 }
 
 
-function computeHashes {
+function computeModuleHashes {
     echo -e "\nComputing hashes for all modules..."
 
     # Clean old stuff beforehand
@@ -233,23 +244,18 @@ function computeHashes {
     previousIsModule=1
     parentModule=
 
-    # Let's goooo
+    # Let's goooo (input file is at the end of the while)
     while read line; do
         if [[ "$line" =~ ^module:.* ]]; then
+          # remove "module:" from line
             module=$(echo ${line} | sed -r s/module://g)
             # First module, just put it as the first parent module
             if [ ${start} == 1 ]; then
-
+                # keep it to use it after we computed its children hashes
                 parentModule=${module}
                 start=0
             else
-                if [ ${previousIsModule} == 1 ]; then
-                    # Previous module had no dependencies
-                    calculateHash ${parentModule}
-                else
-                    # Previous module had dependencies (and all have now been treated)
-                    calculateHash ${parentModule}
-                fi
+                calculateHash ${parentModule}
                 parentModule=${module}
                 previousIsModule=1
             fi
@@ -257,11 +263,9 @@ function computeHashes {
             module=$(echo ${line} | sed -r s/^\\+//g)
             if [ ${previousIsModule} == 1 ]; then
                 # First dependency of the parent module
-
-                # Remove old dependencies hash file for parent module
                 parentModulePath=$(relativePath ${parentModule})
             fi
-
+            # Compute this module hash and update dependencies hash file for parent module
             calculateHash ${module} ${parentModule}
             previousIsModule=0
         fi
@@ -277,10 +281,6 @@ function computeHashes {
         echo "${moduleName}:${moduleHash}" \
         | awk '{ print $1 }' \
         >> "${DATADIR}/hashes.txt"
-    done
-    # Output all modules hashes to another file
-    for i in "${!modulesOnlyHashes[@]}"; do
-        echo "$i:${modulesOnlyHashes[$i]}" >> "${DATADIR}/hashes-modules-only.txt"
     done
 
     echo "Hashes computed."

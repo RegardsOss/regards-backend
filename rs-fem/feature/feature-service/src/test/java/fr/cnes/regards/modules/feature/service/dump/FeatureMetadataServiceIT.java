@@ -42,14 +42,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
+import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
@@ -61,14 +62,12 @@ import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantService
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_metadata_service_it",
         "regards.amqp.enabled=true", "regards.feature.dump.zip-limit = 3" })
-@ActiveProfiles(value = { "nohandler", "noscheduler" })
+@ActiveProfiles(value = { "noFemHandler", "noscheduler" })
 public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));
 
     private Path tmpZipLocation;
-
-    private DumpSettings conf;
 
     @Value("${regards.feature.dump.zip-limit}")
     private int zipLimit;
@@ -77,18 +76,19 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
     private IFeatureMetadataService metadataService;
 
     @Autowired
-    private IDumpSettingsRepository dumpConf;
+    private DumpSettingsService dumpSettingsService;
 
     @Autowired
     private IFeatureSaveMetadataRequestRepository metadataRequestRepository;
 
     @Override
-    public void doInit() {
+    public void doInit() throws EntityException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
-        conf = new DumpSettings(true, "* * * 1-7 * SUN", "target/dump", null);
-        dumpConf.save(conf);
+
+        dumpSettingsService.setDumpParameters(new DumpParameters().setActiveModule(true).setDumpLocation("target/dump")
+                                                      .setCronTrigger("0 * * * * *"));
     }
 
     @Test
@@ -113,7 +113,8 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
         // Number of zips created
         File[] zipFolder = this.tmpZipLocation.toFile().listFiles();
         int nbZipCreated = zipFolder.length;
-        Assert.assertEquals("Unexpected number of created zips", (int) Math.ceil((double) nbFeaturesToDump / zipLimit),
+        Assert.assertEquals("Unexpected number of created zips",
+                            (int) Math.ceil((double) nbFeaturesToDump / zipLimit),
                             nbZipCreated);
 
         // Number of files per zip
@@ -131,7 +132,8 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
         }
 
         // Total number of feature dumped
-        Assert.assertEquals("The number of files created from features is not expected", nbFeaturesToDump,
+        Assert.assertEquals("The number of files created from features is not expected",
+                            nbFeaturesToDump,
                             totalNbFiles);
     }
 
@@ -154,12 +156,13 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
 
         // CHECK RESULTS
         // Number of dump created
-        File[] dumpFolder = Paths.get(this.conf.getDumpLocation()).toFile().listFiles();
+        File[] dumpFolder = Paths.get(dumpSettingsService.getDumpParameters().getDumpLocation()).toFile().listFiles();
         Assert.assertEquals("Only one dump was expected", 1, dumpFolder.length);
 
         // Number of zips in dump
         Assert.assertEquals("The number of created zips in dump is not expected",
-                            (int) Math.ceil((double) nbFeatures / zipLimit), readZipEntryNames(dumpFolder[0]).size());
+                            (int) Math.ceil((double) nbFeatures / zipLimit),
+                            readZipEntryNames(dumpFolder[0]).size());
     }
 
     /**
@@ -168,10 +171,15 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
      */
     private FeatureSaveMetadataRequest createSaveMetadataRequest() {
         // Create request
-        return FeatureSaveMetadataRequest
-                .build(AbstractRequestEvent.generateRequestId(), "NONE", OffsetDateTime.now(), RequestState.GRANTED,
-                       null, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL, this.lastDumpReqDate,
-                       this.conf.getDumpLocation());
+        return FeatureSaveMetadataRequest.build(AbstractRequestEvent.generateRequestId(),
+                                                "NONE",
+                                                OffsetDateTime.now(),
+                                                RequestState.GRANTED,
+                                                null,
+                                                FeatureRequestStep.LOCAL_SCHEDULED,
+                                                PriorityLevel.NORMAL,
+                                                this.lastDumpReqDate,
+                                                dumpSettingsService.getDumpParameters().getDumpLocation());
     }
 
     /**
@@ -217,7 +225,7 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
         abstractFeatureRequestRepo.deleteAll();
         featureRepo.deleteAll();
         //clear dump location
-        FileUtils.deleteDirectory(Paths.get(conf.getDumpLocation()).toFile());
+        FileUtils.deleteDirectory(Paths.get(dumpSettingsService.getDumpParameters().getDumpLocation()).toFile());
         FileUtils.deleteDirectory(this.tmpZipLocation.toFile());
     }
 }

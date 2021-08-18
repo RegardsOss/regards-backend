@@ -22,10 +22,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,6 +40,7 @@ import org.springframework.data.domain.Pageable;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -50,6 +56,9 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * JOB to handle copy requests on many {@link FileReference}s.<br>
@@ -61,15 +70,19 @@ import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestServi
  */
 public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
-    public static final String STORAGE_LOCATION_SOURCE_ID = "source";
+    public static final String STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME = "source";
 
-    public static final String STORAGE_LOCATION_DESTINATION_ID = "dest";
+    public static final String STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME = "dest";
 
-    public static final String SOURCE_PATH = "sourcePath";
+    public static final String SOURCE_PATH_PARMETER_NAME = "sourcePath";
 
-    public static final String DESTINATION_PATH = "destinationPath";
+    public static final String DESTINATION_PATH_PARMETER_NAME = "destinationPath";
 
-    public static final String FILE_TYPES = "types";
+    public static final String FILE_TYPES_PARMETER_NAME = "types";
+
+    public static final String SESSION_OWNER_PARMETER_NAME = "sessionOwner";
+
+    public static final String SESSION_PARMETER_NAME = "session" ;
 
     @Autowired
     private IPublisher publisher;
@@ -81,7 +94,10 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     private FileReferenceService fileRefService;
 
     @Autowired
-    private FileCopyRequestService fileCopyReqService;
+    private IPluginService pluginService;
+
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
 
     private String storageLocationSourceId;
 
@@ -95,82 +111,97 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     private int totalPages = 0;
 
+    private String sessionOwner;
+
+    private String session;
+
+    private IStorageLocation sourcePlugin;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID).getValue();
-        storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID).getValue();
-        sourcePath = parameters.get(SOURCE_PATH).getValue();
-        destinationPath = parameters.get(DESTINATION_PATH).getValue();
-        if (parameters.get(FILE_TYPES) != null) {
-            types = parameters.get(FILE_TYPES).getValue();
+        storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME).getValue();
+        storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME).getValue();
+        sourcePath = parameters.get(SOURCE_PATH_PARMETER_NAME).getValue();
+        destinationPath = parameters.get(DESTINATION_PATH_PARMETER_NAME).getValue();
+        sessionOwner = parameters.get(SESSION_OWNER_PARMETER_NAME).getValue();
+        session = parameters.get(SESSION_PARMETER_NAME).getValue();
+        if (parameters.get(FILE_TYPES_PARMETER_NAME) != null) {
+            types = parameters.get(FILE_TYPES_PARMETER_NAME).getValue();
+        }
+        try {
+            sourcePlugin = pluginService.getPlugin(storageLocationSourceId);
+        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+           throw new JobParameterInvalidException(
+                   String.format("Invalid source location plugin %s. Associated storage location plugin not available",
+                                 storageLocationSourceId),e);
         }
     }
 
+    /**
+     * Publish {@link CopyFlowItem}s for each {@link FileReference} to copy from one destination to an other one.
+     */
+    private final Task publishCopyFlowItemsTask = () -> {
+        LockAssert.assertLocked();
+        long start = System.currentTimeMillis();
+        logger.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
+                    storageLocationSourceId, storageLocationDestinationId);
+        Pageable pageRequest = PageRequest.of(0, CopyFlowItem.MAX_REQUEST_PER_GROUP);
+        Page<FileReference> pageResults;
+        Optional<Path> sourceRootPath = sourcePlugin.getRootPath();
+        logger.info("[COPY JOB] Origin source location {}", sourceRootPath.orElse(Paths.get("/")));
+        long nbFilesToCopy = 0L;
+        do {
+            // Search for all file references matching the given storage location.
+            if (types.isEmpty()) {
+                pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
+            } else {
+                pageResults = fileRefService.search(storageLocationSourceId, types, pageRequest);
+            }
+            totalPages = pageResults.getTotalPages();
+            String groupId = UUID.randomUUID().toString();
+            Set<FileCopyRequestDTO> requests = Sets.newHashSet();
+            for (FileReference fileRef : pageResults.getContent()) {
+                try {
+                    Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(), sourceRootPath,
+                                                                               sourcePath, destinationPath);
+                    if (desinationFilePath.isPresent()) {
+                        nbFilesToCopy++;
+                        // For each file reference located in the given path, send a copy request to the destination storage location.
+                        requests.add(FileCopyRequestDTO
+                                             .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
+                                                    desinationFilePath.get().toString(), sessionOwner, session));
+                    }
+                } catch (MalformedURLException | ModuleException e) {
+                    logger.error(String.format("Unable to handle file reference %s for copy from %s to %s. Cause:",
+                                               fileRef.getLocation().getUrl(), storageLocationSourceId,
+                                               storageLocationDestinationId), e);
+                }
+                this.advanceCompletion();
+            }
+            publisher.publish(CopyFlowItem.build(requests, groupId));
+            pageRequest = pageRequest.next();
+        } while (pageResults.hasNext());
+        String message = String.format("Copy process found %s files to copy from %s:%s to %s:%s.", nbFilesToCopy,
+                                       storageLocationSourceId, sourcePath, storageLocationDestinationId,
+                                       destinationPath);
+        if (nbFilesToCopy > 0) {
+            message = message + " Copy of files is now running, to monitor copy process go to storage locations page.";
+            notifClient.notify(message, "Copy files", NotificationLevel.INFO, DefaultRole.EXPLOIT);
+        } else {
+            notifClient.notify(message, "Copy files", NotificationLevel.WARNING, DefaultRole.EXPLOIT);
+        }
+        logger.info("[COPY JOB] {} All jobs scheduled in {}ms", message, System.currentTimeMillis() - start);
+    };
+
     @Override
     public void run() {
-        boolean locked = false;
         try {
-            locked = fileCopyReqService.lockCopyProcess(true, 300);
-            if (!locked) {
-                logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
-                return;
-            }
-            long start = System.currentTimeMillis();
-            logger.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
-                        storageLocationSourceId, storageLocationDestinationId);
-            Pageable pageRequest = PageRequest.of(0, CopyFlowItem.MAX_REQUEST_PER_GROUP);
-            Page<FileReference> pageResults;
-            long nbFilesToCopy = 0L;
-            do {
-                // Search for all file references matching the given storage location.
-                if (types.isEmpty()) {
-                    pageResults = fileRefService.search(storageLocationSourceId, pageRequest);
-                } else {
-                    pageResults = fileRefService.search(storageLocationSourceId, types, pageRequest);
-                }
-                totalPages = pageResults.getTotalPages();
-                String groupId = UUID.randomUUID().toString();
-                Set<FileCopyRequestDTO> requests = Sets.newHashSet();
-                for (FileReference fileRef : pageResults.getContent()) {
-                    try {
-                        Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
-                                                                                   sourcePath, destinationPath);
-                        if (desinationFilePath.isPresent()) {
-                            nbFilesToCopy++;
-                            // For each file reference located in the given path, send a copy request to the destination storage location.
-                            requests.add(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
-                                                                  storageLocationDestinationId,
-                                                                  desinationFilePath.get().toString()));
-                        }
-                    } catch (MalformedURLException | ModuleException e) {
-                        logger.error(String
-                                .format("Unable to handle file reference %s for copy from %s to %s. Cause:",
-                                        fileRef.getLocation().getUrl(), storageLocationSourceId,
-                                        storageLocationDestinationId),
-                                     e);
-                    }
-                    this.advanceCompletion();
-                }
-                publisher.publish(CopyFlowItem.build(requests, groupId));
-                pageRequest = pageRequest.next();
-            } while (pageResults.hasNext());
-            String message = String.format("Copy process found %s files to copy from %s:%s to %s:%s.", nbFilesToCopy,
-                                           storageLocationSourceId, sourcePath, storageLocationDestinationId,
-                                           destinationPath);
-            if (nbFilesToCopy > 0) {
-                message = message
-                        + " Copy of files is now running, to monitor copy process go to storage locations page.";
-                notifClient.notify(message, "Copy files", NotificationLevel.INFO, DefaultRole.EXPLOIT);
-            } else {
-                notifClient.notify(message, "Copy files", NotificationLevel.WARNING, DefaultRole.EXPLOIT);
-            }
-            logger.info("[COPY JOB] {} All jobs scheduled in {}ms", message, System.currentTimeMillis() - start);
-
-        } finally {
-            if (locked) {
-                fileCopyReqService.releaseLock();
-            }
+            lockingTaskExecutors.executeWithLock(publishCopyFlowItemsTask, new LockConfiguration(
+                    FileCopyRequestService.COPY_PROCESS_LOCK, Instant.now().plusSeconds(300)));
+        } catch (Throwable e) {
+            logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
+            logger.error(e.getMessage(), e);
         }
     }
 
@@ -187,7 +218,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
      * @throws MalformedURLException
      * @throws ModuleException
      */
-    public static Optional<Path> getDestinationFilePath(String fileUrl, String sourcePathToCopy, String destinationPath)
+    public static Optional<Path> getDestinationFilePath(String fileUrl, Optional<Path> sourceRootPath, String sourcePathToCopy, String destinationPath)
             throws MalformedURLException, ModuleException {
         String destinationFilePath = "";
         if (destinationPath == null) {
@@ -201,13 +232,25 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         URL url = new URL(fileUrl);
         Path fileDirectoryPath = Paths.get(url.getPath()).getParent();
         String fileDir = fileDirectoryPath.toString();
-        if (fileDir.startsWith(sourcePathToCopy)) {
-            Path destinationSubDirPath = Paths.get(sourcePathToCopy).relativize(fileDirectoryPath);
+        Path resolvedSourcePathToCopy;
+        // If source path to copy is absolute, copy from the exact given directory
+        if (sourcePathToCopy.startsWith("/")) {
+            resolvedSourcePathToCopy = Paths.get(sourcePathToCopy);
+        } else if (sourcePathToCopy.isEmpty()) {
+            // If source path to copy is empty, copy from the storage location root path
+            resolvedSourcePathToCopy = sourceRootPath.orElse(Paths.get("/"));
+        } else {
+            // If source path to copy is relative, copy from the storage location root path resoved with the source path to copy given
+            resolvedSourcePathToCopy = sourceRootPath.orElse(Paths.get("/")).resolve(sourcePathToCopy);
+        }
+
+        if (fileDir.startsWith(resolvedSourcePathToCopy.toString())) {
+            Path destinationSubDirPath = resolvedSourcePathToCopy.relativize(fileDirectoryPath);
             destinationFilePath = Paths.get(destinationPath, destinationSubDirPath.toString()).toString();
             if (destinationFilePath.length() > FileLocation.URL_MAX_LENGTH) {
                 throw new ModuleException(String
                         .format("Destination path <%s> legnth is too long (> %d). fileUrl=%s,sourcePathToCopy=%s,destinationPath=%s",
-                                destinationFilePath.toString(), FileLocation.URL_MAX_LENGTH, fileUrl, sourcePathToCopy,
+                                destinationFilePath.toString(), FileLocation.URL_MAX_LENGTH, fileUrl, resolvedSourcePathToCopy,
                                 destinationPath));
             }
             return Optional.of(Paths.get(destinationFilePath));

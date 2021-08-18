@@ -126,6 +126,19 @@
             <groupId>fr.cnes.regards.framework.modules.dump</groupId>
             <artifactId>dump-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-service</artifactId>
+        </dependency>
+        <!-- session handling -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+            <artifactId>session-agent-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+            <artifactId>session-agent-service</artifactId>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
@@ -140,6 +153,11 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-logger</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

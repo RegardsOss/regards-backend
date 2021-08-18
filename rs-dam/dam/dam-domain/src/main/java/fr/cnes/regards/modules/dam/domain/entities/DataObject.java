@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectMetadata;
 import fr.cnes.regards.modules.model.domain.Model;
+import java.util.HashSet;
+import java.util.Set;
+import org.elasticsearch.common.geo.GeoPoint;
+import org.springframework.util.Assert;
 
 /**
  *
@@ -51,6 +50,16 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
      * Denormalization : allows to retrieve dataobjects related to models (i.e. types) of dataset
      */
     private Set<String> datasetModelNames = new HashSet<>();
+
+    /**
+     * Bounding box north west point
+     */
+    private GeoPoint nwPoint;
+
+    /**
+     * Bounding box south east point
+     */
+    private GeoPoint sePoint;
 
     /**
      * These metadata are used only by elasticsearch to add useful informations needed by catalog
@@ -77,7 +86,7 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
                       providerId, label));
     }
 
-    private DataObject(Model model, DataObjectFeature feature) {
+    public DataObject(Model model, DataObjectFeature feature) {
         super(model, feature);
     }
 
@@ -111,6 +120,22 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
 
     public void setInternal(boolean internal) {
         this.internal = internal;
+    }
+
+    public GeoPoint getNwPoint() {
+        return nwPoint;
+    }
+
+    public void setNwPoint(GeoPoint nwPoint) {
+        this.nwPoint = nwPoint;
+    }
+
+    public GeoPoint getSePoint() {
+        return sePoint;
+    }
+
+    public void setSePoint(GeoPoint sePoint) {
+        this.sePoint = sePoint;
     }
 
     @Override

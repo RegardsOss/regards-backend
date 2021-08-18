@@ -139,6 +139,6 @@ public class FeatureLogger {
     }
 
     public static void notificationError(String requestOwner, String requestId, FeatureUniformResourceName urn) {
-        LOGGER.trace(String.format(NOTIFICATION_ERROR_FORMAT, requestOwner, requestId, urn));
+        LOGGER.error(String.format(NOTIFICATION_ERROR_FORMAT, requestOwner, requestId, urn));
     }
 }

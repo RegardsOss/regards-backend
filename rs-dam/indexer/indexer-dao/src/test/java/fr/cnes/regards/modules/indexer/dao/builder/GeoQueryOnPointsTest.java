@@ -22,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
+import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
+import fr.cnes.regards.modules.indexer.dao.deser.JsoniterDeserializeIIndexableStrategy;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.junit.Assert;
@@ -82,6 +84,7 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
             gson = new GsonBuilder().registerTypeAdapterFactory(new ItemAdapterFactory())
                     .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe()).create();
             repository = new EsRepository(gson, null, "localhost", 9200, 0,
+                                          new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
                                           new AggregationBuilderFacetTypeVisitor(100, 5),
                                           new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
 

@@ -22,20 +22,17 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Type;
 
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -45,7 +42,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  *
  */
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.DELETION)
+@DiscriminatorValue(FeatureRequestTypeEnum.DELETION_DISCRIMINENT)
 public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
     @Id
@@ -60,6 +57,12 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
     @Type(type = "jsonb")
     private Feature toNotify;
+
+    @Column(name="sessionToNotify", length=255)
+    private String sessionToNotify;
+
+    @Column(name="sourceToNotify", length=255)
+    private String sourceToNotify;
 
     /**
      * This is used to notify user. Should only be setted by deletion process
@@ -83,6 +86,7 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         return id;
     }
 
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -96,8 +100,10 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         return toNotify;
     }
 
-    public void setToNotify(Feature toNotify) {
+    public void setToNotify(Feature toNotify, String sourceToNotify, String sessionToNotify) {
         this.toNotify = toNotify;
+        this.sessionToNotify = sessionToNotify;
+        this.sourceToNotify = sourceToNotify;
     }
 
     public boolean isAlreadyDeleted() {
@@ -106,5 +112,13 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
     public void setAlreadyDeleted(boolean alreadyDeleted) {
         this.alreadyDeleted = alreadyDeleted;
+    }
+
+    public String getSessionToNotify() {
+        return sessionToNotify;
+    }
+
+    public String getSourceToNotify() {
+        return sourceToNotify;
     }
 }

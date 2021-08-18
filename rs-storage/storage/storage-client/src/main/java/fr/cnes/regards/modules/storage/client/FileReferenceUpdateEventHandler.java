@@ -28,11 +28,8 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceUpdateEvent;
-import sun.misc.Request;
 
 /**
  * Handle bus messages {@link FileReferenceUpdateEvent}

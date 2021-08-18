@@ -21,9 +21,12 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -34,7 +37,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
  * This service handles feature update workflow.
  * @author Marc SORDI
  */
-public interface IFeatureUpdateService extends IAbstractFeatureService {
+public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUpdateRequest> {
 
     /**
      * Register update requests in database for further processing from incoming request events
@@ -47,16 +50,16 @@ public interface IFeatureUpdateService extends IAbstractFeatureService {
     RequestInfo<FeatureUniformResourceName> registerRequests(FeatureUpdateCollection toHandle);
 
     /**
-     * Schedule a job to process a batch of requests<br/>
-     * A delta of time is kept between request registration and processing to manage concurrent updates.
-     * @return number of scheduled requests (0 if no request was scheduled)
-     */
-    int scheduleRequests();
-
-    /**
      * Process batch of requests during job
      * @return updated features
      */
     Set<FeatureEntity> processRequests(List<FeatureUpdateRequest> requests, FeatureUpdateJob featureUpdateJob);
+
+    /**
+     * Find all {@link FeatureUpdateRequest}s
+     * @param page
+     * @return {@link FeatureUpdateRequest}s
+     */
+    Page<FeatureUpdateRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
 
 }

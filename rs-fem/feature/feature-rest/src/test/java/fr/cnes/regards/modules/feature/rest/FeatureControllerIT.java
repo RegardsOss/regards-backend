@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -31,7 +32,6 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
@@ -40,10 +40,9 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureValidationService;
 
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature", "regards.amqp.enabled=true",
-                "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
-                "spring.jpa.properties.hibernate.order_inserts=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature",
+        "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+        "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
 public class FeatureControllerIT extends AbstractFeatureIT {
@@ -53,6 +52,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
     private static final String FEATURE_UPDATE_REQUEST_ERROR = "Something goes wrong during FeatureUpdateRequest creation";
 
     @Autowired
+    @MockBean
     private IFeatureValidationService validationMock;
 
     @Autowired
@@ -61,7 +61,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
     @Test
     public void testCreateValidFeatureCreationRequest() throws Exception {
 
-        Feature featureToAdd = initValidFeature();
+        Feature featureToAdd = initValidFeature("MyId");
         FeatureUpdateCollection collection = new FeatureUpdateCollection();
         collection.add(featureToAdd);
         collection.setRequestOwner("test");
@@ -78,9 +78,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
 
         documentFeatureCollectionRequestBody(requestBuilderCustomizer, false);
 
-        performDefaultPost(FeatureController.PATH_FEATURES,
-                           collection,
-                           requestBuilderCustomizer,
+        performDefaultPost(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
                            FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
 
     }
@@ -108,9 +106,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
-        performDefaultPost(FeatureController.PATH_FEATURES,
-                           collection,
-                           requestBuilderCustomizer,
+        performDefaultPost(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
                            FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
     }
 
@@ -132,9 +128,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
-        performDefaultPatch(FeatureController.PATH_FEATURES,
-                            collection,
-                            requestBuilderCustomizer,
+        performDefaultPatch(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
                             FEATURE_UPDATE_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
     }
 
@@ -147,8 +141,8 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         feature.setGeometry(IGeometry.point(IGeometry.position(10.0, 20.0)));
         feature.setUrn(null);
         feature.setId("MyId");
-        feature.setUrn(FeatureUniformResourceName
-                               .build(FeatureIdentifier.FEATURE, EntityType.DATA, "tenant", UUID.randomUUID(), 1));
+        feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "tenant",
+                                                        UUID.randomUUID(), 1));
         FeatureUpdateCollection collection = new FeatureUpdateCollection();
         collection.add(feature);
         List<StorageMetadata> metadata = new ArrayList<StorageMetadata>();
@@ -167,9 +161,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
-        performDefaultPatch(FeatureController.PATH_FEATURES,
-                            collection,
-                            requestBuilderCustomizer,
+        performDefaultPatch(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
                             FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
 
     }
@@ -178,11 +170,8 @@ public class FeatureControllerIT extends AbstractFeatureIT {
     public void testCreateFeatureDeletionRequest() throws Exception {
 
         FeatureDeletionCollection collection = new FeatureDeletionCollection();
-        collection.addAll(Sets.newSet(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
-                                                                       EntityType.DATA,
-                                                                       "tenant",
-                                                                       UUID.randomUUID(),
-                                                                       1)));
+        collection.addAll(Sets.newSet(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
+                                                                       "tenant", UUID.randomUUID(), 1)));
         collection.setPriority(PriorityLevel.HIGH);
 
         MapBindingResult errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
@@ -192,9 +181,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         documentFeatureDeletionCollectionRequestBody(requestBuilderCustomizer);
 
-        performDefaultDelete(FeatureController.PATH_FEATURES,
-                             collection,
-                             requestBuilderCustomizer,
+        performDefaultDelete(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
                              FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
     }
 
@@ -236,11 +223,9 @@ public class FeatureControllerIT extends AbstractFeatureIT {
             lfd.add(fields.withPath("features[].files[].attributes.checksum", "Checksum"));
         }
 
-        requestBuilderCustomizer.document(PayloadDocumentation.relaxedRequestFields(Attributes.attributes(Attributes
-                                                                                                                  .key(RequestBuilderCustomizer.PARAM_TITLE)
-                                                                                                                  .value("Feature Collection manipulation")),
-                                                                                    lfd.toArray(new FieldDescriptor[lfd
-                                                                                            .size()])));
+        requestBuilderCustomizer.document(PayloadDocumentation
+                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
+                        .value("Feature Collection manipulation")), lfd.toArray(new FieldDescriptor[lfd.size()])));
     }
 
     private void documentFeatureDeletionCollectionRequestBody(RequestBuilderCustomizer requestBuilderCustomizer) {
@@ -251,10 +236,8 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         lfd.add(fields.withPath("featuresUrns", "List of urns to delete"));
         lfd.add(fields.withPath("priority", "Priotity of the request"));
 
-        requestBuilderCustomizer.document(PayloadDocumentation.relaxedRequestFields(Attributes.attributes(Attributes
-                                                                                                                  .key(RequestBuilderCustomizer.PARAM_TITLE)
-                                                                                                                  .value("Feature Collection manipulation")),
-                                                                                    lfd.toArray(new FieldDescriptor[lfd
-                                                                                            .size()])));
+        requestBuilderCustomizer.document(PayloadDocumentation
+                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
+                        .value("Feature Collection manipulation")), lfd.toArray(new FieldDescriptor[lfd.size()])));
     }
 }

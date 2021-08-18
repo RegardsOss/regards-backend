@@ -42,22 +42,23 @@ public class StorageLocationDTO {
 
     private boolean copyRunning = false;
 
+    private boolean allowsPhysicalDeletion = false;
+
     private StorageLocationConfiguration configuration;
 
-    public static StorageLocationDTO build(String name, Long nbFilesStored, Long totalStoredFilesSizeKo,
-            Long nbStorageError, Long nbDeletionError, boolean storageRunnig, boolean deletionRunning,
-            boolean copyRunning, StorageLocationConfiguration configuration) {
-        StorageLocationDTO dto = new StorageLocationDTO();
-        dto.name = name;
-        dto.nbFilesStored = nbFilesStored;
-        dto.totalStoredFilesSizeKo = totalStoredFilesSizeKo;
-        dto.nbStorageError = nbStorageError;
-        dto.nbDeletionError = nbDeletionError;
-        dto.configuration = configuration;
-        dto.deletionRunning = deletionRunning;
-        dto.copyRunning = copyRunning;
-        dto.storageRunning = storageRunnig;
-        return dto;
+    public StorageLocationDTO(String name, Long nbFilesStored, Long totalStoredFilesSizeKo, Long nbStorageError,
+            Long nbDeletionError, boolean storageRunning, boolean deletionRunning, boolean copyRunning,
+            StorageLocationConfiguration configuration, boolean allowPhysicalDeletion) {
+        this.name = name;
+        this.nbFilesStored = nbFilesStored;
+        this.totalStoredFilesSizeKo = totalStoredFilesSizeKo;
+        this.nbStorageError = nbStorageError;
+        this.nbDeletionError = nbDeletionError;
+        this.storageRunning = storageRunning;
+        this.deletionRunning = deletionRunning;
+        this.copyRunning = copyRunning;
+        this.configuration = configuration;
+        this.allowsPhysicalDeletion = allowPhysicalDeletion;
     }
 
     public String getName() {
@@ -96,4 +97,7 @@ public class StorageLocationDTO {
         return copyRunning;
     }
 
+    public boolean isAllowsPhysicalDeletion() {
+        return allowsPhysicalDeletion;
+    }
 }

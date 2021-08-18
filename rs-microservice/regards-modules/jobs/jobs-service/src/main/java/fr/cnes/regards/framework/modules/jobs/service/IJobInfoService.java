@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * JobInfo service interface.
@@ -135,10 +135,15 @@ public interface IJobInfoService {
      */
     void saveAll(List<JobInfo> jobInfo);
 
+    void updateExpirationDate(OffsetDateTime expirationDate, Set<UUID> jobInfoIds);
+
     void updateJobInfosHeartbeat(Collection<UUID> ids);
 
     /**
      * Update dead jobs status in database with change their status from RUNNING to FAILED
      */
     void cleanDeadJobs();
+
+    Long countByClassAndParameterValueAndStatus(String className, String parameterName, String parameterValue, JobStatus... jobStatuses);
+
 }

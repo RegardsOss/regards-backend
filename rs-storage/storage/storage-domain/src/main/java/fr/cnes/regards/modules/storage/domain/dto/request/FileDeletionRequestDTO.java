@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto.request;
 
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
+import org.springframework.util.Assert;
 
 /**
  * Information about a file for a deletion request.<br/>
@@ -51,6 +50,16 @@ public class FileDeletionRequestDTO {
     private String owner;
 
     /**
+     * Source of the file. Can be null if the request is handled internally (not initiated by a user).
+     */
+    private String sessionOwner;
+
+    /**
+     * Session of the file. Can be null if the request is handled internally (not initiated by a user).
+     */
+    private String session;
+
+    /**
      * Force file reference deletion when physical deletion on storage location is in error.<br/>
      * Can be useful if file doesn't exists anymore on storage location or if storage location is not accessible anymore.
      */
@@ -72,15 +81,26 @@ public class FileDeletionRequestDTO {
         return forceDelete;
     }
 
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
     /**
      * Build a new file deletion request information
      * @param checksum
      * @param storage
      * @param owner
+     * @param sessionOwner
+     * @param session
      * @param forceDelete
      * @return {@link FileDeletionRequestDTO}
      */
-    public static FileDeletionRequestDTO build(String checksum, String storage, String owner, boolean forceDelete) {
+    public static FileDeletionRequestDTO build(String checksum, String storage, String owner,
+            String sessionOwner, String session, boolean forceDelete) {
         FileDeletionRequestDTO request = new FileDeletionRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -91,6 +111,9 @@ public class FileDeletionRequestDTO {
         request.owner = owner;
         request.storage = storage;
         request.forceDelete = forceDelete;
+        request.sessionOwner = sessionOwner;
+        request.session = session;
+
         return request;
     }
 

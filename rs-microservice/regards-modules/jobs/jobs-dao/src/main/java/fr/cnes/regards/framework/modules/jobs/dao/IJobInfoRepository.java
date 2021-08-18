@@ -18,13 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.jobs.dao;
 
-import javax.persistence.LockModeType;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,8 +30,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import javax.persistence.LockModeType;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing Jobs.
@@ -69,8 +68,13 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     @Query("update JobInfo j set j.status.percentCompleted = :completion, j.status.estimatedCompletion = :estimationCompletionDate, "
             + "j.lastCompletionUpdate = :updateCompletionDate where j.id = :id and j.status.status = 'RUNNING'")
     void updateCompletion(@Param("completion") int percentCompleted,
-            @Param("estimationCompletionDate") OffsetDateTime estimatedCompletion, @Param("id") UUID id,
-            @Param("updateCompletionDate") OffsetDateTime updateDate);
+                          @Param("estimationCompletionDate") OffsetDateTime estimatedCompletion, @Param("id") UUID id,
+                          @Param("updateCompletionDate") OffsetDateTime updateDate
+    );
+
+    @Modifying
+    @Query("update JobInfo jobInfo set jobInfo.expirationDate = :expirationDate where jobInfo.id in :jobInfoIds")
+    void updateExpirationDate(@Param("expirationDate") OffsetDateTime expirationDate, @Param("jobInfoIds") Set<UUID> jobInfoIds);
 
     /**
      * Count the number of jobs with provided statuses
@@ -162,6 +166,8 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     default List<JobInfo> findTopUserPendingJobs(String user, String className, int count) {
         return findByOwnerAndStatusStatusAndClassNameOrderByPriorityDesc(user, JobStatus.PENDING, className, PageRequest.of(0, count));
     }
+
+    Long countByClassNameAndParameters_NameAndParameters_ValueAndStatusStatusIn(String className, String parameterName, String parameterValue, JobStatus... jobStatuses);
 
     /**
      * @param className

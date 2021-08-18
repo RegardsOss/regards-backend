@@ -55,19 +55,18 @@ import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -94,7 +93,6 @@ public class OrderProcessingService implements IOrderProcessingService {
     protected final IOrderDataFileRepository orderDataFileRepository;
     protected final IOrderJobService orderJobService;
     protected final IJobInfoService jobInfoService;
-    protected final int orderValidationPeriodDays;
 
     // @formatter:off
 
@@ -106,8 +104,7 @@ public class OrderProcessingService implements IOrderProcessingService {
             IOrderDataFileService orderDataFileService,
             IOrderDataFileRepository orderDataFileRepository,
             IOrderJobService orderJobService,
-            IJobInfoService jobInfoService,
-            @Value("${regards.order.validation.period.days:3}") int orderValidationPeriodDays
+            IJobInfoService jobInfoService
     ) {
         this.basketSelectionPageSearch = basketSelectionPageSearch;
         this.processingClient = processingClient;
@@ -116,7 +113,6 @@ public class OrderProcessingService implements IOrderProcessingService {
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderJobService = orderJobService;
         this.jobInfoService = jobInfoService;
-        this.orderValidationPeriodDays = orderValidationPeriodDays;
     }
 
     @Override
@@ -126,7 +122,8 @@ public class OrderProcessingService implements IOrderProcessingService {
             String tenant,
             String user,
             String userRole,
-            OrderCounts orderCounts
+            OrderCounts orderCounts,
+            int subOrderDuration
     ) throws ModuleException {
 
         ProcessDatasetDescription processDatasetDesc = dsSel.getProcessDatasetDescription();
@@ -152,10 +149,11 @@ public class OrderProcessingService implements IOrderProcessingService {
                         order, dsSel,
                         tenant, user, userRole,
                         processDto, orderProcessInfo,
-                        suborderCount, featureGroup
+                        suborderCount, featureGroup,
+                        subOrderDuration
                     ))
                     .doOnNext(dsTask::addReliantTask)
-                    .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1))
+                    .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1, Collections.singleton(filesTask.getJobInfo().getId())))
                     .reduce(OrderCounts.initial(), OrderCounts::add)
                     .block();
         
@@ -184,13 +182,14 @@ public class OrderProcessingService implements IOrderProcessingService {
             Order order, BasketDatasetSelection dsSel,
             String tenant, String user, String userRole,
             PProcessDTO processDto, OrderProcessInfo orderProcessInfo,
-            AtomicLong suborderCount, GroupedFlux<Boolean, EntityFeature> featureGroup
+            AtomicLong suborderCount, GroupedFlux<Boolean, EntityFeature> featureGroup,
+            int subOrderDuration
     ) {
         if (hasRequiredFilesInStorage(featureGroup)) {
             return manageFeaturesWithFilesInStorage(
-                featureGroup, order, suborderCount,
-                processDto, orderProcessInfo, dsSel,
-                tenant, user, userRole
+                    featureGroup, order, suborderCount,
+                    processDto, orderProcessInfo, dsSel,
+                    tenant, user, userRole, subOrderDuration
             );
         }
         else {
@@ -442,12 +441,14 @@ public class OrderProcessingService implements IOrderProcessingService {
             BasketDatasetSelection dsSel,
             String tenant,
             String user,
-            String userRole
+            String userRole,
+            int subOrderDuration
     ) {
         return windowAccordingToScopeAndSizeLimit(order.getId(), pProcessDTO.getProcessId(), featureGroup, orderProcessInfo)
             .flatMap(features -> createProcessJobAndStorageFilesJobForFeatures(
-                order, suborderCount, pProcessDTO, orderProcessInfo, dsSel,
-                tenant, user, userRole, features)
+                    order, suborderCount, pProcessDTO, orderProcessInfo, dsSel,
+                    tenant, user, userRole, features, subOrderDuration
+                     )
             );
     }
 
@@ -460,7 +461,8 @@ public class OrderProcessingService implements IOrderProcessingService {
             String tenant,
             String user,
             String userRole,
-            List<EntityFeature> features
+            List<EntityFeature> features,
+            int subOrderDuration
     ) {
         JobInfo processExecJobUnsaved = createProcessExecutionJobForFeatures(
             order,
@@ -480,11 +482,11 @@ public class OrderProcessingService implements IOrderProcessingService {
         JobInfo storageFilesJobUnsaved = new JobInfo(false,
             orderJobService.computePriority(user, userRole),
             HashSet.of(
-                new FilesJobParameter(internalInputFiles),
-                new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
-                new UserJobParameter(user),
-                new UserRoleJobParameter(userRole),
-                new ProcessJobInfoJobParameter(processExecJob.getId())
+                    new FilesJobParameter(internalInputFiles),
+                    new SubOrderAvailabilityPeriodJobParameter(subOrderDuration),
+                    new UserJobParameter(user),
+                    new UserRoleJobParameter(userRole),
+                    new ProcessJobInfoJobParameter(processExecJob.getId())
             ).toJavaSet(),
             user,
             StorageFilesJob.class.getName()

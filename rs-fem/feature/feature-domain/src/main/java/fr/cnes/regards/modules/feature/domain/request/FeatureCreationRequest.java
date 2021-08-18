@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Embedded;
@@ -26,14 +29,13 @@ import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotBlank;
-import java.time.OffsetDateTime;
-import java.util.Set;
 
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
@@ -42,7 +44,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
  *
  */
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.CREATION)
+@DiscriminatorValue(FeatureRequestTypeEnum.CREATION_DISCRIMINENT)
 public class FeatureCreationRequest extends AbstractFeatureRequest {
 
     @Column(name = "provider_id", nullable = false)

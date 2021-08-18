@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.plugins;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -154,7 +155,8 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
                 try {
                     streamResponse = CatalogPluginResponseFactory
                             .createSuccessResponseFromInputStream(response, CatalogPluginResponseType.FILE_IMG_PNG,
-                                                                  resource.getInputStream(), "LogoCnes.png");
+                                                                  resource.getInputStream(), "LogoCnes.png",
+                                                                  Optional.of(Long.valueOf(this.getClass().getClassLoader().getResource("LogoCnes.png").getFile().length())));
                 } catch (IOException e) {
                     LOGGER.error("Error sending file", e);
                     streamResponse = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -167,7 +169,8 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
                 try {
                     streamResponse = CatalogPluginResponseFactory
                             .createSuccessResponseFromInputStream(response, CatalogPluginResponseType.FILE_DOWNLOAD,
-                                                                  resourceDownload.getInputStream(), "result.other");
+                                                                  resourceDownload.getInputStream(), "result.other",
+                                                                  Optional.of(Long.valueOf(this.getClass().getClassLoader().getResource("LogoCnes.png").getFile().length())));
                 } catch (IOException e) {
                     LOGGER.error("Error sending file", e);
                     streamResponse = new ResponseEntity<>(HttpStatus.BAD_REQUEST);

@@ -19,6 +19,7 @@ package fr.cnes.regards.modules.processing.dao;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -136,15 +137,13 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     ) {
         String orderBy = "";
         if ((page.getSort() != null) && !page.getSort().isEmpty()) {
+            StringJoiner sj = new StringJoiner(",", "ORDER BY ", "");
             int count = 0;
-            orderBy = "ORDER BY ";
             for (Order o  : page.getSort().toList()) {
                 count ++;
-                orderBy+= o.getProperty() + " " + o.getDirection().toString();
-                if ((count > 1) && (count < page.getSort().toList().size())) {
-                    orderBy += ",";
-                }
+                sj.add(o.getProperty() + " " + o.getDirection());
             }
+            orderBy = sj.toString();
         }
         DatabaseClient.GenericExecuteSpec execute = databaseClient.execute(
                 " SELECT E.* " +

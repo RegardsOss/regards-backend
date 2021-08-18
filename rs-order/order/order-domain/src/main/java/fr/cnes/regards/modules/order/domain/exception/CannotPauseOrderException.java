@@ -26,7 +26,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 @SuppressWarnings("serial")
 public class CannotPauseOrderException extends ModuleException {
 
-    public CannotPauseOrderException() {
-        super("ORDER_MUST_BE_PENDING_OR_RUNNING");
+    public CannotPauseOrderException(String cause) {
+        super(cause);
     }
+
 }

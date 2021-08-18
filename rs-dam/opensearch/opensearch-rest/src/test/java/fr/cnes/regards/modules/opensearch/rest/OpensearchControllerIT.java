@@ -41,6 +41,7 @@ public class OpensearchControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Requirement("REGARDS_DSL_DAM_SET_810")
+    @Ignore("Replace peps URL by an http mock")
     public void testRetrieveAccessGroupsListOfUser() {
         performDefaultGet(OpensearchController.TYPE_MAPPING + "/descriptor",
                           customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)

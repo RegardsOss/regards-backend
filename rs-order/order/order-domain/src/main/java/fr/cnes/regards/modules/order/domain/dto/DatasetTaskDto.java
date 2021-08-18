@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.order.domain.dto;
 
-import fr.cnes.regards.modules.order.domain.DatasetTask;
 import org.springframework.beans.BeanUtils;
+
+import fr.cnes.regards.modules.order.domain.DatasetTask;
 
 /**
  * DatasetTask Dto to avoid loading FilesTask and all associated files
@@ -33,7 +34,7 @@ public class DatasetTaskDto {
 
     private int objectsCount = 0;
 
-    private int filesCount = 0;
+    private long filesCount = 0;
 
     private long filesSize = 0;
 
@@ -65,11 +66,11 @@ public class DatasetTaskDto {
         this.objectsCount = objectsCount;
     }
 
-    public int getFilesCount() {
+    public long getFilesCount() {
         return filesCount;
     }
 
-    public void setFilesCount(int filesCount) {
+    public void setFilesCount(long filesCount) {
         this.filesCount = filesCount;
     }
 

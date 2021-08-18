@@ -92,7 +92,6 @@ public class IngestClientIT extends AbstractRegardsWebIT {
         storageClientMock.setBehavior(true, true);
         ingestServiceTest.init();
         procCahinService.initDefaultServiceConfiguration();
-        ingestServiceTest.cleanAMQPQueues(IngestRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         listener.clear();
     }
 
@@ -137,7 +136,6 @@ public class IngestClientIT extends AbstractRegardsWebIT {
     @After
     public void doAfter() {
         ingestServiceTest.init();
-        ingestServiceTest.cleanAMQPQueues(IngestRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         listener.clear();
     }
 }

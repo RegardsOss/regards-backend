@@ -18,35 +18,17 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
-import java.util.Objects;
-
-import javax.persistence.Column;
-import javax.persistence.ColumnResult;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EntityResult;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.NamedNativeQueries;
-import javax.persistence.NamedNativeQuery;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.SqlResultSetMapping;
-import javax.persistence.SqlResultSetMappings;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import org.hibernate.annotations.Type;
+import org.springframework.util.MimeType;
+
+import javax.persistence.*;
+import java.util.Objects;
 
 /**
  * Inherits from DataFile to add nearline state and IP_ID
@@ -83,7 +65,8 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
                         + "df.order_id = o.id AND (df.size is not NULL OR (df.size is NULL AND df.reference is TRUE)) AND "
                         + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date) "
                         + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
-                resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders") })
+                resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders")
+})
 @SqlResultSetMappings({
         @SqlResultSetMapping(name = "sumMapping", columns = @ColumnResult(name = "size", type = Long.class),
                 entities = @EntityResult(entityClass = Order.class)),

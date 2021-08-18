@@ -83,7 +83,7 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
 
     @Test(expected = ModuleException.class)
     public void testInvalidUrl2() throws MalformedURLException, ModuleException {
-        opensearchService.readDescriptor(new URL("https://plop.com/describe.xml"));
+        opensearchService.readDescriptor(new URL("https://dhlfkjhdslkfqlshrgzerblsfqslrqerfbsdqfhesr.com/describe.xml"));
     }
 
     @Test(expected = ModuleException.class)

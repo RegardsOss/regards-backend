@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.service.IOrderCreationService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -92,6 +93,9 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
     private IOrderService orderService;
 
     @Autowired
+    private IOrderCreationService orderCreationService;
+
+    @Autowired
     private IProjectsClient projectsClient;
 
     @Autowired
@@ -133,7 +137,7 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
                         Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
                         DataFile dataFile = new DataFile();
                         dataFile.setOnline(false);
-                        dataFile.setUri(new URI("file:///test/" + id));
+                        dataFile.setUri(new URI("file:///test/" + id).toString());
                         dataFile.setFilename(id);
                         dataFile.setFilesize(10L);
                         dataFile.setReference(false);
@@ -187,7 +191,7 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
         // To generate orderId
         order = orderRepo.save(order);
 
-        orderService.completeOrderCreation(basket, order, DefaultRole.REGISTERED_USER.toString(), getDefaultTenant());
+        orderCreationService.completeOrderCreation(basket, order.getId(), DefaultRole.REGISTERED_USER.toString(), 240, getDefaultTenant());
 
         // working code here
         long usedMemoryAfter = runtime.totalMemory() - runtime.freeMemory();

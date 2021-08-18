@@ -18,24 +18,24 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
+import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Repository
-public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, Long> {
+public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
 
     FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
 
@@ -43,7 +43,6 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
 
     List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
 
-    // FIXME remove just for test
     long countByLastUpdateGreaterThan(OffsetDateTime from);
 
     /**
@@ -52,15 +51,21 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
     @Query("select f.urn as urn, f.providerId as providerId, f.version as version from FeatureEntity f where f.providerId in :providerIds order by f.version desc")
     List<IUrnVersionByProvider> findByProviderIdInOrderByVersionDesc(@Param("providerIds") List<String> providerIds);
 
-    Page<FeatureEntity> findByModelAndLastUpdateAfter(String model, OffsetDateTime date, Pageable page);
-
-    Page<FeatureEntity> findByModel(String model, Pageable page);
-
     /**
      * For dump purposes
      */
-    Page<FeatureEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now,
-            Pageable pageable);
+    Page<FeatureEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now, Pageable pageable);
 
     Page<FeatureEntity> findByLastUpdateLessThan(OffsetDateTime now, Pageable pageable);
+
+    List<ILightFeatureEntity> findByUrnIn(Collection<FeatureUniformResourceName> uniformResourceNames);
+
+    List<FeatureEntity> findCompleteByUrnIn(Collection<FeatureUniformResourceName> uniformResourceNames);
+
+    void deleteAllByUrnIn(Collection<FeatureUniformResourceName> urns);
+
+    Page<ILightFeatureEntity> findBySessionOwner(String sessionOwner, Pageable pageable);
+
+    Page<ILightFeatureEntity> findBySessionOwnerAndSession(String sessionOwner, String session, Pageable pageable);
+
 }

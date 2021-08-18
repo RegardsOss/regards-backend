@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -35,11 +26,17 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.AccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
  * Listen to {@link AccountAcceptedEvent} in order to pass {@link ProjectUser}s from WAITING_ACCOUNT_ACTIVE to WAITING_ACCESS.
@@ -47,49 +44,35 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.P
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class WaitForQualificationListener
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<AccountAcceptedEvent> {
+public class WaitForQualificationListener implements ApplicationListener<ApplicationReadyEvent>, IHandler<AccountAcceptedEvent> {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(WaitForQualificationListener.class);
 
-    @Autowired
-    private ITenantResolver tenantResolver;
+    private final ITenantResolver tenantResolver;
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
-    private IInstanceSubscriber instanceSubscriber;
+    private final IInstanceSubscriber instanceSubscriber;
 
-    /**
-     * CRUD repository handling {@link ProjectUser}s. Autowired by Spring.
-     */
     private final IProjectUserRepository projectUserRepository;
 
-    /**
-     * Account workflow manager
-     */
     private final ProjectUserWorkflowManager projectUserWorkflowManager;
 
-    /**
-     * {@link IAccessSettingsService} instance
-     */
-    private final IAccessSettingsService accessSettingsService;
+    private final AccessSettingsService accessSettingsService;
 
-    /**
-     * @param pProjectUserRepository
-     * @param pProjectUserWorkflowManager
-     * @param pAccessSettingsService
-     */
-    public WaitForQualificationListener(IProjectUserRepository pProjectUserRepository,
-            ProjectUserWorkflowManager pProjectUserWorkflowManager, IAccessSettingsService pAccessSettingsService) {
-        super();
-        projectUserRepository = pProjectUserRepository;
-        projectUserWorkflowManager = pProjectUserWorkflowManager;
-        accessSettingsService = pAccessSettingsService;
+    public WaitForQualificationListener(IProjectUserRepository projectUserRepository, ProjectUserWorkflowManager projectUserWorkflowManager,
+                                        AccessSettingsService accessSettingsService, ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver,
+                                        IInstanceSubscriber instanceSubscriber
+    ) {
+        this.projectUserRepository = projectUserRepository;
+        this.projectUserWorkflowManager = projectUserWorkflowManager;
+        this.accessSettingsService = accessSettingsService;
+        this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.instanceSubscriber = instanceSubscriber;
     }
 
     @Override
@@ -115,26 +98,19 @@ public class WaitForQualificationListener
     }
 
     public void onAccountActivation(String email) {
-        // Retrieve the project user
         Optional<ProjectUser> optional = projectUserRepository.findOneByEmail(email);
         ProjectUser projectUser = optional.orElse(null);
         if (projectUser != null) {
-            // Change state
             try {
                 projectUserWorkflowManager.makeWaitForQualification(projectUser);
-
-                // Auto-accept if configured so
-                final AccessSettings settings = accessSettingsService.retrieve();
-                if (AccessSettings.AUTO_ACCEPT_MODE.equals(settings.getMode())) {
+                if (accessSettingsService.isAutoAccept()) {
                     projectUserWorkflowManager.grantAccess(projectUser);
                 }
-
-                // Save
                 projectUserRepository.save(projectUser);
             } catch (EntityException e) {
                 LOG.warn(String.format("The system tried to set the project user %s state to %s from %s but failed",
-                                       email, UserStatus.WAITING_ACCESS, UserStatus.WAITING_ACCOUNT_ACTIVE),
-                         e);
+                                       email, UserStatus.WAITING_ACCESS, UserStatus.WAITING_ACCOUNT_ACTIVE
+                ), e);
             }
         }
     }

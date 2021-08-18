@@ -19,111 +19,45 @@
 
 package fr.cnes.regards.framework.modules.dump.domain;
 
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+
+import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.Objects;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+public final class DumpSettings {
 
-/**
- * Model to handle dump settings
- * @author Iliana Ghazali
- */
-@Entity
-@Table(name = "t_dump_settings")
-public class DumpSettings {
-
-    // only one configuration per tenant
-    public static final long DUMP_CONF_ID = 0L;
-
-    @ConfigIgnore
-    @Id
-    @Column(name = "id", unique = true)
-    private Long id;
-
-    @Column(name = "active_module", nullable = false)
-    private boolean activeModule;
-
-    @Column(name = "cron_trigger", nullable = false)
-    private String cronTrigger;
-
-    @Column(name = "dump_location")
-    private String dumpLocation;
-
-    @Column(name = "last_dump_req_date")
-    private OffsetDateTime lastDumpReqDate;
-
-    public DumpSettings(boolean activeModule, String cronTrigger, String dumpLocation, OffsetDateTime lastDumpReqDate) {
-        this.id = DUMP_CONF_ID;
-        this.activeModule = activeModule;
-        this.cronTrigger = cronTrigger;
-        this.dumpLocation = dumpLocation;
-        this.lastDumpReqDate = lastDumpReqDate;
+    private DumpSettings() {
     }
 
-    public DumpSettings() {
-    }
+    public static final String DUMP_PARAMETERS = "dump_parameters";
+    public static final String LAST_DUMP_REQ_DATE = "last_dump_req_date";
 
-    public Long getId() {
-        return id;
-    }
+    public static final boolean DEFAULT_ACTIVE_MODULE = true;
+    public static final String DEFAULT_CRON_TRIGGER = "0 0 0 1-7 * SUN";
+    public static final String DEFAULT_DUMP_LOCATION = "";
+    public static final OffsetDateTime DEFAULT_LAST_DUMP_REQ_DATE = OffsetDateTime.ofInstant(Instant.EPOCH, ZoneId.systemDefault());
 
-    public void setId() {
-        this.id = DUMP_CONF_ID;
-    }
+    public static final DynamicTenantSetting DUMP_PARAMETERS_SETTING = new DynamicTenantSetting(
+            DUMP_PARAMETERS,
+            "Dump parameters",
+            new DumpParameters()
+                    .setActiveModule(DEFAULT_ACTIVE_MODULE)
+                    .setCronTrigger(DEFAULT_CRON_TRIGGER)
+                    .setDumpLocation(DEFAULT_DUMP_LOCATION)
+    );
+    public static final DynamicTenantSetting LAST_DUMP_REQ_DATE_SETTING = new DynamicTenantSetting(
+            LAST_DUMP_REQ_DATE,
+            "Date of last dump request",
+            DEFAULT_LAST_DUMP_REQ_DATE
+    );
 
-    public OffsetDateTime getLastDumpReqDate() {
-        return this.lastDumpReqDate;
-    }
+    public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
+            DUMP_PARAMETERS_SETTING,
+            LAST_DUMP_REQ_DATE_SETTING
+    );
 
-    public void setLastDumpReqDate(OffsetDateTime lastDumpReqDate) {
-        this.lastDumpReqDate = lastDumpReqDate;
-    }
-
-    public boolean isActiveModule() {
-        return activeModule;
-    }
-
-    public void setActiveModule(boolean activeModule) {
-        this.activeModule = activeModule;
-    }
-
-    public String getCronTrigger() {
-        return cronTrigger;
-    }
-
-    public void setCronTrigger(String cronTrigger) {
-        this.cronTrigger = cronTrigger;
-    }
-
-    public String getDumpLocation() {
-        return dumpLocation;
-    }
-
-    public void setDumpLocation(String dumpLocation) {
-        this.dumpLocation = dumpLocation;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if ((o == null) || (getClass() != o.getClass())) {
-            return false;
-        }
-        DumpSettings that = (DumpSettings) o;
-        return (activeModule == that.activeModule) && Objects.equals(id, that.id)
-                && Objects.equals(cronTrigger, that.cronTrigger) && Objects.equals(dumpLocation, that.dumpLocation)
-                && Objects.equals(lastDumpReqDate, that.lastDumpReqDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, activeModule, cronTrigger, dumpLocation, lastDumpReqDate);
-    }
 }

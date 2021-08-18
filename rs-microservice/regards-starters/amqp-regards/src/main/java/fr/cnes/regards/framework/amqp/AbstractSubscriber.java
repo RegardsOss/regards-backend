@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,8 +30,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.MessageListener;
@@ -49,10 +54,6 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.RabbitMessageListenerAdapter;
-import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -115,7 +116,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     private final ITenantResolver tenantResolver;
 
-    public AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
+    protected AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
             MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler, String microserviceName,
             IInstancePublisher instancePublisher, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
             ITenantResolver tenantResolver) {
@@ -131,6 +132,25 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.tenantResolver = tenantResolver;
+    }
+
+    @Override
+    public void unsubscribeFromAll() {
+        LOGGER.info("Stopping all {} amqp listeners ...", handlerInstances.size());
+        for (Map.Entry<Class<?>, Class<? extends ISubscribable>> handleEvent : handledEvents.entrySet()) {
+            // Retrieve handler managing event to unsubscribe
+            Class<?> handlerClass = handleEvent.getKey();
+            LOGGER.info("AMQP Subscriber : Unsubscribe from {}",handlerClass.getName());
+            // Retrieve listeners for current handler
+            Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.remove(handlerClass);
+            // In case unsubscribeFrom has been called too late
+            if (tenantContainers != null) {
+                // Stop listeners
+                for (SimpleMessageListenerContainer container : tenantContainers.values()) {
+                    container.stop();
+                }
+            }
+        }
     }
 
     @Override
@@ -165,6 +185,68 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
         subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
                     EventUtils.getTargetRestriction(eventType), purgeQueue);
+    }
+
+    @Override
+    public void purgeAllQueues(String tenant) {
+        if (virtualHostAdmin != null) {
+            LOGGER.info("Purging queues for {} handlers", handlerInstances.size());
+            for (IHandler<?> handler : handlerInstances.values()) {
+                cleanAMQPQueue(handler, tenant);
+            }
+        }
+    }
+
+    private void cleanAMQPQueue(IHandler<?> handler, String tenant) {
+        Class<?> event = null;
+        Target target = null;
+        WorkerMode mode = null;
+        Type[] genericInterfaces = handler.getClass().getGenericInterfaces();
+        for (Type genericInterface : genericInterfaces) {
+            if (genericInterface instanceof ParameterizedType) {
+                String interf = ((ParameterizedType) genericInterface).getRawType().getTypeName();
+                if (interf.equals(IBatchHandler.class.getName()) || interf.equals(IHandler.class.getName())) {
+                    event = (Class<?>) ((ParameterizedType) genericInterface).getActualTypeArguments()[0];
+                    Event annotation = event.getAnnotation(Event.class);
+                    target = annotation.target();
+                    mode = annotation.mode();
+                    break;
+                }
+            }
+        }
+        if (event == null) {
+            LOGGER.error("Unable to clean queue for heandler {}", handler.getClass().getName());
+        } else {
+            purgeQueueByName(tenant, handler, event, mode, target);
+        }
+    }
+
+    /**
+     * Allows to purge a queue content by generating queue name from given parameters
+     * @param tenant String
+     * @param handler {@link Class} of {@link IHandler}
+     * @param event {@link Class} of {@link Event}
+     * @param mode {@link WorkerMode}
+     * @param target {@link Target}
+     */
+    private void purgeQueueByName(String tenant, IHandler<?> handler, Class<?> event, WorkerMode mode, Target target) {
+        try {
+            virtualHostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+            String queueName;
+            if (mode == WorkerMode.BROADCAST) {
+                queueName = amqpAdmin.getSubscriptionQueueName((Class<? extends IHandler<?>>) handler.getClass(), target);
+            } else {
+                queueName = amqpAdmin.getUnicastQueueName(tenant, event, target);
+
+            }
+            LOGGER.info("Purging queue {} --> for {},{},{}", queueName, event.getName(),
+                        target.toString(), mode.toString());
+            amqpAdmin.purgeQueue(queueName, false);
+        } catch (AmqpIOException e) {
+            //todo
+        } finally {
+            virtualHostAdmin.unbind();
+        }
     }
 
     @Override

@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
 import com.google.common.collect.Sets;
-import com.google.gson.JsonObject;
-import org.elasticsearch.common.collect.Tuple;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.modules.indexer.dao.converter.LinkedHashMapToSort;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
@@ -50,6 +29,19 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import org.elasticsearch.common.collect.Tuple;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Elasticsearch DAO interface
@@ -202,6 +194,7 @@ public interface IEsRepository {
      */
     <T extends IIndexable> T get(String index, String docType, String docId, Class<T> clazz);
 
+
     <T extends IIndexable> T getByVirtualId(String tenant, String docType, String virtualId, Class<? extends IIndexable> clazz);
 
     /**
@@ -260,7 +253,7 @@ public interface IEsRepository {
      * @deprecated {@link #searchAllLimited(String, Class, Pageable)}
      */
     @Deprecated
-    default <T> Page<T> searchAllLimited(final String index, final Class<T> clazz, final int pageSize) {
+    default <T extends IIndexable> Page<T> searchAllLimited(final String index, final Class<T> clazz, final int pageSize) {
         return this.searchAllLimited(index, clazz, PageRequest.of(0, pageSize));
     }
 
@@ -276,7 +269,7 @@ public interface IEsRepository {
      * @deprecated indices are all single type from ES6
      */
     @Deprecated
-    <T> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest);
+    <T extends IIndexable> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest);
 
     /**
      * Searching first page of elements from index giving page size with facets.
@@ -438,6 +431,16 @@ public interface IEsRepository {
     <T extends IIndexable> OffsetDateTime maxDate(SearchKey<?, T> searchKey, ICriterion crit, String attName);
 
     /**
+     * Retrieve the desired specific aggregations.
+     * @param searchKey the search key
+     * @param criterion the search criterion
+     * @param aggs the aggregations wished for
+     * @return the aggregations
+     */
+    <T extends IIndexable> Aggregations getAggregationsFor(SearchKey<?, T> searchKey, ICriterion criterion,
+            Collection<AggregationBuilder> aggs);
+
+    /**
      * Retrieve stats for each given attribute
      * @param searchKey the search key
      * @param crit search criterion
@@ -467,7 +470,7 @@ public interface IEsRepository {
      * @param <T> document type
      * @return first result page containing max page size documents
      */
-    default <T> Page<T> multiFieldsSearch(final SearchKey<T, T> searchKey, final int pageSize, final Object value,
+    default <T extends IIndexable> Page<T> multiFieldsSearch(final SearchKey<T, T> searchKey, final int pageSize, final Object value,
             final String... fields) {
         return this.multiFieldsSearch(searchKey, PageRequest.of(0, pageSize), value, fields);
     }
@@ -482,7 +485,7 @@ public interface IEsRepository {
      * @param <T> document type
      * @return specified result page
      */
-    <T> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object value, String... fields);
+    <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object value, String... fields);
 
     /**
      * Execute specified action for all search results<br/>

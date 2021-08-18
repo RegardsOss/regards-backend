@@ -18,36 +18,11 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
-import org.elasticsearch.search.aggregations.metrics.stats.StatsAggregationBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -77,9 +52,25 @@ import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
+import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
+import org.elasticsearch.search.aggregations.metrics.stats.StatsAggregationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link ICatalogSearchService}
@@ -384,7 +375,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
-            Collection<QueryableAttribute> attributes) throws SearchException {
+            Collection<QueryableAttribute> attributes) {
         try {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addAccessRights(criterion);
@@ -396,6 +387,18 @@ public class CatalogSearchService implements ICatalogSearchService {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public CollectionWithStats getCollectionWithDataObjectsStats(UniformResourceName urn, SearchType searchType,
+                                                                 Collection<QueryableAttribute> attributes) throws SearchException,
+        EntityOperationForbiddenException, EntityNotFoundException {
+
+        AbstractEntity<?> abstractEntity = get(urn);
+        //We look for collection's dataobjects by urn in tags
+        ICriterion tags = ICriterion.contains("tags", urn.toString());
+        List<Aggregation> aggregations = retrievePropertiesStats(tags, searchType, attributes);
+        return new CollectionWithStats(abstractEntity, aggregations);
     }
 
     @SuppressWarnings("unchecked")

@@ -20,9 +20,14 @@ package fr.cnes.regards.modules.feature.domain.request;
 
 import java.time.OffsetDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
+import org.hibernate.annotations.Type;
+
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -32,8 +37,15 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  *
  */
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.NOTIFICATION)
+@DiscriminatorValue(FeatureRequestTypeEnum.NOTIFICATION_DISCRIMINENT)
 public class FeatureNotificationRequest extends AbstractFeatureRequest {
+
+    /**
+     * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
+     */
+    @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
+    @Type(type = "jsonb")
+    private Feature toNotify;
 
     public static FeatureNotificationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             FeatureRequestStep step, PriorityLevel priority, FeatureUniformResourceName urn, RequestState state) {
@@ -43,6 +55,14 @@ public class FeatureNotificationRequest extends AbstractFeatureRequest {
         request.setUrn(urn);
         request.setPriority(priority);
         return request;
+    }
+
+    public Feature getToNotify() {
+        return toNotify;
+    }
+
+    public void setToNotify(Feature toNotify) {
+        this.toNotify = toNotify;
     }
 
     @Override

@@ -20,7 +20,10 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.Request;
@@ -131,15 +134,22 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
         } while (true);
     }
 
-    public void assertDeletedAIPs(long nbAipDeletedExpected) {
-        List<AIPEntity> aips = aipRepository.findAll();
-        long nb = 0;
-        for (AIPEntity aip : aips) {
-            if (aip.getState() == AIPState.DELETED) {
-                nb = nb + 1;
-            }
+    public void assertDeletedAIPs(long nbAipDeletedExpected, long timeout) {
+        try {
+            Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                List<AIPEntity> aips = aipRepository.findAll();
+                long nb = 0;
+                for (AIPEntity aip : aips) {
+                    if (aip.getState() == AIPState.DELETED) {
+                        nb = nb + 1;
+                    }
+                }
+                return nbAipDeletedExpected == nb;
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.fail("AIPs was supposed to be marked as deleted");
         }
-        Assert.assertEquals("AIPs was supposed to be marked as deleted", nbAipDeletedExpected, nb);
     }
 
     public void initData() {
@@ -171,8 +181,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
         // delete 2 SIPs linked to SESSION_OWNER_0, SESSION_0
         oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
                 .withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0));
-        ingestServiceTest.waitDuring(TEN_SECONDS * 2);
-        assertDeletedAIPs(2);
+        assertDeletedAIPs(2, 20_000);
         // check if requests are deleted in case of notification
         if(isToNotify) {
             mockNotificationSuccess(RequestTypeConstant.OAIS_DELETION_VALUE);
@@ -181,8 +190,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
         // delete 1 SIP linked to SESSION_OWNER_0, SESSION_1
         oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
                 .withSession(SESSION_1).withSessionOwner(SESSION_OWNER_0));
-        ingestServiceTest.waitDuring(TEN_SECONDS * 3);
-        assertDeletedAIPs(3);
+        assertDeletedAIPs(3, 30_000);
 
         // check if requests are deleted in case of notification
         if(isToNotify) {
@@ -192,8 +200,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
         // delete 2 SIPs linked to SESSION_OWNER_1, SESSION_1
         oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
                 .withSession(SESSION_1).withSessionOwner(SESSION_OWNER_1));
-        ingestServiceTest.waitDuring(TEN_SECONDS * 3);
-        assertDeletedAIPs(3); // AIPs are deleted and not just marked deleted
+        assertDeletedAIPs(3, 30_000); // AIPs are deleted and not just marked deleted
 
         // check if requests are deleted in case of notification
         if(isToNotify) {

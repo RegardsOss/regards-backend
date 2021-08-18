@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -34,10 +36,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -57,7 +59,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.service.aip.AIPPostProcessService;
 import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
@@ -66,11 +67,9 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false",
-                "regards.ingest.aip.delete.bulk.delay=100" },
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest",
+        "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = {"noschedule"})
 public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -87,9 +86,6 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IJobInfoService jobInfoService;
-
-    @Autowired
-    private AIPPostProcessService aipPostProcessService;
 
     private final static String SESSION_OWNER = "sessionOwner";
 
@@ -133,13 +129,14 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertTrue(entity.getVersion() == 1);
         Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
 
-        // A post process request should be created
-        Assert.assertEquals("There should be one post process request created", 1L, postProcessRepo.count());
-
         // wait for postprocessing job scheduling
-        Thread.sleep(FIVE_SECONDS);
-        Assert.assertEquals(1L, jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(),
-                                       JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.SUCCEEDED).longValue());
+        Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.QUEUED,
+                                             JobStatus.TO_BE_RUN, JobStatus.PENDING, JobStatus.RUNNING,
+                                             JobStatus.SUCCEEDED)
+                    .longValue() == 1L;
+        });
     }
 
     @Test

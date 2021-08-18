@@ -53,7 +53,6 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

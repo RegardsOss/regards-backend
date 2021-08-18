@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
@@ -66,11 +65,6 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         @Bean
         public IStorageRestClient storageRestClient() {
             return Mockito.mock(IStorageRestClient.class);
-        }
-
-        @Bean
-        public IAccountSettingsClient settingClient() {
-            return Mockito.mock(IAccountSettingsClient.class);
         }
 
         @Bean

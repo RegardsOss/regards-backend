@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.featureprovider.rest;
 
 import javax.validation.Valid;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -51,11 +52,10 @@ public class FeatureExtractionController implements IResourceController<RequestI
             description = "Publish locations collection to create features and return urns of granted and denied requests ids")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
     @ResourceAccess(
-            description = "Publish locations collection to create features and return urns of granted and denied requests ids")
+            description = "Publish locations collection to create features and return urns of granted and denied requests ids", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
-    public ResponseEntity<EntityModel<RequestInfo<String>>> createFeaturesFromReferences(
-            @Parameter(description = "Contain all Features to handle") @Valid @RequestBody
-                    FeatureReferenceCollection collection) {
+    public ResponseEntity<EntityModel<RequestInfo<String>>> createFeaturesFromReferences(@Parameter(
+            description = "Contain all Features to handle") @Valid @RequestBody FeatureReferenceCollection collection) {
 
         RequestInfo<String> info = this.featureReferenceService.registerRequests(collection);
         return new ResponseEntity<>(toResource(info), computeStatus(info));

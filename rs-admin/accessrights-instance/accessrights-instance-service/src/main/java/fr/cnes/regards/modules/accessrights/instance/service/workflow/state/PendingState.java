@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -28,12 +25,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnRefuseAccountEvent;
 import fr.cnes.regards.modules.project.service.ITenantService;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status PENDING.
@@ -50,7 +48,7 @@ public class PendingState extends AbstractDeletableState {
      */
     private final ApplicationEventPublisher eventPublisher;
 
-    private final IInstancePublisher instancePublisher;
+    private final IAccountService accountService;
 
     /**
      * @param projectUsersClient
@@ -60,19 +58,22 @@ public class PendingState extends AbstractDeletableState {
      * @param passwordResetService
      * @param accountUnlockTokenService
      * @param eventPublisher
+     * @param accountService
      */
     public PendingState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
-            ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
-            IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
-            ApplicationEventPublisher eventPublisher, IInstancePublisher instancePublisher) {
+                        ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
+                        IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
+                        ApplicationEventPublisher eventPublisher, IAccountService accountService
+    ) {
         super(projectUsersClient,
               accountRepository,
               tenantService,
               runtimeTenantResolver,
               passwordResetService,
-              accountUnlockTokenService);
+              accountUnlockTokenService
+        );
         this.eventPublisher = eventPublisher;
-        this.instancePublisher = instancePublisher;
+        this.accountService = accountService;
     }
 
     /*
@@ -84,9 +85,7 @@ public class PendingState extends AbstractDeletableState {
      */
     @Override
     public void acceptAccount(final Account pAccount) {
-        pAccount.setStatus(AccountStatus.ACTIVE);
-        Account account = accountRepository.save(pAccount);
-        instancePublisher.publish(new AccountAcceptedEvent(account));
+        accountService.activate(pAccount);
     }
 
     /*

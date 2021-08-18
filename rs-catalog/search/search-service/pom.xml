@@ -81,11 +81,7 @@
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-			<artifactId>locks-service</artifactId>
-		</dependency>
-		
+
 		<!-- Microservice clients -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
@@ -127,5 +123,9 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
 	</dependencies>
 </project>

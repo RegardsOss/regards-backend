@@ -18,20 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.file.handler;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
@@ -39,12 +27,25 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * This handler is used internally by the storage service to update file requests when a file event is received.
@@ -54,11 +55,12 @@ import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService
  * <li> Delete cache file after file stored event if a copy request is associated </li>
  * <li> Updates copy request status after availability or stored file events </li>
  * </ul>
+ *
  * @author Sébastien Binda
  */
 @Component
 public class FileReferenceEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileReferenceEvent> {
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceEventHandler.class);
 
@@ -83,53 +85,64 @@ public class FileReferenceEventHandler
     @Autowired(required = false)
     private Collection<IUpdateFileReferenceOnAvailable> updateActions;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(FileReferenceEvent.class, this);
     }
 
     @Override
-    public void handle(TenantWrapper<FileReferenceEvent> wrapper) {
-        String tenant = wrapper.getTenant();
-        LOGGER.trace("Handling {}", wrapper.getContent().toString());
+    public boolean validate(String tenant, FileReferenceEvent message) {
+        return true;
+    }
+
+    @Override
+    public void handleBatch(String tenant, List<FileReferenceEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            switch (wrapper.getContent().getType()) {
-                case FULLY_DELETED:
-                case DELETION_ERROR:
-                    break;
-                case AVAILABLE:
-                    // Check if a copy request is linked to this available file
-                    handleFileAvailable(wrapper.getContent());
-                    break;
-                case AVAILABILITY_ERROR:
-                    // Check if a copy request is linked to this available file
-                    handleFileNotAvailable(wrapper.getContent());
-                    break;
-                case DELETED_FOR_OWNER:
-                case STORED:
-                    handleFileStored(wrapper.getContent());
-                    break;
-                case STORE_ERROR:
-                    handleStoreError(wrapper.getContent());
-                    break;
-                default:
-                    break;
-            }
+            messages.forEach(this::handle);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
+    public void handle(FileReferenceEvent event) {
+        LOGGER.trace("Handling {}", event.toString());
+        switch (event.getType()) {
+            case AVAILABLE:
+                // Check if a copy request is linked to this available file
+                handleFileAvailable(event);
+                break;
+            case AVAILABILITY_ERROR:
+                // Check if a copy request is linked to this available file
+                handleFileNotAvailable(event);
+                break;
+            case DELETED_FOR_OWNER:
+            case STORED:
+                handleFileStored(event);
+                break;
+            case STORE_ERROR:
+                handleStoreError(event);
+                break;
+            case FULLY_DELETED:
+            case DELETION_ERROR:
+            default:
+                break;
+        }
+    }
+
     /**
      * Handle {@link FileReferenceEvent} for successfully stored file
+     *
      * @param event
      */
     private void handleFileStored(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
-            Optional<FileReference> oFileRef = fileReferenceService.search(event.getLocation().getStorage(),
-                                                                           event.getMetaInfo().getChecksum());
+            Optional<FileReference> oFileRef = fileReferenceService
+                    .searchWithOwners(event.getLocation().getStorage(), event.getMetaInfo().getChecksum());
             if (oFileRef.isPresent()) {
                 fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
                 LOGGER.debug("[STORE SUCCESS {}] New stored file is associated to a copy request {}",
@@ -146,6 +159,7 @@ public class FileReferenceEventHandler
 
     /**
      * Handle {@link FileReferenceEvent} for successfully stored file
+     *
      * @param event
      */
     private void handleStoreError(FileReferenceEvent event) {
@@ -159,6 +173,7 @@ public class FileReferenceEventHandler
 
     /**
      * Handle {@link FileReferenceEvent} for successfully restored file
+     *
      * @param event
      */
     private void handleFileAvailable(FileReferenceEvent event) {
@@ -170,14 +185,15 @@ public class FileReferenceEventHandler
 
     /**
      * Update process after a file is made available.
+     *
      * @param event {@link FileReferenceEvent}
      * @return updated {@link FileReferenceMetaInfo}
      */
     private Optional<FileReferenceMetaInfo> handleUpdateOnAvailableProcess(FileReferenceEvent event) {
         Optional<FileReferenceMetaInfo> fileRefMeta = Optional.ofNullable(event.getMetaInfo());
         if (updateActions != null) {
-            Optional<FileReference> fileReference = fileReferenceService.search(event.getOriginStorage(),
-                                                                                event.getChecksum());
+            Optional<FileReference> fileReference = fileReferenceService
+                    .search(event.getOriginStorage(), event.getChecksum());
             if (fileReference.isPresent()) {
                 FileReference fileRef = fileReference.get();
                 for (IUpdateFileReferenceOnAvailable action : updateActions) {
@@ -193,6 +209,7 @@ public class FileReferenceEventHandler
 
     /**
      * Update the given {@link FileReference} with the custom {@link IUpdateFileReferenceOnAvailable} action.
+     *
      * @param fileToUpdate
      * @param fileToUpdateLocation
      * @param updateAction
@@ -230,6 +247,7 @@ public class FileReferenceEventHandler
 
     /**
      * Handle {@link FileReferenceEvent} for file restoration error
+     *
      * @param event
      */
     private void handleFileNotAvailable(FileReferenceEvent event) {
@@ -243,8 +261,9 @@ public class FileReferenceEventHandler
 
     /**
      * Handle copy process after a file available event received
-     * @param event {@link FileReferenceEvent} Event of file available
-     * @param fileRefMeta {@link FileReferenceMetaInfo} meta information of file to store
+     *
+     * @param availableEvent        {@link FileReferenceEvent} Event of file available
+     * @param fileAvailableMetaInfo {@link FileReferenceMetaInfo} meta information of file to store
      */
     private void handleCopyProcess(FileReferenceEvent availableEvent,
             Optional<FileReferenceMetaInfo> fileAvailableMetaInfo) {
@@ -257,12 +276,15 @@ public class FileReferenceEventHandler
             LOGGER.trace("[AVAILABILITY SUCCESS {}] Available file is associated to a copy request {}",
                          availableEvent.getChecksum(), request.get().getGroupId());
             String storageGroupId = UUID.randomUUID().toString();
-            // Create a new storage request associated to the copy request
-            fileStorageRequestService.createNewFileStorageRequest(availableEvent.getOwners(), fileMeta,
-                                                                  availableEvent.getLocation().getUrl(),
-                                                                  copyReq.getStorage(),
-                                                                  Optional.ofNullable(copyReq.getStorageSubDirectory()),
-                                                                  storageGroupId, Optional.empty(), Optional.empty());
+            // Notify storage request and create a new storage request associated to the copy request
+            String sessionOwner = copyReq.getSessionOwner();
+            String session = copyReq.getSession();
+            sessionNotifier.incrementStoreRequests(sessionOwner, session);
+            FileStorageRequest r = fileStorageRequestService
+                    .createNewFileStorageRequest(availableEvent.getOwners(), fileMeta,
+                                                 availableEvent.getLocation().getUrl(), copyReq.getStorage(),
+                                                 Optional.ofNullable(copyReq.getStorageSubDirectory()), storageGroupId,
+                                                 Optional.empty(), Optional.empty(), sessionOwner, session);
             copyReq.setFileStorageGroupId(storageGroupId);
             fileCopyRequestService.update(copyReq);
             LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",

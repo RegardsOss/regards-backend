@@ -18,20 +18,23 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
-import java.time.OffsetDateTime;
+import javax.validation.Valid;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -43,8 +46,11 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
-import fr.cnes.regards.modules.feature.service.IDataObjectFeatureService;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.IFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,8 +67,14 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
 
     public static final String PATH_DATA_FEATURE_OBJECT = "/admin/features";
 
+    public static final String NOTIFY_PATH = "/notify";
+
+    public static final String DELETE_PATH = "/delete";
+
+    public static final String URN_PATH = "/{urn}";
+
     @Autowired
-    private IDataObjectFeatureService dataObjectFeature;
+    private IFeatureService featureService;
 
     /**
      * {@link IResourceService} instance
@@ -76,29 +88,81 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
      * @param lastUpdateDate las modification date that we want {@link Feature}
      * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
      */
-    @Operation(summary = "Get features according last update date and model",
-            description = "Get features according last update date and model")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Get features according last update date and model") })
+    @Operation(summary = "Get features according to search parameters",
+            description = "Get features according to search parameters")
+    @ApiResponses(
+            value = { @ApiResponse(responseCode = "200", description = "Get features according to search parameters") })
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Get features according last update date")
+    @ResourceAccess(description = "Get features according to search parameters", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
-            @Parameter(description = "Model used to filter feature") @RequestParam("model") String model,
-            @Parameter(description = "Last update date used to filter features") @RequestParam(value = "lastUpdateDate",
-                    required = false) OffsetDateTime lastUpdateDate,
-            Pageable page, PagedResourcesAssembler<FeatureEntityDto> assembler) {
-
-        return new ResponseEntity<>(toPagedResources(dataObjectFeature.findAll(model, page, lastUpdateDate), assembler),
+            @Parameter(description = "Features selection filters") FeaturesSearchParameters selection, Pageable page,
+            PagedResourcesAssembler<FeatureEntityDto> assembler) {
+        return new ResponseEntity<>(
+                toPagedResources(featureService.findAll(FeaturesSelectionDTO.build().withFilters(selection), page),
+                                 assembler),
                 HttpStatus.OK);
+    }
+
+    /**
+     * Get a {@link Page} of {@link FeatureEntityDto} it will contain data of the last created {@link FeatureEntity}
+     * @param model model of wanted {@link Feature}
+     * @param lastUpdateDate las modification date that we want {@link Feature}
+     * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
+     */
+    @Operation(summary = "Retrieve one feature by its urn", description = "Retrieve one feature by its urn")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retrieve one feature by its urn") })
+    @RequestMapping(method = RequestMethod.GET, path = URN_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Retrieve one feature by its urn", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<FeatureEntityDto> getFeature(
+            @Parameter(description = "URN of the feature") @PathVariable("urn") String urn) {
+        return new ResponseEntity<>(featureService.findOne(FeatureUniformResourceName.fromString(urn)), HttpStatus.OK);
+    }
+
+    /**
+     * Creates job to send notify notification for each feature matching given search parameters
+     * @param selection
+     * @return
+     */
+    @Operation(summary = "Notify features according to search parameters",
+            description = "Notify features according to search parameters")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Notify features according to search parameters") })
+    @RequestMapping(method = RequestMethod.POST, path = NOTIFY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Notify features according to search parameters", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Void> notifyFeatures(
+            @Parameter(description = "Features selection filters") @Valid @RequestBody FeaturesSelectionDTO selection) {
+        featureService.scheduleNotificationsJob(selection);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
+    /**
+     * Creates job to send deletion notification for each feature matching given search parameters
+     * @param selection
+     * @return
+     */
+    @Operation(summary = "Delete features according to search parameters",
+            description = "Delete features according to search parameters")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Delete features according to search parameters") })
+    @RequestMapping(method = RequestMethod.DELETE, path = DELETE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Delete features according to search parameters", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Void> deleteFeatures(
+            @Parameter(description = "Features selection filters") @Valid @RequestBody FeaturesSelectionDTO selection) {
+        featureService.scheduleDeletionJob(selection);
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
     @Override
     public EntityModel<FeatureEntityDto> toResource(FeatureEntityDto element, Object... extras) {
         EntityModel<FeatureEntityDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getFeatures", LinkRels.SELF,
-                                MethodParamFactory.build(String.class), MethodParamFactory.build(OffsetDateTime.class),
+                                MethodParamFactory.build(FeaturesSearchParameters.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource, this.getClass(), "notifyFeatures", LinkRelation.of("notify"),
+                                MethodParamFactory.build(FeaturesSelectionDTO.class));
+        resourceService.addLink(resource, this.getClass(), "deleteFeatures", LinkRelation.of("delete"),
+                                MethodParamFactory.build(FeaturesSelectionDTO.class));
         return resource;
     }
 }

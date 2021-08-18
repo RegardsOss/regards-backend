@@ -186,7 +186,9 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
         ag2 = new AccessGroup(ag2Name);
         ag2 = agRepo.save(ag2);
         ar2 = new AccessRight(qf, al, ds2, ag2);
+        ar2.setDataAccessLevel(dal);
         ar2 = arRepo.save(ar2);
         ar3 = new AccessRight(qf, al, ds1, ag2);
+        ar3.setDataAccessLevel(dal);
     }
 }

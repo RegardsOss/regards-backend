@@ -37,8 +37,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -123,7 +125,7 @@ public class ProductService implements IProductService {
     @Autowired
     private SessionNotifier sessionNotifier;
 
-    @Value("${regards.acquisition.sip.bulk.request.limit:100}")
+    @Value("${regards.acquisition.product.bulk.request.limit:2000}")
     private Integer bulkRequestLimit;
 
     @Value("${spring.application.name}")
@@ -225,45 +227,52 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void delete(Long id) {
-        productRepository.deleteById(id);
-    }
-
-    @Override
-    public void delete(AcquisitionProcessingChain chain, Product product) {
-        productRepository.delete(product);
-        sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
-    }
-
-    @Override
-    public long deleteBySession(AcquisitionProcessingChain chain, String session) {
-        Pageable page = PageRequest.of(0, 10_000);
-        Page<Product> results;
-        do {
-            results = productRepository.findByProcessingChainAndSession(chain, session, page);
-            self.deleteProducts(chain, results.getContent());
-        } while (results.hasNext() && !Thread.currentThread().isInterrupted());
-        return results.getTotalElements();
-    }
-
-    @Override
-    public long deleteByProcessingChain(AcquisitionProcessingChain chain) {
-        Pageable page = PageRequest.of(0, 10_000);
-        Page<Product> results;
-        do {
-            results = productRepository.findByProcessingChain(chain, page);
-            self.deleteProducts(chain, results.getContent());
-
-        } while (results.hasNext() && !Thread.currentThread().isInterrupted());
-        return results.getTotalElements();
-    }
-
-    @Override
-    public void deleteProducts(AcquisitionProcessingChain chain, Collection<Product> products) {
-        for (Product product : products) {
-            sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
+    public void deleteBySession(AcquisitionProcessingChain chain, String session) {
+        // lets try to handle products per 5 time the ordinary bulk
+        Pageable page = PageRequest.of(0, bulkRequestLimit, Sort.by("id"));
+        while(!Thread.currentThread().isInterrupted() && self.deleteProducts(chain, Optional.of(session), page)) {
+            // do not call page.next() here. We are asking for deletion of the products so we have to only request the first page at each iteration.
         }
-        productRepository.deleteAll(products);
+    }
+
+    @Override
+    public void deleteByProcessingChain(AcquisitionProcessingChain chain) {
+        Pageable page = PageRequest.of(0, bulkRequestLimit, Sort.by("id"));
+        while(!Thread.currentThread().isInterrupted() && self.deleteProducts(chain, Optional.empty(), page)) {
+            // do not call page.next() here. We are asking for deletion of the products so we have to only request the first page at each iteration.
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean deleteProducts(AcquisitionProcessingChain chain, Optional<String> session, Pageable page) {
+        long startTime = System.currentTimeMillis();
+        LOGGER.debug("Finding products to delete for chain {} and session {}", chain.getLabel(), session.orElse("<none>"));
+        Page<Product> productPage;
+        if(session.isPresent()) {
+            productPage = productRepository.findByProcessingChainAndSession(chain, session.get(), page);
+        } else {
+            productPage = productRepository.findByProcessingChain(chain, page);
+        }
+        LOGGER.debug("Found {} products to delete in {} ms", productPage.getSize(), System.currentTimeMillis() - startTime);
+        if(productPage.hasContent()) {
+            Set<Long> productIds = new HashSet<>();
+            for (Product product : productPage) {
+                sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
+                sessionNotifier.notifyFileAcquiredDeleted(product.getSession(),
+                                                          chain.getLabel(),
+                                                          product.getAcquisitionFiles().size());
+                productIds.add(product.getId());
+            }
+            startTime = System.currentTimeMillis();
+            // delete by product ids
+            // first acquisition files that are linked to them
+            acqFileRepository.deleteByProductIdIn(productIds);
+            // then products themselves
+            productRepository.deleteByIdIn(productIds);
+            LOGGER.debug("Deleted {} products in {} ms", productPage.getSize(), System.currentTimeMillis() - startTime);
+        }
+        return productPage.hasNext();
     }
 
     @Override
@@ -285,12 +294,15 @@ public class ProductService implements IProductService {
         jobInfo.setOwner(authResolver.getUser());
         jobInfo = jobInfoService.createAsPending(jobInfo);
 
+        // Start all session associated to products scheduled
+
+
         // Release lock
         for (Product product : products) {
             if (product.getLastSIPGenerationJobInfo() != null) {
                 jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
             }
-            sessionNotifier.notifyChangeProductState(product, ProductSIPState.SCHEDULED);
+            sessionNotifier.notifyChangeProductState(product, ProductSIPState.SCHEDULED, true);
             // Change product SIP state
             product.setSipState(ProductSIPState.SCHEDULED);
             product.setLastSIPGenerationJobInfo(jobInfo);
@@ -299,6 +311,8 @@ public class ProductService implements IProductService {
 
         jobInfo.updateStatus(JobStatus.QUEUED);
         jobInfoService.save(jobInfo);
+
+        handleSipGenerationStart(chain, products);
 
         return jobInfo;
     }
@@ -447,6 +461,18 @@ public class ProductService implements IProductService {
                 currentProduct.setProcessingChain(processingChain);
                 currentProduct.setSession(session);
                 productMap.put(productName, currentProduct);
+            } else if(!currentProduct.getProcessingChain().equals(processingChain)) {
+                // this case is forbidden because it breaks everything
+                // files are then declared invalid and product never created
+                for(AcquisitionFile af: productNewValidFiles) {
+                    af.setState(AcquisitionFileState.INVALID);
+                    af.setError(String.format("This file should generate a product(name: %s) which has been created "
+                                                      + "by another chain %s. So it is invalid.",
+                                              productName,
+                                              currentProduct.getProcessingChain().getLabel()));
+                    sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(), 1);
+                }
+                continue;
             } else if (!currentProduct.getSession().equals(session)) {
                 // The product is now managed by another session
                 currentProduct.setSession(session);
@@ -535,7 +561,7 @@ public class ProductService implements IProductService {
             Set<String> productNames = productNameParam.getValue();
             Set<Product> products = retrieve(productNames);
             for (Product product : products) {
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
+                sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR, true);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(jobInfo.getStatus().getStackTrace());
                 save(product);
@@ -544,7 +570,6 @@ public class ProductService implements IProductService {
                 handleSipGenerationEnd(processingChain.get(), products);
             }
         }
-
     }
 
     @Override
@@ -556,12 +581,22 @@ public class ProductService implements IProductService {
         handleSipGenerationEnd(processingChain.get(), products);
     }
 
+    /**
+     * Notify each session started by scheduled products
+     * @param chain
+     * @param products
+     */
+    public void handleSipGenerationStart(AcquisitionProcessingChain chain, Collection<Product> products) {
+        Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
+        for (String session : sessions) {
+            sessionNotifier.notifyStartingChain(chain.getLabel(), session);
+        }
+    }
+
     public void handleSipGenerationEnd(AcquisitionProcessingChain chain, Collection<Product> products) {
         Set<String> sessions = products.stream().map(Product::getSession).collect(Collectors.toSet());
         for (String session : sessions) {
-            if (!existsByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED)) {
-                sessionNotifier.notifyEndingChain(chain.getLabel(), session);
-            }
+            sessionNotifier.notifyEndingChain(chain.getLabel(), session);
         }
     }
 
@@ -582,6 +617,7 @@ public class ProductService implements IProductService {
                     jobInfo.setClassName(PostAcquisitionJob.class.getName());
                     jobInfo.setOwner(authResolver.getUser());
                     jobInfo = jobInfoService.createAsQueued(jobInfo);
+                    sessionNotifier.notifyStartingChain(product.getProcessingChain().getLabel(), product.getSession());
 
                     // Release lock
                     if (product.getLastPostProductionJobInfo() != null) {
@@ -591,7 +627,7 @@ public class ProductService implements IProductService {
                 }
                 // Notification must be before the state is changed as the notifier use the current
                 // state to decrement/increment session properties
-                sessionNotifier.notifyChangeProductState(product, SIPState.INGESTED);
+                sessionNotifier.notifyChangeProductState(product, SIPState.INGESTED, false);
                 product.setSipState(SIPState.INGESTED);
                 product.setIpId(info.getSipId());
                 save(product);
@@ -620,7 +656,7 @@ public class ProductService implements IProductService {
                 }
                 // Notification must be before the state is changed as the notifier use the current
                 // state to decrement/increment session properties
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.INGESTION_FAILED);
+                sessionNotifier.notifyChangeProductState(product, ProductSIPState.INGESTION_FAILED, false);
                 product.setSipState(ProductSIPState.INGESTION_FAILED);
                 product.setIpId(info.getSipId());
                 product.setError(errorMessage.toString());
@@ -814,7 +850,7 @@ public class ProductService implements IProductService {
                 saveAndSubmitSIP(product, processingChain);
             } catch (SIPGenerationException e) {
                 LOGGER.error(e.getMessage(), e);
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.INGESTION_FAILED);
+                sessionNotifier.notifyChangeProductState(product, ProductSIPState.INGESTION_FAILED, false);
                 product.setSipState(ProductSIPState.INGESTION_FAILED);
                 product.setError(e.getMessage());
                 save(product);

@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.io.IOException;
-
+import fr.cnes.regards.modules.templates.domain.Template;
+import fr.cnes.regards.modules.templates.service.TemplateConfigUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.templates.domain.Template;
-import fr.cnes.regards.modules.templates.service.TemplateConfigUtil;
+import java.io.IOException;
 
 /**
- * Initialize notifications message templates for acqusition service.
+ * Initialize notifications message templates for acquisition service.
+ *
  * @author sbinda
  */
 @Configuration
@@ -35,10 +35,16 @@ public class AcquisitionTemplateConfiguration {
 
     public static final String ACQUISITION_INVALID_FILES_TEMPLATE = "ACQUISITION_INVALID_FILES_TEMPLATE";
 
+    public static final String EXECUTION_BLOCKERS_TEMPLATE = "EXECUTION_BLOCKERS_TEMPLATE";
+
     @Bean
     public Template acquInvalidFilesTemplate() throws IOException {
-        return TemplateConfigUtil.readTemplate(ACQUISITION_INVALID_FILES_TEMPLATE,
-                                               "template/acquisition_invalid_files.html");
+        return TemplateConfigUtil.readTemplate(ACQUISITION_INVALID_FILES_TEMPLATE, "template/acquisition_invalid_files.html");
+    }
+
+    @Bean
+    public Template executionBlockersTemplate() throws IOException {
+        return TemplateConfigUtil.readTemplate(EXECUTION_BLOCKERS_TEMPLATE, "template/execution_blockers.html");
     }
 
 }

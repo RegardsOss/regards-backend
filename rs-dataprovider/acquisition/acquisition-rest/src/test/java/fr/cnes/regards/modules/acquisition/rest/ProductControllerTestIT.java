@@ -35,11 +35,13 @@ import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -74,6 +76,9 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
 
+    @Autowired
+    private IAcquisitionFileRepository acquisitionFileRepository;
+
     @Before
     public void init() throws ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -97,6 +102,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
     public void cleanUp() throws ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         fileInfoRepository.deleteAll();
+        acquisitionFileRepository.deleteAll();
         productRepository.deleteAll();
         acquisitionProcessingChainRepository.deleteAll();
     }

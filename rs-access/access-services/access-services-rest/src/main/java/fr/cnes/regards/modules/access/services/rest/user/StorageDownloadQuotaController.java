@@ -19,9 +19,11 @@
 package fr.cnes.regards.modules.access.services.rest.user;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
@@ -29,6 +31,7 @@ import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,14 +56,23 @@ public class StorageDownloadQuotaController {
     @Autowired
     private IStorageRestClient storageClient;
 
+
+    @Autowired
+    private IAuthenticationResolver authenticationResolver;
+
+    @Value("${spring.application.name}")
+    private String appName;
+
     @GetMapping(path = PATH_USER_QUOTA)
     @ResponseBody
-    @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(
         @PathVariable(USER_EMAIL_PARAM) String userEmail
     ) throws ModuleException {
         return wrapStorageErrorForFrontend(
-            () -> storageClient.getQuotaLimits(userEmail),
+            () -> {FeignSecurityManager
+                    .asUser(authenticationResolver.getUser(), RoleAuthority
+                            .getSysRole(appName));return storageClient.getQuotaLimits(userEmail);},
             () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null)
         );
     }
@@ -73,7 +85,8 @@ public class StorageDownloadQuotaController {
         @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits
     ) throws ModuleException {
         return wrapStorageErrorForFrontend(
-            () -> storageClient.upsertQuotaLimits(userEmail, quotaLimits),
+            () -> {FeignSecurityManager
+                    .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));return storageClient.upsertQuotaLimits(userEmail, quotaLimits);},
             () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null)
         );
     }
@@ -103,6 +116,8 @@ public class StorageDownloadQuotaController {
         Supplier<V> orElse
     ) throws ModuleException {
         return Try.ofSupplier(action)
+            // add FeignSecurityManager.reset call so that security is properly handled in case quotaSupplier usurp identity. Otherwise, reset just set back the value per default
+            .andFinally(FeignSecurityManager::reset)
             // special value for frontend if any error on storage or storage not deploy
             .onFailure(e -> LOGGER.debug("Failed to query rs-storage for quotas.", e))
             .orElse(() -> Try.success(orElse.get())

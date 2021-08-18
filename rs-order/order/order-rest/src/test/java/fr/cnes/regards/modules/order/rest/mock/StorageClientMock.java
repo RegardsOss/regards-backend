@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -42,6 +43,7 @@ import com.google.common.collect.Maps;
 
 import feign.Request;
 import feign.Response;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
@@ -59,7 +61,7 @@ public class StorageClientMock implements IStorageRestClient {
     public static MediaType TEST_MEDIA_TYPE = MediaType.TEXT_PLAIN;
 
     @Override
-    public Response downloadFile(String checksum) {
+    public Response downloadFile(String checksum, Boolean isContentInline) {
 
         Map<String, Collection<String>> map = new HashMap<>();
         Request request = Request.create(Request.HttpMethod.GET, "test", map, Request.Body.empty());
@@ -88,17 +90,6 @@ public class StorageClientMock implements IStorageRestClient {
 
     @Override
     public Response export() {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(
-            @Valid DefaultDownloadQuotaLimits newDefaults) {
         return null;
     }
 
@@ -137,4 +128,6 @@ public class StorageClientMock implements IStorageRestClient {
     public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
         return null;
     }
+
+
 }

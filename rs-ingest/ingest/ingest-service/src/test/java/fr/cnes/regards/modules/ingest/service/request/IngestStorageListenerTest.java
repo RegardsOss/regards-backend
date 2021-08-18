@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  *
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request" },
         locations = { "classpath:application-test.properties" })
 public class IngestStorageListenerTest extends AbstractIngestRequestTest {
@@ -73,9 +73,9 @@ public class IngestStorageListenerTest extends AbstractIngestRequestTest {
         initSipAndAip(checksum, providerId);
         Set<RequestInfo> requests = Sets.newHashSet();
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests
-                .add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null, Sets.newHashSet("someone"),
-                                                simulatefileReference(checksum, aipEntity.getAipId()), null));
+        successRequests.add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null,
+                                                       Sets.newHashSet(aipEntity.getAipId()),
+                                                       simulatefileReference(checksum, aipEntity.getAipId()), null));
         successRequests.add(RequestResultInfoDTO.build("groupId", "other-file-checksum", "somewhere", null,
                                                        Sets.newHashSet("someone"),
                                                        simulatefileReference(checksum, "someone"), null));

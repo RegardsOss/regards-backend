@@ -42,12 +42,15 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
-                "regards.storage.cache.path=target/cache", "regards.storage.cache.size.limit.ko.per.tenant:10" },
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
         locations = { "classpath:application-test.properties" })
 public class FileReferenceServiceTest extends AbstractStorageTest {
+
+    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+
+    private static final String SESSION_1 = "SESSION 1";
 
     @Before
     @Override
@@ -60,13 +63,13 @@ public class FileReferenceServiceTest extends AbstractStorageTest {
         // 1. Add reference for search tests
         String owner = "someone";
         OffsetDateTime beforeDate = OffsetDateTime.now().minusSeconds(1);
-        FileReference fileRef = referenceRandomFile(owner, null, "file1.test", "anywhere").get();
+        FileReference fileRef = referenceRandomFile(owner, null, "file1.test", "anywhere", SESSION_OWNER_1, SESSION_1).get();
         OffsetDateTime afterFirstDate = OffsetDateTime.now();
         Thread.sleep(1);
-        referenceRandomFile("someone-else", "Type1", "file2.test", "somewhere-else");
-        referenceRandomFile("someone-else", "Type2", "file3.test", "somewhere-else");
-        referenceRandomFile("someone-else", "Test", "data_4.nc", "somewhere-else");
-        referenceRandomFile("someone-else", "Test", "data_5.nc", "void");
+        referenceRandomFile("someone-else", "Type1", "file2.test", "somewhere-else", SESSION_OWNER_1, SESSION_1);
+        referenceRandomFile("someone-else", "Type2", "file3.test", "somewhere-else", SESSION_OWNER_1, SESSION_1);
+        referenceRandomFile("someone-else", "Test", "data_4.nc", "somewhere-else", SESSION_OWNER_1, SESSION_1);
+        referenceRandomFile("someone-else", "Test", "data_5.nc", "void", SESSION_OWNER_1, SESSION_1);
         OffsetDateTime afterEndDate = OffsetDateTime.now().plusSeconds(1);
 
         // Search all

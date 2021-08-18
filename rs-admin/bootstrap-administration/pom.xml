@@ -71,8 +71,12 @@
 			<artifactId>accessrights-rest</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.session-manager</groupId>
+			<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
 			<artifactId>session-manager-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+			<artifactId>tenant-settings-rest</artifactId>
 		</dependency>
 	</dependencies>
 

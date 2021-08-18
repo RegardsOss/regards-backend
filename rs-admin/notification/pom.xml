@@ -26,7 +26,6 @@
 	<version>${modules.notification.version}</version>
 	<packaging>pom</packaging>
 
-	<name>Notification</name>
 	<description>Module providing notifications from the system to the users</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

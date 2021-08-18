@@ -71,7 +71,7 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
     public void testRetrievePolygon() throws UnsupportedEncodingException, OpenSearchParseException {
         // Initialize polygon
         Polygon polygon = Polygon.fromArray(generatePolygon(1, 1, 5));
-        ToponymDTO toponym = ToponymDTO.build("test", "test", "test", polygon, "test", "test");
+        ToponymDTO toponym = ToponymDTO.build("test", "test", "test", polygon, "test", "test", false, null);
 
         // Build toponym mock
         when(toponymClient.get(anyString()))
@@ -96,7 +96,7 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
         multiPolygonArray[0] = generatePolygon(1, 1, 3);
         multiPolygonArray[1] = generatePolygon(10, 2, 4);
         MultiPolygon multiPolygon = MultiPolygon.fromArray(multiPolygonArray);
-        ToponymDTO toponym = ToponymDTO.build("test", "test", "test", multiPolygon, "test", "test");
+        ToponymDTO toponym = ToponymDTO.build("test", "test", "test", multiPolygon, "test", "test", false, null);
 
         // Build toponym mock
         when(toponymClient.get(anyString()))

@@ -18,42 +18,17 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -63,18 +38,34 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
-import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
-import fr.cnes.regards.modules.order.service.IBasketService;
-import fr.cnes.regards.modules.order.service.IOrderDataFileService;
-import fr.cnes.regards.modules.order.service.IOrderService;
+import fr.cnes.regards.modules.order.service.*;
+import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Encoders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Order controller
@@ -129,6 +120,10 @@ public class OrderController implements IResourceController<OrderDto> {
 
     public static final String PAUSE_ORDER_PATH = USER_ROOT_PATH + "/pause/{orderId}";
 
+    public static final String RESTART_ORDER_PATH = USER_ROOT_PATH + "/{orderId}/restart";
+
+    public static final String RETRY_ORDER_PATH = USER_ROOT_PATH + "/{orderId}/retry";
+
     public static final String GET_ORDER_PATH = USER_ROOT_PATH + "/{orderId}";
 
     public static final String ZIP_DOWNLOAD_PATH = USER_ROOT_PATH + "/{orderId}/download";
@@ -149,7 +144,13 @@ public class OrderController implements IResourceController<OrderDto> {
     private IOrderService orderService;
 
     @Autowired
+    private IOrderDownloadService orderDownloadService;
+
+    @Autowired
     private IOrderDataFileService dataFileService;
+
+    @Autowired
+    private IOrderSettingsService orderSettingsService;
 
     @Autowired
     private JWTService jwtService;
@@ -163,15 +164,32 @@ public class OrderController implements IResourceController<OrderDto> {
     @Value("${regards.order.secret}")
     private String secret;
 
-    @ResourceAccess(description = "Validate current basket and create corresponding order",
-            role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Validate current basket and create corresponding order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
     public ResponseEntity<EntityModel<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
             throws IllegalStateException, EntityInvalidException, EmptyBasketException {
+        Basket basket = basketService.find(authResolver.getUser());
+        Order order = orderService.createOrder(
+                basket,
+                orderRequest.getLabel(),
+                orderRequest.getOnSuccessUrl(),
+                orderSettingsService.getUserOrderParameters().getSubOrderDuration()
+        );
+        return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+    }
+
+    @ResourceAccess(description = "Validate current basket and create corresponding order", role = DefaultRole.ADMIN)
+    @RequestMapping(method = RequestMethod.POST, path = ADMIN_ROOT_PATH)
+    public ResponseEntity<EntityModel<OrderDto>> createAppOrder(@RequestBody OrderRequest orderRequest)
+            throws IllegalStateException, EntityInvalidException, EmptyBasketException {
         String user = authResolver.getUser();
         Basket basket = basketService.find(user);
-
-        Order order = orderService.createOrder(basket, orderRequest.getLabel(), orderRequest.getOnSuccessUrl());
+        Order order = orderService.createOrder(
+                basket,
+                orderRequest.getLabel(),
+                orderRequest.getOnSuccessUrl(),
+                orderSettingsService.getAppSubOrderDuration()
+        );
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
 
@@ -188,36 +206,50 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Resume an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.PUT, path = RESUME_ORDER_PATH)
-    public ResponseEntity<Void> resumeOrder(@PathVariable("orderId") Long orderId) throws CannotResumeOrderException {
+    public ResponseEntity<Void> resumeOrder(@PathVariable("orderId") Long orderId) throws ModuleException {
         orderService.resume(orderId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
     @ResourceAccess(description = "Ask for an order to be paused", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.PUT, path = PAUSE_ORDER_PATH)
-    public ResponseEntity<Void> pauseOrder(@PathVariable("orderId") Long orderId) throws CannotPauseOrderException {
+    public ResponseEntity<Void> pauseOrder(@PathVariable("orderId") Long orderId) throws ModuleException {
         orderService.pause(orderId);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
+    }
+
+    @ResourceAccess(description = "Ask for an order to be restarted", role = DefaultRole.REGISTERED_USER)
+    @RequestMapping(method = RequestMethod.POST, path = RESTART_ORDER_PATH)
+    public ResponseEntity<EntityModel<OrderDto>> restartOrder(@PathVariable("orderId") Long orderId, @RequestBody OrderRequest orderRequest)
+            throws ModuleException {
+        Order order = orderService.restart(orderId, orderRequest.getLabel(), orderRequest.getOnSuccessUrl());
+        return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
+    }
+
+    @ResourceAccess(description = "Ask for an order to retry files in error", role = DefaultRole.REGISTERED_USER)
+    @RequestMapping(method = RequestMethod.PUT, path = RETRY_ORDER_PATH)
+    public ResponseEntity<Void> retryOrder(@PathVariable("orderId") Long orderId) throws ModuleException {
+        orderService.retryErrors(orderId);
+        return ResponseEntity.ok().build();
     }
 
     @ResourceAccess(description = "Delete an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.DELETE, path = DELETE_ORDER_PATH)
-    public ResponseEntity<Void> deleteOrder(@PathVariable("orderId") Long orderId) throws CannotDeleteOrderException {
+    public ResponseEntity<Void> deleteOrder(@PathVariable("orderId") Long orderId) throws ModuleException {
         orderService.delete(orderId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Remove an order", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.DELETE, path = REMOVE_ORDER_PATH)
-    public ResponseEntity<Void> removeOrder(@PathVariable("orderId") Long orderId) throws CannotRemoveOrderException {
+    public ResponseEntity<Void> removeOrder(@PathVariable("orderId") Long orderId) throws ModuleException {
         orderService.remove(orderId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Find all specified user orders or all users orders", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
-    public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(
-            @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
+    public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAllAdmin(@RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
         Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ? orderService.findAll(pageRequest)
                 : orderService.findAll(user, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
@@ -241,17 +273,14 @@ public class OrderController implements IResourceController<OrderDto> {
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
         return ResponseEntity.ok(toPagedResources(
-                                                  orderService.findAll(user, pageRequest, OrderStatus.DELETED,
-                                                                       OrderStatus.REMOVED)
-                                                          .map(OrderDto::fromOrder),
-                                                  orderDtoPagedResourcesAssembler));
+                orderService.findAll(user, pageRequest, OrderStatus.DELETED, OrderStatus.REMOVED).map(OrderDto::fromOrder),
+                orderDtoPagedResourcesAssembler
+        ));
     }
 
-    @ResourceAccess(description = "Download a Zip file containing all currently available files",
-            role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Download a Zip file containing all currently available files", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
-    public ResponseEntity<Void> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
-            HttpServletResponse response) throws EntityNotFoundException {
+    public ResponseEntity<Void> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId, HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
@@ -266,7 +295,7 @@ public class OrderController implements IResourceController<OrderDto> {
         }
 
         try {
-            orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, response.getOutputStream());
+            orderDownloadService.downloadOrderCurrentZip(order.getOwner(), availableFiles, response.getOutputStream());
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -278,8 +307,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = METALINK_DOWNLOAD_PATH)
-    public ResponseEntity<Void> downloadMetalinkFile(@PathVariable("orderId") Long orderId,
-            HttpServletResponse response) throws EntityNotFoundException {
+    public ResponseEntity<Void> downloadMetalinkFile(@PathVariable("orderId") Long orderId, HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
@@ -288,11 +316,9 @@ public class OrderController implements IResourceController<OrderDto> {
 
     }
 
-    @ResourceAccess(description = "Download a metalink file containing all files granted by a token",
-            role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Download a metalink file containing all files granted by a token", role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = PUBLIC_METALINK_DOWNLOAD_PATH)
-    public ResponseEntity<Void> publicDownloadMetalinkFile(
-            @RequestParam(name = IOrderService.ORDER_TOKEN) String validityToken, HttpServletResponse response)
+    public ResponseEntity<Void> publicDownloadMetalinkFile(@RequestParam(name = IOrderService.ORDER_TOKEN) String validityToken, HttpServletResponse response)
             throws EntityNotFoundException {
         Long orderId;
         try {
@@ -315,8 +341,7 @@ public class OrderController implements IResourceController<OrderDto> {
      * Fill Response headers and create streaming response
      * @throws EntityNotFoundException
      */
-    private ResponseEntity<Void> createMetalinkDownloadResponse(Order order, HttpServletResponse response)
-            throws EntityNotFoundException {
+    private ResponseEntity<Void> createMetalinkDownloadResponse(Order order, HttpServletResponse response) {
         String error = null;
         switch (order.getStatus()) {
             case DELETED:
@@ -343,11 +368,10 @@ public class OrderController implements IResourceController<OrderDto> {
         if (error != null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
-            response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + order.getId() + "_"
-                    + OffsetDateTime.now().toString() + ".metalink");
+            response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + order.getId() + "_" + OffsetDateTime.now() + ".metalink");
             response.setContentType("application/metalink+xml");
             try {
-                orderService.downloadOrderMetalink(order.getId(), response.getOutputStream());
+                orderDownloadService.downloadOrderMetalink(order.getId(), response.getOutputStream());
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -358,7 +382,38 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @Override
-    public EntityModel<OrderDto> toResource(OrderDto order, Object... extras) {
-        return resourceService.toResource(order);
+    public EntityModel<OrderDto> toResource(OrderDto orderDto, Object... extras) {
+
+        EntityModel<OrderDto> resource = resourceService.toResource(orderDto);
+
+        resourceService.addLink(resource, this.getClass(), "retrieveOrder", LinkRels.SELF, MethodParamFactory.build(Long.class, orderDto.getId()));
+        resourceService.addLink(resource, this.getClass(), "findAll", LinkRels.LIST, MethodParamFactory.build(Pageable.class));
+
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.DOWNLOAD)) {
+            resourceService.addLink(resource, this.getClass(), "downloadAllAvailableFiles", LinkRelation.of("download"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()), MethodParamFactory.build(HttpServletResponse.class)
+            );
+        }
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.PAUSE)) {
+            resourceService.addLink(resource, this.getClass(), "pauseOrder", LinkRelation.of("pause"), MethodParamFactory.build(Long.class, orderDto.getId()));
+        }
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RESUME)) {
+            resourceService.addLink(resource, this.getClass(), "resumeOrder", LinkRelation.of("resume"), MethodParamFactory.build(Long.class, orderDto.getId()));
+        }
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.DELETE)) {
+            resourceService.addLink(resource, this.getClass(), "deleteOrder", LinkRels.DELETE, MethodParamFactory.build(Long.class, orderDto.getId()));
+        }
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.REMOVE)) {
+            resourceService.addLink(resource, this.getClass(), "removeOrder", LinkRelation.of("remove"), MethodParamFactory.build(Long.class, orderDto.getId()));
+        }
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RESTART)) {
+            resourceService.addLink(resource, this.getClass(), "restartOrder", LinkRelation.of("restart"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()), MethodParamFactory.build(OrderRequest.class));
+        }
+        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RETRY)) {
+            resourceService.addLink(resource, this.getClass(), "retryOrder", LinkRelation.of("retry"), MethodParamFactory.build(Long.class, orderDto.getId()));
+        }
+        return resource;
     }
+
 }

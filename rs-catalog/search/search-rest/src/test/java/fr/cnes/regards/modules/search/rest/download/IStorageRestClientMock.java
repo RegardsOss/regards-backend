@@ -59,7 +59,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public Response downloadFile(String checksum) {
+    public Response downloadFile(String checksum, Boolean isContentInline) {
         Map<String, Collection<String>> map = new HashMap<>();
         Request request = Request.create(Request.HttpMethod.GET, "test", map, Body.empty());
         if (!"checksumOk".equals(checksum)) {
@@ -85,16 +85,6 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     @Override
     public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() {
         // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid DefaultDownloadQuotaLimits newDefaults) {
         return null;
     }
 

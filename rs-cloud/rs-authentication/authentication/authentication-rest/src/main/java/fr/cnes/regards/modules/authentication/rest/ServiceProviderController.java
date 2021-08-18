@@ -146,7 +146,10 @@ public class ServiceProviderController implements IResourceController<ServicePro
         return serviceProviderAuthentication.authenticate(name, params)
             .map(ResponseEntity::ok)
             .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().build())
-            .recover(AuthenticationException.class, ex -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build())
+            .recover(AuthenticationException.class, ex -> {
+                LOGGER.error(ex.getMessage(), ex);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            })
             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 

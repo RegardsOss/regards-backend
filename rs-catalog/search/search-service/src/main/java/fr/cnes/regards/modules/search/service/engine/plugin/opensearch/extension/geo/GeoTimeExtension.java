@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import fr.cnes.regards.framework.geojson.geometry.Point;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,6 @@ import com.google.gson.Gson;
 import com.rometools.modules.georss.geometries.AbstractGeometry;
 import com.rometools.modules.georss.geometries.AbstractRing;
 import com.rometools.modules.georss.geometries.LinearRing;
-import com.rometools.modules.georss.geometries.Point;
 import com.rometools.modules.georss.geometries.Position;
 import com.rometools.modules.georss.geometries.PositionList;
 import com.rometools.rome.feed.atom.Entry;
@@ -296,8 +296,8 @@ public class GeoTimeExtension extends AbstractExtension {
         }
         switch (geometry.getType()) {
             case POINT:
-                fr.cnes.regards.framework.geojson.geometry.Point rp = (fr.cnes.regards.framework.geojson.geometry.Point) geometry;
-                Point point = new Point();
+                Point rp = (Point) geometry;
+                com.rometools.modules.georss.geometries.Point point = new com.rometools.modules.georss.geometries.Point();
                 point.setPosition(new Position(rp.getCoordinates().getLatitude(), rp.getCoordinates().getLongitude()));
                 return point;
             case LINESTRING:

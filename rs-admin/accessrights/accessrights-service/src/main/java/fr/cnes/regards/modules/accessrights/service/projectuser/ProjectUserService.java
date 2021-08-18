@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +53,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
@@ -105,7 +107,7 @@ public class ProjectUserService implements IProjectUserService {
      */
     private final IAuthenticationResolver authResolver;
 
-    private final IAccessSettingsService accessSettingsService;
+    private final AccessSettingsService accessSettingsService;
 
     private final IUserClient userAccessGroupsClient;
 
@@ -128,7 +130,7 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUserService(IAuthenticationResolver authResolver, IProjectUserRepository projectUserRepository,
             final IRoleService roleService, IAccountsClient accountsClient, IUserClient userAccessGroupsClient,
             @Value("${regards.accounts.root.user.login}") String instanceAdminUserEmail,
-            IAccessSettingsService accessSettingsService, Gson gson) {
+            AccessSettingsService accessSettingsService, Gson gson) {
         super();
         this.authResolver = authResolver;
         this.projectUserRepository = projectUserRepository;
@@ -318,6 +320,7 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUser createProjectUser(AccessRequestDto accessRequestDto)
             throws EntityAlreadyExistsException, EntityInvalidException {
         try {
+            FeignSecurityManager.asInstance();
             ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
                     .retrieveAccounByEmail(accessRequestDto.getEmail());
             if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
@@ -331,17 +334,19 @@ public class ProjectUserService implements IProjectUserService {
             LOG.error(e.getMessage(), e);
             ServerErrorResponse errorResponse = gson.fromJson(e.getResponseBodyAsString(), ServerErrorResponse.class);
             throw new EntityInvalidException(errorResponse.getMessages());
+        } finally {
+            FeignSecurityManager.reset();
         }
 
         if (!existUser(accessRequestDto.getEmail())) {
-            AccessSettings settings = accessSettingsService.retrieve();
+            String defaultRoleName = accessSettingsService.defaultRole();
             // Get role for projectUser to create
             Role role;
             try {
                 if ((accessRequestDto.getRoleName() != null) && !accessRequestDto.getRoleName().isEmpty()) {
                     role = roleService.retrieveRole(accessRequestDto.getRoleName());
                 } else {
-                    role = settings.getDefaultRole();
+                    role = roleService.retrieveRole(defaultRoleName);
                 }
             } catch (EntityNotFoundException e) {
                 role = roleService.getDefaultRole();
@@ -404,9 +409,9 @@ public class ProjectUserService implements IProjectUserService {
     public void configureAccessGroups(ProjectUser projectUser) {
         FeignSecurityManager.asSystem();
         try {
-            AccessSettings settings = accessSettingsService.retrieve();
-            if ((settings != null) && (settings.getDefaultGroups() != null) && !settings.getDefaultGroups().isEmpty()) {
-                settings.getDefaultGroups().forEach(group -> {
+            List<String> defaultGroups = accessSettingsService.defaultGroups();
+            if ((defaultGroups != null) && !defaultGroups.isEmpty()) {
+                defaultGroups.forEach(group -> {
                     try {
                         userAccessGroupsClient.associateAccessGroupToUser(projectUser.getEmail(), group);
                     } catch (HttpServerErrorException | HttpClientErrorException e) {

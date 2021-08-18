@@ -18,44 +18,64 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.ParserConfigurationException;
-
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.io.ByteStreams;
+import com.google.common.reflect.TypeToken;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.dto.OrderDto;
+import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
+import fr.cnes.regards.modules.order.metalink.schema.FileType;
+import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
+import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
+import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
+import fr.cnes.regards.modules.order.rest.mock.StorageClientMock;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
+import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 import org.hamcrest.text.MatchesPattern;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -73,123 +93,90 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.util.LinkedMultiValueMap;
 import org.xml.sax.SAXException;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.io.ByteStreams;
-
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.dto.OrderDto;
-import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
-import fr.cnes.regards.modules.order.metalink.schema.FileType;
-import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
-import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
-import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
-import fr.cnes.regards.modules.order.rest.mock.StorageClientMock;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.search.client.IComplexSearchClient;
-import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * @author oroussel
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
-@TestPropertySource(properties = { "regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=order1" })
+@TestPropertySource(properties = {"regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=order1"})
 public class OrderControllerIT extends AbstractRegardsIT {
 
-    public static final UniformResourceName DS1_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DS2_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DS3_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO3_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO4_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO5_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS3_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO3_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO4_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO5_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
     @Autowired
-    private IBasketRepository basketRepos;
-
+    private IBasketRepository basketRepository;
     @Autowired
     private IOrderRepository orderRepository;
-
     @Autowired
     private IOrderDataFileRepository dataFileRepository;
-
     @Autowired
     private IProjectsClient projectsClient;
-
     @Autowired
     private IAuthenticationResolver authResolver;
-
     @Autowired
     private IComplexSearchClient searchClient;
 
+    @MockBean
+    private IProjectUsersClient projectUsersClient;
+
+    private String projectAdminToken;
+    private String projectUserToken;
+    private String adminEmail = "admin@regards.fr";
+
     @Before
     public void init() {
+
         tenantResolver.forceTenant(getDefaultTenant());
 
-        basketRepos.deleteAll();
-
+        basketRepository.deleteAll();
         orderRepository.deleteAll();
         dataFileRepository.deleteAll();
 
         Project project = new Project();
         project.setHost("regards.org");
-        Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
-                .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
+        Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString())).thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
         authResolver = Mockito.spy(authResolver);
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
 
+        Role role = new Role();
+        role.setName(DefaultRole.REGISTERED_USER.name());
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(role);
+        Mockito.when(projectUsersClient.isAdmin(getDefaultUserEmail())).thenReturn(ResponseEntity.ok(false));
+        Mockito.when(projectUsersClient.isAdmin(adminEmail)).thenReturn(ResponseEntity.ok(true));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+
+        JWTService service = new JWTService();
+        service.setSecret("!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
+        projectAdminToken = service.generateToken(getDefaultTenant(), adminEmail, DefaultRole.PROJECT_ADMIN.toString());
+        projectUserToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.REGISTERED_USER.toString());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -198,7 +185,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Create an empty basket
         Basket basket = new Basket();
         basket.setOwner(getDefaultUserEmail());
-        basketRepos.save(basket);
+        basketRepository.save(basket);
         RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
         // Add doc
         customizer.document(getCreateOrderDocumentation());
@@ -210,8 +197,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testPause() throws URISyntaxException {
         Order order = createOrderAsPending();
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
-                          order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error", order.getId());
     }
 
     @Test
@@ -219,12 +205,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsPending();
 
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
-                          order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error", order.getId());
 
         // Re-pause Order => fail
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                          "error", order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatus(HttpStatus.UNAUTHORIZED), "error", order.getId());
     }
 
     @Test
@@ -232,20 +216,17 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsPending();
 
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
-                          order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error", order.getId());
 
         // Pause Order
-        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer().expectStatusOk(), "error",
-                          order.getId());
+        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer().expectStatusOk(), "error", order.getId());
     }
 
     @Test
     public void testResumeFailed() throws URISyntaxException {
         Order order = createOrderAsPending();
         // Pause Order
-        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                          "error", order.getId());
+        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer().expectStatus(HttpStatus.UNAUTHORIZED), "error", order.getId());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -254,8 +235,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsPending();
 
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
-                          order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error", order.getId());
 
         Thread.sleep(1000);
 
@@ -267,25 +247,24 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testDeleteFailed() throws URISyntaxException {
         Order order = createOrderAsPending();
         // Pause Order
-        performDefaultDelete(OrderController.DELETE_ORDER_PATH, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                             "error", order.getId());
+        performDefaultDelete(OrderController.DELETE_ORDER_PATH, customizer().expectStatus(HttpStatus.UNAUTHORIZED), "error", order.getId());
     }
 
     @Test
     public void testRemoveFailed() throws URISyntaxException {
         Order order = createOrderAsRunning();
         // Pause Order
-        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                             "error", order.getId());
+        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer().expectStatus(HttpStatus.UNAUTHORIZED), "error", order.getId());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
     @Test
     public void testRemove() throws URISyntaxException {
         Order order = createOrderAsPending();
-
-        // Delete Order
-        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer().expectStatusOk(), "error", order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error", order.getId());
+        performDelete(OrderController.DELETE_ORDER_PATH, projectAdminToken, customizer().expectStatusOk(), "error", order.getId());
+        // Remove Order
+        performDelete(OrderController.REMOVE_ORDER_PATH, projectAdminToken, customizer().expectStatusOk(), "error", order.getId());
     }
 
     /**
@@ -338,7 +317,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Basket b = new Basket();
         b.setOwner(getDefaultUserEmail());
         b.addDatasetSelection(bDS);
-        basketRepos.save(b);
+        basketRepository.save(b);
 
         // required mock on search: return the 2 entities
         EntityFeature feat1 = new DataObjectFeature(
@@ -347,7 +326,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Multimap<DataType, DataFile> fileMultimapF1 = ArrayListMultimap.create();
         DataFile feat1File1 = new DataFile();
         feat1File1.setOnline(true);
-        feat1File1.setUri(new URI("file:///test/feat1_file1.txt"));
+        feat1File1.setUri(new URI("file:///test/feat1_file1.txt").toString());
         feat1File1.setFilename("feat1_file1");
         feat1File1.setFilesize(42000L);
         feat1File1.setReference(false);
@@ -363,7 +342,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Multimap<DataType, DataFile> fileMultimapF2 = ArrayListMultimap.create();
         DataFile feat2File2 = new DataFile();
         feat2File2.setOnline(true);
-        feat2File2.setUri(new URI("file:///test/feat2_file2.txt"));
+        feat2File2.setUri(new URI("file:///test/feat2_file2.txt").toString());
         feat2File2.setFilename("feat2_file2");
         feat2File2.setFilesize(3050L);
         feat2File2.setReference(false);
@@ -387,12 +366,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
     }
 
     private void clearForPreviousOrder() {
-        basketRepos.deleteAll();
+        basketRepository.deleteAll();
         Mockito.reset(searchClient);
     }
 
     @Test
-    public void testCreateOKSimpleLabel() throws URISyntaxException {
+    public void testCreateOKSimpleLabel() throws URISyntaxException, InterruptedException {
         // Before: clear basket for next order and mock search client results
         initForNextOrder();
         // Expectations
@@ -401,14 +380,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
-        performDefaultPost(OrderController.USER_ROOT_PATH,
-                           new OrderController.OrderRequest("myCommand", "http://perdu.com"), customizer, "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest("myCommand", "http://perdu.com"), customizer, "error");
+        TimeUnit.SECONDS.sleep(5);
         // After: clear
         clearForPreviousOrder();
     }
 
     @Test
-    public void testCreateOKGenLabel() throws URISyntaxException {
+    public void testCreateOKGenLabel() throws URISyntaxException, InterruptedException {
         // Before: clear basket for next order and mock search client results
         initForNextOrder();
         // Expectations
@@ -419,8 +398,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
-        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(null, "http://perdu.com"),
-                           customizer, "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(null, "http://perdu.com"), customizer, "error");
+        TimeUnit.SECONDS.sleep(5);
         // After: clear
         clearForPreviousOrder();
     }
@@ -442,6 +421,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer customizer2 = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY)
                 .expectValue("messages[0]", OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
         // Send second request
+        initForNextOrder();
         performDefaultPost(OrderController.USER_ROOT_PATH,
                            new OrderController.OrderRequest("myDoubleCommand", "http://perdu2.com"), customizer2,
                            "error");
@@ -471,8 +451,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // No basket available
-        performDefaultPost(OrderController.USER_ROOT_PATH,
-                           new OrderController.OrderRequest("myCommand", "http://perdu.com"), customizer, "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest("myCommand", "http://perdu.com"), customizer, "error");
     }
 
     @Test
@@ -945,7 +924,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     @Requirement("REGARDS_DSL_STO_CMD_420")
     @Test
-    public void testFindAll() throws UnsupportedEncodingException {
+    public void testFindAll() {
         createSeveralOrdersWithDifferentOwners();
 
         // All orders
@@ -1033,27 +1012,31 @@ public class OrderControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testCsv() throws URISyntaxException, UnsupportedEncodingException {
+    public void testCsv() throws UnsupportedEncodingException {
+
         createSeveralOrdersWithDifferentOwners();
 
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .addHeader(HttpConstants.CONTENT_TYPE, "application/json").addHeader(HttpConstants.ACCEPT, "text/csv");
+        // Bug 550 - check that a null date somewhere does not break things
+        Order order = orderRepository.findAll().stream().findAny().get();
+        order.setExpirationDate(null);
+        orderRepository.save(order);
 
-        ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV, customizer,
-                                                  "error");
+        String path = OrderController.ADMIN_ROOT_PATH + OrderController.CSV;
+        RequestBuilderCustomizer customizer = customizer()
+                .expectStatusOk()
+                .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
+                .addHeader(HttpConstants.ACCEPT, "text/csv");
+
+        ResultActions results = performDefaultGet(path, customizer, "error");
         // Just test headers are present and CSV format is ok
-        Assert.assertTrue(results.andReturn().getResponse().getContentAsString()
-                .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
+        Assert.assertTrue(results.andReturn().getResponse().getContentAsString().startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
         // now let check that optional parameter are correctly parsed
         // First status
-        performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("status", OrderStatus.DONE.toString()), "error");
+        performDefaultGet(path, customizer.addParameter("status", OrderStatus.DONE.toString()), "error");
         // then from
-        performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("from", OffsetDateTime.now().minusHours(3).toString()), "error");
+        performDefaultGet(path, customizer.addParameter("from", OffsetDateTime.now().minusHours(3).toString()), "error");
         // then to
-        performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("to", OffsetDateTime.now().plusSeconds(3).toString()), "error");
+        performDefaultGet(path, customizer.addParameter("to", OffsetDateTime.now().plusSeconds(3).toString()), "error");
     }
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state)
@@ -1079,4 +1062,102 @@ public class OrderControllerIT extends AbstractRegardsIT {
         dataFileRepository.save(dataFile1);
         return dataFile1;
     }
+
+    @Test
+    public void testHateoasLinks_Running() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAsRunning().getId();
+        checkAdminLinks(id, "download", "pause");
+        checkUserLinks(id, "download", "pause");
+    }
+
+    @Test
+    public void testHateoasLinks_Pending() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAsPending().getId();
+        checkAdminLinks(id, "pause");
+        checkUserLinks(id, "pause");
+    }
+
+    @Test
+    public void testHateoasLinks_Paused() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAs(OrderStatus.PAUSED);
+        checkAdminLinks(id, "download", "resume", "delete");
+        checkUserLinks(id, "download", "resume", "delete");
+    }
+
+    @Test
+    public void testHateoasLinks_Done() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAs(OrderStatus.DONE);
+        checkAdminLinks(id, "restart", "delete");
+        checkUserLinks(id, "restart", "delete");
+    }
+
+    @Test
+    public void testHateoasLinks_DoneWithWarning() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAs(OrderStatus.DONE_WITH_WARNING);
+        checkAdminLinks(id, "restart", "retry", "delete");
+        checkUserLinks(id, "restart", "retry", "delete");
+    }
+
+    @Test
+    public void testHateoasLinks_Failed() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAs(OrderStatus.FAILED);
+        checkAdminLinks(id, "restart", "retry", "delete");
+        checkUserLinks(id, "restart", "retry", "delete");
+    }
+
+    @Test
+    public void testHateoasLinks_Deleted() throws URISyntaxException, InterruptedException {
+        Long id = createOrderAs(OrderStatus.DELETED);
+        checkAdminLinks(id, "remove");
+        checkBasicLinks(getOrderDtoAsUser(id));
+    }
+
+    private Long createOrderAs(OrderStatus status) throws URISyntaxException, InterruptedException {
+        Order order = createOrderAsRunning();
+        order.setStatus(status);
+        order = orderRepository.save(order);
+        // Waiting for maintenance to update order properties
+        TimeUnit.SECONDS.sleep(2);
+        return order.getId();
+    }
+
+    private void checkUserLinks(Long id, String... links) throws InterruptedException {
+        checkLinks(getOrderDtoAsUser(id), links);
+    }
+
+    private void checkAdminLinks(Long id, String... links) throws InterruptedException {
+        checkLinks(getOrderDtoAsAdmin(id), links);
+    }
+
+    private void checkLinks(EntityModel<OrderDto> entityModel, String... links) {
+        checkBasicLinks(entityModel);
+        // Check proper number of links
+        Assertions.assertTrue(entityModel.getLinks().hasSize(2 + links.length));
+        // Check additional links
+        Arrays.stream(links).forEach(link -> Assertions.assertTrue(entityModel.getLink(link).isPresent()));
+
+    }
+
+    private void checkBasicLinks(EntityModel<OrderDto> entityModel) {
+        // Check basic links (always there)
+        Assertions.assertTrue(entityModel.getLink(LinkRels.SELF).isPresent());
+        Assertions.assertTrue(entityModel.getLink(LinkRels.LIST).isPresent());
+    }
+
+    private EntityModel<OrderDto> getOrderDtoAsAdmin(Long orderId) throws InterruptedException {
+        return getOrderDtoEntityModel(orderId, projectAdminToken);
+    }
+
+    private EntityModel<OrderDto> getOrderDtoAsUser(Long orderId) throws InterruptedException {
+        return getOrderDtoEntityModel(orderId, projectUserToken);
+    }
+
+    private EntityModel<OrderDto> getOrderDtoEntityModel(Long orderId, String token) throws InterruptedException {
+        // Seems to fail with no pause here
+        TimeUnit.SECONDS.sleep(5);
+        String payload = payload(performGet(OrderController.GET_ORDER_PATH, token, customizer().expectStatusOk(), "error", orderId));
+        return GsonUtil.fromString(payload, new TypeToken<EntityModel<OrderDto>>() {
+        }.getType());
+    }
+
 }

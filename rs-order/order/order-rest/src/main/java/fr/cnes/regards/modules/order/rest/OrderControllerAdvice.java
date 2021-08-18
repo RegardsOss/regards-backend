@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import org.springframework.core.annotation.Order;
@@ -51,29 +52,17 @@ public class OrderControllerAdvice {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
-    @ExceptionHandler(CannotPauseOrderException.class)
-    public ResponseEntity<ServerErrorResponse> handleCannotPauseOrderException(CannotPauseOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
-    }
-
-    @ExceptionHandler(CannotDeleteOrderException.class)
-    public ResponseEntity<ServerErrorResponse> handleCannotDeleteOrderException(CannotDeleteOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
-    }
-
-    @ExceptionHandler(CannotResumeOrderException.class)
-    public ResponseEntity<ServerErrorResponse> handleCannotResumeOrderException(CannotResumeOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
-    }
-
-    @ExceptionHandler(CannotRemoveOrderException.class)
-    public ResponseEntity<ServerErrorResponse> handleCannotRemoveOrderException(CannotRemoveOrderException e) {
+    @ExceptionHandler({
+            CannotPauseOrderException.class, CannotResumeOrderException.class,
+            CannotRestartOrderException.class, CannotRetryOrderException.class,
+            CannotDeleteOrderException.class, CannotRemoveOrderException.class
+    })
+    public ResponseEntity<ServerErrorResponse> handleUnauthorizedOrderActionException(ModuleException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(BadBasketSelectionRequestException.class)
-    public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequestException(
-            BadBasketSelectionRequestException e) {
+    public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequestException(BadBasketSelectionRequestException e) {
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 

@@ -69,13 +69,13 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_perf_tests" })
 // locations = { "classpath:application-local.properties" })
 //@Ignore("Performances tests")
 public class PerformanceTest extends AbstractMultitenantServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PerformanceTest.class);
 
     @Autowired
     private IAcquisitionProcessingService acqProService;
@@ -230,7 +230,7 @@ public class PerformanceTest extends AbstractMultitenantServiceTest {
         LOGGER.info("File(s) deleted by chain in {} milliseconds", duration);
         if (duration > expectedDuration) {
             Assert.fail(String
-                    .format("Performance not reached for prodcuts deletion by chain .Deletion took %s ms when %s ms expected",
+                    .format("Performance not reached for products deletion by chain .Deletion took %s ms when %s ms expected",
                             duration, expectedDuration));
         }
     }
@@ -244,7 +244,7 @@ public class PerformanceTest extends AbstractMultitenantServiceTest {
         LOGGER.info("File(s) deleted by session in {} milliseconds", duration);
         if (duration > expectedDuration) {
             Assert.fail(String
-                    .format("Performance not reached for prodcuts deletion by session. Deletion took %s ms when %s ms expected",
+                    .format("Performance not reached for products deletion by session. Deletion took %s ms when %s ms expected",
                             duration, expectedDuration));
         }
     }

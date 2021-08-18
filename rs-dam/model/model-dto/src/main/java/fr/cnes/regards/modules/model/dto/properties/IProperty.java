@@ -18,33 +18,22 @@
  */
 package fr.cnes.regards.modules.model.dto.properties;
 
+import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
+import com.google.gson.JsonElement;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.modules.model.dto.properties.logger.PropertyPatchLogger;
+import org.springframework.util.Assert;
+
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.DateTimeException;
 import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
-
-import org.springframework.util.Assert;
-
-import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
-import com.google.gson.JsonObject;
-
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.modules.model.dto.properties.logger.PropertyPatchLogger;
 
 /**
  * @param <T> type of Attribute
@@ -55,6 +44,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
 
     /**
      * Get attribute name
+     *
      * @return attribute name
      */
     String getName();
@@ -66,6 +56,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
 
     /**
      * Allows to update property value.
+     *
      * @param value new value or <code>null</code>
      */
     void updateValue(T value);
@@ -245,9 +236,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         } else if (value instanceof Collection) {
             sourceList = (Collection<?>) value;
         } else {
-            throw new IllegalArgumentException(String
-                    .format("Input value '%s' cannot be converted into an %s[] (expected array or collection types)",
-                            value.toString(), elementsClass.getName()));
+            throw new IllegalArgumentException(String.format(
+                    "Input value '%s' cannot be converted into an %s[] (expected array or collection types)",
+                    value.toString(), elementsClass.getName()));
         }
         // 2 - convert each element
         ArrayList<T> converted = new ArrayList<>(sourceList.size());
@@ -326,8 +317,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             case URL:
                 return buildUrl(name, toURLValue(value));
             default:
-                throw new IllegalArgumentException(attributeType + " is not a handled value of "
-                        + PropertyType.class.getName() + " in " + IProperty.class.getName());
+                throw new IllegalArgumentException(
+                        attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
+                                + IProperty.class.getName());
         }
     }
 
@@ -361,10 +353,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
 
         switch (attributeType) {
             case DATE_INTERVAL:
-                OffsetDateTime lowerDateTime = lowerBound == null ? null
-                        : OffsetDateTimeAdapter.parse((String) lowerBound);
-                OffsetDateTime upperDateTime = upperBound == null ? null
-                        : OffsetDateTimeAdapter.parse((String) upperBound);
+                OffsetDateTime lowerDateTime =
+                        lowerBound == null ? null : OffsetDateTimeAdapter.parse((String) lowerBound);
+                OffsetDateTime upperDateTime =
+                        upperBound == null ? null : OffsetDateTimeAdapter.parse((String) upperBound);
                 return (T) buildDateInterval(name, buildRange(lowerDateTime, upperDateTime));
             case DOUBLE_INTERVAL:
                 Double lowerDouble = lowerBound == null ? null : ((Number) lowerBound).doubleValue();
@@ -379,8 +371,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 Long upperLong = upperBound == null ? null : ((Number) upperBound).longValue();
                 return (T) buildLongInterval(name, buildRange(lowerLong, upperLong));
             default:
-                throw new IllegalArgumentException(attributeType + " is not a handled value of "
-                        + PropertyType.class.getName() + " in " + IProperty.class.getName());
+                throw new IllegalArgumentException(
+                        attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
+                                + IProperty.class.getName());
         }
     }
 
@@ -445,9 +438,13 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             case URL:
                 ((UrlProperty) property).updateValue(toURLValue(value));
                 break;
+            case JSON:
+                ((JsonProperty) property).updateValue((JsonElement) value);
+                break;
             default:
-                throw new IllegalArgumentException(property.getType() + " is not a handled value of "
-                        + PropertyType.class.getName() + " in " + IProperty.class.getName());
+                throw new IllegalArgumentException(
+                        property.getType() + " is not a handled value of " + PropertyType.class.getName() + " in "
+                                + IProperty.class.getName());
         }
         return property;
     }
@@ -505,8 +502,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             case URL:
                 return (T) buildUrl(name);
             default:
-                throw new IllegalArgumentException(attributeType + " is not a handled value of "
-                        + PropertyType.class.getName() + " in " + IProperty.class.getName());
+                throw new IllegalArgumentException(
+                        attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
+                                + IProperty.class.getName());
         }
     }
 
@@ -738,7 +736,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return att;
     }
 
-    public static JsonProperty buildJson(String name, JsonObject value) {
+    public static JsonProperty buildJson(String name, JsonElement value) {
         JsonProperty att = new JsonProperty();
         att.setName(name);
         att.setValue(value);
@@ -803,10 +801,11 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
 
     /**
      * Merge patch properties into reference ones
-     * @param reference not <code>null</code> reference properties
-     * @param patch not <code>null</code> patch properties
+     *
+     * @param reference  not <code>null</code> reference properties
+     * @param patch      not <code>null</code> patch properties
      * @param identifier not <code>null</code>
-     * @param modifier user that modify the feature
+     * @param modifier   user that modify the feature
      */
     public static void mergeProperties(Set<IProperty<?>> reference, Set<IProperty<?>> patch, String identifier,
             String modifier) {

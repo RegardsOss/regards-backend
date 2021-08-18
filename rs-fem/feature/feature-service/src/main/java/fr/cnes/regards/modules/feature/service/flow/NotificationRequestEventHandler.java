@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
  *
  */
 @Component
-@Profile("!nohandler")
+@Profile("!noFemHandler")
 public class NotificationRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureNotificationRequestEvent>
         implements IBatchHandler<FeatureNotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 

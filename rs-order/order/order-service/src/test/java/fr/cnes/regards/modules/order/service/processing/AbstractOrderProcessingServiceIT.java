@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.order.dao.IBasketDatasetSelectionRepository;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -38,10 +39,7 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
-import fr.cnes.regards.modules.order.service.IOrderDataFileService;
-import fr.cnes.regards.modules.order.service.IOrderService;
-import fr.cnes.regards.modules.order.service.OrderService;
-import fr.cnes.regards.modules.order.service.OrderServiceTestIT;
+import fr.cnes.regards.modules.order.service.*;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.test.SearchClientMock;
@@ -64,6 +62,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.hateoas.EntityModel;
@@ -110,6 +109,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
 
     @Autowired protected IBasketDatasetSelectionRepository dsSelRepo;
     @Autowired protected IOrderService orderService;
+    @Autowired protected IOrderDownloadService orderDownloadService;
     @Autowired protected IOrderRepository orderRepos;
     @Autowired protected IOrderDataFileRepository dataFileRepos;
     @Autowired protected IOrderDataFileService dataFileService;
@@ -125,6 +125,9 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     @Autowired protected TaskExecutor taskExecutor;
     @Autowired protected ExecResultHandlerResultEventHandler execResultHandlerResultEventHandler;
     @Autowired protected OrderCreationCompletedEventHandler orderCreationCompletedEventHandler;
+
+    @MockBean
+    protected IProjectUsersClient projectUsersClient;
 
     // Mutable map to hold the correspondence between batch ID and batch correlations ID
     protected java.util.Map<UUID, String> batchCorrelations = new java.util.HashMap<>();
@@ -160,7 +163,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
 
     protected void showMetalink(Order order) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            orderService.downloadOrderMetalink(order.getId(), out);
+            orderDownloadService.downloadOrderMetalink(order.getId(), out);
             out.flush();
             LOGGER.info("Metalink:\n>>>\n{}\n<<<", new String(out.toByteArray()));
         }
@@ -177,12 +180,12 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     }
 
     protected void awaitLatches(CountDownLatch orderCreatedLatch, CountDownLatch receivedExecutionResultsLatch) throws InterruptedException {
-        if (!orderCreatedLatch.await(1, TimeUnit.MINUTES)) {
+        if (!orderCreatedLatch.await(5, TimeUnit.MINUTES)) {
             fail("Did not create the order in a large amount of time.");
         }
         LOGGER.info("Order has been created !!");
 
-        if (!receivedExecutionResultsLatch.await(1L, TimeUnit.MINUTES)) {
+        if (!receivedExecutionResultsLatch.await(5L, TimeUnit.MINUTES)) {
             fail("Did not reach the expected number of treated execution results in a large amount of time.");
         }
 
@@ -223,7 +226,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
             try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 List<OrderDataFile> updatedOrderDataFiles = evt.getUpdatedOrderDataFiles();
                 LOGGER.info("Downloading {}", updatedOrderDataFiles);
-                orderService.downloadOrderCurrentZip(orderOwner, updatedOrderDataFiles.asJava(), out);
+                orderDownloadService.downloadOrderCurrentZip(orderOwner, updatedOrderDataFiles.asJava(), out);
             }
             catch(IOException e) {
                 throw new RuntimeException(e);
@@ -365,10 +368,10 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     }
 
     @Component
-    public static class OrderCreationCompletedEventHandler implements ApplicationListener<OrderService.OrderCreationCompletedEvent> {
-        protected Consumer<OrderService.OrderCreationCompletedEvent> consumer = e -> {};
-        public void setConsumer(Consumer<OrderService.OrderCreationCompletedEvent> consumer) { this.consumer = consumer; }
-        @Override public synchronized void onApplicationEvent(OrderService.OrderCreationCompletedEvent event) {
+    public static class OrderCreationCompletedEventHandler implements ApplicationListener<OrderCreationService.OrderCreationCompletedEvent> {
+        protected Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer = e -> {};
+        public void setConsumer(Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer) { this.consumer = consumer; }
+        @Override public synchronized void onApplicationEvent(OrderCreationService.OrderCreationCompletedEvent event) {
             consumer.accept(event);
         }
     }

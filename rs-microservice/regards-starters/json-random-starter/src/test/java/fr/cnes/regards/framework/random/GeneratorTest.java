@@ -27,11 +27,22 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
+
 public class GeneratorTest {
 
     private Generator generator;
 
     private static Path BASE = Paths.get("src", "test", "resources");
+
+    private class PropertyGetter implements IPropertyGetter {
+
+        @Override
+        public String getProperty(String propertyKey) {
+            return "value";
+        }
+
+    }
 
     @Before
     public void init() {
@@ -40,42 +51,47 @@ public class GeneratorTest {
 
     @Test
     public void generate() {
-        generator.generate(BASE.resolve("template_001.json"), 1);
+        generator.generate(BASE.resolve("template_001.json"), 1, new PropertyGetter());
     }
 
     @Test
     public void integerWithOrWithoutBounds() {
-        generator.generate(BASE.resolve("template_002.json"), 10);
+        generator.generate(BASE.resolve("template_002.json"), 10, new PropertyGetter());
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void badDependencyPath() {
-        generator.generate(BASE.resolve("template_003.json"), 1);
+        generator.generate(BASE.resolve("template_003.json"), 1, new PropertyGetter());
     }
 
     @Test
     public void dependencyPath() {
-        generator.generate(BASE.resolve("template_004.json"), 1);
+        generator.generate(BASE.resolve("template_004.json"), 1, new PropertyGetter());
     }
 
     @Test
     public void generateGeode() {
-        generator.generate(BASE.resolve("2338-template.json"), 2);
+        generator.generate(BASE.resolve("2338-template.json"), 2, new PropertyGetter());
     }
 
     @Test
     public void generateUrnFromId() {
-        generator.generate(BASE.resolve("idAndUrn.json"), 1);
+        generator.generate(BASE.resolve("idAndUrn.json"), 1, new PropertyGetter());
     }
 
     @Test
     public void deleteByUrn() {
-        generator.generate(BASE.resolve("deleteByUrn.json"), 1);
+        generator.generate(BASE.resolve("deleteByUrn.json"), 1, new PropertyGetter());
+    }
+
+    @Test
+    public void generateProperty() {
+        generator.generate(BASE.resolve("template_005.json"), 1, new PropertyGetter());
     }
 
     @Test
     public void generateUrnFromId2() {
-        List<Map<String, Object>> results = generator.generate(BASE.resolve("idAndUrn2.json"), 1);
+        List<Map<String, Object>> results = generator.generate(BASE.resolve("idAndUrn2.json"), 1, new PropertyGetter());
         Assert.assertTrue(!results.isEmpty());
 
         Map<String, Object> generated = results.get(0);

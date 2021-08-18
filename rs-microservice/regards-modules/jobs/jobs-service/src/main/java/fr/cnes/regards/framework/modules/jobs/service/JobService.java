@@ -1,23 +1,16 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +28,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -94,6 +88,9 @@ public class JobService implements IJobService {
 
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
+
+    @Value("${regards.jobs.scan.delay:1000}")
+    private int scanDelay;
 
     @Autowired
     private ISubscriber subscriber;
@@ -163,10 +160,10 @@ public class JobService implements IJobService {
                 // Wait for availability of pool if it is overbooked
                 while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(scanDelay);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                             + "of the end, pray for your soul", e);
+                                + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -187,7 +184,7 @@ public class JobService implements IJobService {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                         + "of the end, pray for your soul", e);
+                            + "of the end, pray for your soul", e);
                 }
             }
         }
@@ -247,6 +244,10 @@ public class JobService implements IJobService {
     @SuppressWarnings("unchecked")
     public RunnableFuture<Void> execute(JobInfo jobInfo) {
         RunnableFuture<Void> future = null;
+        if (jobsMap.containsKey(jobInfo)) {
+            LOGGER.warn("Job {} already running", jobInfo.getId());
+            return jobsMap.get(jobInfo);
+        }
         try {
             // we force tenant in all cases even if everything is good there is no need to.
             // forced tenant is necessary when updating database so for the following cases:
@@ -269,7 +270,8 @@ public class JobService implements IJobService {
                 return null;
             }
             // First, instantiate job
-            @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
+            @SuppressWarnings("rawtypes")
+            IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setJobInfoId(jobInfo.getId());
             job.setParameters(jobInfo.getParametersAsMap());
@@ -301,6 +303,19 @@ public class JobService implements IJobService {
             runtimeTenantResolver.clearTenant();
         }
         return future;
+    }
+
+    public void cleanAndRestart() {
+        List<Runnable> runables = threadPool.shutdownNow();
+        LOGGER.info("Waiting 60s max for {} jobs to be terminated...",runables.size());
+        try {
+            threadPool.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.warn("Waiting task interrupted");
+        }
+        threadPool = null;
+        this.init();
+        LOGGER.info("JOB Service reinitialized and all jobs stopped !");
     }
 
     /**

@@ -18,43 +18,8 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.MimeType;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.ResponseStreamProxy;
@@ -66,14 +31,31 @@ import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -85,7 +67,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderDataFileService.class);
 
     @Autowired
-    private IOrderDataFileRepository repos;
+    private IOrderDataFileRepository orderDataFileRepository;
 
     @Autowired
     private IOrderJobService orderJobService;
@@ -132,12 +114,12 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public Iterable<OrderDataFile> create(Iterable<OrderDataFile> dataFiles) {
-        return repos.saveAll(dataFiles);
+        return orderDataFileRepository.saveAll(dataFiles);
     }
 
     @Override
     public OrderDataFile save(OrderDataFile dataFile) {
-        dataFile = repos.save(dataFile);
+        dataFile = orderDataFileRepository.save(dataFile);
         // Look at FilesTask if it is ended (no more file to download)...
         FilesTask filesTask = filesTasksRepository.findDistinctByFilesContaining(dataFile);
         // In case FilesTask does not yet exist
@@ -162,7 +144,7 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public Iterable<OrderDataFile> save(Iterable<OrderDataFile> inDataFiles) {
-        List<OrderDataFile> dataFiles = repos.saveAll(inDataFiles);
+        List<OrderDataFile> dataFiles = orderDataFileRepository.saveAll(inDataFiles);
         launchNextFilesTasks(dataFiles);
         return dataFiles;
     }
@@ -201,14 +183,14 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public OrderDataFile load(Long dataFileId) throws NoSuchElementException {
-        Optional<OrderDataFile> dataFile = repos.findById(dataFileId);
+        Optional<OrderDataFile> dataFile = orderDataFileRepository.findById(dataFileId);
         return dataFile.orElseThrow(() -> new NoSuchElementException(
                 String.format("Data file with id: %d doesn't exist.", dataFileId)));
     }
 
     @Override
     public OrderDataFile find(Long orderId, UniformResourceName aipId, String checksum) throws NoSuchElementException {
-        Optional<OrderDataFile> dataFileOpt = repos.findFirstByChecksumAndIpIdAndOrderId(checksum, aipId, orderId);
+        Optional<OrderDataFile> dataFileOpt = orderDataFileRepository.findFirstByChecksumAndIpIdAndOrderId(checksum, aipId, orderId);
         if (!dataFileOpt.isPresent()) {
             throw new NoSuchElementException();
         }
@@ -217,12 +199,12 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public List<OrderDataFile> findAllAvailables(Long orderId) {
-        return repos.findAllAvailables(orderId);
+        return orderDataFileRepository.findAllAvailables(orderId);
     }
 
     @Override
     public List<OrderDataFile> findAll(Long orderId) {
-        return repos.findAllByOrderId(orderId);
+        return orderDataFileRepository.findAllByOrderId(orderId);
     }
 
     @Override
@@ -263,7 +245,7 @@ public class OrderDataFileService implements IOrderDataFileService {
         InputStream stream;
         try {
             stream = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, noProxyHosts, 10_000);
-            return new ResponseEntity<InputStreamResource>(new InputStreamResource(stream), headers, HttpStatus.OK);
+            return new ResponseEntity<>(new InputStreamResource(stream), headers, HttpStatus.OK);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -279,7 +261,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     private ResponseEntity<InputStreamResource> donwloadStoredFile(OrderDataFile dataFile) {
         try {
             InputStreamResource isr = null;
-            Response response = storageClient.downloadFile(dataFile.getChecksum());
+            Response response = storageClient.downloadFile(dataFile.getChecksum(), false);
             if (response.status() != HttpStatus.OK.value()) {
                 LOGGER.error("Error downloading file {} from storage : {} : {}", dataFile.getChecksum(),
                              response.status(), response.reason());
@@ -327,7 +309,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     public Set<Order> updateCurrentOrdersComputedValues() {
         OffsetDateTime now = OffsetDateTime.now();
         // find not yet finished orders and their sum of data files sizes
-        List<Object[]> totalOrderFiles = repos.findSumSizesByOrderId(now);
+        List<Object[]> totalOrderFiles = orderDataFileRepository.findSumSizesByOrderId(now);
         if (totalOrderFiles.isEmpty()) {
             return Collections.emptySet();
         }
@@ -341,32 +323,30 @@ public class OrderDataFileService implements IOrderDataFileService {
         Map<Long, Long> totalSizeMap = totalOrderFiles.stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Map { order_id -> treated files size  }
-        Map<Long, Long> treatedSizeMap = repos
+        Map<Long, Long> treatedSizeMap = orderDataFileRepository
                 .selectSumSizesByOrderIdAndStates(now, FileState.AVAILABLE, FileState.DOWNLOADED,
                                                   FileState.DOWNLOAD_ERROR, FileState.PROCESSING_ERROR, FileState.ERROR)
                 .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map { order_id -> files in error count } Files with status DOWNLOAD_ERROR are not taken into account
         // because they are not considered as errors (available from storage)
-        Map<Long, Long> errorCountMap = repos.selectCountFilesByOrderIdAndStates(now, FileState.ERROR).stream()
+        Map<Long, Long> errorCountMap = orderDataFileRepository.selectCountFilesByOrderIdAndStates(now, FileState.ERROR).stream()
                 .collect(Collectors.toMap(getOrderIdFct, getValueFct));
-        Map<Long, Long> processErrorCountMap = repos
+        Map<Long, Long> processErrorCountMap = orderDataFileRepository
                 .selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.PROCESSING_ERROR).stream()
                 .collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map {order_id -> available files count }
-        Map<Long, Long> availableCountMap = repos.selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE)
+        Map<Long, Long> availableCountMap = orderDataFileRepository.selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE)
                 .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Update all orders completion values
         for (Order order : orders) {
             long totalSize = totalSizeMap.get(order.getId());
-            long treatedSize = treatedSizeMap.containsKey(order.getId()) ? treatedSizeMap.get(order.getId()) : 0l;
+            long treatedSize = treatedSizeMap.getOrDefault(order.getId(), 0L);
             int previousPercentCompleted = order.getPercentCompleted();
-            order.setPercentCompleted((int) Math.floorDiv(100l * treatedSize, totalSize));
-            long errorCount = (errorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l)
-                    + (processErrorCountMap.containsKey(order.getId()) ? processErrorCountMap.get(order.getId()) : 0l);
+            order.setPercentCompleted((int) Math.floorDiv(100L * treatedSize, totalSize));
+            long errorCount = errorCountMap.getOrDefault(order.getId(), 0L) + processErrorCountMap.getOrDefault(order.getId(), 0L);
             order.setFilesInErrorCount((int) errorCount);
-            long availableCount = availableCountMap.containsKey(order.getId()) ? availableCountMap.get(order.getId())
-                    : 0l;
+            long availableCount = availableCountMap.getOrDefault(order.getId(), 0L);
             int previousAvailableFilesCount = order.getAvailableFilesCount();
             // If number of available files has changed...
             if (order.getAvailableFilesCount() != availableCount) {
@@ -401,7 +381,12 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public void removeAll(Long orderId) {
-        repos.deleteByOrderId(orderId);
+        orderDataFileRepository.deleteByOrderId(orderId);
+    }
+
+    @Override
+    public boolean hasDownloadErrors(Long orderId) {
+        return orderDataFileRepository.countByOrderIdAndStateIn(orderId, FileState.DOWNLOAD_ERROR) > 0L;
     }
 
     private static MediaType asMediaType(MimeType mimeType) {

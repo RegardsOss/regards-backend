@@ -54,6 +54,8 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
 
     List<OrderDataFile> findByOrderIdAndStateIn(Long orderId, FileState... states);
 
+    Long countByOrderIdAndStateIn(Long id, FileState... states);
+
     List<OrderDataFile> findAllByOrderId(Long orderId);
 
     Optional<OrderDataFile> findFirstByChecksumAndIpIdAndOrderId(String checksum, UniformResourceName aipId,
@@ -114,5 +116,23 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
     @Modifying
     void deleteByOrderId(Long orderId);
 
+    @Query(value = "SELECT df.* " +
+            "FROM {h-schema}t_data_file df " +
+            "JOIN {h-schema}t_task t ON t.id = df.files_task_id " +
+            "JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id " +
+            "WHERE dt.id = ?1 " +
+            "AND df.data_objects_ip_id IN " +
+            "(" +
+            "    SELECT df.data_objects_ip_id " +
+            "    FROM {h-schema}t_data_file df " +
+            "    JOIN {h-schema}t_task t ON t.id = df.files_task_id " +
+            "    JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id " +
+            "    WHERE dt.id = ?1 " +
+            "    AND df.state IN ?2 " +
+            "    LIMIT ?3 " +
+            ") " +
+            "ORDER BY df.id",
+            nativeQuery = true)
+    List<OrderDataFile> selectByDatasetTaskAndStateAndLimit(long datasetTaskId, List<String> states, int limit);
 
 }

@@ -21,12 +21,20 @@ package fr.cnes.regards.modules.ingest.service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.SessionDeleteEventHandler;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.SourceDeleteEventHandler;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -48,6 +56,11 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomCategories;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSession;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSessionOwner;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomStorage;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomTags;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 import fr.cnes.regards.modules.ingest.service.flow.IngestRequestFlowHandler;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
@@ -60,31 +73,30 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomCategories;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSession;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSessionOwner;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomStorage;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomTags;
-
 /**
  * Overlay of the default class to manage context cleaning in non transactional testing
  *
  * @author Marc SORDI
  */
-@DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
 public abstract class IngestMultitenantServiceTest extends AbstractMultitenantServiceTest {
@@ -119,6 +131,9 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     protected IAIPRepository aipRepository;
 
     @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Autowired
     protected IngestServiceTest ingestServiceTest;
 
     @Autowired
@@ -130,17 +145,18 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     @Autowired
     protected IAIPNotificationService notificationService;
 
-    @Autowired IAIPNotificationSettingsRepository notificationSettingsRepository;
-
     @Autowired
     protected IAbstractRequestRepository abstractRequestRepository;
 
+    @Autowired
+    protected IJobService jobService;
+
     @Before
     public void init() throws Exception {
+        LOGGER.info("-------------> Test initialization !!!");
         // clear AMQP queues and repositories
+        jobService.cleanAndRestart();
         ingestServiceTest.init();
-        notificationSettingsRepository.deleteAll();
-        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
 
         // simulate application started and ready
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -162,16 +178,9 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     @After
     public void after() throws Exception {
-        // unsubscribe from AMQP queues
-        ingestServiceTest.clear();
-        // clean AMQP queues and repositories
-        ingestServiceTest.init();
-        notificationSettingsRepository.deleteAll();
-        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         // override this method to custom action performed after
         doAfter();
     }
-
     /**
      * Custom test cleaning to override
      * @throws Exception
@@ -249,7 +258,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     }
 
     public boolean initDefaultNotificationSettings() {
-        return notificationSettingsService.retrieve().isActiveNotification();
+        return notificationSettingsService.isActiveNotification();
     }
 
     public void initRandomData(int nbSIP) {
@@ -312,5 +321,22 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
             default:
                 break;
         }
+    }
+
+    public void waitJobDone(JobInfo jobInfo, JobStatus jobStatus, long timeout) {
+        Assert.assertNotNull ("Job info should not be null", jobInfo);
+        this.ingestServiceTest.waitJobDone(jobInfo, jobStatus, timeout);
+    }
+
+    public JobInfo waitJobCreated(String jobClassName, long timeout) {
+        try {
+            Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return !this.jobInfoService.retrieveJobs(jobClassName, PageRequest.of(0, 1)).isEmpty();
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.fail(String.format("Fail after waiting for new job %s", jobClassName));
+        }
+        return this.jobInfoService.retrieveJobs(jobClassName, PageRequest.of(0, 1), JobStatus.values()).getContent().get(0);
     }
 }

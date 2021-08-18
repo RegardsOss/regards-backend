@@ -60,12 +60,18 @@ import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestJob;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_reference_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@ActiveProfiles({ "noscheduler" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_reference_tests"},
+        locations = { "classpath:application-test.properties" })
 public class FileReferenceRequestServiceTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestServiceTest.class);
+
+    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+
+    private static final  String SESSION_OWNER_2 = "SOURCE 2";
+
+    private static final String SESSION_1 = "SESSION 1";
 
     @Before
     @Override
@@ -81,17 +87,19 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         String fileRefChecksum = "file-ref-1";
         String fileRefOwner = "first-owner";
         FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner, "file.test",
-                                                                 ONLINE_CONF_LABEL, Optional.empty(), Optional.empty());
+                                                                 ONLINE_CONF_LABEL, Optional.empty(),
+                                                                 Optional.empty(), SESSION_OWNER_1, SESSION_1);
         String fileRefStorage = fileRef.getLocation().getStorage();
 
         // Remove all his owners
         String deletionReqId = UUID.randomUUID().toString();
-        FileDeletionRequestDTO request = FileDeletionRequestDTO.build(fileRefChecksum, fileRefStorage, fileRefOwner,
-                                                                      false);
+        FileDeletionRequestDTO request = FileDeletionRequestDTO
+                .build(fileRefChecksum, fileRefStorage, fileRefOwner, SESSION_OWNER_1, SESSION_1, false);
         fileDeletionRequestService.handle(Sets.newHashSet(request), deletionReqId);
 
         Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
-        Assert.assertTrue("File reference should no have any owners anymore", oFileRef.get().getOwners().isEmpty());
+        Assert.assertFalse("File reference should no have any owners anymore",
+                           fileRefService.hasOwner(oFileRef.get().getId()));
 
         // Simulate FileDeletionRequest in PENDING state
         FileDeletionRequest fdr = fileDeletionRequestRepo.findByFileReferenceId(fileRef.getId()).get();
@@ -100,7 +108,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
 
         // Reference the same file for a new owner
         String fileRefNewOwner = "new-owner";
-        this.generateStoredFileReferenceAlreadyReferenced(fileRefChecksum, fileRefStorage, fileRefNewOwner);
+        this.generateStoredFileReferenceAlreadyReferenced(fileRefChecksum, fileRefStorage, fileRefNewOwner,
+                                                          SESSION_OWNER_2, SESSION_1);
 
         // check that there is always a deletion request in pending state
         Optional<FileDeletionRequest> ofdr = fileDeletionRequestRepo.findByFileReferenceId(fdr.getId());
@@ -118,16 +127,16 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         // Check that the file reference is still not referenced as owned by the new owner and the request is still existing
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
-        Assert.assertTrue("File reference should still have no owners", oFileRef.get().getOwners().isEmpty());
+        Assert.assertFalse("File reference should still have no owners",
+                           fileRefService.hasOwner(oFileRef.get().getId()));
 
         // Simulate deletion request ends
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
                 fileEventPublisher, new FileDeletionRequestJob());
         manager.deletionSucceed(fdr);
-        fileRefEventHandler.handle(TenantWrapper.build(FileReferenceEvent
+        fileRefEventHandler.handleBatch(runtimeTenantResolver.getTenant(), Lists.newArrayList(FileReferenceEvent
                 .build(fileRefChecksum, fileRefStorage, FileReferenceEventType.FULLY_DELETED, null, "Deletion succeed",
-                       oFileRef.get().getLocation(), oFileRef.get().getMetaInfo(), Sets.newHashSet(deletionReqId)),
-                                                       runtimeTenantResolver.getTenant()));
+                       oFileRef.get().getLocation(), oFileRef.get().getMetaInfo(), Sets.newHashSet(deletionReqId))));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
         storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
@@ -149,8 +158,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File storage request should not exists anymore", storageReqs.isEmpty());
         Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
-        Assert.assertTrue("File reference should belongs to new owner",
-                          oFileRef.get().getOwners().contains(fileRefNewOwner));
+        FileReference fr = fileRefWithOwnersRepo.findOneById(oFileRef.get().getId());
+        Assert.assertTrue("File reference should belongs to new owner", fr.getLazzyOwners().contains(fileRefNewOwner));
     }
 
     @Requirement("REGARDS_DSL_STOP_AIP_070")
@@ -158,7 +167,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
     @Test
     public void referenceFileWithoutStorage() {
         String owner = "someone";
-        Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", ONLINE_CONF_LABEL);
+        Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", ONLINE_CONF_LABEL,
+                                                               SESSION_OWNER_1, SESSION_1);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
                                                                           oFileRef.get().getMetaInfo().getChecksum());
@@ -172,7 +182,8 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
                 1024L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(OFFLINE_CONF_LABEL, "anywhere://in/this/directory/file.test");
         try {
-            fileReqService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            fileReqService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()),
+                                     SESSION_OWNER_1, SESSION_1);
             Assert.fail("Module exception should be thrown here as url is not valid");
         } catch (ModuleException e) {
             // Expected exception

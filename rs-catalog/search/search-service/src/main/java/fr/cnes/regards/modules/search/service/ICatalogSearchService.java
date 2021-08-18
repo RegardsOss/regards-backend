@@ -22,9 +22,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -126,6 +126,19 @@ public interface ICatalogSearchService {
      */
     List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
             Collection<QueryableAttribute> attributes) throws SearchException;
+
+    /**
+     * Get collection by urn and get its dataobjects statistics
+     * @param urn {@link UniformResourceName} If of the collection we want to get
+     * @param searchType {@link SearchType} for search context
+     * @param attributes {@link AttributeModel} to retrieve statistics on
+     * @return {@link CollectionWithStats}
+     * @throws SearchException
+     * @throws EntityOperationForbiddenException
+     * @throws EntityNotFoundException
+     */
+    CollectionWithStats getCollectionWithDataObjectsStats(UniformResourceName urn, SearchType searchType,
+                                                          Collection<QueryableAttribute> attributes) throws SearchException, EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
      * Retrieve {@link PropertyBound}s for each property given and {@link ICriterion} search.

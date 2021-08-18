@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,6 +40,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
@@ -51,6 +53,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
@@ -97,6 +100,9 @@ public class IngestService implements IIngestService {
     @Autowired
     private IIngestRequestService ingestRequestService;
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     /**
      * Middleware method extracted for test simulation and also used by operational code.
      * Transform a SIP collection to a SIP flow item collection
@@ -138,8 +144,6 @@ public class IngestService implements IIngestService {
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
-        // Check for each feature if storage locations are valide for feature files
-        checkSipStorageLocations(sip, ingestMetadata, errors);
 
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
@@ -156,6 +160,9 @@ public class IngestService implements IIngestService {
 
             return null;
         }
+
+        // Check for each feature if storage locations are valide for feature files
+        checkSipStorageLocations(sip, ingestMetadata, errors);
 
         // Save granted ingest request, versioning mode is being handled later
         IngestRequest request = IngestRequest.build(requestId, ingestMetadata, InternalRequestState.CREATED,
@@ -177,8 +184,11 @@ public class IngestService implements IIngestService {
             IngestRequest ingestRequest = registerIngestRequest(item);
             if (ingestRequest != null) {
                 requestPerChain.put(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
+                // monitoring
+                sessionNotifier.incrementRequestCount(ingestRequest);
             }
         }
+
         // Schedule job per chain
         for (String chainName : requestPerChain.keySet()) {
             ingestRequestService.scheduleIngestProcessingJobByChain(chainName, requestPerChain.get(chainName));
@@ -200,8 +210,9 @@ public class IngestService implements IIngestService {
 
         // Register requests
         Collection<IngestRequest> grantedRequests = new ArrayList<>();
-        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(),
-                                                   "SIP Collection ingestion scheduled");
+        String source = ingestMetadata.getSessionOwner();
+        String session = ingestMetadata.getSession();
+        RequestInfoDto info = RequestInfoDto.build(source, session, "SIP Collection ingestion scheduled");
 
         int count = 1;
         for (SIP sip : sips.getFeatures()) {
@@ -210,6 +221,9 @@ public class IngestService implements IIngestService {
             registerIngestRequest(null, sip, ingestMetadata, info, grantedRequests, sipId);
             count++;
         }
+
+        // Monitoring
+        sessionNotifier.incrementRequestCount(source, session,grantedRequests.size());
 
         ingestRequestService.scheduleIngestProcessingJobByChain(ingestMetadata.getIngestChain(), grantedRequests);
 
@@ -268,13 +282,27 @@ public class IngestService implements IIngestService {
                 }
             });
             for (ContentInformation ci : sip.getProperties().getContentInformations()) {
+                Double height = ci.getRepresentationInformation().getSyntax().getHeight();
+                Double width = ci.getRepresentationInformation().getSyntax().getWidth();
                 OAISDataObject dobj = ci.getDataObject();
+                DataType regardsDataType = dobj.getRegardsDataType();
                 // If file needed to be stored check that the data type is well configured
                 if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null)
-                        && !handleTypes.contains(dobj.getRegardsDataType())) {
+                        && !handleTypes.contains(regardsDataType)) {
                     errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE", String
                             .format("Data type %s to store is not associated to a configured storage location",
-                                    dobj.getRegardsDataType().toString()));
+                                    regardsDataType.toString()));
+                }
+                // add check on quicklook or thumbnail to assert that if they are to be referenced, height and width have been set
+                if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD)
+                        || (regardsDataType == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
+                    for (OAISDataObjectLocation location : dobj.getLocations()) {
+                        if (!Strings.isNullOrEmpty(location.getStorage()) && ((height == null) || (width == null))) {
+                            errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION", String
+                                    .format("Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
+                                            dobj.getFilename(), sip.getId()));
+                        }
+                    }
                 }
             }
         }

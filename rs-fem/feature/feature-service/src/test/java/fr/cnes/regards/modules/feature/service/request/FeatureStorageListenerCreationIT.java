@@ -46,17 +46,18 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
@@ -101,7 +102,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         initData(info);
 
         this.listener.onStoreSuccess(Sets.newHashSet(info));
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
         // the FeatureCreationRequest must be deleted
@@ -115,8 +116,10 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
     public void testHandlerStorageError() {
 
         RequestInfo info = RequestInfo.build();
-
         initData(info);
+        FileReference ref = null;
+        info.getErrorRequests().add(RequestResultInfoDTO.build(info.getGroupId(), "", "", "", Lists.newArrayList(), ref,
+                                                               "Simulated error"));
 
         this.listener.onStoreError(Sets.newHashSet(info));
 
@@ -137,7 +140,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         initData(info);
 
         this.listener.onReferenceSuccess(Sets.newHashSet(info));
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -154,6 +157,9 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
 
         initData(info);
+        FileReference ref = null;
+        info.getErrorRequests().add(RequestResultInfoDTO.build(info.getGroupId(), "", "", "", Lists.newArrayList(), ref,
+                                                               "Simulated error"));
 
         this.listener.onReferenceError(Sets.newHashSet(info));
 

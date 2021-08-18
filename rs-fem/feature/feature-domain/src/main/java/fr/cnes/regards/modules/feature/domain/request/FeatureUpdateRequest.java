@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
-import java.time.OffsetDateTime;
-import java.util.Set;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -33,17 +33,17 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
  * @author Marc SORDI
  *
  */
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.UPDATE)
+@DiscriminatorValue(FeatureRequestTypeEnum.UPDATE_DISCRIMINENT)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class FeatureUpdateRequest extends AbstractFeatureRequest {
 
@@ -54,6 +54,13 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     @Column(columnDefinition = "jsonb", name = "feature", nullable = false)
     @Type(type = "jsonb")
     private Feature feature;
+
+    /**
+     * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
+     */
+    @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
+    @Type(type = "jsonb")
+    private Feature toNotify;
 
     public static FeatureUpdateRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             RequestState state, Set<String> errors, Feature feature, PriorityLevel priority, FeatureRequestStep step) {
@@ -66,6 +73,7 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         return request;
     }
 
+    @Override
     public FeatureUniformResourceName getUrn() {
         return urn;
     }
@@ -75,6 +83,7 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         return visitor.visitUpdateRequest(this);
     }
 
+    @Override
     public void setUrn(FeatureUniformResourceName urn) {
         this.urn = urn;
     }
@@ -95,4 +104,11 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         this.feature = feature;
     }
 
+    public Feature getToNotify() {
+        return toNotify;
+    }
+
+    public void setToNotify(Feature toNotify) {
+        this.toNotify = toNotify;
+    }
 }

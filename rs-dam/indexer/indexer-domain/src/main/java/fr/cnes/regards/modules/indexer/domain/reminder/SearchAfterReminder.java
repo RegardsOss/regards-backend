@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.indexer.domain.reminder;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
 
 /**
  * @author oroussel
@@ -43,6 +43,14 @@ public class SearchAfterReminder extends AbstractReminder {
 
     // For information (serialized into Elasticsearch)
     private final int nextPageSize;
+
+    public SearchAfterReminder(String searchAfterSortValues, long nextOffset, int nextPageSize, String docId, OffsetDateTime expirationDate) {
+        this.searchAfterSortValues = searchAfterSortValues;
+        this.nextOffset = nextOffset;
+        this.nextPageSize = nextPageSize;
+        this.docId = docId;
+        this.expirationDate = expirationDate;
+    }
 
     public SearchAfterReminder(ICriterion crit, SearchKey<?, ?> searchKey, Sort sort, Pageable nextPage) {
         super();

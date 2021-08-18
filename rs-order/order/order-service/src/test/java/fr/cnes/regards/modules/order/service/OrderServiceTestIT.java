@@ -21,25 +21,22 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.order.dao.*;
+import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotRestartOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.test.SearchClientMock;
+import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.order.test.StorageClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -47,10 +44,12 @@ import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,41 +59,51 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * @author Sébastien Binda
  */
 @ActiveProfiles(value = {"default", "test", "testAmqp"}, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
-@TestPropertySource(
-        properties = {"spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true"})
+@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true"})
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
+
+    private static final String URL = "http://frontend.com";
+    private static final UniformResourceName OBJECT_IP_ID = UniformResourceName.fromString("URN:AIP:DATA:ORDER:00000000-0000-0002-0000-000000000002:V1");
+
     @Autowired
     private IOrderService orderService;
     @Autowired
-    private IOrderRepository orderRepos;
+    private IOrderDownloadService orderDownloadService;
     @Autowired
-    private IOrderDataFileRepository dataFileRepos;
+    private IOrderRepository orderRepository;
+    @Autowired
+    private IOrderDataFileRepository orderDataFileRepository;
+    @Autowired
+    private IFilesTasksRepository filesTasksRepository;
     @Autowired
     private IOrderDataFileService dataFileService;
     @Autowired
-    private IBasketRepository basketRepos;
+    private IBasketRepository basketRepository;
     @Autowired
-    private IJobInfoRepository jobInfoRepos;
+    private IDatasetTaskRepository datasetTaskRepository;
     @Autowired
-    private IAuthenticationResolver authResolver;
+    private IJobInfoRepository jobInfoRepository;
+    @Autowired
+    private IAuthenticationResolver authenticationResolver;
     @Autowired
     private IProjectsClient projectsClient;
     @Autowired
@@ -102,241 +111,143 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     @Autowired
     private StorageClientMock storageClientMock;
 
+    @MockBean
+    private IProjectUsersClient projectUsersClient;
+
     public void clean() {
-        basketRepos.deleteAll();
-        orderRepos.deleteAll();
-        dataFileRepos.deleteAll();
-        jobInfoRepos.deleteAll();
+        filesTasksRepository.deleteAll();
+        jobInfoRepository.deleteAll();
+        orderDataFileRepository.deleteAll();
+        datasetTaskRepository.deleteAll();
+        orderRepository.deleteAll();
+        basketRepository.deleteAll();
     }
 
     @Before
     public void init() {
         tenantResolver.forceTenant(getDefaultTenant());
         storageClientMock.setWaitMode(false);
-
         clean();
-        Mockito.when(authResolver.getRole()).thenAnswer(i -> {
+        Mockito.when(authenticationResolver.getRole()).thenAnswer(i -> {
             LOGGER.info("Asking for role");
             return DefaultRole.REGISTERED_USER.toString();
         });
+
         Project project = new Project();
         project.setHost("regardsHost");
-        Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+        Mockito.when(projectsClient.retrieveProject(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+
+        Role role = new Role();
+        role.setName(DefaultRole.REGISTERED_USER.name());
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(role);
+        Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(false));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
         simulateApplicationReadyEvent();
         simulateApplicationStartedEvent();
     }
 
     @Test
     public void simpleOrder() throws InterruptedException, EntityInvalidException {
+
         tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = randomLabel("simpleOrder");
-        Basket basket = new Basket(orderOwner);
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
-        basketRepos.save(basket);
+        Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrder");
+        basketRepository.save(basket);
+
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
-
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
         LOGGER.info("Order has been created !!");
-        // Wait order ends.
-        int loop = 0;
-        while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
-        LOGGER.info("Order is done !!");
-    }
 
-    private String randomLabel(String prefix) {
-        return prefix + "_" + Long.toHexString(new Random().nextLong());
+        // Wait order ends.
+        waitForStatus(order.getId(), OrderStatus.DONE);
+        LOGGER.info("Order is done !!");
     }
 
     @Test
     public void multipleDsOrder() throws InterruptedException, EntityInvalidException {
-        tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = randomLabel("multipleDsOrder");
-        Basket basket = new Basket(orderOwner);
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
 
-        BasketDatasetSelection dsSelection2 = new BasketDatasetSelection();
-        dsSelection2.setDatasetIpid(SearchClientMock.DS2_IP_ID.toString());
-        dsSelection2.setDatasetLabel("DS-2");
-        dsSelection2.setObjectsCount(3);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name(), 12L);
-        dsSelection2.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection2);
-        basketRepos.save(basket);
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketDoubleSelection("multipleDsOrder");
+        basketRepository.save(basket);
+
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
         LOGGER.info("Order has been created !!");
 
         //Wait order in waiting user status
-        int loop = 0;
-        while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 30)) {
-            Thread.sleep(1_000);
-            loop++;
-        }
-        Assert.assertTrue(orderService.loadComplete(order.getId()).isWaitingForUser());
-
-        LOGGER.info("Order waits uer donwload !!");
+        waitForWaitingForUser(order.getId());
+        LOGGER.info("Order waits uer download !!");
 
         // Download files to allow next suborder to be run
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(order.getId()));
-        orderService.downloadOrderCurrentZip(orderOwner, availableFiles, new OutputStream() {
+        orderDownloadService.downloadOrderCurrentZip(order.getOwner(), availableFiles, new OutputStream() {
 
             @Override
             public void write(int b) throws IOException {
-                // Nothing todo
+                // Nothing to do
             }
 
         });
         Assert.assertFalse(orderService.loadComplete(order.getId()).isWaitingForUser());
 
         // Wait order ends.
-        loop = 0;
-        while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
-
+        waitForStatus(order.getId(), OrderStatus.DONE);
         LOGGER.info("Order is done !!");
     }
 
     @Test
-    public void simpleOrderPause() throws InterruptedException, CannotPauseOrderException, CannotResumeOrderException, EntityInvalidException {
+    public void simpleOrderPause() throws InterruptedException, ModuleException {
+
         tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = randomLabel("simpleOrderPause");
+        Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
+        basketRepository.save(basket);
         storageClientMock.setWaitMode(true);
-        Basket basket = new Basket(orderOwner);
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
-        basketRepos.save(basket);
+
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
         LOGGER.info("Order has been created !!");
 
         // Wait order ends.
-        int loop = 0;
-        while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.RUNNING) && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
+        waitForStatus(order.getId(), OrderStatus.RUNNING);
+
         Thread.sleep(1_500);
         orderService.pause(order.getId());
-        loop = 0;
-        while (!orderService.isPaused(order.getId()) && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertEquals(OrderStatus.PAUSED, orderService.loadComplete(order.getId()).getStatus());
+        waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
 
         storageClientMock.setWaitMode(false);
         orderService.resume(order.getId());
-        loop = 0;
-        while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
+        waitForStatus(order.getId(), OrderStatus.DONE);
         LOGGER.info("Order is done !!");
     }
 
     @Test
-    public void multipleDsOrderPause()
-            throws InterruptedException, CannotPauseOrderException, CannotResumeOrderException, EntityInvalidException {
-        tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = randomLabel("multipleDsOrderPause");
-        Basket basket = new Basket(orderOwner);
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
+    public void multipleDsOrderPause() throws InterruptedException, ModuleException {
 
-        BasketDatasetSelection dsSelection2 = new BasketDatasetSelection();
-        dsSelection2.setDatasetIpid(SearchClientMock.DS2_IP_ID.toString());
-        dsSelection2.setDatasetLabel("DS-2");
-        dsSelection2.setObjectsCount(3);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name(), 12L);
-        dsSelection2.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection2);
-        basketRepos.save(basket);
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketDoubleSelection("multipleDsOrderPause");
+        basketRepository.save(basket);
+
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
-        int loop = 0;
-        while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertTrue(orderService.loadComplete(order.getId()).isWaitingForUser());
-
+        waitForWaitingForUser(order.getId());
         LOGGER.info("Order waits user download !!");
 
-        // Simulate latence from storage for second suborder
+        // Simulate latency from storage for second suborder
         storageClientMock.setWaitMode(true);
 
         // Download files to allow next suborder to be run
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(order.getId()));
-        orderService.downloadOrderCurrentZip(orderOwner, availableFiles, new OutputStream() {
+        orderDownloadService.downloadOrderCurrentZip(order.getOwner(), availableFiles, new OutputStream() {
 
             @Override
             public void write(int b) throws IOException {
-                // Nothing todo
+                // Nothing to do
             }
 
         });
@@ -344,81 +255,41 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
         Thread.sleep(1_500);
         orderService.pause(order.getId());
-        loop = 0;
-        while (!orderService.isPaused(order.getId()) && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertEquals(OrderStatus.PAUSED, orderService.loadComplete(order.getId()).getStatus());
+        waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
 
         storageClientMock.setWaitMode(false);
         orderService.resume(order.getId());
-        loop = 0;
-        while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
+        waitForStatus(order.getId(), OrderStatus.DONE);
         LOGGER.info("Order is done !!");
     }
 
     @Test
-    public void multipleDsOrderPauseAndDelete() throws InterruptedException, CannotPauseOrderException,
-            CannotResumeOrderException, CannotDeleteOrderException, CannotRemoveOrderException, EntityInvalidException {
-        tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = randomLabel("multipleDsOrderPauseAndDelete");
-        Basket basket = new Basket(orderOwner);
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
+    public void multipleDsOrderPauseAndDelete() throws InterruptedException, ModuleException {
 
-        BasketDatasetSelection dsSelection2 = new BasketDatasetSelection();
-        dsSelection2.setDatasetIpid(SearchClientMock.DS2_IP_ID.toString());
-        dsSelection2.setDatasetLabel("DS-2");
-        dsSelection2.setObjectsCount(3);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection2.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection2.setFileTypeSize(DataType.RAWDATA.name(), 12L);
-        dsSelection2.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection2);
-        basketRepos.save(basket);
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketDoubleSelection("multipleDsOrderPauseAndDelete");
+        basketRepository.save(basket);
+
         // Run order.
-        Order order = orderService.createOrder(basket, orderOwner,"http://frontend.com");
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
-        int loop = 0;
-        while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertTrue(orderService.loadComplete(order.getId()).isWaitingForUser());
-
+        waitForWaitingForUser(order.getId());
         LOGGER.info("Order waits for user download !!");
 
-        // Simulate latence from storage for second suborder
+        // Simulate latency from storage for second suborder
         storageClientMock.setWaitMode(true);
 
         // Download files to allow next suborder to be run
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(order.getId()));
-        orderService.downloadOrderCurrentZip(orderOwner, availableFiles, new OutputStream() {
+        orderDownloadService.downloadOrderCurrentZip(order.getOwner(), availableFiles, new OutputStream() {
 
             @Override
             public void write(int b) throws IOException {
-                // Nothing todo
+                // Nothing to do
             }
 
         });
@@ -426,50 +297,261 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
         Thread.sleep(1_500);
         orderService.pause(order.getId());
-        loop = 0;
-        while (!orderService.isPaused(order.getId()) && (loop < 10)) {
-            Thread.sleep(5_000);
-            loop++;
-        }
-        Assert.assertEquals(OrderStatus.PAUSED, orderService.loadComplete(order.getId()).getStatus());
+        waitForPausedStatus(order.getId());
         LOGGER.info("Order has been paused !!");
 
         orderService.delete(order.getId());
-
         Assert.assertEquals(OrderStatus.DELETED, orderService.loadComplete(order.getId()).getStatus());
-
         LOGGER.info("Order has been deleted !!");
 
+        Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(true));
         orderService.remove(order.getId());
-
         Assert.assertNull(orderService.loadComplete(order.getId()));
-
         LOGGER.info("Order has been removed !!");
     }
 
-    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
-                                                                 String query) {
+    @Test(expected = CannotPauseOrderException.class)
+    public void pauseOrderWhenNotOwner() throws ModuleException, InterruptedException {
 
-        BasketDatedItemsSelection item = new BasketDatedItemsSelection();
-        item.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        item.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        item.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", filesSize);
-        item.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", filesCount);
-        item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);
-        item.setFileTypeCount(DataType.RAWDATA.name(), filesCount);
-        item.setObjectsCount(objectsCount);
-        item.setDate(OffsetDateTime.now());
-        item.setSelectionRequest(createBasketSelectionRequest(query));
-        return item;
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("pauseOrderWhenNotOwner");
+        basketRepository.save(basket);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("notOwner");
+        storageClientMock.setWaitMode(true);
+
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.RUNNING);
+        Thread.sleep(1_500);
+
+        orderService.pause(order.getId());
+        waitForPausedStatus(order.getId());
     }
 
-    private BasketSelectionRequest createBasketSelectionRequest(String query) {
-        BasketSelectionRequest request = new BasketSelectionRequest();
-        request.setEngineType("engine");
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-        parameters.add("q", query);
-        request.setSearchParameters(parameters);
-        return request;
+    @Test
+    public void resumeOrderWhenNotOwner() throws ModuleException, InterruptedException {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("resumeOrderWhenNotOwner");
+        basketRepository.save(basket);
+        storageClientMock.setWaitMode(true);
+
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
+        waitForStatus(order.getId(), OrderStatus.RUNNING);
+        Thread.sleep(1_500);
+
+        orderService.pause(order.getId());
+        waitForPausedStatus(order.getId());
+
+        storageClientMock.setWaitMode(false);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("notOwner");
+        Assertions.assertThrows(CannotResumeOrderException.class, () -> orderService.resume(order.getId()));
+    }
+
+    @Test
+    public void pauseAndResumeOrderWhenAdminAndNotOwner() throws InterruptedException, ModuleException {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("pauseResumeWhenAdmin");
+        basketRepository.save(basket);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("notOwner");
+        Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(true));
+        storageClientMock.setWaitMode(true);
+
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.RUNNING);
+        Thread.sleep(1_500);
+
+        orderService.pause(order.getId());
+        waitForPausedStatus(order.getId());
+
+        storageClientMock.setWaitMode(false);
+        orderService.resume(order.getId());
+        waitForStatus(order.getId(), OrderStatus.DONE);
+    }
+
+    @Test
+    public void basketStoredWithProperOwnerAfterCreation() throws EntityInvalidException, InterruptedException {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("basketOwner");
+        basketRepository.save(basket);
+
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.DONE);
+
+        String expectedBasketOwner = IOrderService.BASKET_OWNER_PREFIX + order.getId();
+        Assert.assertNotNull(basketRepository.findByOwner(expectedBasketOwner));
+    }
+
+    @Test
+    public void basketDeletedAfterOrderRemoved() throws InterruptedException, ModuleException {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("basketOwner");
+        basketRepository.save(basket);
+
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.DONE);
+
+        String basketOwner = IOrderService.BASKET_OWNER_PREFIX + order.getId();
+        Assert.assertNotNull(basketRepository.findByOwner(basketOwner));
+
+        Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(true));
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
+        orderService.delete(order.getId());
+        orderService.remove(order.getId());
+        Assert.assertNull(orderService.loadComplete(order.getId()));
+        LOGGER.info("Order has been removed !!");
+        Assert.assertNull(basketRepository.findByOwner(basketOwner));
+    }
+
+    @Test
+    public void orderRestart() throws ModuleException, InterruptedException {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("orderRestart");
+        basketRepository.save(basket);
+
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.DONE);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
+
+        String basketOwner = IOrderService.BASKET_OWNER_PREFIX + order.getId();
+        Assert.assertNotNull(basketRepository.findByOwner(basketOwner));
+
+        Order restartedOrder = orderService.restart(order.getId(), "orderRestart", URL);
+        waitForStatus(restartedOrder.getId(), OrderStatus.RUNNING);
+
+        String newBasketOwner = IOrderService.BASKET_OWNER_PREFIX + restartedOrder.getId();
+        Basket newBasket = basketRepository.findByOwner(newBasketOwner);
+        Assert.assertNotNull(newBasket);
+        Assert.assertEquals(order.getOwner(), restartedOrder.getOwner());
+    }
+
+    @Test
+    public void orderRestartWhenNotDone() throws ModuleException, InterruptedException {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("orderRestart");
+        basketRepository.save(basket);
+        storageClientMock.setWaitMode(true);
+
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        waitForStatus(order.getId(), OrderStatus.RUNNING);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
+
+        Assertions.assertThrows(CannotRestartOrderException.class, () -> orderService.restart(order.getId(), "restartWhenNotDone", URL));
+
+        Thread.sleep(1_500);
+        orderService.pause(order.getId());
+        waitForPausedStatus(order.getId());
+
+        Assertions.assertThrows(CannotRestartOrderException.class, () -> orderService.restart(order.getId(), "restartWhenNotDone", URL));
+
+        storageClientMock.setWaitMode(false);
+        orderService.resume(order.getId());
+        waitForStatus(order.getId(), OrderStatus.DONE);
+    }
+
+    @Test
+    public void retry() throws ModuleException, InterruptedException {
+
+        int creationTasksCount = 2;
+        int retryTasksCount = 3;
+        int expectedPostRetryCompletion = 83;
+
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketSingleSelection("simpleRetry");
+        basketRepository.save(basket);
+
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
+        Long orderId = order.getId();
+        LOGGER.info("Order created");
+        waitForStatus(orderId, OrderStatus.DONE);
+        assertEquals(creationTasksCount, filesTasksRepository.findAll().stream().filter(filesTask -> filesTask.getOrderId().equals(orderId)).count());
+        checkCompletion(orderId, 100);
+
+        // Set current FilesTask as downloaded to ensure new job will be processed after retry
+        filesTasksRepository.findDistinctByWaitingForUser(true).forEach(filesTask -> {
+            filesTask.getFiles().forEach(orderDataFile -> {
+                orderDataFile.setState(FileState.DOWNLOADED);
+                orderDataFileRepository.save(orderDataFile);
+            });
+            filesTask.computeWaitingForUser();
+            filesTasksRepository.save(filesTask);
+        });
+        // Set one file in error and order as done with warning
+        OrderDataFile ds1OrderDataFile = orderDataFileRepository.findAllByOrderId(orderId)
+                .stream()
+                .filter(orderDataFile -> orderDataFile.getIpId().equals(OBJECT_IP_ID))
+                .findFirst()
+                .get();
+        ds1OrderDataFile.setState(FileState.ERROR);
+        orderDataFileRepository.save(ds1OrderDataFile);
+        FilesTask oldFilesTask = filesTasksRepository.findDistinctByFilesContaining(ds1OrderDataFile);
+        order = orderRepository.findSimpleById(orderId);
+        order.setStatus(OrderStatus.DONE_WITH_WARNING);
+        orderRepository.save(order);
+
+        // Mock storage delay to check on completion after retry
+        storageClientMock.setWaitMode(true);
+
+        // Actually retry order
+        orderService.retryErrors(order.getId());
+        LOGGER.info("Order retried");
+        waitForStatus(orderId, OrderStatus.RUNNING);
+
+        // Wait for completion to be computed through scheduled task - see OrderMaintenanceService
+        TimeUnit.SECONDS.sleep(2);
+        // Check completion is set properly
+        checkCompletion(orderId, expectedPostRetryCompletion);
+
+        // Should get a new FilesTask for retried files
+        assertEquals(retryTasksCount, filesTasksRepository.findAll().stream().filter(filesTask -> filesTask.getOrderId().equals(orderId)).count());
+        FilesTask newFilesTask = filesTasksRepository.findDistinctByFilesContaining(ds1OrderDataFile);
+        assertNotEquals(oldFilesTask, newFilesTask);
+
+        // Pause and resume order to force job to actually complete
+        orderService.pause(orderId);
+        waitForPausedStatus(orderId);
+        storageClientMock.setWaitMode(false);
+        orderService.resume(orderId);
+        waitForStatus(orderId, OrderStatus.DONE);
+        checkCompletion(orderId, 100);
+
+    }
+
+    private void waitForStatus(Long orderId, OrderStatus status) throws InterruptedException {
+        int loop = 0;
+        while (!orderService.loadComplete(orderId).getStatus().equals(status) && (loop < 20)) {
+            Thread.sleep(5_000);
+            loop++;
+        }
+        Assert.assertEquals(status, orderService.loadSimple(orderId).getStatus());
+    }
+
+    private void waitForPausedStatus(Long orderId) throws InterruptedException {
+        int loop = 0;
+        while (!orderService.isPaused(orderId) && (loop < 20)) {
+            Thread.sleep(5_000);
+            loop++;
+        }
+        Assert.assertTrue(orderService.isPaused(orderId));
+    }
+
+    private void waitForWaitingForUser(Long orderId) throws InterruptedException {
+        int loop = 0;
+        while (!orderService.loadComplete(orderId).isWaitingForUser() && (loop < 30)) {
+            Thread.sleep(1_000);
+            loop++;
+        }
+        Assert.assertTrue(orderService.loadComplete(orderId).isWaitingForUser());
+    }
+
+    private void checkCompletion(long orderId, int expectedCompletion) {
+        assertEquals(expectedCompletion, orderRepository.findCompleteById(orderId).getPercentCompleted());
     }
 
 }

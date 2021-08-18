@@ -19,11 +19,9 @@
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
 import com.google.gson.JsonObject;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import org.dom4j.rule.Rule;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import sun.security.pkcs11.Secmod;
 
 /**
  * Describe action to applied to a {@link Rule}

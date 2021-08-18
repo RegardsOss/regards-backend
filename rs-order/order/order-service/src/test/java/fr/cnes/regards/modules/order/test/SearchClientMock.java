@@ -668,7 +668,7 @@ public class SearchClientMock implements IComplexSearchClient {
             for (File file : dir.listFiles()) {
                 DataFile dataFile = new DataFile();
                 dataFile.setOnline(false);
-                dataFile.setUri(new URI("file:///test/" + file.getName()));
+                dataFile.setUri(new URI("file:///test/" + file.getName()).toString());
                 dataFile.setFilename(file.getName());
                 dataFile.setFilesize(file.length());
                 dataFile.setReference(false);

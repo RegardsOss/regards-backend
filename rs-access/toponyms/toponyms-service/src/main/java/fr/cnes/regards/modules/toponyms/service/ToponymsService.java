@@ -18,14 +18,33 @@
  */
 package fr.cnes.regards.modules.toponyms.service;
 
-import java.util.ArrayList;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
+import fr.cnes.regards.modules.toponyms.domain.Toponym;
+import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
+import fr.cnes.regards.modules.toponyms.domain.ToponymMetadata;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
+import fr.cnes.regards.modules.toponyms.service.utils.ToponymsIGeometryHelper;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import org.geolatte.geom.Feature;
 import org.geolatte.geom.Geometry;
+import org.geolatte.geom.GeometryType;
 import org.geolatte.geom.Position;
-import org.geolatte.geom.PositionSequence;
+import org.geolatte.geom.json.GeolatteGeomModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,232 +58,250 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
-import fr.cnes.regards.framework.geojson.coordinates.Positions;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
-import fr.cnes.regards.modules.toponyms.domain.Toponym;
-import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
-import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
-
 /**
  * Service to search {@link ToponymDTO}s from a postgis database
  *
  * @author Sébastien Binda
- *
  */
 @Service
+@RegardsTransactional
 public class ToponymsService {
 
     /**
-     * Class logger
+     * Toponyms repository
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ToponymsService.class);
-
-    /**
-     * Maximum number of points to retrieve for each polygon of a geometry
-     */
-    private static final int POINT_SAMPLING_FINDALL = 50;
-
     @Autowired
     private ToponymsRepository repository;
 
+
+    // --- DEFAULT PARAMETERS ---
+
+    /**
+     * Maximum number of toponyms that can be saved per day and per user
+     */
+    @Value("${regards.toponyms.limit.save:30}")
+    private int limitSave;
+
     /**
      * Tolerance (unit: meter) to generate simplified geometry through  ST_Simplify Postgis function
-     * @see https://postgis.net/docs/ST_Simplify.html
+     * @see "https://postgis.net/docs/ST_Simplify.html"
      */
-    @Value("${regards.Toponyms.geo.sampling.tolerance:0.1}")
+    @Value("${regards.toponyms.geo.sampling.tolerance:0.1}")
     private double tolerance;
 
     /**
      * Maximum number of points to retrieve for each polygon of a geometry
      * Default 0 for no sampling
      */
-    @Value("${regards.Toponyms.geo.sampling.max.points:0}")
+    @Value("${regards.toponyms.geo.sampling.max.points:0}")
     private int sampling;
 
     /**
+     * Parameter used to set the expiration date of a not visible toponym
+     */
+    @Value("${regards.toponyms.expiration:30}")
+    private int defaultExpiration;
+
+    /**
+     * Maximum number of points to retrieve for each polygon of a geometry
+     */
+    private static final int POINT_SAMPLING_FINDALL = 50;
+
+    /**
+     * LOGGER
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ToponymsService.class);
+
+
+    /**
      * Retrieve {@link Page} of {@link ToponymDTO}s
-     *
+     * @param visible visibility of the toponym
      * @param pageable
      * @return {@link ToponymDTO}s
      */
-    public Page<ToponymDTO> findAll(String locale, Pageable pageable) {
+    public Page<ToponymDTO> findAllByVisibility(String locale, boolean visible, Pageable pageable) {
         Pageable page;
         if (locale.equals(ToponymLocaleEnum.FR.getLocale())) {
             page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Direction.ASC, "labelFr"));
         } else {
             page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Direction.ASC, "label"));
         }
-        Page<Toponym> toponymsPage = repository.findAll(page);
-        return new PageImpl<ToponymDTO>(toponymsPage.getContent().stream().map(f -> {
-            return ToponymDTO.build(f.getBusinessId(), f.getLabel(), f.getLabelFr(),
-                                    ToponymsService.parse(f.getGeometry(), POINT_SAMPLING_FINDALL), f.getCopyright(),
-                                    f.getDescription());
-        }).collect(Collectors.toList()), toponymsPage.getPageable(), toponymsPage.getTotalElements());
+        Page<Toponym> toponymsPage = repository.findByVisible(visible, page);
+        return new PageImpl<ToponymDTO>(toponymsPage.getContent().stream().map(t ->
+                getToponymDTO(t, POINT_SAMPLING_FINDALL)).collect(Collectors.toList()), toponymsPage.getPageable(), toponymsPage.getTotalElements());
     }
 
     /**
-     * Retrieve  one {@link ToponymDTO}s by his business unique identifier
-     * @param businessId
+     * Retrieve one {@link ToponymDTO}s by his business unique identifier. If the toponym is not visible, the lastAccessDate
+     * will automatically be updated to now.
+     *
+     * @param businessId the identifier of the toponym searched
+     * @param simplified if the geometry has to be returned simplified, i.e, with a tolerance)
      * @return {@link ToponymDTO}
      */
-    public Optional<ToponymDTO> findOne(String businessId, boolean simplified) {
+     public Optional<ToponymDTO> findOne(String businessId, boolean simplified) {
+        Optional<Toponym> toponym;
+        // check if geometry should be returned simplified
         if (!simplified) {
-            Optional<Toponym> toponym = repository.findById(businessId);
-            if (toponym.isPresent()) {
-                Toponym t = toponym.get();
-                return Optional.of(ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
-                                                    ToponymsService.parse(t.getGeometry(), sampling), t.getCopyright(),
-                                                    t.getDescription()));
-            } else {
-                return Optional.empty();
-            }
+            toponym = repository.findById(businessId);
         } else {
             // Optional<ISimplifiedToponym> toponym = repository.findOneSimplified(businessId);
-            Optional<Toponym> toponym = repository.findOneSimplified(businessId, tolerance);
-            if (toponym.isPresent()) {
-                Toponym t = toponym.get();
-                return Optional.of(ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
-                                                    ToponymsService.parse(t.getGeometry(), sampling), t.getCopyright(),
-                                                    t.getDescription()));
-            } else {
-                return Optional.empty();
+            toponym = repository.findOneSimplified(businessId, tolerance);
+        }
+        // check if the toponym is present and its visibility
+        if (toponym.isPresent()) {
+            Toponym t = toponym.get();
+            if (!t.isVisible()) {
+                t.getToponymMetadata().setExpirationDate(OffsetDateTime.now().plusDays(this.defaultExpiration));
+                t = this.repository.save(t);
             }
+            return Optional.of(getToponymDTO(t, sampling));
+        } else {
+            return Optional.empty();
         }
     }
 
     /**
      * Search for toponyms matching the label and the locale given.
      * Returned {@link ToponymDTO}s are geometry free.
+     *
      * @param partialLabel
      * @param locale
+     * @param visible
      * @param limit maximum number of results to retrieve
      * @return {@link ToponymDTO}s without geometry
      */
-    public List<ToponymDTO> search(String partialLabel, String locale, int limit) {
+    public List<ToponymDTO> search(String partialLabel, String locale, boolean visible, int limit) {
         Page<Toponym> page;
         Assert.notNull("locale is mandatory for toponyls search by label", locale);
         Assert.notNull("partialLabel is  mandatory for toponyms search by label", partialLabel);
         if (locale.equals(ToponymLocaleEnum.FR.getLocale())) {
             page = repository
-                    .findByLabelFrContainingIgnoreCase(partialLabel,
-                                                       PageRequest.of(0, limit, Sort.by(Direction.ASC, "labelFr")));
+                    .findByLabelFrContainingIgnoreCaseAndVisible(partialLabel, visible,
+                            PageRequest.of(0, limit, Sort.by(Direction.ASC, "labelFr")));
         } else {
             page = repository
-                    .findByLabelContainingIgnoreCase(partialLabel,
-                                                     PageRequest.of(0, limit, Sort.by(Direction.ASC, "label")));
+                    .findByLabelContainingIgnoreCaseAndVisible(partialLabel, visible,
+                            PageRequest.of(0, limit, Sort.by(Direction.ASC, "label")));
         }
         return page
-                .getContent().stream().map(t -> ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(), null,
-                                                                 t.getCopyright(), t.getDescription()))
-                .collect(Collectors.toList());
+                .getContent().stream().map(t -> ToponymDTO
+                        .build(t.getBusinessId(), t.getLabel(), t.getLabelFr(), null, t.getCopyright(),
+                                t.getDescription(), t.isVisible(), t.getToponymMetadata())).collect(Collectors.toList());
     }
 
     /**
-     * Parse a {@link Geometry} to build a {@link IGeometry}
-     * @param geometry
-     * @param samplingMax Maximum number of points to retrieve for each polygon of a geometry
-     * @return {@link IGeometry}
+     * Generate a not visible toponym
+     *
+     * @param featureString the feature received as string
+     * @param user          the user who has requested the toponym creation
+     * @param project       the project on which the toponym has been dropped
+     * @return a {@link ToponymDTO}
+     * @throws ModuleException         if a problem occurred during the parsing of the geometry
+     * @throws JsonProcessingException if a problem occurred during the parsing of the geometry
      */
-    private static IGeometry parse(Geometry<Position> geometry, int samplingMax) {
-        IGeometry geo = null;
-        switch (geometry.getGeometryType()) {
-            case POLYGON:
-                geo = new Polygon();
-                geo.setCrs(geometry.getCoordinateReferenceSystem().getName());
-                ((Polygon) geo)
-                        .setCoordinates(parsePolygon((org.geolatte.geom.Polygon<Position>) geometry, samplingMax));
-                break;
-            case MULTIPOLYGON:
-                geo = new MultiPolygon();
-                List<fr.cnes.regards.framework.geojson.coordinates.PolygonPositions> postions = new ArrayList<fr.cnes.regards.framework.geojson.coordinates.PolygonPositions>();
-                org.geolatte.geom.MultiPolygon<Position> gPol = (org.geolatte.geom.MultiPolygon<Position>) geometry;
-                // Loop over each polygon
-                for (int i = 0; i < gPol.getNumGeometries(); i++) {
-                    // Parse polygon positions
-                    postions.add(parsePolygon(gPol.getGeometryN(i), samplingMax));
-                }
-                ((MultiPolygon) geo).setCoordinates(postions);
-                geo.setCrs(geometry.getCoordinateReferenceSystem().getName());
-                break;
-            case CURVE:
-            case GEOMETRYCOLLECTION:
-            case LINEARRING:
-            case LINESTRING:
-            case MULTILINESTRING:
-            case MULTIPOINT:
-            case POINT:
-            case SURFACE:
-            default:
-                LOGGER.error("Geometry type {} not handled yet !", geometry.getGeometryType());
-                break;
-        }
-        return geo;
-    }
-
-    /**
-     * Parse a {@link org.geolatte.geom.Polygon} to build a {@link PolygonPositions}
-     * @param polygon
-     * @param samplingMax Maximum number of points to retrieve for each polygon of a geometry
-     * @return {@link PolygonPositions}
-     */
-    private static PolygonPositions parsePolygon(org.geolatte.geom.Polygon<Position> polygon, int samplingMax) {
-        // Create result IGeometry#Polygon
-        PolygonPositions polygonPostions = new PolygonPositions();
-        // Create result positions for Polygin external ring positions
-        fr.cnes.regards.framework.geojson.coordinates.Positions exteriorRingPostions = new fr.cnes.regards.framework.geojson.coordinates.Positions();
-        // Add external Ring positions
-        addPositionsToRing(polygon.getExteriorRing().getPositions(), exteriorRingPostions, samplingMax);
-        polygonPostions.add(0, exteriorRingPostions);
-        // Loop over internal rings to add assiociated positions
-        for (int j = 0; j < polygon.getNumInteriorRing(); j++) {
-            fr.cnes.regards.framework.geojson.coordinates.Positions ineriorRing = new fr.cnes.regards.framework.geojson.coordinates.Positions();
-            addPositionsToRing(polygon.getInteriorRingN(j).getPositions(), ineriorRing, samplingMax);
-            polygonPostions.add(j + 1, ineriorRing);
-        }
-        return polygonPostions;
-    }
-
-    /**
-     * Parse a {@link PositionSequence} to add each included {@link Position} in the given {@link Positions}
-     * @param positions {@link PositionSequence} to  parse
-     * @param ring {@link Positions}
-     * @param maxSampling Maximum number of points to retrieve for each polygon of a geometry
-     */
-    private static void addPositionsToRing(PositionSequence<Position> positions, Positions ring, int maxSampling) {
-        int step = (maxSampling > 2) && (maxSampling < positions.size()) ? ((positions.size() / maxSampling)) : 1;
-        int index;
-        boolean last = false;
-        for (index = 0; index < positions.size(); index = index + step) {
-            addPositionToRing(positions.getPositionN(index), ring);
-            last = index == (positions.size() - 1);
-        }
-        // Ensure add last point
-        if (!last) {
-            addPositionToRing(positions.getPositionN(positions.size() - 1), ring);
-        }
-        LOGGER.debug("Ring sampled {}/{} (step={})", ring.size(), positions.size(), step);
-    }
-
-    /**
-     * Parse a {@link Position} to build a {@link fr.cnes.regards.framework.geojson.coordinates.Position} and add it in the given {@link Positions}
-     * @param position {@link Position} to parse
-     * @param ringPosition {@link Positions} to add the built {@link fr.cnes.regards.framework.geojson.coordinates.Position}
-     */
-    private static void addPositionToRing(Position position, Positions ringPosition) {
-        // Add  positions with right dimension
-        if (position.getCoordinateDimension() == 2) {
-            ringPosition.add(new fr.cnes.regards.framework.geojson.coordinates.Position(position.getCoordinate(0),
-                    position.getCoordinate(1)));
-        } else if (position.getCoordinateDimension() == 3) {
-            ringPosition.add(new fr.cnes.regards.framework.geojson.coordinates.Position(position.getCoordinate(0),
-                    position.getCoordinate(1), position.getCoordinate(3)));
+    public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project)
+            throws ModuleException {
+        // --- GEOMETRY PARSING ---
+        Geometry<Position> geometry = parseGeometry(featureString);
+        // check geometry is not already present in the database for this project
+        List<Toponym> toponymRetrieved = this.repository
+                .findByGeometryAndVisibleAndToponymMetadataProject(geometry.toString(), project);
+        if (!toponymRetrieved.isEmpty()) {
+            // --- RETURN TOPONYM IF FOUND ---
+            if (toponymRetrieved.size() > 1) {
+                String toponymAsString = toponymRetrieved.stream().map(Toponym::getBusinessId)
+                        .collect(Collectors.joining(" - ", "[", "]"));
+                LOGGER.warn("The not visible toponym geometries should be unique per project. The following "
+                                    + "toponyms have the same geometry {}", toponymAsString);
+            }
+            // update expiration date
+            Toponym toponym = toponymRetrieved.get(0);
+            toponym.getToponymMetadata().setExpirationDate(OffsetDateTime.now().plusDays(this.defaultExpiration));
+            return getToponymDTO(this.repository.save(toponym), sampling);
         } else {
-            LOGGER.error("Invalid dimension size " + position.getCoordinateDimension());
+            // --- CREATE TOPONYM ---
+            // Count if user has reached the limit of toponyms to save per day
+            OffsetDateTime startDayTime = OffsetDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneOffset.UTC);
+            int nbCreations = this.repository
+                    .countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(user, startDayTime,
+                                                                                       OffsetDateTime.now());
+            if (nbCreations >= this.limitSave) {
+                throw new MaxLimitPerDayException(String.format(
+                        "User %s has reached the maximum number of toponyms to be saved in one day (max. %d).", user,
+                        this.limitSave));
+            } else {
+                // define parameters
+                OffsetDateTime currentDateTime = OffsetDateTime.now();
+                String bid = String
+                        .format("Toponym_%s", OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                ToponymMetadata metadata = new ToponymMetadata(currentDateTime,
+                                                               currentDateTime.plusDays(this.defaultExpiration), user,
+                                                               project);
+                return getToponymDTO(
+                        this.repository.save(new Toponym(bid, bid, bid, geometry, null, null, false, metadata)),
+                        sampling);
+            }
         }
     }
 
+    /**
+     * Utils method to get the {@link ToponymDTO} from a {@link Toponym}
+     *
+     * @param t           toponym
+     * @param samplingMax maximum number of points to retrieve in geometry
+     * @return {@link ToponymDTO}
+     */
+    public ToponymDTO getToponymDTO(Toponym t, int samplingMax) {
+        return ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
+                                ToponymsIGeometryHelper.parseLatteGeometry(t.getGeometry(), samplingMax),
+                                t.getCopyright(), t.getDescription(), t.isVisible(), t.getToponymMetadata());
+    }
+
+    /**
+     * Utils method to parse a geometry
+     *
+     * @param featureString the feature in string format
+     * @return the geometry with {@link Geometry} format
+     * @throws ModuleException         if a problem occurred during the parsing of the geometry
+     */
+    private Geometry<Position> parseGeometry(String featureString) throws ModuleException {
+        // define mapper
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new GeolatteGeomModule());
+        // parse geometry
+        LOGGER.debug("Parsing geometry of feature {}", featureString);
+        Feature<?, ?> feature;
+        Geometry<Position> geometry = null;
+        GeometryType geometryType = null;
+        try {
+            feature = mapper.readValue(featureString, Feature.class);
+            geometry = (Geometry<Position>) feature.getGeometry();
+            geometryType = geometry.getGeometryType();
+        } catch (JsonProcessingException | NullPointerException | ClassCastException e) {
+            handleParseGeometryError(e.getCause());
+        }
+        // check geometry and type, refuse not handled geometry
+        if (!Objects.requireNonNull(geometryType).equals(GeometryType.POLYGON) && !geometryType
+                .equals(GeometryType.MULTIPOLYGON)) {
+            throw new GeometryNotHandledException(geometryType.toString());
+        }
+        return geometry;
+    }
+
+    /**
+     * Handle geometry parsing errors
+     * @param cause of the error
+     * @throws GeometryNotProcessedException exception for geometry not parsed
+     */
+    private void handleParseGeometryError(Throwable cause) throws GeometryNotProcessedException {
+        // if geometry could not be read
+        StringBuilder msg = new StringBuilder(
+                "The geometry could not be processed. The toponym will not be saved. Check the format "
+                        + "of the geojson feature. ");
+        if (cause != null) {
+            msg.append("Cause : ").append(cause.getMessage());
+        }
+        throw new GeometryNotProcessedException(msg.toString());
+    }
 }

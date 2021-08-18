@@ -40,20 +40,26 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 
 /**
  * Test class for cache service.
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noschedule" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests",
-                "regards.storage.cache.path=target/cache", "regards.storage.cache.schedule.purge.bulk.size=5" },
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests" },
         locations = { "classpath:application-test.properties" })
 public class CacheServiceTest extends AbstractMultitenantServiceTest {
 
@@ -63,13 +69,22 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
     @Autowired
     private ICacheFileRepository repository;
 
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
+
+    @Autowired
+    private IDynamicTenantSettingRepository dynamicTenantSettingRepository;
+
     @Before
-    public void init() {
+    public void init() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         repository.deleteAll();
+        dynamicTenantSettingRepository.deleteAll();
+        simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
-        service.initCacheFileSystem(getDefaultTenant());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // we override cache setting values for tests
+        dynamicTenantSettingService.update(StorageSetting.CACHE_MAX_SIZE_NAME, 5L);
     }
 
     @Test
@@ -108,7 +123,6 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
 
     /**
      * Test that cache is well purged when files are expired.
-     * @throws IOException
      */
     @Test
     @Requirement("REGARDS_DSL_STO_ARC_450")
@@ -149,7 +163,7 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         if (!Files.exists(path)) {
             Files.createFile(path);
         }
-        Files.walk(path).filter(p -> Files.isRegularFile(p)).forEach(p -> {
+        Files.walk(path).filter(Files::isRegularFile).forEach(p -> {
             try {
                 repository.save(new CacheFile(UUID.randomUUID().toString(), 12L, p.getFileName().toString(),
                                               MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE), new URL("file:" + p.toAbsolutePath().toString()),

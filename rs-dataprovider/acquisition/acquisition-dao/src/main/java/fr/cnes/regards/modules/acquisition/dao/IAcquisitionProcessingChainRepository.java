@@ -18,22 +18,18 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.persistence.LockModeType;
-
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.stereotype.Repository;
+
+import javax.persistence.LockModeType;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * {@link AcquisitionProcessingChain} repository
@@ -42,8 +38,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  * @author Marc Sordi
  */
 @Repository
-public interface IAcquisitionProcessingChainRepository
-        extends JpaRepository<AcquisitionProcessingChain, Long>, JpaSpecificationExecutor<AcquisitionProcessingChain> {
+public interface IAcquisitionProcessingChainRepository extends JpaRepository<AcquisitionProcessingChain, Long>, JpaSpecificationExecutor<AcquisitionProcessingChain> {
 
     Long countById(Long id);
 
@@ -51,7 +46,7 @@ public interface IAcquisitionProcessingChainRepository
         return countById(id) == 1;
     }
 
-    @EntityGraph("graph.acquisition.file.info.complete")
+    @EntityGraph("graph.acquisition.chain.complete")
     AcquisitionProcessingChain findCompleteById(Long id);
 
     /**
@@ -87,7 +82,16 @@ public interface IAcquisitionProcessingChainRepository
 
     List<AcquisitionProcessingChain> findByLabel(String label);
 
-    @EntityGraph("graph.acquisition.file.info.complete")
+    @EntityGraph("graph.acquisition.chain.complete")
     @Override
     List<AcquisitionProcessingChain> findAll();
+
+    @EntityGraph("graph.acquisition.chain.complete")
+    @Override
+    Page<AcquisitionProcessingChain> findAll(Pageable pageable);
+
+    @EntityGraph("graph.acquisition.chain.complete")
+    @Override
+    Page<AcquisitionProcessingChain> findAll(Specification<AcquisitionProcessingChain> specification, Pageable pageable);
+
 }

@@ -2,13 +2,19 @@ package fr.cnes.regards.modules.storage.service.file.download;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import fr.cnes.regards.modules.storage.service.file.flow.AvailabilityUpdateCustomTestAction;
 import io.vavr.Tuple2;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,12 +40,7 @@ import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
 
-@TestPropertySource(
-    properties = {
-        "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests",
-        "regards.storage.cache.path=unused but required" // ¯\_(ツ)_/¯
-    }
-)
+@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests"})
 public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuotaManagerImplIT.class);
@@ -58,8 +60,11 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
     @Autowired @InjectMocks
     private QuotaManagerImpl quotaManager;
 
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
+
     @Before
-    public void setUp() {
+    public void setUp() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         MockitoAnnotations.initMocks(this);
         quotaRepositoryDelegate = quotaRepository;
         quotaRepository =
@@ -78,7 +83,7 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void test_gauges() throws ExecutionException, InterruptedException {
+    public void test_gauges() throws InterruptedException {
         // given
         // there is a user with some quota definition
         DownloadQuotaLimits downloadQuota = new DownloadQuotaLimits(getDefaultTenant(), "foo@bar.com", -1L, -1L);
@@ -180,7 +185,7 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
             }};
 
         // when
-        // this instance flushes its diff and refreshes the global gauge value across instances
+        // instance1 flushes its diff and refreshes the global gauge value across instances
         quotaManager.flushSyncAndRefreshQuotas(diffSyncs);
 
         // then

@@ -44,7 +44,6 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storage.dao.FileReferenceSpecification;
@@ -53,7 +52,6 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
@@ -71,13 +69,20 @@ import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
  * Performances tests for creating and store new file references.
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_perf_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-local.properties" })
+@ActiveProfiles({ "noscheduler" })
+@TestPropertySource(
+        properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_perf_tests"},
+        locations = { "classpath:application-test.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
+
+    private static final String FILE_REF_OWNER = "owner";
+
+    private static final  String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
 
     @Autowired
     private ReferenceFlowItemHandler referenceFlowHandler;
@@ -119,7 +124,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                 FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "UUID",
                         "file_" + i + ".test", i, MediaType.APPLICATION_OCTET_STREAM);
                 FileLocation location = new FileLocation("storage_" + i, "storage://plop/file");
-                FileReference fileRef = new FileReference(Lists.newArrayList("owner"), metaInfo, location);
+                FileReference fileRef = new FileReference(Lists.newArrayList(FILE_REF_OWNER), metaInfo, location);
                 toSave.add(fileRef);
                 if (toSave.size() >= 10_000) {
                     long start = System.currentTimeMillis();
@@ -142,7 +147,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, "UUID", "file_" + i + ".test", i,
                     MediaType.APPLICATION_OCTET_STREAM);
             FileLocation location = new FileLocation(NEARLINE_CONF_LABEL, "storage://plop/file");
-            FileReference fileRef = new FileReference(Lists.newArrayList("owner"), metaInfo, location);
+            FileReference fileRef = new FileReference(Lists.newArrayList(FILE_REF_OWNER), metaInfo, location);
             toSave.add(fileRef);
         }
         long start = System.currentTimeMillis();
@@ -153,6 +158,26 @@ public class FlowPerformanceTest extends AbstractStorageTest {
     }
 
     @Test
+    public void referenceFileWithManyOwners() {
+        String checksum = UUID.randomUUID().toString();
+        Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
+        List<ReferenceFlowItem> items = new ArrayList<>();
+        for (int i = 0; i < 5_000; i++) {
+            items.clear();
+            requests.clear();
+            String newOwner = "owner-" + UUID.randomUUID().toString();
+            String sessionOwner = "source-" + i;
+            String session = "session-" + i;
+            requests.add(FileReferenceRequestDTO.build(checksum, checksum, "MD5", "application/octet-stream", 10L,
+                                                       newOwner, "storage", "file://storage/location/file1",
+                                                       sessionOwner, session));
+            items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
+            referenceFlowHandler.handleBatch(getDefaultTenant(), items);
+        }
+
+    }
+
+    @Test
     public void referenceFiles() throws InterruptedException {
         LOGGER.info(" --------     REFERENCE TEST     --------- ");
         String refStorage = "storage-1";
@@ -160,24 +185,26 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         List<ReferenceFlowItem> items = new ArrayList<>();
         for (int i = 0; i < 5000; i++) {
             String newOwner = "owner-" + UUID.randomUUID().toString();
+            String sessionOwner = "source-" + i;
+            String session = "session-" + i;
             String checksum = UUID.randomUUID().toString();
-            String checksum2 = UUID.randomUUID().toString();
             Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
             requests.add(FileReferenceRequestDTO.build("quicklook.1-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.2-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.3-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             requests.add(FileReferenceRequestDTO.build("quicklook.4-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1"));
+                                                       "file://storage/location/quicklook1", sessionOwner, session));
             // Create a new bus message File reference request
             requests.add(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
-                                                       newOwner, storage, "file://storage/location/file.name"));
+                                                       newOwner, storage, "file://storage/location/file.name",
+                                                       sessionOwner, session));
             items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
             if (items.size() >= referenceFlowHandler.getBatchSize()) {
                 referenceFlowHandler.handleBatch(getDefaultTenant(), items);
@@ -205,24 +232,23 @@ public class FlowPerformanceTest extends AbstractStorageTest {
     public void storeFiles() throws InterruptedException {
         LOGGER.info(" --------     STORE TEST     --------- ");
         OffsetDateTime now = OffsetDateTime.now();
+        List<StorageFlowItem> items = Lists.newArrayList();
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
             // Create a new bus message File reference request
-            StorageFlowItem item = StorageFlowItem
+            items.add(StorageFlowItem
                     .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                       "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
-                           UUID.randomUUID().toString());
-            TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
+                                                       "owner-test", SESSION_OWNER, SESSION, originUrl,
+                                                       ONLINE_CONF_LABEL, Optional.empty()),
+                           UUID.randomUUID().toString()));
+
             // Publish request
-            storeFlowHandler.handle(wrapper);
+            if (items.size() > storeFlowHandler.getBatchSize()) {
+                storeFlowHandler.handleBatch(getDefaultTenant(), items);
+                items.clear();
+            }
         }
-        int loops = 0;
-        Page<FileStorageRequest> page;
-        do {
-            Thread.sleep(10_000);
-            page = stoReqService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
-            loops++;
-        } while ((loops < 10) && ((page.getTotalElements()) != 5000));
+        storeFlowHandler.handleBatch(getDefaultTenant(), items);
 
         Assert.assertEquals("There should be 5000 file storage request created", 5000, stoReqService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
@@ -251,20 +277,21 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         int nbToDelete = 500;
         Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         Long total = page.getTotalElements();
+        List<DeletionFlowItem> items = Lists.newArrayList();
         for (FileReference fileRef : page.getContent()) {
-            DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
-                    .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                           fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
-            TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-            deleteHandler.handle(wrapper);
+            items.add(DeletionFlowItem
+                    .build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                        fileRef.getLocation().getStorage(), FILE_REF_OWNER,
+                                                        SESSION_OWNER, SESSION, false),
+                           UUID.randomUUID().toString()));
+            if (items.size() > deleteHandler.getBatchSize()) {
+                deleteHandler.handleBatch(getDefaultTenant(), items);
+                items.clear();
+            }
         }
-        LOGGER.info("Waiting ....");
-        int loops = 0;
-        do {
-            Thread.sleep(500);
-            page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
-            loops++;
-        } while ((loops < 100) && (nbToDelete != (total - page.getTotalElements())));
+        deleteHandler.handleBatch(getDefaultTenant(), items);
+
+        page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
 
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
     }
@@ -273,15 +300,21 @@ public class FlowPerformanceTest extends AbstractStorageTest {
     public void deleteStoredFiles() throws InterruptedException {
         LOGGER.info(" --------     DELETE TEST     --------- ");
         int nbToDelete = 500;
+        List<DeletionFlowItem> items = Lists.newArrayList();
         Page<FileReference> page = fileRefService.search(NEARLINE_CONF_LABEL,
                                                          PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         for (FileReference fileRef : page.getContent()) {
-            DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO
-                    .build(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                           fileRef.getOwners().iterator().next(), false), UUID.randomUUID().toString());
-            TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-            deleteHandler.handle(wrapper);
+            items.add(DeletionFlowItem
+                    .build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                        fileRef.getLocation().getStorage(), FILE_REF_OWNER,
+                                                        SESSION_OWNER, SESSION, false),
+                           UUID.randomUUID().toString()));
+            if (items.size() > deleteHandler.getBatchSize()) {
+                deleteHandler.handleBatch(getDefaultTenant(), items);
+                items.clear();
+            }
         }
+        deleteHandler.handleBatch(getDefaultTenant(), items);
         LOGGER.info("Waiting ....");
         int loops = 0;
         Page<FileDeletionRequest> pageDel = null;

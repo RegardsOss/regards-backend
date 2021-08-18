@@ -113,33 +113,36 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         Set<Product> success = Sets.newHashSet();
         Set<Product> errors = Sets.newHashSet();
 
+        Set<String> interruptedSessions = Sets.newHashSet();
+
         for (Product product : products) {
             if (Thread.currentThread().isInterrupted()) {
                 debugInterruption = "before thread interruption";
-                sessionNotifier.notifyEndingChain(processingChain.getLabel(), product.getSession());
-                break;
-            }
-            logger.trace("Generating SIP for product {}", product.getProductName());
-            try {
-                // Launch generation plugin
-                SIP sip = generateSipPlugin.generate(product);
-                // Update product
-                sessionNotifier.notifyChangeProductState(product, ProductSIPState.SUBMITTED);
-                product.setSip(sip);
-                product.setSipState(ProductSIPState.SUBMITTED);
-                success.add(product);
-                generatedCount++;
-            } catch (Exception e) {
-                if (!Thread.currentThread().isInterrupted()) {
-                    String message = String.format("Error while generating product \"%s\"", product.getProductName());
-                    logger.error(message, e);
-                    sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR);
-                    product.setSipState(ProductSIPState.GENERATION_ERROR);
-                    product.setError(e.getMessage());
-                    errors.add(product);
+                interruptedSessions.add(product.getSession());
+            } else {
+                logger.trace("Generating SIP for product {}", product.getProductName());
+                try {
+                    // Launch generation plugin
+                    SIP sip = generateSipPlugin.generate(product);
+                    // Update product
+                    sessionNotifier.notifyChangeProductState(product, ProductSIPState.SUBMITTED, true);
+                    product.setSip(sip);
+                    product.setSipState(ProductSIPState.SUBMITTED);
+                    success.add(product);
+                    generatedCount++;
+                } catch (Exception e) {
+                    if (!Thread.currentThread().isInterrupted()) {
+                        String message = String.format("Error while generating product \"%s\"", product.getProductName());
+                        logger.error(message, e);
+                        sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR, true);
+                        product.setSipState(ProductSIPState.GENERATION_ERROR);
+                        product.setError(e.getMessage());
+                        errors.add(product);
+                    }
                 }
+                advanceCompletion();
             }
-            advanceCompletion();
+
         }
 
         productService.handleGeneratedProducts(processingChain, success, errors);
@@ -149,6 +152,10 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         logger.info("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
                     System.currentTimeMillis() - startTime, debugInterruption);
         products.clear();
+
+        if (!interruptedSessions.isEmpty()) {
+            interruptedSessions.forEach(s -> this.sessionNotifier.notifyEndingChain(processingChain.getLabel(),s));
+        }
     }
 
     @Override

@@ -26,6 +26,7 @@ import javax.persistence.Entity;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -36,7 +37,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  *
  */
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.COPY)
+@DiscriminatorValue(FeatureRequestTypeEnum.COPY_DISCRIMINENT)
 public class FeatureCopyRequest extends AbstractFeatureRequest {
 
     @Column(name = "storage", nullable = false)

@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.order.service.utils;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 /**
  * Allows to count internal/external files and suborders during the order creation.
  *
@@ -37,10 +41,19 @@ public final class OrderCounts {
     // Count number of subOrder created to compute expiration date
     private int subOrderCount;
 
+    private Set<UUID> jobInfoIdSet = new HashSet<>();
+
     public OrderCounts(int internalFilesCount, int externalFilesCount, int subOrderCount) {
         this.internalFilesCount = internalFilesCount;
         this.externalFilesCount = externalFilesCount;
         this.subOrderCount = subOrderCount;
+    }
+
+    public OrderCounts(int internalFilesCount, int externalFilesCount, int subOrderCount, Set<UUID> jobInfoIdSet) {
+        this.internalFilesCount = internalFilesCount;
+        this.externalFilesCount = externalFilesCount;
+        this.subOrderCount = subOrderCount;
+        this.jobInfoIdSet = jobInfoIdSet;
     }
 
     public OrderCounts() {
@@ -62,6 +75,11 @@ public final class OrderCounts {
         return this;
     }
 
+    public OrderCounts addJobInfoId(UUID jobInfoId) {
+        jobInfoIdSet.add(jobInfoId);
+        return this;
+    }
+
     public void incrSubOrderCount() {
         this.addToSubOrderCount(1);
     }
@@ -78,12 +96,22 @@ public final class OrderCounts {
         return subOrderCount;
     }
 
+    public Set<UUID> getJobInfoIdSet() {
+        return jobInfoIdSet;
+    }
+
     public static OrderCounts initial() {
         return new OrderCounts();
     }
 
     public static OrderCounts add(OrderCounts one, OrderCounts two) {
-        return new OrderCounts(one.internalFilesCount + two.internalFilesCount,
-                one.externalFilesCount + two.externalFilesCount, one.subOrderCount + two.subOrderCount);
+        Set<UUID> mergedSet = new HashSet<>(one.getJobInfoIdSet());
+        mergedSet.addAll(two.getJobInfoIdSet());
+        return new OrderCounts(
+                one.internalFilesCount + two.internalFilesCount,
+                one.externalFilesCount + two.externalFilesCount,
+                one.subOrderCount + two.subOrderCount,
+                mergedSet);
     }
+
 }

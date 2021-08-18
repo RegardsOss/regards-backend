@@ -73,7 +73,7 @@ import fr.cnes.regards.modules.model.service.IModelService;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles("noschedule") // Disable scheduling, this will activate IngesterService during all tests
+@ActiveProfiles("noscheduler") // Disable scheduling, this will activate IngesterService during all tests
 @Ignore
 public class CrawlerServiceIT {
 

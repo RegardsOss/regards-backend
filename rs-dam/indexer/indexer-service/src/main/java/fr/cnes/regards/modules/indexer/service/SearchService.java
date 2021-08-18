@@ -138,7 +138,7 @@ public class SearchService implements ISearchService {
     }
 
     @Override
-    public <T> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object value,
+    public <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object value,
             String... fields) {
         addProjectInfos(searchKey);
         return repository.multiFieldsSearch(searchKey, pageRequest, value, fields);

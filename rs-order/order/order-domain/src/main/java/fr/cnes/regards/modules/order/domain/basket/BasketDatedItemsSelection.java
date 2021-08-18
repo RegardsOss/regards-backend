@@ -119,6 +119,24 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
         this.fileTypesCount.put(fileType, filesCount);
     }
 
+    public StringToLongMap getFileTypesSizes() {
+        return fileTypesSizes;
+    }
+
+    public StringToLongMap getFileTypesCount() {
+        return fileTypesCount;
+    }
+
+    public BasketDatedItemsSelection setFileTypesSizes(StringToLongMap fileTypesSizes) {
+        this.fileTypesSizes = fileTypesSizes;
+        return this;
+    }
+
+    public BasketDatedItemsSelection setFileTypesCount(StringToLongMap fileTypesCount) {
+        this.fileTypesCount = fileTypesCount;
+        return this;
+    }
+
     @Override
     public int compareTo(BasketDatedItemsSelection o) {
         return date.compareTo(o.date);

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.file.flow;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.urn.DataType;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,6 +54,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
@@ -61,24 +64,6 @@ import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Test class
@@ -86,12 +71,15 @@ import java.util.concurrent.ExecutionException;
  * @author Sébastien Binda
  *
  */
-@ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@ActiveProfiles({ "noscheduler" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests" }, locations = { "classpath:application-test.properties" })
 public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AvailabilityFileReferenceFlowItemTest.class);
+
+    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+
+    private static final String SESSION_1 = "SESSION 1";
 
     @Autowired
     private AvailabilityFlowItemHandler handler;
@@ -108,10 +96,15 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
+
     @Before
     public void initialize() throws ModuleException {
         Mockito.clearInvocations(publisher);
         super.init();
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
     }
 
     @Test
@@ -128,14 +121,16 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         FileReference file4 = this.generateRandomStoredOnlineFileReference("file.online.1.test", Optional.empty());
         FileReference file5 = this.generateRandomStoredOnlineFileReference("file.online.2.test", Optional.empty());
         // Simulate reference of 2 files offline
-        FileReference file6 = this.referenceRandomFile("owner", "file", "file.offline.1.test", "somewhere").get();
-        FileReference file7 = this.referenceRandomFile("owner", "file", "file.offline.2.test", "somewhere-else").get();
+        FileReference file6 = this.referenceRandomFile("owner", "file", "file.offline.1.test", "somewhere",
+                                                       SESSION_OWNER_1, SESSION_1).get();
+        FileReference file7 = this.referenceRandomFile("owner", "file", "file.offline.2.test", "somewhere-else",
+                                                       SESSION_OWNER_1, SESSION_1).get();
         // Simulate storage of a file in two locations near line and online
         String checksum = UUID.randomUUID().toString();
         this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", ONLINE_CONF_LABEL,
-                                         Optional.empty(), Optional.empty());
+                                         Optional.empty(), Optional.empty(), SESSION_OWNER_1, SESSION_1);
         this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", NEARLINE_CONF_LABEL,
-                                         Optional.empty(), Optional.empty());
+                                         Optional.empty(), Optional.empty(), SESSION_OWNER_1, SESSION_1);
 
         Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),
                                                 file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum(),

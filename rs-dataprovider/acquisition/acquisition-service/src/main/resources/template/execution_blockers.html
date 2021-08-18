@@ -1,0 +1,8 @@
+<#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
+<p>Acquisition chain ${chainLabel} could not run. Some execution blockers have been identified :<br/>
+	<ul>
+		<#list executionBlockers as executionBlocker>
+		    <li>${executionBlocker}</li>
+		</#list>
+	</ul>
+</p>

@@ -41,6 +41,16 @@ public class SubscriberMock implements ISubscriber {
     }
 
     @Override
+    public void unsubscribeFromAll() {
+        // Nothing to do
+    }
+
+    @Override
+    public void purgeAllQueues(String tenant) {
+        // Nothing to do
+    }
+
+    @Override
     public void addTenant(String pTenant) {
         // Nothing to do
     }

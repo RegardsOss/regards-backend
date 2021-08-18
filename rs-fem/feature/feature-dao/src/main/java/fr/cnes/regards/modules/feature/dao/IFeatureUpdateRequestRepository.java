@@ -24,16 +24,14 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 
 /**
  *
@@ -48,7 +46,6 @@ public interface IFeatureUpdateRequestRepository extends IAbstractFeatureRequest
      * Sorting requests is useful to manage several update requests on a same target entity!
      */
     List<FeatureUpdateRequest> findAllByIdInOrderByRequestDateAsc(Set<Long> ids);
-
 
     /**
      * Get {@link ILightFeatureUpdateRequest} with a {@link Feature} urn not assigned to an other {@link ILightFeatureUpdateRequest}

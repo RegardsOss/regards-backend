@@ -30,7 +30,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
-import fr.cnes.regards.modules.model.gson.ModelGsonReadyEvent;
+import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 
 /**
  * Crawler initializer.
@@ -56,14 +56,14 @@ public class CrawlerInitializer {
     private final AtomicBoolean elasticSearchUpgradeDone = new AtomicBoolean(false);
 
     @EventListener
-    public void onApplicationEvent(ModelGsonReadyEvent event) {
+    public void onApplicationEvent(ModelJsonReadyEvent event) {
         LOGGER.info("Running dataset crawler .... ");
         datasetCrawlerService.crawl();
         LOGGER.info("Dataset crawler started.");
     }
 
     @EventListener
-    public void onApplicationEvent2(ModelGsonReadyEvent event) {
+    public void onApplicationEvent2(ModelJsonReadyEvent event) {
         LOGGER.info("Running standard crawler .... ");
         crawlerAndIngesterService.crawl();
         LOGGER.info("Standard crawler started.");

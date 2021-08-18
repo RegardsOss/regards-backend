@@ -44,6 +44,8 @@ public class JsonSchemaValidator extends AbstractPropertyValidator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
 
+    public static final String ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA = "error.value.not.conform.to.json.schema";
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     private final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
@@ -75,17 +77,17 @@ public class JsonSchemaValidator extends AbstractPropertyValidator {
     public void validate(JsonProperty ppt, Errors errors) {
         try {
             getJsonSchema().validate(getJsonNode(ppt.getValue().toString())).forEach(e -> {
-                errors.reject("error.value.not.conform.to.json.schema",
+                errors.reject(ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA,
                               String.format("Attribute %s.%s not valid with jsonSchema. Cause : %s", ppt.getName(),
                                             e.getPath(), e.getMessage()));
             });
         } catch (JsonSchemaException e) {
             LOGGER.error(e.getMessage(), e);
-            errors.reject("error.value.not.conform.to.json.schema",
+            errors.reject(ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA,
                           String.format("Json schema is not valid. Cause : %s", e.getMessage()));
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
-            errors.rejectValue("error.value.not.conform.to.json.schema",
+            errors.rejectValue(ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA,
                                String.format("Attribute %s  not valid with given json schema", ppt.getName()));
         }
     }

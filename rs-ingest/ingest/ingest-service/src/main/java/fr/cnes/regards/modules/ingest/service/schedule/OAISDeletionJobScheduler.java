@@ -46,7 +46,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  * @author Sébastien Binda
  *
  */
-@Profile("!noschedule")
+@Profile("!noscheduler")
 @Component
 public class OAISDeletionJobScheduler extends AbstractTaskScheduler {
 

@@ -50,6 +50,7 @@ public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudServi
             return new ServiceProvider(
                 name,
                 serviceProvider.getAuthUrl(),
+                serviceProvider.getLogoutUrl(),
                 configuration
             );
         }).map(repository::save);
@@ -64,6 +65,7 @@ public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudServi
                 return new ServiceProvider(
                     name,
                     serviceProvider.getAuthUrl(),
+                    serviceProvider.getLogoutUrl(),
                     configuration
                 );
             }).map(repository::save);

@@ -22,7 +22,6 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -37,11 +36,6 @@ public class MockConfiguration {
     @Bean
     IProjectsClient projectsClient() {
         return Mockito.mock(IProjectsClient.class);
-    }
-
-    @Bean
-    IAccountSettingsClient accountSettingsClient() {
-        return Mockito.mock(IAccountSettingsClient.class);
     }
 
     @Bean

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,9 +53,13 @@ public class InternalFinalStep extends AbstractIngestStep<List<AIP>, List<AIPEnt
     }
 
     @Override
-    protected void doAfterError(List<AIP> in) {
-        handleRequestError(String.format("Persisting SIP and AIP from SIP \"%s\" fails",
-                                         job.getCurrentEntity().getProviderId()));
+    protected void doAfterError(List<AIP> in, Optional<Exception> e) {
+        String error = "unknown cause";
+        if (e.isPresent()) {
+            error = e.get().getMessage();
+        }
+        handleRequestError(String.format("Persisting SIP and AIP from SIP \"%s\" fails. Cause : %s",
+                                         job.getCurrentEntity().getProviderId(), error));
     }
 
 }

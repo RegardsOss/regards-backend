@@ -86,7 +86,7 @@ public class ProjectService implements IProjectService {
     private final String defaultTenantHost;
 
     public ProjectService(IProjectConnectionService projectConnectionService,
-            final IProjectRepository projectRepository, final ITenantResolver tenantResolver,
+            final IProjectRepository projectRepository,
             IInstancePublisher instancePublisher, @Value("${regards.default.tenants}") String defaultTenants,
             @Value("${regards.config.first.project.public.access}") String defaultTenantHost) {
         this.projectRepository = projectRepository;

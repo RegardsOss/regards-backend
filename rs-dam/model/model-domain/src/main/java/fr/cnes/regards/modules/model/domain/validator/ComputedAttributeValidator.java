@@ -65,7 +65,7 @@ public class ComputedAttributeValidator implements ConstraintValidator<ComputedA
         }
         PluginConfiguration computationConf = modelAttrAssoc.getComputationConf();
         if (computationConf != null) {
-            computationConf.setMetaData(PluginUtils.getPlugins().get(computationConf.getPluginId()));
+            computationConf.setMetaDataAndPluginId(PluginUtils.getPlugins().get(computationConf.getPluginId()));
         }
         if (modelAttrAssoc.getMode() == ComputationMode.COMPUTED) {
             // If computed attribute, check that the model is a dataset model

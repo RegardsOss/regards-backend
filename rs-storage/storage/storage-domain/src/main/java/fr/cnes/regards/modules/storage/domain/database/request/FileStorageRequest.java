@@ -62,6 +62,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
                 @Index(name = "idx_file_storage_request_storage", columnList = "storage") })
 public class FileStorageRequest {
 
+    public static final String FILE_STORAGE_REQUEST_NEED_A_OWNER = "File storage request need a owner !";
+
     /**
      * Internal database unique identifier
      */
@@ -112,15 +114,21 @@ public class FileStorageRequest {
     @Column(name = "job_id")
     private String jobId;
 
+    @Column(name = "session_owner")
+    private String sessionOwner;
+
+    @Column(name = "session_name")
+    private String session;
+
     public FileStorageRequest() {
         super();
         this.creationDate = OffsetDateTime.now();
     }
 
     public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, String originUrl, String storage,
-            Optional<String> storageSubDirectory, String groupId) {
+            Optional<String> storageSubDirectory, String groupId, String sessionOwner, String session) {
         super();
-        Assert.notNull(owner, "File storage request need a owner !");
+        Assert.notNull(owner, FILE_STORAGE_REQUEST_NEED_A_OWNER);
         Assert.notNull(originUrl, "File storage request need an origin location !");
         Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
@@ -136,13 +144,15 @@ public class FileStorageRequest {
         this.metaInfo = metaInfos;
         this.groupIds.add(groupId);
         this.creationDate = OffsetDateTime.now();
+        this.sessionOwner = sessionOwner;
+        this.session = session;
     }
 
     public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, String originUrl,
-            String storage, Optional<String> storageSubDirectory, String groupId) {
+            String storage, Optional<String> storageSubDirectory, String groupId, String sessionOwner, String session) {
         super();
-        Assert.notNull(owners, "File storage request need a owner !");
-        Assert.isTrue(!owners.isEmpty(), "File storage request need a owner !");
+        Assert.notNull(owners, FILE_STORAGE_REQUEST_NEED_A_OWNER);
+        Assert.isTrue(!owners.isEmpty(), FILE_STORAGE_REQUEST_NEED_A_OWNER);
         Assert.notNull(originUrl, "File storage request need an origin location !");
         Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
@@ -158,6 +168,8 @@ public class FileStorageRequest {
         this.metaInfo = metaInfos;
         this.groupIds.add(groupId);
         this.creationDate = OffsetDateTime.now();
+        this.sessionOwner = sessionOwner;
+        this.session = session;
     }
 
     /**
@@ -178,6 +190,8 @@ public class FileStorageRequest {
             this.metaInfo.setFileName(request.getFileName());
             this.metaInfo.setType(request.getType());
         }
+        this.session = request.getSession();
+        this.sessionOwner = request.getSessionOwner();
     }
 
     public Long getId() {
@@ -254,6 +268,22 @@ public class FileStorageRequest {
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
+    }
+
+    public String getSessionOwner() {
+        return sessionOwner;
+    }
+
+    public void setSessionOwner(String sessionOwner) {
+        this.sessionOwner = sessionOwner;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 
     @Override

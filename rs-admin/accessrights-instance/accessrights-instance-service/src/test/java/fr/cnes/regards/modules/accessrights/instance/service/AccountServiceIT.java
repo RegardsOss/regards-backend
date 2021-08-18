@@ -18,11 +18,26 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.LocalDateTime;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.DefaultTenantResolver;
+import fr.cnes.regards.framework.security.autoconfigure.SecureRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.instance.dao.IPasswordResetTokenRepository;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
+import fr.cnes.regards.modules.templates.domain.Template;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,24 +51,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
-import fr.cnes.regards.modules.accessrights.instance.dao.IPasswordResetTokenRepository;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
-import fr.cnes.regards.modules.templates.domain.Template;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * This class test that the system can invalidate an account.
@@ -61,18 +64,18 @@ import fr.cnes.regards.modules.templates.domain.Template;
  * @author Christophe Mertz
  */
 @ContextConfiguration(classes = { AccountServiceIT.Config.class })
-@PropertySource("classpath:application-test.properties")
-public class AccountServiceIT extends AbstractRegardsIT {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=accountservice", "regards.microservice.type=instance" })
+public class AccountServiceIT extends AbstractRegardsServiceIT {
 
     @Configuration
     public static class Config {
 
+        /**
+         * As we are using AbstractRegardsServiceIT, we are not running a web app so auto conf in security-regards-starter does not create it for us.
+         */
         @Bean
-        public ITemplateRepository templateRepository(Set<Template> templates) {
-            ITemplateRepository mock = Mockito.mock(ITemplateRepository.class);
-            Mockito.when(mock.findByName(Mockito.anyString())).thenAnswer(invocation -> templates.stream()
-                    .filter(t -> t.getName().equals(invocation.getArguments()[0])).findFirst());
-            return mock;
+        public IRuntimeTenantResolver runtimeTenantResolver() {
+            return new SecureRuntimeTenantResolver("instance");
         }
 
         @Bean
@@ -84,6 +87,7 @@ public class AccountServiceIT extends AbstractRegardsIT {
         public IProjectUsersClient projectUsersClient() {
             return Mockito.mock(IProjectUsersClient.class);
         }
+
     }
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountServiceIT.class);

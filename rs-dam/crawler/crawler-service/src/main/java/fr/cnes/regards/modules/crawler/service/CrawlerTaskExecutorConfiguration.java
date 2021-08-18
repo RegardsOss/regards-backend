@@ -40,7 +40,7 @@ public class CrawlerTaskExecutorConfiguration {
     @Bean
     @Qualifier(value = CrawlerTaskExecutorConfiguration.CRAWLER_EXECUTOR_BEAN)
     public Executor getAsyncExecutor() {
-        return new SimpleAsyncTaskExecutor("crawler-task");
+        return new SimpleAsyncTaskExecutor(CRAWLER_EXECUTOR_BEAN);
     }
 
 }

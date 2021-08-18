@@ -21,8 +21,14 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 
 /**
@@ -30,7 +36,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEv
  * @author Kevin Marchois
  *
  */
-public interface IFeatureNotificationService extends IAbstractFeatureService {
+public interface IFeatureNotificationService extends IAbstractFeatureService<FeatureNotificationRequest> {
 
     /**
      * Register notification requests in database for further processing from incoming request events
@@ -41,5 +47,11 @@ public interface IFeatureNotificationService extends IAbstractFeatureService {
 
     void handleNotificationSuccess(Set<AbstractFeatureRequest> success);
 
-    void handleNotificationError(Set<AbstractFeatureRequest> errorRequest);
+    void handleNotificationError(Set<AbstractFeatureRequest> errorRequest, FeatureRequestStep errorStep);
+
+    /**
+     * Find all {@link FeatureNotificationRequest}s
+     * @return {@link FeatureNotificationRequest}s
+     */
+    Page<FeatureNotificationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
 }

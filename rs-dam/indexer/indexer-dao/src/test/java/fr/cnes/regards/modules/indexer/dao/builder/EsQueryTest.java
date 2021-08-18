@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
+import fr.cnes.regards.modules.indexer.dao.deser.GsonDeserializeIIndexableStrategy;
+import fr.cnes.regards.modules.indexer.dao.deser.JsoniterDeserializeIIndexableStrategy;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -96,6 +99,7 @@ public class EsQueryTest {
             gson = new GsonBuilder().registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
                     .create();
             repository = new EsRepository(gson, null, "172.26.47.52", 9200, 0,
+                                          new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
                                           new AggregationBuilderFacetTypeVisitor(100, 5),
                                           new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
 

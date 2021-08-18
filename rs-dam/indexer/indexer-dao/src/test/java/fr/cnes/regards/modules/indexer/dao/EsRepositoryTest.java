@@ -1,42 +1,57 @@
 package fr.cnes.regards.modules.indexer.dao;
 
-import java.io.Serializable;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.*;
+import com.google.common.reflect.TypeParameter;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
+import de.svenjacobs.loremipsum.LoremIpsum;
+import fr.cnes.regards.framework.geojson.AbstractFeature;
+import fr.cnes.regards.framework.geojson.coordinates.Position;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.Point;
+import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import fr.cnes.regards.modules.indexer.dao.deser.GsonDeserializeIIndexableStrategy;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.model.domain.Model;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
+import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.index.IndexNotFoundException;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.metrics.geobounds.ParsedGeoBounds;
+import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import de.svenjacobs.loremipsum.LoremIpsum;
-import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
-import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
-import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
-import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * EsRepository test
@@ -51,7 +66,162 @@ public class EsRepositoryTest {
         protected ItemAdapterFactory() {
             super(IIndexable.class, "type");
             registerSubtype(Item.class, TYPE);
+            registerSubtype(ItemGeo.class, EntityType.DATA, true);
         }
+
+    }
+
+    private static class UrnAdpater extends TypeAdapter<UniformResourceName> {
+
+        @Override
+        public UniformResourceName read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            return UniformResourceName.fromString(in.nextString());
+        }
+
+        @Override
+        public void write(JsonWriter out, UniformResourceName value) throws IOException {
+            if (value != null) {
+                out.value(value.toString());
+            } else {
+                out.nullValue();
+            }
+        }
+    }
+
+    private static class IGeometryAdapter extends TypeAdapter<IGeometry> {
+
+
+        @Override
+        public void write(JsonWriter out, IGeometry value) throws IOException {
+            out.beginObject();
+            if (value.getClass() == Point.class) {
+                Position coordinates = ((Point) value).getCoordinates();
+                out.name("coordinates");
+                out.beginArray();
+                // Write longitude
+                out.value(coordinates.getLongitude());
+                // Write latitude
+                out.value(coordinates.getLatitude());
+                // Optionally write altitude
+                if (coordinates.getAltitude().isPresent()) {
+                    out.value(coordinates.getAltitude().get());
+                }
+                out.endArray();
+                out.name("type");
+                out.value("POINT");
+            }else{
+
+            }
+            out.endObject();
+        }
+
+        @Override
+        public IGeometry read(JsonReader in) throws IOException {
+            Point parsed = new Point();
+
+            in.beginObject();
+            in.nextName();
+            in.beginArray();
+            // Read longitude
+            double longitude = in.nextDouble();
+            // Read latitude
+            double latitude = in.nextDouble();
+            // Optionally read altitude
+            if (in.peek().equals(JsonToken.NUMBER)) {
+                double altitude = in.nextDouble();
+                parsed.setCoordinates(new Position(longitude, latitude, altitude));
+            } else {
+                parsed.setCoordinates(new Position(longitude, latitude));
+            }
+            in.endArray();
+
+            in.nextName();
+            in.nextString();
+            in.endObject();
+
+            return parsed;
+        }
+    }
+
+
+    private static class MultimapAdapter implements JsonDeserializer<Multimap<String, ?>>, JsonSerializer<Multimap<String, ?>> {
+
+        @Override
+        public Multimap<String, ?> deserialize(JsonElement json, Type type, JsonDeserializationContext context)
+                throws JsonParseException {
+            final HashMultimap<String, Object> result = HashMultimap.create();
+            final Map<String, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
+            for (final Map.Entry<String, ?> e : map.entrySet()) {
+                final Collection<?> value = (Collection<?>) e.getValue();
+                result.putAll(e.getKey(), value);
+            }
+            return result;
+        }
+
+        @Override
+        public JsonElement serialize(Multimap<String, ?> src, Type type, JsonSerializationContext context) {
+            final Map<?, ?> map = src.asMap();
+            return context.serialize(map);
+        }
+
+        private <KK, V> Type multimapTypeToMapType(Type type) {
+            final Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
+            assert typeArguments.length == 2;
+            @SuppressWarnings({ "unchecked", "serial" })
+            final com.google.common.reflect.TypeToken<Map<KK, Collection<V>>> mapTypeToken = new com.google.common.reflect.TypeToken<Map<KK, Collection<V>>>() {
+
+            }.where(new TypeParameter<KK>() {
+
+            }, (com.google.common.reflect.TypeToken<KK>) com.google.common.reflect.TypeToken.of(typeArguments[0])).where(new TypeParameter<V>() {
+
+            }, (com.google.common.reflect.TypeToken<V>) com.google.common.reflect.TypeToken.of(typeArguments[1]));
+            return mapTypeToken.getType();
+        }
+
+    }
+
+
+    public static class FeatureTypeAdapterFactory implements TypeAdapterFactory {
+
+        @Override
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+
+            // This factory is only useful for Feature
+            Class<? super T> requestedType = type.getRawType();
+            if (!AbstractFeature.class.isAssignableFrom(requestedType)) {
+                return null;
+            }
+
+            final TypeAdapter<T> delegate = gson.getDelegateAdapter(this, type);
+
+            return new TypeAdapter<T>() {
+
+                @Override
+                public void write(JsonWriter out, T value) throws IOException {
+                    delegate.write(out, value);
+                }
+
+                @SuppressWarnings("unchecked")
+                @Override
+                public T read(JsonReader in) throws IOException {
+                    @SuppressWarnings("rawtypes")
+                    AbstractFeature feature = (AbstractFeature) delegate.read(in);
+                    // Set feature unlocated if geometry is null
+                    if (feature.getGeometry() == null) {
+                        feature.setGeometry(IGeometry.unlocated());
+                    }
+                    if (feature.getNormalizedGeometry() == null) {
+                        feature.setNormalizedGeometry(IGeometry.unlocated());
+                    }
+                    return (T) feature;
+                }
+            };
+        }
+
     }
 
     /**
@@ -182,7 +352,20 @@ public class EsRepositoryTest {
 
     }
 
+    private static class ItemGeo extends DataObject{
+
+        private final String type = TYPEDATAOBJECT;
+
+        public ItemGeo(Model model,String tenant,String providerId,String label){
+            super(model, tenant,providerId,label);
+        }
+
+    }
+
     private static final String TYPE = "item";
+    private static final String TYPEGEO = "itemgeo";
+    private static final String TYPEDATAOBJECT = EntityType.DATA.toString();
+
 
     /**
      * Class to test
@@ -209,12 +392,20 @@ public class EsRepositoryTest {
         boolean repositoryOK = true;
         // we get the properties into target/test-classes because this is where maven will put the filtered file(with real values and not placeholder)
         try {
-            gson = new GsonBuilder().registerTypeAdapterFactory(new ItemAdapterFactory()).create();
+            gson = new GsonBuilder()
+                    .disableInnerClassSerialization()
+                    .registerTypeAdapterFactory(new ItemAdapterFactory())
+                    .registerTypeAdapterFactory(new FeatureTypeAdapterFactory())
+                    .registerTypeAdapter(UniformResourceName.class, new UrnAdpater())
+                    .registerTypeAdapter(IGeometry.class, new IGeometryAdapter())
+                    .registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter()).create();
+
             repository = new EsRepository(gson,
                                           null,
                                           elasticHost,
                                           elasticPort,
                                           0,
+                                          new GsonDeserializeIIndexableStrategy(gson),
                                           new AggregationBuilderFacetTypeVisitor(10, 1),
                                           new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
         } catch (NoNodeAvailableException e) {
@@ -391,6 +582,99 @@ public class EsRepositoryTest {
 
         Assert.assertEquals(500902683.6326989, repository.sum(searchKey, ICriterion.all(), "price"), 1e7);
         Assert.assertEquals(49871257., repository.sum(searchKey, ICriterion.all(), "height"), 1e6);
+    }
+
+    @Test
+    public void testGetAggregateOnNumericValues() throws IOException {
+        String itemsIndexName = "items";
+        repository.createIndex(itemsIndexName);
+        // Creations for first two
+        final Item item1 = new Item("1", "toto",10, 10000d,"group1", "group2", "group3");
+        repository.save(itemsIndexName, item1);
+        Item item2 = new Item("2", "titi", 10, 20000d, "group1", "group3");
+        repository.save(itemsIndexName, item2);
+
+        Map<String, QueryableAttribute> qas = Maps.newHashMap();
+        qas.put("price", new QueryableAttribute("price", null,
+                false, 10, false));
+
+        repository.refresh(itemsIndexName);
+
+//        ICriterion all = ICriterion.all();
+        ICriterion all = ICriterion.contains("groups", "group1");
+        SearchKey<Item, Item> searchKey = new SearchKey<>(TYPE, Item.class);
+        searchKey.setSearchIndex(itemsIndexName);
+        Aggregations aggregations = repository.getAggregations(searchKey, all, (Collection<QueryableAttribute>) qas.values());
+        Assert.assertEquals(20000d,((ParsedStats) aggregations.asList().get(0)).getMax(), 0.0001d);
+        Assert.assertEquals(10000d,((ParsedStats) aggregations.asList().get(0)).getMin(), 0.0001d);
+        repository.deleteIndex(itemsIndexName);
+
+    }
+
+    @Test
+    public void testGetAggregatesOnBoundingBox() throws IOException {
+        String itemsTenant = "items";
+        repository.createIndex(itemsTenant);
+
+        // Creations for first two
+        DataObject dataObject1 = new ItemGeo(new Model(), itemsTenant, "provider", "label");
+        GeoPoint do1SePoint = new GeoPoint(43.524768,1.4879276);
+        GeoPoint do1NwPoint = new GeoPoint(43.5889203,1.3747632);
+        dataObject1.setSePoint(do1SePoint);
+        dataObject1.setNwPoint(do1NwPoint);
+        dataObject1.setId(1L);
+        dataObject1.setTags(Sets.newHashSet("group1","group2","group3"));
+        dataObject1.setLabel("toto");
+        dataObject1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATA, itemsTenant,
+                UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1, null,
+                null));
+        Point point = IGeometry.point(1.3747632, 43.524768);
+        dataObject1.setWgs84(GeoHelper.normalize(point));
+        dataObject1.setNormalizedGeometry(GeoHelper.normalize(point));
+        dataObject1.getFeature().setGeometry(GeoHelper.normalize(point));
+        dataObject1.getFeature().setNormalizedGeometry(GeoHelper.normalize(point));
+
+        DataObject dataObject2 = new ItemGeo(new Model(), itemsTenant, "provider", "label");
+        GeoPoint do2SePoint = new GeoPoint(43.4461681,-0.0369283);
+        GeoPoint do2NwPoint = new GeoPoint(43.7695852,-0.5334374);
+        dataObject2.setId(2L);
+        dataObject1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATA, itemsTenant,
+                UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db1234"), 1, null,
+                null));
+        dataObject2.setSePoint(do2SePoint);
+        dataObject2.setNwPoint(do2NwPoint);
+        dataObject2.setTags(Sets.newHashSet("group1"));
+        dataObject2.setLabel("titi");
+        Point point2 = IGeometry.point(-0.0369283, 43.7695852);
+        dataObject2.setWgs84(GeoHelper.normalize(point2));
+        dataObject2.setNormalizedGeometry(GeoHelper.normalize(point2));
+        dataObject2.getFeature().setGeometry(GeoHelper.normalize(point2));
+        dataObject2.getFeature().setNormalizedGeometry(GeoHelper.normalize(point));
+
+
+        repository.save(itemsTenant, dataObject1);
+        repository.save(itemsTenant, dataObject2);
+
+        Map<String, QueryableAttribute> qas = Maps.newHashMap();
+        qas.put("sePoint", new QueryableAttribute("sePoint", null,
+                false, 10, false, true));
+        qas.put("nwPoint", new QueryableAttribute("nwPoint", null,
+                false, 10, false, true));
+
+        ICriterion all = ICriterion.contains("tags", "group1");
+        repository.refresh(itemsTenant);
+        Assert.assertTrue(repository.indexExists(itemsTenant));
+
+
+        SearchKey<ItemGeo, ItemGeo> searchKey = new SearchKey<>(TYPEDATAOBJECT, ItemGeo.class);
+        searchKey.setSearchIndex(itemsTenant);
+        Aggregations aggregations = repository.getAggregations(searchKey, all, (Collection<QueryableAttribute>) qas.values());
+        //We only check extrem NW and SE values
+        Assert.assertEquals(43.7695,((ParsedGeoBounds) aggregations.asList().get(0)).topLeft().lat(), 0.0001d);
+        Assert.assertEquals(-0.5334,((ParsedGeoBounds) aggregations.asList().get(0)).topLeft().lon(), 0.0001d);
+        Assert.assertEquals(43.4461,((ParsedGeoBounds) aggregations.asList().get(1)).bottomRight().lat(), 0.0001d);
+        Assert.assertEquals(1.4879276,((ParsedGeoBounds) aggregations.asList().get(1)).bottomRight().lon(), 0.0001d);
+        repository.deleteIndex(itemsTenant);
     }
 
     @Test

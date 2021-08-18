@@ -31,12 +31,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@TestPropertySource(
-    properties = {
-        "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests",
-        "regards.storage.cache.path=unused but required" // ¯\_(ツ)_/¯
-    }
-)
+@TestPropertySource( properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests"  })
 @RunWith(SpringRunner.class)
 public class DownloadQuotaServiceIT extends AbstractRegardsTransactionalIT {
 

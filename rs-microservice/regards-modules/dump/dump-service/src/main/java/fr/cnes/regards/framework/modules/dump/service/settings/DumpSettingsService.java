@@ -20,70 +20,100 @@
 
 package fr.cnes.regards.framework.modules.dump.service.settings;
 
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
 import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-/**
- * see {@link IDumpSettingsService}
- * @author Iliana Ghazali
- */
+import java.time.OffsetDateTime;
+import java.util.List;
+
 
 @Service
 @RegardsTransactional
-public class DumpSettingsService implements IDumpSettingsService {
+public class DumpSettingsService extends AbstractSettingService implements IDumpSettingsService {
+
+    private final ITenantResolver tenantsResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IDumpSettingsRepository dumpSettingsRepository;
+    private DumpSettingsService self;
 
-    @Override
-    public DumpSettings retrieve() {
-        Optional<DumpSettings> dumpSettingsOpt = dumpSettingsRepository.findFirstBy();
-        DumpSettings dumpSettings;
-        if (!dumpSettingsOpt.isPresent()) {
-            // init new settings with default parameters
-            dumpSettings = new DumpSettings(true, "0 0 0 1-7 * SUN", null, null);
-            dumpSettings = dumpSettingsRepository.save(dumpSettings);
-        } else {
-            // get existing settings
-            dumpSettings = dumpSettingsOpt.get();
+    protected DumpSettingsService(IDynamicTenantSettingService dynamicTenantSettingService, ITenantResolver tenantsResolver,
+                                  IRuntimeTenantResolver runtimeTenantResolver
+    ) {
+        super(dynamicTenantSettingService);
+        this.tenantsResolver = tenantsResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+    }
+
+    @EventListener
+    @Order(0)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) throws EntityException {
+        for (String tenant : tenantsResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                self.init();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
         }
-        return dumpSettings;
     }
 
-    @Override
-    public boolean update(DumpSettings dumpSettings)  {
-        boolean isUpdated = false;
-        Optional<DumpSettings> dumpSettingsOpt = dumpSettingsRepository.findById(dumpSettings.getId());
-        if (!dumpSettingsOpt.isPresent() || !dumpSettingsOpt.get().equals(dumpSettings)) {
-            isUpdated = true;
-            dumpSettingsRepository.save(dumpSettings);
+    @EventListener
+    @Order(0)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void onTenantConnectionReady(TenantConnectionReady event) throws EntityException {
+        runtimeTenantResolver.forceTenant(event.getTenant());
+        try {
+            self.init();
+        } finally {
+            runtimeTenantResolver.clearTenant();
         }
-        return isUpdated;
     }
 
     @Override
-    public void resetLastDumpDate() {
-        // reset last dump date to null if already present
-        Optional<DumpSettings> oLastDump = dumpSettingsRepository.findFirstBy();
-        if (oLastDump.isPresent()) {
-            DumpSettings lastDump = oLastDump.get();
-            lastDump.setLastDumpReqDate(null);
-            dumpSettingsRepository.save(lastDump);
-        }
-        // if there is no dump setting it means the last dump date is already null, there is nothing to do
+    public void resetLastDumpDate() throws EntityException {
+        setLastDumpReqDate(null);
     }
 
     @Override
-    public void resetSettings() {
-        // delete old settings and init new ones (by default)
-        dumpSettingsRepository.deleteById(DumpSettings.DUMP_CONF_ID);
-        this.retrieve();
+    public DumpParameters getDumpParameters() {
+        return getValue(DumpSettings.DUMP_PARAMETERS);
     }
+
+    @Override
+    public void setDumpParameters(DumpParameters dumpParameters) throws EntityException {
+        dynamicTenantSettingService.update(DumpSettings.DUMP_PARAMETERS, dumpParameters);
+    }
+
+    @Override
+    public OffsetDateTime lastDumpReqDate() {
+        return getValue(DumpSettings.LAST_DUMP_REQ_DATE);
+    }
+
+    @Override
+    public void setLastDumpReqDate(OffsetDateTime lastDumpReqDate) throws EntityException {
+        dynamicTenantSettingService.update(DumpSettings.LAST_DUMP_REQ_DATE, lastDumpReqDate);
+    }
+
+    @Override
+    protected List<DynamicTenantSetting> getSettingList() {
+        return DumpSettings.SETTING_LIST;
+    }
+
 }

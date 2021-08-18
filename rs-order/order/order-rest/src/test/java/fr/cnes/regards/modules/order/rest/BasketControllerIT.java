@@ -26,11 +26,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,29 +93,9 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    public static final UniformResourceName DS1_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    @MockBean
+    private IProjectUsersClient projectUsersClient;
 
-    public static final UniformResourceName DS2_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DS3_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO3_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO4_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO5_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
 
     private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {
         BasketSelectionRequest request = new BasketSelectionRequest();
@@ -150,7 +132,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddNullOpensearchSelection() throws BadBasketSelectionRequestException {
+    public void testAddNullOpensearchSelection() {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setEngineType("legacy");
@@ -162,7 +144,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddEmptyOpensearchSelection() throws BadBasketSelectionRequestException {
+    public void testAddEmptyOpensearchSelection() {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setEngineType("legacy");
@@ -174,7 +156,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddFullOpensearchSelection() throws BadBasketSelectionRequestException {
+    public void testAddFullOpensearchSelection() {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setEngineType("legacy");
@@ -194,7 +176,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddOnlyOpensearchSelection() throws BadBasketSelectionRequestException {
+    public void testAddOnlyOpensearchSelection() {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setEngineType("legacy");
@@ -207,7 +189,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testAddThenRemoveProcessDescription() throws BadBasketSelectionRequestException {
+    public void testAddThenRemoveProcessDescription() {
         UUID processBusinessId = UUID.randomUUID();
         java.util.HashMap<String, String> parameters = HashMap.of("key", "value").toJavaMap();
 
@@ -279,7 +261,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testRemoveDatasetSelection() throws UnsupportedEncodingException {
+    public void testRemoveDatasetSelection() {
         Basket basket = createBasket();
         RequestBuilderCustomizer customizer = customizer().expectStatusOk().expectIsEmpty("$.content.datasetSelections")
                 .expectValue("$.content.quota", 0L);
@@ -288,7 +270,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testRemoveDatedItemSelection() throws UnsupportedEncodingException {
+    public void testRemoveDatedItemSelection() {
         Basket basket = createBasket();
         OffsetDateTime date = basket.getDatasetSelections().first().getItemsSelections().first().getSelectionRequest()
                 .getSelectionDate();

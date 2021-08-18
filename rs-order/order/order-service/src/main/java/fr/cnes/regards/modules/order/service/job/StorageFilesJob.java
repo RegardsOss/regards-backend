@@ -68,7 +68,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
     @Autowired
     protected IOrderJobService orderJobService;
 
-    protected Integer subOrderValidationPeriodDays;
+    protected Integer subOrderAvailabilityDurationHours;
 
     protected Semaphore semaphore;
 
@@ -101,7 +101,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
             throws JobParameterMissingException, JobParameterInvalidException {
         if ((parameters.size() < 4) || (parameters.size() > 5)) {
             throw new JobParameterInvalidException(
-                    "Four or five parameters are expected : 'files', 'expirationDate', 'user' and 'userRole', and optionally 'processJobInfo'.");
+                    "Four or five parameters are expected : 'files', 'subOrderAvailabilityDurationHours', 'user' and 'userRole', and optionally 'processJobInfo'."
+            );
         }
         for (JobParameter param : parameters.values()) {
             boolean paramIsIncompatible =
@@ -114,7 +115,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
                 ).noneMatch(f -> f.apply(param));
             if (paramIsIncompatible) {
                 throw new JobParameterInvalidException(
-                        "Please use ProcessJobInfoJobParameter, FilesJobParameter, ExpirationDateJobParameter, UserJobParameter and "
+                        "Please use ProcessJobInfoJobParameter, FilesJobParameter, SubOrderAvailabilityPeriodJobParameter, UserJobParameter and "
                                 + "UserRoleJobParameter in place of JobParameter (these "
                                 + "classes are here to facilitate your life so please use them.");
             }
@@ -125,7 +126,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
                     dataFilesMultimap.put(dataFile.getChecksum(), dataFile);
                 }
             } else if (SubOrderAvailabilityPeriodJobParameter.isCompatible(param)) {
-                subOrderValidationPeriodDays = param.getValue();
+                subOrderAvailabilityDurationHours = param.getValue();
             } else if (ProcessJobInfoJobParameter.isCompatible(param)) {
                 processJobInfoId = Option.some(param.getValue());
             } else if (UserJobParameter.isCompatible(param)) {
@@ -145,8 +146,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
         subscriber.subscribe(this);
 
         try {
-            storageClient.makeAvailable(dataFilesMultimap.keySet(),
-                                        OffsetDateTime.now().plusDays(subOrderValidationPeriodDays));
+            storageClient.makeAvailable(dataFilesMultimap.keySet(), OffsetDateTime.now().plusHours(subOrderAvailabilityDurationHours));
             dataFilesMultimap.forEach((cs, f) -> {
                 logger.debug("Order job is waiting for {} file {} - {} availability.", dataFilesMultimap.size(),
                              f.getFilename(), cs);

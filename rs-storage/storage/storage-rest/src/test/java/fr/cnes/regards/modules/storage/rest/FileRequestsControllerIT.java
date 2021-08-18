@@ -49,8 +49,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
-        "regards.storage.cache.path=target/cache" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it"})
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class FileRequestsControllerIT extends AbstractRegardsTransactionalIT {
 
@@ -72,7 +71,7 @@ public class FileRequestsControllerIT extends AbstractRegardsTransactionalIT {
         FileReferenceMetaInfo meta = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5", "file.txt", 10L,
                 MediaType.APPLICATION_JSON_UTF8);
         FileStorageRequest req = new FileStorageRequest("regards", meta, "file://somewhere/file.txt", "somewhere",
-                Optional.empty(), UUID.randomUUID().toString());
+                Optional.empty(), UUID.randomUUID().toString(), "source1", "session1");
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectIsEmpty("$.content");
         performDefaultGet(FileRequestsController.REQUESTS_PATH + FileRequestsController.STORAGE_PATH
                 + FileRequestsController.TYPE_PATH, requestBuilderCustomizer, "Expect ok status.", storage,

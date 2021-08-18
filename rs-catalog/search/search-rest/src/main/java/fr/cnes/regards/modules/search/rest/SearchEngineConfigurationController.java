@@ -25,9 +25,9 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
@@ -52,7 +52,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -82,6 +81,9 @@ public class SearchEngineConfigurationController implements IResourceController<
 
     @Autowired
     private ISearchEngineConfigurationService service;
+
+    @Autowired
+    private IPluginService pluginService;
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all search engine confiurations", role = DefaultRole.PROJECT_ADMIN)
@@ -140,7 +142,7 @@ public class SearchEngineConfigurationController implements IResourceController<
         List<Link> extraLinks = new ArrayList<>();
 
         try {
-            ISearchEngine<?,?,?,?> plugin = PluginUtils.getPlugin(configuration, configuration.getMetaData(), new HashMap<>());
+            ISearchEngine<?,?,?,?> plugin = pluginService.getPlugin(configuration.getBusinessId());
             addDefaultSearchLinks = plugin.useDefaultConfigurationLinks();
             extraLinks = plugin.extraLinks(SearchEngineController.class, element);
         }

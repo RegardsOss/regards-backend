@@ -23,8 +23,8 @@ package fr.cnes.regards.modules.ingest.service.notification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestSte
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
@@ -46,11 +45,9 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -59,10 +56,11 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomCategories;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSessionOwner;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomStorage;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomTags;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.ingest.service.TestData.*;
 
 /**
  * Test for {@link AIPNotificationService}
@@ -90,7 +88,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
-    private IAIPNotificationSettingsRepository aipNotificationSettingsRepository;
+    private AIPNotificationSettingsService notificationSettingsService;
 
     /**
      * Services
@@ -106,7 +104,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     private IAIPService aipService;
 
     @Override
-    public void doInit() {
+    public void doInit() throws EntityException {
         initNotificationSettings(true);
     }
 
@@ -325,10 +323,8 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     /**
      * Change state of notification settings
      */
-    private void initNotificationSettings(boolean state) {
-       AIPNotificationSettings notificationSettings = new AIPNotificationSettings();
-       notificationSettings.setActiveNotification(state);
-       aipNotificationSettingsRepository.save(notificationSettings);
+    private void initNotificationSettings(boolean state) throws EntityException {
+        notificationSettingsService.setActiveNotification(state);
     }
 
 }

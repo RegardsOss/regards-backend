@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -100,42 +100,39 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Override
     public void onDeletionSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService.handleDeletionSuccess(requests.stream().map(RequestInfo::getGroupId)
-                .collect(Collectors.toSet()));
+        this.featureRequestService
+                .handleDeletionSuccess(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
 
     }
 
     @Override
     public void onDeletionError(Set<RequestInfo> requests) {
-        //FIXME retrieve errors from requestInfo
-        this.featureRequestService
-                .handleStorageError(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
+        this.featureRequestService.handleStorageError(requests.stream().flatMap(r -> r.getErrorRequests().stream())
+                .collect(Collectors.toSet()));
     }
 
     @Override
     public void onReferenceSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService.handleStorageSuccess(requests.stream().map(RequestInfo::getGroupId)
-                .collect(Collectors.toSet()));
+        this.featureRequestService
+                .handleStorageSuccess(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
     }
 
     @Override
     public void onReferenceError(Set<RequestInfo> requests) {
-        //FIXME retrieve errors from requestInfo
-        this.featureRequestService
-                .handleStorageError(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
-    }
-
-    @Override
-    public void onStoreSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService.handleStorageSuccess(requests.stream().map(RequestInfo::getGroupId)
+        this.featureRequestService.handleStorageError(requests.stream().flatMap(r -> r.getErrorRequests().stream())
                 .collect(Collectors.toSet()));
     }
 
     @Override
-    public void onStoreError(Set<RequestInfo> requests) {
-        //FIXME retrieve errors from requestInfo
+    public void onStoreSuccess(Set<RequestInfo> requests) {
         this.featureRequestService
-                .handleStorageError(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
+                .handleStorageSuccess(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
+    }
+
+    @Override
+    public void onStoreError(Set<RequestInfo> requests) {
+        this.featureRequestService.handleStorageError(requests.stream().flatMap(r -> r.getErrorRequests().stream())
+                .collect(Collectors.toSet()));
     }
 
 }

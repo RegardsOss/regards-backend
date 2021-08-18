@@ -18,20 +18,8 @@
  */
 package fr.cnes.regards.modules.test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Component;
-
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -39,8 +27,20 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
@@ -57,6 +57,16 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Component;
 
 @Component
 public class IngestServiceTest {
@@ -84,7 +94,16 @@ public class IngestServiceTest {
     protected IAbstractRequestRepository requestRepository;
 
     @Autowired
-    private IJobInfoRepository jobInfoRepo;
+    private IJobInfoRepository jobInfoRepository;
+
+    @Autowired
+    private ISnapshotProcessRepository snapshotProcessRepository;
+
+    @Autowired
+    private ISessionStepRepository sessionStepRepository;
+
+    @Autowired
+    private IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepository;
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
@@ -107,6 +126,9 @@ public class IngestServiceTest {
     @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
+    protected IRuntimeTenantResolver runtimeTenantResolver;
+
     /**
      * Clean everything a test can use, to prepare the empty environment for the next test
      */
@@ -122,41 +144,17 @@ public class IngestServiceTest {
                 aipRepository.deleteAllInBatch();
                 lastSipRepository.deleteAllInBatch();
                 sipRepository.deleteAllInBatch();
-                jobInfoRepo.deleteAll();
+                jobInfoRepository.deleteAll();
                 pluginConfRepo.deleteAllInBatch();
-                cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+                snapshotProcessRepository.deleteAllInBatch();
+                stepPropertyUpdateRequestRepository.deleteAllInBatch();
+                sessionStepRepository.deleteAllInBatch();
                 done = waitAllRequestsFinished();
             } catch (DataAccessException e) {
                 LOGGER.error(e.getMessage(), e);
             }
             loop++;
         } while (done && (loop < 5));
-    }
-
-    public void clear() {
-        // WARNING : clean context manually because Spring doesn't do it between tests
-        subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
-        subscriber.unsubscribeFrom(IngestRequestEvent.class);
-        subscriber.unsubscribeFrom(FileRequestsGroupEvent.class);
-    }
-
-    /**
-     * Internal method to clean AMQP queues, if actives
-     */
-    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
-            } catch (AmqpIOException e) {
-                LOGGER.warn("Failed to clean AMQP queues", e);
-            } finally {
-                vhostAdmin.unbind();
-            }
-        }
     }
 
     public void waitForIngestion(long expectedSips) {
@@ -357,6 +355,22 @@ public class IngestServiceTest {
             toSend.add(IngestRequestFlowItem.build(mtd, sip));
         }
         publisher.publish(toSend);
+    }
+
+    public void waitJobDone(JobInfo jobInfo, JobStatus status, long timeout) {
+        boolean done = false;
+        long start = System.currentTimeMillis();
+        JobInfo ji = null;
+        do {
+            ji = jobInfoRepository.findCompleteById(jobInfo.getId());
+            if (ji.getStatus().getStatus() == status) {
+                done = true;
+            }
+        }while (!done && (System.currentTimeMillis() < (start + timeout)));
+
+        if (!done) {
+            Assert.assertEquals("Job info is not in expected status", ji.getStatus().getStatus(), jobInfo.getStatus().getStatus());
+        }
     }
 
 }

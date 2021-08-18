@@ -59,8 +59,9 @@
         <module>jobs</module>
         <module>templates</module>
         <module>workspace</module>
-        <module>locks</module>
         <module>dump</module>
+        <module>tenant-settings</module>
+        <module>session</module>
     </modules>
 
 </project>

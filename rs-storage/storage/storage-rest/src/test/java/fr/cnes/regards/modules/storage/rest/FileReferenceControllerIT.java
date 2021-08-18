@@ -99,7 +99,6 @@ import static org.junit.Assert.*;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = {
     "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
-    "regards.storage.cache.path=target/cache",
     "regards.storage.quota.report.tick=1",
     "regards.amqp.enabled=true"
 })
@@ -181,7 +180,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
             );
         metaInfo.setType(DataType.RAWDATA.name());
         tenantResolver.forceTenant(getDefaultTenant());
-        storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
+        storeReqService.handleRequest("rest-test", "source1", "session1", metaInfo,
+                                      filePath.toAbsolutePath().toUri().toURL().toString(),
                                       TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
         // Wait for storage file referenced
         boolean found = false;

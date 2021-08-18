@@ -18,43 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedEntityGraphs;
-import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-import java.time.OffsetDateTime;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
@@ -66,6 +29,21 @@ import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -76,16 +54,23 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
  */
 @Entity
 @Table(name = "t_acq_processing_chain")
-@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
-        attributeNodes = { @NamedAttributeNode(value = "fileInfos", subgraph = "subgraph.file.info"),
-                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo",
-                        subgraph = "graph.acquisition.chain.jobs") },
-        subgraphs = {
-                @NamedSubgraph(name = "graph.acquisition.chain.jobs",
-                        attributeNodes = { @NamedAttributeNode(value = "parameters") }),
-                @NamedSubgraph(name = "subgraph.file.info",
-                        attributeNodes = { @NamedAttributeNode(value = "scanDirInfo") }) }) })
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "graph.acquisition.chain.complete",
+                attributeNodes = {
+                        @NamedAttributeNode(value = "fileInfos", subgraph = "subgraph.file.info"),
+                        @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs"),
+                        @NamedAttributeNode(value = "validationPluginConf"),
+                        @NamedAttributeNode(value = "productPluginConf"),
+                        @NamedAttributeNode(value = "generateSipPluginConf"),
+                        @NamedAttributeNode(value = "postProcessSipPluginConf")},
+                subgraphs = {
+                        @NamedSubgraph(name = "subgraph.file.info", attributeNodes = {
+                                @NamedAttributeNode(value = "scanDirInfo"),
+                                @NamedAttributeNode(value = "scanPlugin")}),
+                        @NamedSubgraph(name = "graph.acquisition.chain.jobs", attributeNodes = {@NamedAttributeNode(value = "parameters")})
+                })
+})
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class AcquisitionProcessingChain {
 
     /**
@@ -381,4 +366,49 @@ public class AcquisitionProcessingChain {
         this.referenceLocation = referenceLocation;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        AcquisitionProcessingChain that = (AcquisitionProcessingChain) o;
+
+        if (!getLabel().equals(that.getLabel())) {
+            return false;
+        }
+        if (!getIngestChain().equals(that.getIngestChain())) {
+            return false;
+        }
+        if (!getFileInfos().equals(that.getFileInfos())) {
+            return false;
+        }
+        if (!getValidationPluginConf().equals(that.getValidationPluginConf())) {
+            return false;
+        }
+        if (!getProductPluginConf().equals(that.getProductPluginConf())) {
+            return false;
+        }
+        if (!getGenerateSipPluginConf().equals(that.getGenerateSipPluginConf())) {
+            return false;
+        }
+        return getPostProcessSipPluginConf() != null ?
+                getPostProcessSipPluginConf().equals(that.getPostProcessSipPluginConf()) :
+                that.getPostProcessSipPluginConf() == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getLabel().hashCode();
+        result = 31 * result + getIngestChain().hashCode();
+        result = 31 * result + getFileInfos().hashCode();
+        result = 31 * result + getValidationPluginConf().hashCode();
+        result = 31 * result + getProductPluginConf().hashCode();
+        result = 31 * result + getGenerateSipPluginConf().hashCode();
+        result = 31 * result + (getPostProcessSipPluginConf() != null ? getPostProcessSipPluginConf().hashCode() : 0);
+        return result;
+    }
 }

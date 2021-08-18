@@ -18,29 +18,29 @@
  */
 package fr.cnes.regards.modules.storage.service.file.handler;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
- * HAndler to handle actions after a group requests ends.
+ * Handler to handle actions after a group requests ends.
  *
  * @author Sébastien Binda
  */
 @Component
 public class FileRequestsGroupEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileRequestsGroupEvent> {
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileRequestsGroupEvent> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -57,30 +57,33 @@ public class FileRequestsGroupEventHandler
     }
 
     @Override
-    public void handle(TenantWrapper<FileRequestsGroupEvent> wrapper) {
-        String tenant = wrapper.getTenant();
-        LOGGER.trace("Handling {}", wrapper.getContent().toString());
+    public boolean validate(String tenant, FileRequestsGroupEvent message) {
+        return true;
+    }
+
+    @Override
+    public void handleBatch(String tenant, List<FileRequestsGroupEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
-        FileRequestsGroupEvent event = wrapper.getContent();
+        try {
+            messages.forEach(this::handle);
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    public void handle(FileRequestsGroupEvent event) {
+        LOGGER.trace("Handling {}", event.toString());
         if ((event.getState() == FlowItemStatus.SUCCESS) || (event.getState() == FlowItemStatus.ERROR)) {
-            try {
-                switch (event.getType()) {
-                    case AVAILABILITY:
-                        break;
-                    case COPY:
-                        break;
-                    case DELETION:
-                        handleDeletionGroupDone(event);
-                        break;
-                    case REFERENCE:
-                        break;
-                    case STORAGE:
-                        break;
-                    default:
-                        break;
-                }
-            } finally {
-                runtimeTenantResolver.clearTenant();
+            switch (event.getType()) {
+                case DELETION:
+                    handleDeletionGroupDone(event);
+                    break;
+                case AVAILABILITY:
+                case COPY:
+                case REFERENCE:
+                case STORAGE:
+                default:
+                    break;
             }
         }
     }

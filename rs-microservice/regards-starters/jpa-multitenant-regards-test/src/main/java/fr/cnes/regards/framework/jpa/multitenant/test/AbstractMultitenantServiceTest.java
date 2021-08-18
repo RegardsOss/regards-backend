@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.junit.After;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +36,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Multitenant test utility class for testing service layer. This class starts up an integration test context enabling
@@ -76,6 +77,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * <code>
  * &#64;ActiveProfiles("testAmqp")
  * </code>
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("javadoc")
@@ -85,12 +87,15 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
+    protected ISubscriber subscriber;
+
+    @Autowired
     private ApplicationEventPublisher springPublisher;
 
-    @Configuration
-    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    public static class ScanningConfiguration {
-
+    @After
+    public void afterMultitenantServiceTest() {
+        subscriber.unsubscribeFromAll();
+        subscriber.purgeAllQueues(getDefaultTenant());
     }
 
     /**
@@ -108,7 +113,11 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
      * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationReadyEvent() {
+        String tenant = runtimeTenantResolver.getTenant ();
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
+        if (tenant != null) {
+            runtimeTenantResolver.forceTenant(tenant);
+        }
     }
 
     /**
@@ -116,7 +125,17 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
      * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationStartedEvent() {
+        String tenant = runtimeTenantResolver.getTenant ();
         springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
+        if (tenant != null) {
+            runtimeTenantResolver.forceTenant(tenant);
+        }
+    }
+
+    @Configuration
+    @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
+    public static class ScanningConfiguration {
+
     }
 
 }

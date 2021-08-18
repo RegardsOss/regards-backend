@@ -22,11 +22,15 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -52,8 +56,6 @@ public interface IAcquisitionFileRepository
      */
     Page<AcquisitionFile> findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState state, AcquisitionFileInfo fileInfo,
             Pageable pageable);
-
-    Optional<AcquisitionFile> findOneByFilePathIn(Path filePath);
 
     /**
      * Search all acquisition files for the given {@link AcquisitionFileState}
@@ -83,4 +85,11 @@ public interface IAcquisitionFileRepository
      */
     void deleteByProduct(Product product);
 
+    Optional<Object> findOneByFilePathInAndFileInfo(Path filePath, AcquisitionFileInfo info);
+
+    void deleteByFileInfoAndStateIn(AcquisitionFileInfo afi, AcquisitionFileState... states);
+
+    @Modifying
+    @Query("Delete from AcquisitionFile af Where af.product.id IN (:productIds)")
+    void deleteByProductIdIn(@Param("productIds") Collection<Long> productIds);
 }

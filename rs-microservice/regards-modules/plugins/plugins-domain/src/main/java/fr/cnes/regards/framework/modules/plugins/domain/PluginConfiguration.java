@@ -39,6 +39,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import io.vavr.control.Option;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -150,7 +151,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
             value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
-    private final Set<IPluginParam> parameters = Sets.newHashSet();
+    private Set<IPluginParam> parameters = Sets.newHashSet();
 
     /**
      * Icon of the plugin. It must be an URL to a svg file.
@@ -257,8 +258,12 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     public void setMetaData(PluginMetaData metaData) {
+        this.metaData = metaData;
+    }
+
+    public void setMetaDataAndPluginId(PluginMetaData metaData) {
         // For serialization
-        pluginId = metaData.getPluginId();
+        Option.of(metaData).peek(m -> pluginId = m.getPluginId());
         // Transient information only useful at runtime
         this.metaData = metaData;
     }

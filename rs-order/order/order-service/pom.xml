@@ -59,9 +59,13 @@
 			<groupId>fr.cnes.regards.modules.dam</groupId>
 			<artifactId>dam-gson</artifactId>
 		</dependency>
-				<dependency>
+			<dependency>
 			<groupId>fr.cnes.regards.modules.templates</groupId>
 			<artifactId>templates-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+			<artifactId>tenant-settings-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -92,6 +96,10 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>

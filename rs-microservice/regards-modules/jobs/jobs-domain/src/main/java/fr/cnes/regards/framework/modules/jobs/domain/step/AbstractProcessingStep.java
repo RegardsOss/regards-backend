@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 
+import java.util.Optional;
+
 /**
  * Common processing step applied to job execution
  * @param <I> input object
@@ -43,6 +45,7 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
     @Override
     public O execute(I in) throws ProcessingStepException {
         boolean error = true;
+        Exception exception = null;
         try {
             O out = doExecute(in);
             job.advanceCompletion();
@@ -50,11 +53,12 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
             return out;
         } catch (Exception e) { // NOSONAR
             LOGGER.error(e.getMessage(), e);
+            exception = e;
             throw e;
         } finally {
             if (error) {
                 // Always run this method even if exception occurs
-                doAfterError(in);
+                doAfterError(in, Optional.ofNullable(exception));
             }
         }
     }
@@ -70,5 +74,5 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
      * Override this method to manage step execution error
      * @param in input object
      */
-    protected abstract void doAfterError(I in);
+    protected abstract void doAfterError(I in, Optional<Exception> e);
 }

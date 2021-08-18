@@ -20,29 +20,13 @@
 
 package fr.cnes.regards.modules.ingest.service.settings;
 
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 
-/**
- * Service to handle optional notifications
- * @author Iliana Ghazali
- */
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 
 public interface IAIPNotificationSettingsService {
 
-    /**
-     * Initialize new {@link AIPNotificationSettings} in the repository
-     */
-    void initNotificationSettings();
+    boolean isActiveNotification();
 
-    /**
-     * Retrieve {@link AIPNotificationSettings}. If they do not exist, new settings are created.
-     */
-    AIPNotificationSettings retrieve();
+    void setActiveNotification(Boolean isActiveNotification) throws EntityException;
 
-    /**
-     * Update {@link AIPNotificationSettings}
-     */
-    void update(AIPNotificationSettings pAipNotificationSettings);
-
-    void resetSettings();
 }

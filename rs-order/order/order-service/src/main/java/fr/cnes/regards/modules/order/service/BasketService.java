@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -206,6 +207,32 @@ public class BasketService implements IBasketService {
                 .findFirst()
                 .map(ds -> attachProcessToDatasetSelectionAndSaveBasket(basket, ds, desc))
                 .orElseThrow(() -> new EntityNotFoundException("Basket selection with id " + datasetId + " doesn't exist"));
+    }
+
+    @Override
+    public Basket duplicate(Long id, String owner) {
+        Basket oldBasket = load(id);
+        Basket newBasket = new Basket();
+        BeanUtils.copyProperties(oldBasket, newBasket, "id", "owner");
+        newBasket.setOwner(owner);
+        oldBasket.getDatasetSelections().forEach(basketDatasetSelection -> {
+            BasketDatasetSelection newBasketDatasetSelection = new BasketDatasetSelection();
+            BeanUtils.copyProperties(basketDatasetSelection, newBasketDatasetSelection, "id");
+            basketDatasetSelection.getItemsSelections().forEach(basketDatedItemsSelection -> {
+                BasketDatedItemsSelection newBasketDatedItemsSelection = new BasketDatedItemsSelection();
+                BeanUtils.copyProperties(basketDatedItemsSelection, newBasketDatedItemsSelection);
+                newBasketDatasetSelection.addItemsSelection(newBasketDatedItemsSelection);
+            });
+            newBasket.addDatasetSelection(newBasketDatasetSelection);
+        });
+        return repos.save(newBasket);
+    }
+
+    @Override
+    public Basket transferOwnerShip(String fromOwner, String toOwner) {
+        Basket basket = repos.findByOwner(fromOwner);
+        basket.setOwner(toOwner);
+        return repos.save(basket);
     }
 
     private Basket attachProcessToDatasetSelectionAndSaveBasket(

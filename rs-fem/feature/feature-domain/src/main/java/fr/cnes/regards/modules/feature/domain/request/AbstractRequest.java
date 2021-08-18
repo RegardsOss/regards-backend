@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -27,9 +29,14 @@ import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
@@ -51,6 +58,8 @@ public abstract class AbstractRequest {
     public static final String COLUMN_REGISTRATION_DATE = "registration_date";
 
     public static final String COLUMN_STEP = "step";
+
+    public static final String COLUMN_LAST_EXEC_ERROR_STEP = "last_exec_error_step";
 
     public static final String COLUMN_PRIORITY = "priority";
 
@@ -91,10 +100,21 @@ public abstract class AbstractRequest {
     @Column(name = COLUMN_STEP, length = 50, nullable = false)
     protected FeatureRequestStep step;
 
+    /**
+     * Last execution error step. Used to retry a request from last step
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = COLUMN_LAST_EXEC_ERROR_STEP, length = 50, nullable = true)
+    protected FeatureRequestStep lastExecErrorStep;
+
     @NotNull(message = "Priority of the request")
     @Enumerated(EnumType.ORDINAL)
     @Column(name = COLUMN_PRIORITY, length = 50, nullable = false)
     protected PriorityLevel priority;
+
+    @Column(columnDefinition = "jsonb", name = "errors")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    protected Set<String> errors;
 
     @SuppressWarnings("unchecked")
     protected <T extends AbstractRequest> T with(String requestId, String requestOwner, OffsetDateTime requestDate,
@@ -148,6 +168,29 @@ public abstract class AbstractRequest {
         this.step = step;
     }
 
+    public Set<String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
+    }
+
+    public void addError(String error) {
+        if (errors == null) {
+            errors = new HashSet<>();
+        }
+        errors.add(error);
+    }
+
+    public FeatureRequestStep getLastExecErrorStep() {
+        return lastExecErrorStep;
+    }
+
+    public void setLastExecErrorStep(FeatureRequestStep lastExecErrorStep) {
+        this.lastExecErrorStep = lastExecErrorStep;
+    }
+
     public PriorityLevel getPriority() {
         return priority;
     }
@@ -170,6 +213,48 @@ public abstract class AbstractRequest {
 
     public void setRequestOwner(String requestOwner) {
         this.requestOwner = requestOwner;
+    }
+
+    public boolean isDeletable() {
+        return (this.state == RequestState.ERROR);
+    }
+
+    public boolean isRetryable() {
+        return (this.state == RequestState.ERROR);
+    }
+
+    public static FeatureRequestDTO toDTO(AbstractRequest request) {
+        FeatureRequestDTO dto = new FeatureRequestDTO();
+        dto.setId(request.getId());
+        dto.setRegistrationDate(request.getRegistrationDate());
+        dto.setState(request.getState());
+        dto.setStep(request.getStep());
+        dto.setProcessing(request.getStep().isProcessing());
+        dto.setErrors(request.getErrors());
+        if (request instanceof FeatureCreationRequest) {
+            FeatureCreationRequest fcr = (FeatureCreationRequest) request;
+            dto.setProviderId(fcr.getProviderId());
+            dto.setType(FeatureRequestTypeEnum.CREATION.toString());
+            dto.setSession(fcr.getMetadata().getSession());
+            dto.setSource(fcr.getMetadata().getSessionOwner());
+        }
+        if (request instanceof FeatureUpdateRequest) {
+            dto.setProviderId(((FeatureUpdateRequest) request).getProviderId());
+            dto.setType(FeatureRequestTypeEnum.UPDATE.toString());
+        }
+        if (request instanceof FeatureSaveMetadataRequest) {
+            dto.setType(FeatureRequestTypeEnum.SAVE_METADATA.toString());
+        }
+        if (request instanceof FeatureDeletionRequest) {
+            dto.setType(FeatureRequestTypeEnum.DELETION.toString());
+        }
+        if (request instanceof FeatureNotificationRequest) {
+            dto.setType(FeatureRequestTypeEnum.NOTIFICATION.toString());
+        }
+        if (request instanceof FeatureCopyRequest) {
+            dto.setType(FeatureRequestTypeEnum.COPY.toString());
+        }
+        return dto;
     }
 
     public abstract Long getId();

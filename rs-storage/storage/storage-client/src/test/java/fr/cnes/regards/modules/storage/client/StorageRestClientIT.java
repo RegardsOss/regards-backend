@@ -73,7 +73,7 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_tests",
-        "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" })
+        "regards.amqp.enabled=true","regards.storage.cache.path:target/cache" })
 public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Value("${server.address}")
@@ -118,7 +118,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void donwload() {
-        Response response = client.downloadFile("huhuhuhu");
+        Response response = client.downloadFile("huhuhuhu", false);
         Assert.assertEquals(HttpStatus.NOT_FOUND.value(), response.status());
     }
 
@@ -128,8 +128,8 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         for (int i = 0; i < 100; i++) {
             fileRefService.create(Sets.newHashSet("someone", "someone-else"),
                                   new FileReferenceMetaInfo("123456" + i, "MD5", "file.test_" + i, 10L,
-                                          MediaType.APPLICATION_JSON),
-                                  new FileLocation("somewhere", "file://plop/plip.file_" + i));
+                                                            MediaType.APPLICATION_JSON),
+                                  new FileLocation("somewhere", "file://plop/plip.file_" + i), false);
         }
         Response response = client.export();
         Assert.assertNotNull(response);

@@ -70,7 +70,11 @@ public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
     }
 
     @Override
-    protected void doAfterError(SIP sip) {
-        handleRequestError(String.format("Preprocessing fails for SIP \"%s\"", sip.getId()));
+    protected void doAfterError(SIP sip, Optional<Exception> e) {
+        String error = "unknown cause";
+        if (e.isPresent()) {
+            error = e.get().getMessage();
+        }
+        handleRequestError(String.format("Preprocessing fails for SIP \"%s\". Cause : %s", sip.getId(), error));
     }
 }

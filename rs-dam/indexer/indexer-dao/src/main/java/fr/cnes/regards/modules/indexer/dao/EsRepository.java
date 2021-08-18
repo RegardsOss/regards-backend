@@ -18,43 +18,54 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping.stringMapping;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.array;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
-import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
+import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
+import com.google.gson.*;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor;
+import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
+import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
+import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
+import fr.cnes.regards.modules.indexer.dao.deser.JsonDeserializeStrategy;
+import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
+import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import fr.cnes.regards.modules.indexer.domain.IDocFiles;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
+import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.IMapping;
+import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
+import fr.cnes.regards.modules.indexer.domain.facet.*;
+import fr.cnes.regards.modules.indexer.domain.reminder.SearchAfterReminder;
+import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+import fr.cnes.regards.modules.indexer.domain.spatial.ILocalizable;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
+import io.vavr.control.Try;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -88,17 +99,9 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.*;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RequestOptions.Builder;
-import org.elasticsearch.client.Requests;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.common.Strings;
@@ -140,70 +143,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Repository;
 
-import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
-import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Range;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSyntaxException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
-import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor;
-import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
-import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
-import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
-import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
-import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
-import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
-import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
-import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
-import fr.cnes.regards.modules.indexer.domain.IDocFiles;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
-import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
-import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.IMapping;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.indexer.domain.facet.BooleanFacet;
-import fr.cnes.regards.modules.indexer.domain.facet.DateFacet;
-import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
-import fr.cnes.regards.modules.indexer.domain.facet.NumericFacet;
-import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
-import fr.cnes.regards.modules.indexer.domain.reminder.SearchAfterReminder;
-import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
-import fr.cnes.regards.modules.indexer.domain.spatial.ILocalizable;
-import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
-import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping.stringMapping;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.*;
+import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
 
 /**
  * Elasticsearch repository implementation
@@ -326,6 +289,16 @@ public class EsRepository implements IEsRepository {
      */
     private static final String INDEX_NOT_FOUND_ERROR_MESSAGE = "Research won't work until you've ingested some features into ES";
 
+    public static final String MAPPING = "mapping";
+
+    public static final String DOUBLE = "double";
+
+    public static final String PROPERTIES = "properties";
+
+    public static final String BOOLEAN = "boolean";
+
+    public static final String VERSION = "version";
+
     /**
      * Single scheduled executor service to clean reminder tasks once expiration date is reached
      */
@@ -369,6 +342,8 @@ public class EsRepository implements IEsRepository {
                 }
             });
 
+    private final JsonDeserializeStrategy<IIndexable> deserializeHitsStrategy;
+
     /**
      * Constructor
      * @param gson JSon mapper bean
@@ -378,6 +353,7 @@ public class EsRepository implements IEsRepository {
             @Value("${regards.elasticsearch.address:}") String inEsAddress,
             @Value("${regards.elasticsearch.http.port}") int esPort,
             @Value("${regards.elasticsearch.http.buffer.limit:104857600}") int elasticClientBufferLimit,
+            @Autowired JsonDeserializeStrategy<IIndexable> deserStrategy,
             AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor, AttrDescToJsonMapping toMapping) {
         this.toMapping = toMapping;
         this.gson = gson;
@@ -410,6 +386,8 @@ public class EsRepository implements IEsRepository {
         } catch (IOException | RuntimeException e) {
             throw new NoNodeAvailableException("Error while pinging Elasticsearch (" + connectionInfoMessage + ")", e);
         }
+
+        this.deserializeHitsStrategy = deserStrategy;
     }
 
     /**
@@ -460,7 +438,7 @@ public class EsRepository implements IEsRepository {
                 for (Object oTypeMap : allTypesMapping.values()) {
                     Map<String, Object> typeMap = toMap(oTypeMap);
                     if (typeMap.containsKey(attribute)) {
-                        return toMap(toMap(toMap(typeMap.get(attribute)).get("mapping")).get(lastPathAttName))
+                        return toMap(toMap(toMap(typeMap.get(attribute)).get(MAPPING)).get(lastPathAttName))
                                 .get("type").equals("text");
                     }
                 }
@@ -501,9 +479,9 @@ public class EsRepository implements IEsRepository {
         //@formatter:off
         return object(kv("dynamic_templates",
                          array(object(kv("doubles",
-                                         object(kv("match_mapping_type", "double"),
-                                                kv("mapping", object("type", "double"))))))),
-                      kv("properties",
+                                         object(kv("match_mapping_type", DOUBLE),
+                                                kv(MAPPING, object("type", DOUBLE))))))),
+                      kv(PROPERTIES,
                          //These are AbstractEntity standard attributes mappings
                          object( // first root attributes from AbstractEntity hierrachy
                                 kv("id", object("type", "long")),
@@ -511,6 +489,8 @@ public class EsRepository implements IEsRepository {
                                 kv("ipId", stringMapping()),
                                 kv("type", stringMapping()),
                                 kv("wgs84", object("type", "geo_shape")),
+                                kv("nwPoint", object("type", "geo_point")),
+                                kv("sePoint", object("type", "geo_point")),
                                 kv("tags", stringMapping()),
                                 kv("groups", stringMapping()),
                                 kv("lastUpdate", optionalDatetimeMapping()),
@@ -520,7 +500,7 @@ public class EsRepository implements IEsRepository {
                                 kv("model", modelPropertiesMapping()),
                                 // then DataObject specific attributes
                                 kv("dataSourceId", object("type", "long")),
-                                kv("internal", object("type", "boolean")),
+                                kv("internal", object("type", BOOLEAN)),
                                 kv("datasetModelNames", stringMapping()),
                                 // then metadata attributes
                                 // metadata cannot be mapped that easily because it contains maps
@@ -543,15 +523,15 @@ public class EsRepository implements IEsRepository {
     private JsonElement pluginConfPropertiesMapping() {
         // @formatter:off
         return object(
-               kv("properties", object(
-                      kv("active",object("type", "boolean")),
+               kv(PROPERTIES, object(
+                      kv("active",object("type", BOOLEAN)),
                       kv("businessId",stringMapping()),
                       kv("id",object("type", "long")),
                       kv("label",stringMapping()),
                       kv("pluginId",stringMapping()),
                       kv("priorityOrder",object("type", "long")),
                       kv("parameters",object("type", "nested")),
-                      kv("version",stringMapping())
+                      kv(VERSION,stringMapping())
                )));
         // @formatter:on
     }
@@ -559,12 +539,12 @@ public class EsRepository implements IEsRepository {
     private JsonElement modelPropertiesMapping() {
         // @formatter:off
         return object(
-               kv("properties", object(
+               kv(PROPERTIES, object(
                       kv("description", object("type", "text")),
                       kv("id", object("type", "long")),
                       kv("name", stringMapping()),
                       kv("type", stringMapping()),
-                      kv("version", stringMapping())
+                      kv(VERSION, stringMapping())
                )));
         // @formatter:on
     }
@@ -572,18 +552,18 @@ public class EsRepository implements IEsRepository {
     private JsonElement feautrePropertiesMapping() {
         // @formatter:off
         return  object(
-                kv("properties", object(
+                kv(PROPERTIES, object(
                     kv("entityType", stringMapping()),
                     kv("files", object("type", "object")),
                     kv("id", stringMapping()),
                     kv("label", stringMapping()),
-                    kv("last", object("type", "boolean")),
+                    kv("last", object("type", BOOLEAN)),
                     kv("model", stringMapping()),
                     kv("normalizedGeometry", object("type", "geo_shape")),
-                    kv("properties", object("type", "object")),
+                    kv(PROPERTIES, object("type", "object")),
                     kv("providerId", stringMapping()),
                     kv("type", stringMapping()),
-                    kv("version", stringMapping()),
+                    kv(VERSION, stringMapping()),
                     kv("crs", stringMapping()),
                     kv("tags", stringMapping()),
                     kv("virtualId", stringMapping()),
@@ -774,7 +754,7 @@ public class EsRepository implements IEsRepository {
             for (ObjectObjectCursor<String, Settings> settings : response.getSettings()) {
                 // index starting with . are kibana ones (don't give a shit)
                 if (!settings.key.startsWith(".")) {
-                    String ver = settings.value.getAsSettings("index").getAsSettings("version").get("created");
+                    String ver = settings.value.getAsSettings("index").getAsSettings(VERSION).get("created");
                     Version version = Version.fromId(Integer.parseInt(ver));
                     if (version.before(Version.V_6_0_0)) {
                         long start = System.currentTimeMillis();
@@ -857,12 +837,14 @@ public class EsRepository implements IEsRepository {
     @Override
     public <T extends IIndexable> T get(String index, String type, String id, Class<T> clazz) {
         GetRequest request = new GetRequest(index.toLowerCase(), TYPE, id);
+
         try {
             GetResponse response = client.get(request, RequestOptions.DEFAULT);
             if (!response.isExists()) {
                 return null;
             }
-            return gson.fromJson(response.getSourceAsString(), clazz);
+            String sourceAsString = response.getSourceAsString();
+            return deserializeHitsStrategy.deserializeJson(sourceAsString, clazz);
         } catch (final JsonSyntaxException | IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new RsRuntimeException(e);
@@ -1030,7 +1012,7 @@ public class EsRepository implements IEsRepository {
             // Scroll until no hits are returned
             do {
                 for (final SearchHit hit : scrollResp.getHits().getHits()) {
-                    action.accept(gson.fromJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
+                    action.accept(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
                 }
 
                 SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollResp.getScrollId());
@@ -1084,7 +1066,7 @@ public class EsRepository implements IEsRepository {
 
     @Override
     @Deprecated
-    public <T> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest) {
+    public <T extends IIndexable> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest) {
         try {
             final List<T> results = new ArrayList<>();
             SearchRequest request = new SearchRequest(index.toLowerCase());
@@ -1096,7 +1078,7 @@ public class EsRepository implements IEsRepository {
             SearchResponse response = client.search(request, options);
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
-                results.add(gson.fromJson(hit.getSourceAsString(), clazz));
+                results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), clazz));
             }
             return new PageImpl<>(results, pageRequest, response.getHits().getTotalHits());
         } catch (final JsonSyntaxException | IOException e) {
@@ -1272,7 +1254,7 @@ public class EsRepository implements IEsRepository {
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
                 try {
-                    results.add(gson.fromJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
+                    results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
                 } catch (JsonParseException e) {
                     LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"", hit.getId(),
                                  hit.getSourceAsString());
@@ -1558,6 +1540,24 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
+    public <T extends IIndexable> Aggregations getAggregationsFor(
+            SearchKey<?, T> searchKey,
+            ICriterion criterion,
+            Collection<AggregationBuilder> aggs
+    ) {
+        try {
+            SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(criterion, searchKey.getSearchTypes()));
+            aggs.forEach(builder::aggregation);
+            SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
+            // Launch the request
+            SearchResponse response = getSearchResponse(request);
+            return response.getAggregations();
+        } catch (IOException e) {
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    @Override
     public <T extends IIndexable> Aggregations getAggregations(SearchKey<?, T> searchKey, ICriterion criterion,
             Collection<QueryableAttribute> attributes) {
         try {
@@ -1569,6 +1569,10 @@ public class EsRepository implements IEsRepository {
                 } else if (qa.isBooleanAttribute()) {
                     builder.aggregation(AggregationBuilders.terms(qa.getAttributeName()).field(qa.getAttributeName()))
                             .size(2);
+                } else if (qa.isGeoBoundsAttribute()){
+                    builder.aggregation(AggregationBuilders.geoBounds(qa.getAttributeName())
+                            .field(qa.getAttributeName())
+                            .wrapLongitude(true));
                 } else if (!qa.isTextAttribute()) {
                     builder.aggregation(AggregationBuilders.stats(qa.getAttributeName()).field(qa.getAttributeName()));
                 }
@@ -1723,7 +1727,7 @@ public class EsRepository implements IEsRepository {
                     // Indeed, because of Elasticsearch version 6 single type update, some indices are retrieved through
                     // an alias. Asking an alias mapping returned a block with index name, not alias name
                     return toMap(toMap(toMap(toMap(toMap(toMap(map.values().iterator().next()).get("mappings"))
-                            .get(TYPE)).get(attribute)).get("mapping")).get(lastPathAtt)).get("type").equals("text");
+                            .get(TYPE)).get(attribute)).get(MAPPING)).get(lastPathAtt)).get("type").equals("text");
 
                 }
             }
@@ -1776,7 +1780,7 @@ public class EsRepository implements IEsRepository {
 
                 // Add sort to request
                 updatedAscSortMap.forEach((key, value) -> builder.sort(SortBuilders.fieldSort(key)
-                        .order(value ? SortOrder.ASC : SortOrder.DESC).unmappedType("double")));
+                        .order(value ? SortOrder.ASC : SortOrder.DESC).unmappedType(DOUBLE)));
                 // "double" because a type is necessary. This has only an impact when seaching on several indices if
                 // property is mapped on one and no on the other(s). Will see this when it happens (if it happens a day)
                 // entry -> builder.sort(entry.getKey(), entry.getValue() ? SortOrder.ASC : SortOrder.DESC));
@@ -1990,7 +1994,7 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public <T> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object inValue,
+    public <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object inValue,
             String... fields) {
         try {
             final List<T> results = new ArrayList<>();
@@ -2013,7 +2017,7 @@ public class EsRepository implements IEsRepository {
             SearchResponse response = getSearchResponse(request);
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
-                results.add(gson.fromJson(hit.getSourceAsString(), searchKey.fromType(hit.getType())));
+                results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), searchKey.fromType(hit.getType())));
             }
             return new PageImpl<>(results, pageRequest, response.getHits().getTotalHits());
         } catch (final JsonSyntaxException | IOException e) {

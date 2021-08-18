@@ -54,22 +54,22 @@
 	</parent>
 
 	<dependencies>
-		<!-- Starters -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>module-regards-starter</artifactId>
-		</dependency>
+        <!-- Starters -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards-starter</artifactId>
+        </dependency>
 		 <!-- Module dependencies -->
         <dependency>
 			<groupId>fr.cnes.regards.modules.toponyms</groupId>
 			<artifactId>toponyms-dao</artifactId>
 		</dependency>
 		<!-- Test -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards-starter</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-instance-regards-starter</artifactId>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>

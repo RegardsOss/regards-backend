@@ -19,11 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.util.Map;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -35,6 +30,10 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * This class manages data driven product creation using following steps :
@@ -98,40 +97,36 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        long productsScheduled = 0L;
-        try {
-            sessionNotifier.notifyStartingChain(processingChain.getLabel(), session);
-            // Trying to restart products that fail during SIP generation
-            if (onlyErrors) {
-                processingService.retrySIPGeneration(processingChain, Optional.of(session));
-            } else {
-                // Restart interrupted jobs
-                processingService.restartInterruptedJobs(processingChain);
-                // Nominal process
-                // First step : scan and register files (Not interruptible at the moment)
-                processingService.scanAndRegisterFiles(processingChain, session);
-                // Second step : validate in progress files, build and
-                // schedule SIP generation for newly completed or finished products
-                productsScheduled += processingService.manageRegisteredFiles(processingChain, session);
-                // Third step : compute new product state for already completed or finished products and schedule SIP generation.
-                // Doing this in a third step and not within the second one allows us to
-                // schedule update products only once for SIP generation
-                productsScheduled += productService.manageUpdatedProducts(processingChain);
-            }
-        } catch (ModuleException e) {
-            logger.error("Business error", e);
-            throw new JobRuntimeException(e);
-        } finally {
-            // If no products has been scheduled for generation. The chain is over.
-            if (productsScheduled == 0) {
+        if (!processingService.hasExecutionBlockers(processingChain, true)) {
+            try {
+                sessionNotifier.notifyStartingChain(processingChain.getLabel(), session);
+                // Trying to restart products that fail during SIP generation
+                if (Boolean.TRUE.equals(onlyErrors)) {
+                    processingService.retrySIPGeneration(processingChain, Optional.of(session));
+                } else {
+                    // Restart interrupted jobs
+                    processingService.restartInterruptedJobs(processingChain);
+                    // Nominal process
+                    // First step : scan and register files
+                    processingService.scanAndRegisterFiles(processingChain, session);
+                    // Second step : validate in progress files, build and
+                    // schedule SIP generation for newly completed or finished products
+                    processingService.manageRegisteredFiles(processingChain, session);
+                    // Third step : compute new product state for already completed or finished products and schedule SIP generation.
+                    // Doing this in a third step and not within the second one allows us to
+                    // schedule update products only once for SIP generation
+                    productService.manageUpdatedProducts(processingChain);
+                }
+            } catch (ModuleException e) {
+                logger.error("Business error", e);
+                throw new JobRuntimeException(e);
+            } finally {
                 sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
+                processingService.unlockChain(processingChain.getId());
             }
-            if (Thread.currentThread().isInterrupted()) {
-                sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
-            }
-            // Job is terminated ... release processing chain
-            processingService.unlockChain(processingChain.getId());
         }
+        // Job is terminated ... release processing chain
+        processingService.unlockChain(processingChain.getId());
     }
 
     public AcquisitionProcessingChain getAcqProcessingChain() {

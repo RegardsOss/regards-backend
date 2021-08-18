@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import org.hibernate.dialect.PostgreSQL9Dialect;
+import org.hibernate.dialect.PostgreSQL10Dialect;
 import org.hibernate.dialect.function.SQLFunctionTemplate;
 import org.hibernate.type.StandardBasicTypes;
 
@@ -36,7 +36,7 @@ import org.hibernate.type.StandardBasicTypes;
  *
  * @author Léo Mieulet
  */
-public class CustomPostgresDialect extends PostgreSQL9Dialect {
+public class CustomPostgresDialect extends PostgreSQL10Dialect {
 
     /**
      * Create an new empty array

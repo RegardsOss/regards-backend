@@ -22,6 +22,9 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
@@ -36,6 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,10 +70,16 @@ public class BasketServiceIT {
     private IOrderService orderService;
 
     @Autowired
+    private IOrderMaintenanceService orderMaintenanceService;
+
+    @Autowired
     private IAuthenticationResolver authResolver;
 
     @Autowired
     private IProjectsClient projectsClient;
+
+    @MockBean
+    private IProjectUsersClient projectUsersClient;
 
     private static final String USER_EMAIL = "test@test.fr";
 
@@ -83,6 +93,12 @@ public class BasketServiceIT {
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+
+        Role role = new Role();
+        role.setName(DefaultRole.REGISTERED_USER.name());
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(role);
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
     }
 
     private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {
@@ -189,10 +205,10 @@ public class BasketServiceIT {
             }
         }
 
-        orderService.createOrder(basket, "perdu", "http://perdu.com");
+        orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
 
         // manage periodic email notifications
-        orderService.sendPeriodicNotifications();
+        orderMaintenanceService.sendPeriodicNotifications();
     }
 
     static SimpleMailMessage mailMessage;

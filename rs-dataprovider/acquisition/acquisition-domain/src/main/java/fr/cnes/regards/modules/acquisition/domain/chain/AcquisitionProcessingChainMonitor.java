@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AcquisitionProcessingChainMonitor {
 
     private AcquisitionProcessingChain chain;
@@ -28,6 +31,8 @@ public class AcquisitionProcessingChainMonitor {
     private boolean active = false;
 
     private boolean deletionPending = false;
+
+    private final List<String> executionBlockers = new ArrayList<>();
 
     // Post processing jobs not managed here ... can be seen in product
 
@@ -60,6 +65,10 @@ public class AcquisitionProcessingChainMonitor {
 
     public void setDeletionPending(boolean deletionPending) {
         this.deletionPending = deletionPending;
+    }
+
+    public List<String> getExecutionBlockers() {
+        return executionBlockers;
     }
 
 }

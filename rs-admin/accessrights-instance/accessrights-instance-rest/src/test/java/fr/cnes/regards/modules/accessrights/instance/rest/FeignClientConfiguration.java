@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.rest;
 
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
 
 /**
  * @author Marc Sordi
@@ -41,4 +40,5 @@ public class FeignClientConfiguration {
     public IProjectUsersClient projectUsersClient() {
         return Mockito.mock(IProjectUsersClient.class);
     }
+
 }

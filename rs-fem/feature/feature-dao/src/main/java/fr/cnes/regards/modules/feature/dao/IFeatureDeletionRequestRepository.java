@@ -19,17 +19,17 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 
 /**
  * @author Kevin Marchois
@@ -44,7 +44,11 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
     Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
             @Param("now") OffsetDateTime offsetDateTime);
 
+    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step in (:steps) and fdr.requestDate <= :now")
+    Set<FeatureDeletionRequest> findByStepIn(@Param("steps") Collection<FeatureRequestStep> steps,
+            @Param("now") OffsetDateTime offsetDateTime);
+
     @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
-    Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
-            @Param("now") OffsetDateTime now, Pageable page);
+    Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step, @Param("now") OffsetDateTime now,
+            Pageable page);
 }

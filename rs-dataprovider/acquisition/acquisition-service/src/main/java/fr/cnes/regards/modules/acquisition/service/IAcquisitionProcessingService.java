@@ -20,24 +20,19 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Acquisition processing service interface
@@ -51,9 +46,8 @@ public interface IAcquisitionProcessingService {
      * List all acquisition chains
      * @param pageable pagination filter
      * @return list of all acquisition chains
-     * @throws ModuleException if error occurs!
      */
-    Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) throws ModuleException;
+    Page<AcquisitionProcessingChain> getAllChains(Pageable pageable);
 
     /**
      * Retrieve a processing chain according to its identifier.
@@ -73,7 +67,7 @@ public interface IAcquisitionProcessingService {
      * Retrieve all processing chains by page
      * @return all chains fully loaded
      */
-    Page<AcquisitionProcessingChain> getFullChains(Pageable pageable) throws ModuleException;
+    Page<AcquisitionProcessingChain> getFullChains(Pageable pageable);
 
     /**
      * Update an existing processing chain
@@ -115,13 +109,6 @@ public interface IAcquisitionProcessingService {
      * @throws ModuleException if error occurs.
      */
     void deleteChain(Long id) throws ModuleException;
-
-    /**
-     * Delete products
-     * @param processingChain
-     * @param products
-     */
-    void deleteProducts(AcquisitionProcessingChain processingChain, Collection<Product> products);
 
     /**
      * Check if a {@link AcquisitionProcessingChain} deletion is pending
@@ -175,7 +162,6 @@ public interface IAcquisitionProcessingService {
     /**
      * Stop a chain and clean all inconsistencies after all jobs are aborted
      * @param processingChainId identifier of the chain to stop
-     * @return processing chain
      * @throws ModuleException if error occurs!
      */
     AcquisitionProcessingChain stopAndCleanChain(Long processingChainId) throws ModuleException;
@@ -251,7 +237,7 @@ public interface IAcquisitionProcessingService {
     long manageRegisteredFiles(AcquisitionProcessingChain processingChain, String session) throws ModuleException;
 
     /**
-     * Same action as {@link #manageRegisteredFiles(AcquisitionProcessingChain)} but in a new transaction and by page
+     * Same action as {@link #manageRegisteredFiles(AcquisitionProcessingChain, String)} but in a new transaction and by page
      */
     ProductsPage manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain, String session)
             throws ModuleException;
@@ -270,12 +256,11 @@ public interface IAcquisitionProcessingService {
     /**
      * Build summaries list of {@link AcquisitionProcessingChain}s.
      * Each summary allow to monitor chain progress.
-     * @param label {@link String} optional search parameter on {@link AcquisitionProcessingChain}s label
+     *
+     * @param label   {@link String} optional search parameter on {@link AcquisitionProcessingChain}s label
      * @param running {@link Boolean} optional search parameter on {@link AcquisitionProcessingChain}s running
-     * @throws ModuleException
      */
-    Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label, Boolean running,
-            AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException;
+    Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label, Boolean running, AcquisitionProcessingChainMode mode, Pageable pageable);
 
     /**
      * Handle {@link fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob} errors
@@ -287,4 +272,13 @@ public interface IAcquisitionProcessingService {
     List<AcquisitionProcessingChain> findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode manual);
 
     void relaunchErrors(String chainName, String session) throws ModuleException;
+
+    List<String> getExecutionBlockers(AcquisitionProcessingChain chain);
+
+    boolean hasExecutionBlockers(AcquisitionProcessingChain chain, boolean doNotify);
+
+    boolean canBeStarted(AcquisitionProcessingChainMonitor chainMonitor);
+
+    boolean canBeStarted(AcquisitionProcessingChain chain);
+
 }

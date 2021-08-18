@@ -110,7 +110,6 @@ public class FeignSecurityManager {
     private String getUserToken() {
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication();
-        authentication.getUser().getRole();
         if (authentication != null) {
             return authentication.getJwt();
         } else {

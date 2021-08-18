@@ -33,17 +33,22 @@ public class ServiceProviderDto {
     @URL
     private final String authUrl;
 
+    @URL
+    private final String logoutUrl;
+
     private final PluginConfiguration pluginConfiguration;
 
-    public ServiceProviderDto(String name, String authUrl, PluginConfiguration pluginConfiguration) {
+    public ServiceProviderDto(String name, String authUrl, String logoutUrl, PluginConfiguration pluginConfiguration) {
         this.name = name;
         this.authUrl = authUrl;
+        this.logoutUrl = logoutUrl;
         this.pluginConfiguration = pluginConfiguration;
     }
 
     public ServiceProviderDto(ServiceProvider serviceProvider) {
         this.name = serviceProvider.getName();
         this.authUrl = serviceProvider.getAuthUrl();
+        this.logoutUrl = serviceProvider.getLogoutUrl();
         this.pluginConfiguration = serviceProvider.getConfiguration();
     }
 
@@ -61,8 +66,12 @@ public class ServiceProviderDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ServiceProviderDto that = (ServiceProviderDto) o;
         return Objects.equals(name, that.name)
             && Objects.equals(authUrl, that.authUrl)
@@ -78,6 +87,7 @@ public class ServiceProviderDto {
         return new ServiceProvider(
             name,
             authUrl,
+            logoutUrl,
             pluginConfiguration
         );
     }

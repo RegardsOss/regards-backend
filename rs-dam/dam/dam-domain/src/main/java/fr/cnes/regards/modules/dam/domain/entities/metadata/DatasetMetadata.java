@@ -89,7 +89,7 @@ public class DatasetMetadata {
      * Associated data objects groups.
      * Same groups as dataset ones except some if rights don't permit access to data objects
      */
-    private final ConcurrentMap<String, DataObjectGroup> dataObjectsGroups = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, DataObjectGroup> dataObjectsGroups = new ConcurrentHashMap<>();
 
     public Set<String> getDataObjectsGroups() {
         return dataObjectsGroups.keySet();

@@ -30,10 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -48,6 +45,8 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * REST Controller handling operations on downloads.
@@ -99,37 +98,38 @@ public class CatalogDownloadController {
     @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
-            @PathVariable(CHECKSUM_PATH_PARAM) String checksum) throws ModuleException, IOException {
+            @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
+            @RequestParam(name="isContentInline", required=false) Boolean isContentInline,
+            HttpServletResponse response) throws ModuleException, IOException {
         UniformResourceName urn = UniformResourceName.fromString(aipId);
         if (this.searchService.hasAccess(urn)) {
             // To download through storage client we must be authenticate as user in order to
             // impact the download quotas, but we upgrade the privileges so that the request passes.
             FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
-            Response response = null;
+            Response storageResp = null;
             try {
-                response = storageRestClient.downloadFile(checksum);
+                storageResp = storageRestClient.downloadFile(checksum, isContentInline);
                 InputStreamResource isr = null;
                 HttpHeaders headers = new HttpHeaders();
-                // Add all headers from storage microservice response except for cache control ones.
+                // Add all headers from storage microservice storageResp except for cache control ones.
                 // This download endpoints must not activate cache control. Cache control is handled by CustomCacheControlHeaderWriter
-                for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
-                    if ((!h.getKey().toLowerCase().equals(CustomCacheControlHeadersWriter.CACHE_CONTROL.toLowerCase()))
-                            && (!h.getKey().toLowerCase().equals(CustomCacheControlHeadersWriter.EXPIRES.toLowerCase()))
-                            && (!h.getKey().toLowerCase()
-                                    .equals(CustomCacheControlHeadersWriter.PRAGMA.toLowerCase()))) {
-                        h.getValue().forEach(v -> headers.add(h.getKey(), v));
+                for (Entry<String, Collection<String>> h : storageResp.headers().entrySet()) {
+                    if ((!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.CACHE_CONTROL))
+                            && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.EXPIRES))
+                            && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.PRAGMA))) {
+                        h.getValue().forEach(v -> response.setHeader(h.getKey(), v));
                     }
                 }
-                if (response.status() == HttpStatus.OK.value()) {
-                    isr = new InputStreamResource(new ResponseStreamProxy(response));
+                if (storageResp.status() == HttpStatus.OK.value()) {
+                    isr = new InputStreamResource(new ResponseStreamProxy(storageResp));
                 } else {
                     LOGGER.error("Error downloading file {} from storage", checksum);
                     // if body is not null, forward the error content too
-                    if (response.body() != null) {
-                        isr = new InputStreamResource(new ResponseStreamProxy(response));
+                    if (storageResp.body() != null) {
+                        isr = new InputStreamResource(new ResponseStreamProxy(storageResp));
                     }
                 }
-                return ResponseEntity.status(response.status()).headers(headers).body(isr);
+                return ResponseEntity.status(storageResp.status()).headers(headers).body(isr);
             } catch (HttpClientErrorException | HttpServerErrorException e) {
                 LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
                                            e.getMessage()),

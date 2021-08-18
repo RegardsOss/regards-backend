@@ -46,6 +46,7 @@ public class DomainEntityMapperTest {
                 ServiceProvider domain = new ServiceProvider(
                     randomStr(),
                     randomStr(),
+                    randomStr(),
                     new PluginConfiguration(
                         randomStr(),
                         randomStr()
@@ -60,6 +61,7 @@ public class DomainEntityMapperTest {
         LongStream.range(0, random.nextInt(150)+50)
             .forEach(i -> {
                 ServiceProviderEntity entity = new ServiceProviderEntity(
+                    randomStr(),
                     randomStr(),
                     randomStr(),
                     new PluginConfiguration(

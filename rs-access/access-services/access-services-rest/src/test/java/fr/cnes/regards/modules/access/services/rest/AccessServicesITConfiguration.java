@@ -75,7 +75,7 @@ public class AccessServicesITConfiguration {
         PluginConfiguration pluginConfiguration = new PluginConfiguration("testConf",
                 SampleServicePlugin.class.getAnnotation(Plugin.class).id());
         pluginConfiguration.setId(ID);
-        pluginConfiguration.setMetaData(metaData);
+        pluginConfiguration.setMetaDataAndPluginId(metaData);
         ID = ID + 1;
         return new PluginConfigurationDto(pluginConfiguration);
     }

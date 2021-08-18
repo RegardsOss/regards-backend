@@ -19,8 +19,6 @@ public class SessionChangingStateProbe {
 
     private ISipState initialProductSIPState;
 
-    private long initalNbAcquiredFiles = 0L;
-
     // Gathers info about updated product
     private String ingestionChain;
 
@@ -48,9 +46,6 @@ public class SessionChangingStateProbe {
             sessionChangingStateProbe.initialSessionOwner = initialProduct.getProcessingChain().getLabel();
             sessionChangingStateProbe.initialProductState = initialProduct.getState();
             sessionChangingStateProbe.initialProductSIPState = initialProduct.getSipState();
-            // In case product changed from session we have to calculate number of files scanned in the previous session.
-            // This count is used after to decrement files acquired in the old session.
-            sessionChangingStateProbe.initalNbAcquiredFiles = initialProduct.getActiveAcquisitionFiles().size();
         }
         return sessionChangingStateProbe;
     }
@@ -91,14 +86,6 @@ public class SessionChangingStateProbe {
 
     public ISipState getProductSIPState() {
         return productSIPState;
-    }
-
-    public long getInitalNbAcquiredFiles() {
-        return initalNbAcquiredFiles;
-    }
-
-    public void setInitalNbAcquiredFiles(long initalNbAcquiredFiles) {
-        this.initalNbAcquiredFiles = initalNbAcquiredFiles;
     }
 
     public String getInitialSessionOwner() {

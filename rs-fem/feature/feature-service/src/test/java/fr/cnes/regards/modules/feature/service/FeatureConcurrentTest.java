@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_cct", "regards.amqp.enabled=true" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
-@ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureConcurrentTest extends AbstractFeatureMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureConcurrentTest.class);

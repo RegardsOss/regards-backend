@@ -18,25 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.LinkRelation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -55,12 +37,24 @@ import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Controller to access REST Actions on storage locations.
  *
  * @author Sébastien Binda
- *
  */
 @RestController
 @RequestMapping(StorageLocationController.BASE_PATH)
@@ -78,23 +72,35 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     public static final String RETRY = "/retry/{type}";
 
-    private static final String REQUESTS_PATH = "/requests/{type}";
+    public static final String RETRY_SESSION = "/retry/{source}/{session}";
 
     public static final String UP_PATH = ID_PATH + "/up";
 
     public static final String DOWN_PATH = ID_PATH + "/down";
 
     public static final String RESET_PARAM = "reset";
+
     public static final String METHOD_DELETE_FILES = "deleteFiles";
+
     public static final String METHOD_INCREASE_STORAGE_LOCATION_PRIORITY = "increaseStorageLocationPriority";
+
     public static final String METHOD_DECREASE_STORAGE_LOCATION_PRIORITY = "decreaseStorageLocationPriority";
+
     public static final String METHOD_UPDATE_LOCATION_CONFIGURATION = "updateLocationConfiguration";
+
     public static final String METHOD_CONFIGURE_LOCATION = "configureLocation";
+
     public static final String METHOD_DELETE = "delete";
+
     public static final String METHOD_COPY_FILES = "copyFiles";
+
     public static final String METHOD_COPY = "copy";
+
     public static final String METHOD_DOWN = "down";
+
     public static final String METHOD_UP = "up";
+
+    private static final String REQUESTS_PATH = "/requests/{type}";
 
     @Autowired
     private StorageLocationService service;
@@ -107,6 +113,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     @Autowired
     private IResourceService resourceService;
+
+    @Autowired
+    private IAuthenticationResolver authenticationResolver;
 
     /**
      * End-point to retrieve a storage location by his name
@@ -128,9 +137,10 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     /**
      * End-point to update a storage location configuration.
+     *
      * @param storageLocation to update
      * @return updated {@link StorageLocationDTO}
-     * @throws ModuleException  if location does not exists
+     * @throws ModuleException if location does not exists
      */
     @RequestMapping(method = RequestMethod.PUT, path = ID_PATH)
     @ResourceAccess(description = "Update a storage location configuration", role = DefaultRole.ADMIN)
@@ -138,11 +148,12 @@ public class StorageLocationController implements IResourceController<StorageLoc
             @PathVariable(name = "id") String storageId, @Valid @RequestBody StorageLocationDTO storageLocation)
             throws ModuleException {
         return new ResponseEntity<>(toResource(service.updateLocationConfiguration(storageId, storageLocation)),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
      * End-point to retrieve all known storage locations
+     *
      * @return {@link StorageLocationDTO}s
      * @throws ModuleException
      */
@@ -156,6 +167,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     /**
      * End-point to retrieve a Storage location by his name
+     *
      * @param storageId storage location name
      * @throws ModuleException
      */
@@ -168,6 +180,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     /**
      * End-point to delete a storage location configuration
+     *
      * @param storageLocationId storage location name to delete
      * @return Void
      * @throws ModuleException
@@ -181,6 +194,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     /**
      * End-point to delete a storage location configuration
+     *
      * @param storageLocationId storage location name to delete
      * @return Void
      * @throws ModuleException
@@ -196,24 +210,31 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     /**
      * End-point to delete all files referenced in a storage location
+     *
      * @param storageLocationId storage location name
-     * @param forceDelete If true, files are unreferenced even if the physical files cannot be deleted.
+     * @param forceDelete       If true, files are unreferenced even if the physical files cannot be deleted.
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.DELETE, path = ID_PATH + FILES)
     @ResourceAccess(description = "Delete all files of the storage location", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> deleteFiles(@PathVariable(name = "id") String storageLocationId,
             @RequestParam(name = "force", required = false) Boolean forceDelete) throws ModuleException {
+        // initialize sessionOwner and session
+        // By default, sessionOwner is the user requesting the deletion of the files
+        String sessionOwner = authenticationResolver.getUser();
+        String session = String.format("Delete %s files %s", storageLocationId, OffsetDateTime.now().toString());
+        // order deletion of files
         if (forceDelete != null) {
-            service.deleteFiles(storageLocationId, forceDelete);
+            service.deleteFiles(storageLocationId, forceDelete, sessionOwner, session);
         } else {
-            service.deleteFiles(storageLocationId, false);
+            service.deleteFiles(storageLocationId, false, sessionOwner, session);
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * End-point to copy files for a given path of a storage location to an other one
+     *
      * @param parameters copy parameters
      * @return Void
      * @throws ModuleException
@@ -223,22 +244,30 @@ public class StorageLocationController implements IResourceController<StorageLoc
             role = DefaultRole.ADMIN)
     public ResponseEntity<Void> copyFiles(@Valid @RequestBody CopyFilesParametersDTO parameters)
             throws ModuleException {
+        // assert parameters are not null
         Assert.notNull(parameters, "Copy parameters can not be null");
         Assert.notNull(parameters.getFrom(), "Source copy parameters can not be null");
         Assert.notNull(parameters.getFrom().getStorage(), "Source storage location copy parameters can not be null");
         Assert.notNull(parameters.getFrom().getUrl(), "Source storage url to copy parameters can not be null");
         Assert.notNull(parameters.getTo(), "Destination copy parameters can not be null");
         Assert.notNull(parameters.getTo().getStorage(), "Destination storage location copy parameters can not be null");
+
+        // initialize sessionOwner and session
+        // By default, sessionOwner is the user requesting the deletion of the files
+        String sessionOwner = authenticationResolver.getUser();
+        String session = String.format("Copy files from %s to %s - %s", parameters.getFrom().getStorage(),
+                                       parameters.getTo().getStorage(), OffsetDateTime.now());
         service.copyFiles(parameters.getFrom().getStorage(), parameters.getFrom().getUrl(),
                           parameters.getTo().getStorage(), Optional.ofNullable(parameters.getTo().getUrl()),
-                          parameters.getTypes());
+                          parameters.getTypes(), sessionOwner, session);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * End-point to retry all files requests in error state for the given storage location and the given request type
+     *
      * @param storageLocationId storage location name
-     * @param type {@link FileRequestType} to retry
+     * @param type              {@link FileRequestType} to retry
      * @return Void
      * @throws ModuleException
      */
@@ -253,8 +282,25 @@ public class StorageLocationController implements IResourceController<StorageLoc
     }
 
     /**
+     * End-point to retry all files requests in error state for a given source and session
+     *
+     * @param source  name of the source
+     * @param session name of the session
+     * @return Void
+     */
+    @RequestMapping(method = RequestMethod.GET, path = RETRY_SESSION)
+    @ResourceAccess(description = "Retry all files requests in error state for a given source and session",
+            role = DefaultRole.ADMIN)
+    public ResponseEntity<Void> retryErrorsBySourceAndSession(@PathVariable(name = "source") String source,
+            @PathVariable(name = "session") String session) {
+        service.retryErrorsBySourceAndSession(source, session);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
      * End-point to increase the priority of a storage location. Priority is used to select a storage location during file retrieving if files are
      * stored on multiple locations.
+     *
      * @param storageLocationId
      * @return Void
      * @throws EntityNotFoundException
@@ -270,6 +316,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
     /**
      * End-point to decrease the priority of a storage location. Priority is used to select a storage location during file retrieving if files are
      * stored on multiple locations.
+     *
      * @param storageLocationId
      * @return Void
      * @throws EntityNotFoundException
@@ -301,30 +348,33 @@ public class StorageLocationController implements IResourceController<StorageLoc
             return resource;
         }
         if ((location.getName() != null) && location.getName().equals(CacheService.CACHE_NAME)) {
-            resourceService.addLink(resource, this.getClass(), METHOD_DELETE_FILES, LinkRelation.of(METHOD_DELETE_FILES),
-                                    MethodParamFactory.build(String.class, location.getName()),
-                                    MethodParamFactory.build(Boolean.class));
+            resourceService
+                    .addLink(resource, this.getClass(), METHOD_DELETE_FILES, LinkRelation.of(METHOD_DELETE_FILES),
+                             MethodParamFactory.build(String.class, location.getName()),
+                             MethodParamFactory.build(Boolean.class));
             return resource;
         }
-        StorageType type = location.getConfiguration() != null ? location.getConfiguration().getStorageType()
-                : StorageType.OFFLINE;
+        StorageType type = location.getConfiguration() != null ?
+                location.getConfiguration().getStorageType() :
+                StorageType.OFFLINE;
         if (type != StorageType.OFFLINE) {
             if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
                 resourceService.addLink(resource, this.getClass(), METHOD_INCREASE_STORAGE_LOCATION_PRIORITY,
                                         LinkRelation.of(METHOD_UP),
                                         MethodParamFactory.build(String.class, location.getName()));
             }
-            if (!location.getConfiguration().getPriority().equals(storageLocationConfigurationService
-                    .getLowestPriority(location.getConfiguration().getStorageType()))) {
+            if (!location.getConfiguration().getPriority().equals(storageLocationConfigurationService.getLowestPriority(
+                    location.getConfiguration().getStorageType()))) {
                 resourceService.addLink(resource, this.getClass(), METHOD_DECREASE_STORAGE_LOCATION_PRIORITY,
                                         LinkRelation.of(METHOD_DOWN),
                                         MethodParamFactory.build(String.class, location.getName()));
             }
             resourceService.addLink(resource, this.getClass(), METHOD_COPY_FILES, LinkRelation.of(METHOD_COPY),
                                     MethodParamFactory.build(CopyFilesParametersDTO.class));
-            resourceService.addLink(resource, this.getClass(), METHOD_DELETE_FILES, LinkRelation.of(METHOD_DELETE_FILES),
-                                    MethodParamFactory.build(String.class, location.getName()),
-                                    MethodParamFactory.build(Boolean.class));
+            resourceService
+                    .addLink(resource, this.getClass(), METHOD_DELETE_FILES, LinkRelation.of(METHOD_DELETE_FILES),
+                             MethodParamFactory.build(String.class, location.getName()),
+                             MethodParamFactory.build(Boolean.class));
         }
         // If storage location is configured so delete & edit End-point is also available
         if ((location.getConfiguration() != null) && (location.getConfiguration().getId() != null)) {

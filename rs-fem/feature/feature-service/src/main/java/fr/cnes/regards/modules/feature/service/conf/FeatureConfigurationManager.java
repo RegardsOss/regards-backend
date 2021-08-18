@@ -18,29 +18,24 @@
  */
 package fr.cnes.regards.modules.feature.service.conf;
 
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
+import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
+import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
-import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
-import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
-import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
-import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
-import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataScheduler;
-
 /**
  * Configuration manager for current module
+ *
  * @author Marc Sordi
  */
 @Component
@@ -48,34 +43,33 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureConfigurationManager.class);
 
-    @Autowired
-    private FeatureSaveMetadataScheduler featureSaveMetadataScheduler;
+    private final DynamicTenantSettingService dynamicTenantSettingService;
 
-    @Autowired
-    private IFeatureNotificationSettingsService notificationSettingsService;
-
-    @Autowired
-    private IDumpSettingsService dumpSettingsService;
+    public FeatureConfigurationManager(DynamicTenantSettingService dynamicTenantSettingService) {
+        this.dynamicTenantSettingService = dynamicTenantSettingService;
+    }
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
+
         Set<String> importErrors = new HashSet<>();
+
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
-            if (DumpSettings.class.isAssignableFrom(item.getKey())) {
+            if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
+                DynamicTenantSetting setting = item.getTypedValue();
                 try {
-                    featureSaveMetadataScheduler.updateDumpAndScheduler(item.getTypedValue());
+                    dynamicTenantSettingService.update(setting.getName(), setting.getValue());
                 } catch (ModuleException e) {
-                    importErrors.add(String.format("New dump settings were not updated, cause by: %s", e.getMessage()));
-                    LOGGER.error("Not able to update new dump settings, cause by:", e);
+                    importErrors.add(String.format("Configuration item not imported : Invalid Tenant Setting %s", setting));
+                    LOGGER.error("Configuration item not imported : Invalid Tenant Setting {}", setting);
                 }
-            } else if (FeatureNotificationSettings.class.isAssignableFrom(item.getKey())) {
-                notificationSettingsService.update(item.getTypedValue());
             } else {
                 String message = String.format(
                         "Configuration item of type %s has been ignored while import because it cannot be handled by %s. Module %s",
                         item.getKey(),
                         this.getClass().getName(),
-                        configuration.getModule().getName());
+                        configuration.getModule().getName()
+                );
                 importErrors.add(message);
                 LOGGER.warn(message);
             }
@@ -85,38 +79,25 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
     @Override
     public ModuleConfiguration exportConfiguration() {
-        List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
-
-        DumpSettings dumpSettings = dumpSettingsService.retrieve();
-        if (dumpSettings != null) {
-            configurations.add(ModuleConfigurationItem.build(dumpSettings));
-        }
-
-        FeatureNotificationSettings notifSettings = notificationSettingsService.retrieve();
-        if (notifSettings != null) {
-            configurations.add(ModuleConfigurationItem.build(notifSettings));
-        }
-
-        return ModuleConfiguration.build(info, true, configurations);
+        List<ModuleConfigurationItem<?>> configuration = new ArrayList<>();
+        dynamicTenantSettingService.readAll()
+                .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
+        return ModuleConfiguration.build(info, true, configuration);
     }
 
     @Override
     public Set<String> resetConfiguration() {
         Set<String> errors = new HashSet<>();
         try {
-            dumpSettingsService.resetSettings();
+            for (DynamicTenantSetting dynamicTenantSetting : dynamicTenantSettingService.readAll()) {
+                dynamicTenantSettingService.reset(dynamicTenantSetting.getName());
+            }
         } catch (Exception e) {
-            String error = "Error occurred while resetting dump settings.";
-            LOGGER.error(error, e);
-            errors.add(error);
-        }
-        try {
-            notificationSettingsService.resetSettings();
-        } catch (Exception e) {
-            String error = "Error occurred while resetting notification settings.";
+            String error = "Error occurred while resetting settings.";
             LOGGER.error(error, e);
             errors.add(error);
         }
         return errors;
     }
+
 }

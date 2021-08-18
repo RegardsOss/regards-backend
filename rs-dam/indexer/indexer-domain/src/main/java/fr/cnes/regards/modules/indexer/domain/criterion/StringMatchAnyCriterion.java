@@ -26,7 +26,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
  */
 public class StringMatchAnyCriterion extends AbstractMatchCriterion<String[]> {
 
-    protected StringMatchAnyCriterion(String name, String... value) {
+    public StringMatchAnyCriterion(String name, String... value) {
         super(name, MatchType.CONTAINS_ANY, value);
     }
 

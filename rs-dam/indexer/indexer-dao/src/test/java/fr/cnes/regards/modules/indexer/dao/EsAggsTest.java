@@ -10,6 +10,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
+import fr.cnes.regards.modules.indexer.dao.deser.GsonDeserializeIIndexableStrategy;
+import fr.cnes.regards.modules.indexer.dao.deser.JsoniterDeserializeIIndexableStrategy;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -75,6 +78,7 @@ public class EsAggsTest {
             gson = new GsonBuilder().registerTypeAdapter(Multimap.class, new MultimapAdapter()).create();
             repository = new EsRepository(gson, null, propMap.get("regards.elasticsearch.address"),
                                           Integer.parseInt(propMap.get("regards.elasticsearch.http.port")), 0,
+                                          new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
                                           new AggregationBuilderFacetTypeVisitor(10, 1),
                                           new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
         } catch (NoNodeAvailableException e) {
@@ -220,18 +224,18 @@ public class EsAggsTest {
             this.setFilesize(file.length());
             switch (type) {
                 case RAWDATA:
-                    super.setUri(file.toURI());
+                    super.setUri(file.toURI().toString());
                     super.setReference(true);
                     break;
                 case QUICKLOOK_HD:
-                    super.setUri(new File(file.getParentFile(), file.getName() + "_QL_HD").toURI());
+                    super.setUri(new File(file.getParentFile(), file.getName() + "_QL_HD").toURI().toString());
                     super.setReference(false);
                     break;
                 case QUICKLOOK_MD:
-                    super.setUri(new File(file.getParentFile(), file.getName() + "_QL_MD").toURI());
+                    super.setUri(new File(file.getParentFile(), file.getName() + "_QL_MD").toURI().toString());
                     break;
                 case QUICKLOOK_SD:
-                    super.setUri(new File(file.getParentFile(), file.getName() + "_QL_SD").toURI());
+                    super.setUri(new File(file.getParentFile(), file.getName() + "_QL_SD").toURI().toString());
                     break;
                 case DESCRIPTION:
                 case AIP:

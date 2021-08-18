@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.random.Generator;
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
 
 @Service
 @SuppressWarnings("unchecked")
@@ -59,6 +60,9 @@ public class AmqpClientPublisher {
     @Autowired
     private IPublisher publisher;
 
+    @Autowired
+    private IPropertyGetter propertyGetter;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     /**
@@ -75,7 +79,7 @@ public class AmqpClientPublisher {
         }
 
         if (Files.isDirectory(path)) {
-            doPublishAll(exchangeName, queueName, priority, headers, path);
+            doPublishAll(exchangeName, queueName, priority, headers, path, iterations);
         } else {
             Matcher matcher = TEMPLATE_PATTERN.matcher(jsonPathString);
             // Check if it is a template
@@ -95,7 +99,7 @@ public class AmqpClientPublisher {
             Map<String, Object> headers, Path templatePath, Integer iterations) {
         // Generate messages
         Generator generator = new Generator();
-        generator.initGenerators(templatePath);
+        generator.initGenerators(templatePath, propertyGetter);
 
         Integer remaining = iterations;
         while (remaining > 0) {
@@ -115,13 +119,20 @@ public class AmqpClientPublisher {
      * Publish all messages load from specified directory.
      */
     private void doPublishAll(String exchangeName, Optional<String> queueName, Integer priority,
-            Map<String, Object> headers, Path jsonPath) {
+            Map<String, Object> headers, Path jsonPath, Integer iterations) {
 
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.json");
 
         try (Stream<Path> walk = Files.walk(jsonPath)) {
             walk.filter(Files::isRegularFile).filter(p -> matcher.matches(p)).forEach(p -> {
-                doPublish(exchangeName, queueName, priority, headers, p);
+                Matcher patternmatcher = TEMPLATE_PATTERN.matcher(p.toString());
+                // Check if it is a template
+                if (patternmatcher.matches()) {
+                    LOGGER.info("Handling JSON template");
+                    doPublishWithTemplate(exchangeName, queueName, priority, headers, p, iterations);
+                } else {
+                    doPublish(exchangeName, queueName, priority, headers, p);
+                }
             });
 
         } catch (IOException e) {

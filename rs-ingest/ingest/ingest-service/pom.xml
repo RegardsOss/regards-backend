@@ -44,10 +44,6 @@
 			<artifactId>dam-dto</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.session-manager</groupId>
-			<artifactId>session-manager-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>module-regards</artifactId>
 		</dependency>
@@ -62,10 +58,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-			<artifactId>locks-service</artifactId>
 		</dependency>
 		<dependency>
   			<groupId>fr.cnes.regards.framework</groupId>
@@ -98,16 +90,34 @@
 			<groupId>fr.cnes.regards.modules.notifier</groupId>
 			<artifactId>notifier-client</artifactId>
 		</dependency>
+
+		<!-- session handling -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+			<artifactId>session-agent-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+			<artifactId>session-agent-service</artifactId>
+		</dependency>
 		<!-- dump dependency -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.dump</groupId>
 			<artifactId>dump-service</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+			<artifactId>tenant-settings-service</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

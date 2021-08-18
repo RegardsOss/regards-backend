@@ -18,37 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import fr.cnes.regards.framework.urn.DataType;
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -56,10 +27,13 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.modules.locks.dao.ILockRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDownloadTokenRepository;
@@ -67,8 +41,10 @@ import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
+import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -95,6 +71,33 @@ import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurati
 import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOfflineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 /**
  * @author sbinda
@@ -157,6 +160,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected IFileReferenceRepository fileRefRepo;
 
     @Autowired
+    protected IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
+
+    @Autowired
     protected IFileCacheRequestRepository fileCacheReqRepo;
 
     @Autowired
@@ -187,10 +193,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected IDownloadTokenRepository downloadTokenRepo;
 
     @Autowired
-    private ILockRepository lockRepo;
+    protected RequestStatusService reqStatusService;
 
     @Autowired
-    protected RequestStatusService reqStatusService;
+    protected IRequestGroupRepository groupRepo;
 
     protected String originUrl = "file://in/this/directory/file.test";
 
@@ -215,7 +221,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
         downloadTokenRepo.deleteAll();
-        lockRepo.deleteAll();
+        groupRepo.deleteAll();
 
         storageLocationService.getAllLocations().forEach(f -> {
             try {
@@ -246,11 +252,11 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             Boolean allowPhysicalDeletion) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
-            Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
+            Files.createDirectories(Paths.get(getBaseStorageLocation().getPath()));
 
             Set<IPluginParam> parameters = IPluginParam
                     .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            getBaseStorageLocation().toString()),
+                                            getBaseStorageLocation().getPath()),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"),
                          IPluginParam.build(SimpleOnlineDataStorage.ALLOW_PHYSICAL_DELETION, allowPhysicalDeletion));
@@ -258,7 +264,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                     dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
@@ -266,10 +272,10 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
-            Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
+            Files.createDirectories(Paths.get(getBaseStorageLocation().getPath()));
             Set<IPluginParam> parameters = IPluginParam
                     .set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            getBaseStorageLocation().toString()),
+                                            getBaseStorageLocation().getPath()),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                          IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                             "restoError.*"),
@@ -278,7 +284,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
                     dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
             return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
@@ -287,7 +293,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         StorageLocationConfiguration conf = storageLocationConfService.getFirstActive(StorageType.ONLINE);
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                        getBaseStorageLocation().toString()),
+                                        getBaseStorageLocation().getPath()),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
         conf.getPluginConfiguration().setParameters(parameters);
@@ -301,7 +307,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileReference generateRandomStoredOnlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, ONLINE_CONF_LABEL,
-                                                subDir, Optional.empty());
+                                                subDir, Optional.empty(), "source1", "session1");
     }
 
     protected FileReference generateRandomStoredNearlineFileReference()
@@ -312,30 +318,30 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileReference generateRandomStoredNearlineFileReference(String fileName, Optional<String> subDir)
             throws InterruptedException, ExecutionException {
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", fileName, NEARLINE_CONF_LABEL,
-                                                subDir, Optional.empty());
+                                                subDir, Optional.empty(), "source1", "session1");
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,
-            String newOwner) {
+            String newOwner, String sessionOwner, String session) {
         Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
-        return stoReqService.handleRequest(newOwner, oFilef.get().getMetaInfo(), originUrl,
+        return stoReqService.handleRequest(newOwner, sessionOwner, session, oFilef.get().getMetaInfo(), originUrl,
                                            oFilef.get().getLocation().getStorage(), Optional.empty(),
                                            UUID.randomUUID().toString());
 
     }
 
     protected FileReference generateStoredFileReference(String checksum, String owner, String fileName, String storage,
-            Optional<String> subDir, Optional<String> type) throws InterruptedException, ExecutionException {
+            Optional<String> subDir, Optional<String> type, String sessionOwner, String session) throws InterruptedException, ExecutionException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 1024L,
                 MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.withType(type.orElse(null));
-        FileLocation destination = new FileLocation(storage, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storage, subDir, UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner, sessionOwner, session, fileMetaInfo, originUrl, storage, subDir,
+                                    UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
-        Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
-        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(), checksum);
+        Optional<FileReference> oFileRef = fileRefService.search(storage, checksum);
+        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(storage, checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
         Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TO_DO,
@@ -346,8 +352,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         // Run Job and wait for end
         runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        fileRefReqs = stoReqService.search(destination.getStorage(), checksum);
-        oFileRef = fileRefService.search(destination.getStorage(), checksum);
+        fileRefReqs = stoReqService.search(storage, checksum);
+        oFileRef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         try {
             Assert.assertTrue("File should be created on disk",
@@ -356,17 +362,18 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
             Assert.fail(e.getMessage());
         }
         Assert.assertTrue("File reference request should not exists anymore", fileRefReqs.isEmpty());
-        return oFileRef.get();
+        return fileRefWithOwnersRepo.findOneById(oFileRef.get().getId());
     }
 
     protected Optional<FileReference> referenceFile(String checksum, String owner, String type, String fileName,
-            String storage) {
+            String storage, String sessionOwner, String session) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 1024L,
-                MediaType.APPLICATION_OCTET_STREAM);
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setType(type);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
         try {
-            fileReqService.reference(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            fileReqService.reference(owner, fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()),
+                                     sessionOwner, session);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -374,17 +381,19 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         return fileRefService.search(location.getStorage(), fileMetaInfo.getChecksum());
     }
 
-    protected Optional<FileReference> referenceRandomFile(String owner, String type, String fileName, String storage) {
-        return this.referenceFile(UUID.randomUUID().toString(), owner, type, fileName, storage);
+    protected Optional<FileReference> referenceRandomFile(String owner, String type, String fileName, String storage,
+            String sessionOwner, String session) {
+        return this.referenceFile(UUID.randomUUID().toString(), owner, type, fileName, storage, sessionOwner, session);
     }
 
-    protected FileStorageRequest generateStoreFileError(String owner, String storageDestination)
+    protected FileStorageRequest generateStoreFileError(String owner, String storageDestination, String sessionOwner,
+            String session)
             throws InterruptedException, ExecutionException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5",
                 "error.file.test", 132L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storageDestination,
+        stoReqService.handleRequest(owner, sessionOwner, session, fileMetaInfo, originUrl, storageDestination,
                                     Optional.of("/in/this/directory"), UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
@@ -481,13 +490,41 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         return evts;
     }
 
+    protected List<StepPropertyUpdateRequestEvent> getStepPropertyEvents(Collection<ISubscribable> events) {
+        // get all events of type StepPropertyUpdateRequestEvent
+        List<StepPropertyUpdateRequestEvent> stepList = new ArrayList<>();
+        for (ISubscribable e : events) {
+            if (e instanceof StepPropertyUpdateRequestEvent) {
+                stepList.add((StepPropertyUpdateRequestEvent) e);
+            }
+        }
+        // sort list to make sure it is sorted by creation date
+        stepList.sort(Comparator.comparing(StepPropertyUpdateRequestEvent::getDate));
+        return stepList;
+    }
+
+    protected void checkStepEvent(StepPropertyUpdateRequestEvent event,
+            SessionNotifierPropertyEnum expectedEventProperty, StepPropertyEventTypeEnum expectedType,
+            String expectedSessionOwner, String expectedSession, String expectedValue) {
+        StepProperty stepProperty = event.getStepProperty();
+        Assert.assertEquals("This property was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedEventProperty.getName(), stepProperty.getStepPropertyInfo().getProperty());
+        Assert.assertEquals("This value was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedValue, stepProperty.getStepPropertyInfo().getValue());
+        Assert.assertEquals("This type was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedType, event.getType());
+        Assert.assertEquals("This session owner was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedSessionOwner, stepProperty.getSource());
+        Assert.assertEquals("This session was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
+                            expectedSession, stepProperty.getSession());
+    }
+
     protected void simulateFileInCache(String checksum) {
         try {
             String filePath = cacheService.getFilePath(checksum);
             cacheService.addFile(checksum, 123L, "file", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                                 DataType.RAWDATA.name(),
-                                 new URL("file", null, filePath), OffsetDateTime.now().plusDays(1),
-                                 UUID.randomUUID().toString());
+                                 DataType.RAWDATA.name(), new URL("file", null, filePath),
+                                 OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
             // Create file on disk
             if (!Files.exists(Paths.get(filePath).getParent())) {
                 Files.createDirectories(Paths.get(filePath).getParent());

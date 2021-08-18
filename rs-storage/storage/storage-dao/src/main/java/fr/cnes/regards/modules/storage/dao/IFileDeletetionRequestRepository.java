@@ -55,6 +55,9 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
 
     Page<FileDeletionRequest> findByStatus(FileRequestStatus status, Pageable page);
 
+    Page<FileDeletionRequest> findByStatusAndSessionOwnerAndSession(FileRequestStatus status,
+            String sessionOwner, String session, Pageable page);
+
     Page<FileDeletionRequest> findByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
     Page<FileDeletionRequest> findByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
