@@ -27,7 +27,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
- * POJO to handle result from ingest post processing plugins
+ * POJO to handle results from ingest post processing plugins
  *
  * @author Iliana Ghazali
  */
@@ -41,18 +41,14 @@ public class PostProcessResult {
     private boolean interrupted = false;
 
     /**
-     * Build postprocess errors of sipad post processing plugin
-     *
-     * @param errors map of aipId and related errors encountered during process
+     * Build errors for ingest post processing plugins
      */
     public void buildErrors(Map<String, Set<String>> errors) {
         this.errors.putAll(errors);
     }
 
     /**
-     * Build postprocess successes of sipad post processing plugin
-     *
-     * @param aipIdsInSuccess set of aipIds in success state
+     * Build successes for ingest post processing plugins
      */
     public void buildSuccesses(Set<String> aipIdsInSuccess) {
         this.successes.addAll(aipIdsInSuccess);
