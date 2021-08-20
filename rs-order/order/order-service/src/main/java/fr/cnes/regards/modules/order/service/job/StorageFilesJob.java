@@ -24,7 +24,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
@@ -46,7 +45,7 @@ import java.util.stream.Stream;
  * Job  to ensure with storage microservice that order files are availables to download.
  *
  * When using processing, this job launches the {@link ProcessExecutionJob} referenced in
- * the #processJobInfoId field.
+ * the {@link #processJobInfoId} field.
  *
  * @author Sébastien Binda
  *
@@ -96,9 +95,12 @@ public class StorageFilesJob extends AbstractJob<Void> {
     @Autowired
     private IOrderDataFileRepository orderDataFileRepository;
 
+    @Autowired
+    private IOrderDataFileService orderDataFileService;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+            throws JobParameterInvalidException {
         if ((parameters.size() < 4) || (parameters.size() > 5)) {
             throw new JobParameterInvalidException(
                     "Four or five parameters are expected : 'files', 'subOrderAvailabilityDurationHours', 'user' and 'userRole', and optionally 'processJobInfo'."
@@ -147,10 +149,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
 
         try {
             storageClient.makeAvailable(dataFilesMultimap.keySet(), OffsetDateTime.now().plusHours(subOrderAvailabilityDurationHours));
-            dataFilesMultimap.forEach((cs, f) -> {
-                logger.debug("Order job is waiting for {} file {} - {} availability.", dataFilesMultimap.size(),
-                             f.getFilename(), cs);
-            });
+            dataFilesMultimap.forEach((cs, f) -> logger.debug("Order job is waiting for {} file {} - {} availability.", dataFilesMultimap.size(),
+                                                          f.getFilename(), cs));
             // Wait for remaining files availability from storage
             this.semaphore.acquire();
             logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
@@ -201,9 +201,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
             }
             alreadyHandledFiles.add(checksum);
         } else {
-            for (OrderDataFile df : dataFiles) {
-                logger.debug("File {} - {} is now in error.", df.getFilename(), df.getChecksum());
-                df.setState(FileState.ERROR);
+            for (OrderDataFile dataFile : dataFiles) {
+                logger.debug("File {} - {} is now in error.", dataFile.getFilename(), dataFile.getChecksum());
+                dataFile.setState(FileState.ERROR);
             }
             alreadyHandledFiles.add(checksum);
         }
@@ -211,4 +211,22 @@ public class StorageFilesJob extends AbstractJob<Void> {
         this.semaphore.release();
     }
 
+    public void changeFilesState(Set<String> checksumsAvailable, FileState fileState) {
+        Set<String> availableFilesOrderedByThisJob = new HashSet<>(checksumsAvailable);
+        availableFilesOrderedByThisJob.retainAll(dataFilesMultimap.keySet());
+        availableFilesOrderedByThisJob.removeAll(alreadyHandledFiles);
+        List<OrderDataFile> handledOrderDataFiles = new ArrayList<>(availableFilesOrderedByThisJob.size());
+        for (String available: availableFilesOrderedByThisJob) {
+            Collection<OrderDataFile> dataFiles = dataFilesMultimap.get(available);
+            for (OrderDataFile df : dataFiles) {
+                logger.debug("File {} - {} is now in state: {}.", df.getFilename(), df.getChecksum(), fileState);
+                df.setState(fileState);
+                handledOrderDataFiles.add(df);
+            }
+            alreadyHandledFiles.add(available);
+            this.advanceCompletion();
+            this.semaphore.release();
+        }
+        orderDataFileRepository.saveAll(handledOrderDataFiles);
+    }
 }

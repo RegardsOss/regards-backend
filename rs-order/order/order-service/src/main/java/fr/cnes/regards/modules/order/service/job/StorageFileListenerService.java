@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.job;
 
+import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Handle storage AMQP message that can be received. Empty methods concerns messages that are of no importance for rs-order
@@ -39,16 +41,14 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
 
     @Override
     public void onFileAvailable(List<FileReferenceEventDTO> available) {
-        for (FileReferenceEventDTO event : available) {
-            subscribers.forEach(subscriber -> subscriber.handleFileEvent(event.getChecksum(), true));
-        }
+        Set<String> availableChecksums = available.stream().map(FileReferenceEventDTO::getChecksum).collect(Collectors.toSet());
+        subscribers.forEach(subscriber -> subscriber.changeFilesState(availableChecksums, FileState.AVAILABLE));
     }
 
     @Override
     public void onFileNotAvailable(List<FileReferenceEventDTO> availabilityError) {
-        for (FileReferenceEventDTO event : availabilityError) {
-            subscribers.forEach(subscriber -> subscriber.handleFileEvent(event.getChecksum(), false));
-        }
+        Set<String> inErrorChecksum = availabilityError.stream().map(FileReferenceEventDTO::getChecksum).collect(Collectors.toSet());
+        subscribers.forEach(subscriber -> subscriber.changeFilesState(inErrorChecksum, FileState.ERROR));
     }
 
     @Override
