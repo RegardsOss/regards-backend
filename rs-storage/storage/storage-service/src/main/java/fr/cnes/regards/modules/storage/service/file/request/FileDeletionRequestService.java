@@ -163,9 +163,9 @@ public class FileDeletionRequestService {
     }
     /**
      * Update all {@link FileDeletionRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
-     * @Param request : existing request to retry
-     * @Param sessionOwner : new request session owner
-     * @Param session : new request session
+     * @param request : existing request to retry
+     * @param sessionOwner : new request session owner
+     * @param session : new request session
      */
     private FileDeletionRequest retry(FileDeletionRequest request, boolean forceDelete, String sessionOwner, String session) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
@@ -259,15 +259,9 @@ public class FileDeletionRequestService {
         return Collections.emptyList();
     }
 
-    /**
-     * Inform if for the given storage a deletion process is running
-     * @param storage
-     * @return boolean
-     */
     public boolean isDeletionRunning(String storage) {
-        boolean isRunning = false;
         // Does a deletion job exists ?
-        isRunning = jobInfoService.retrieveJobsCount(FileDeletionRequestsCreatorJob.class.getName(), JobStatus.PENDING,
+        boolean isRunning = jobInfoService.retrieveJobsCount(FileDeletionRequestsCreatorJob.class.getName(), JobStatus.PENDING,
                                                      JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN) > 0;
         if (!isRunning) {
             isRunning = fileDeletionRequestRepo
@@ -324,12 +318,7 @@ public class FileDeletionRequestService {
     }
 
     /**
-     * Update a list of {@link FileDeletionRequest}s when the storage destination cannot be handled.
-     * A storage destination cannot be handled if <ul>
-     * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
-     * <li> the plugin configuration is disabled </li>
-     * </ul>
-     * @param fileDeletionRequests
+     * Intermediate method that calls {@link #handleStorageNotAvailable(FileDeletionRequest, Optional)} for each file deletion request
      */
     private void handleStorageNotAvailable(Collection<FileDeletionRequest> fileDeletionRequests,
             Optional<String> errorCause) {
@@ -342,7 +331,8 @@ public class FileDeletionRequestService {
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
-     * @param fileDeletionRequest
+     * @param fileDeletionRequest request to update
+     * @param errorCause error preventing deletion
      */
     private void handleStorageNotAvailable(FileDeletionRequest fileDeletionRequest, Optional<String> errorCause) {
         String lErrorCause = errorCause.orElse(String
@@ -361,10 +351,6 @@ public class FileDeletionRequestService {
         updateFileDeletionRequest(fileDeletionRequest);
     }
 
-    /**
-     * Delete a {@link FileDeletionRequest}
-     * @param fileDeletionRequest
-     */
     public void delete(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to delete cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to delete identifier cannot be null");
@@ -378,7 +364,7 @@ public class FileDeletionRequestService {
 
     /**
      * Initialize new deletion requests from Flow items.
-     * @param list
+     * @param list deletion flow items to transform into deletion requests
      */
     public void handle(List<DeletionFlowItem> list) {
         Set<String> checksums = list.stream().map(DeletionFlowItem::getFiles).flatMap(Set::stream)
@@ -391,7 +377,7 @@ public class FileDeletionRequestService {
             Set<FileDeletionRequestDTO> files = item.getFiles();
             // if a copy process is already running on files, refuse file deletions
             if (fileCopyReqService
-                    .isFileCopyRunning(files.stream().map(i -> i.getChecksum()).collect(Collectors.toSet()))) {
+                    .isFileCopyRunning(files.stream().map(FileDeletionRequestDTO::getChecksum).collect(Collectors.toSet()))) {
                 reqGroupService.denied(item.getGroupId(), FileRequestType.DELETION,
                                        "Cannot delete files has a copy process is running");
                 LOGGER.warn("Refused {} file deletion", files.size());
@@ -595,14 +581,6 @@ public class FileDeletionRequestService {
                               fileDeletionRequest.getSessionOwner(), fileDeletionRequest.getSession());
     }
 
-    /**
-     * Schedule a job to create deletion requests for all files matching the given criterion.
-     * @param storageLocationId
-     * @param forceDelete
-     * @param sessionOwner
-     * @param session
-     * @throws ModuleException
-     */
     public JobInfo scheduleJob(String storageLocationId, Boolean forceDelete, String sessionOwner, String session) throws ModuleException {
         // Check if a job of deletion already exists
         if (jobInfoService.retrieveJobsCount(FileDeletionRequestsCreatorJob.class.getName(), JobStatus.RUNNING) > 0) {

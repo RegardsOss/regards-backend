@@ -142,11 +142,6 @@ public class StorageLocationService {
         return storageLocationRepo.findByName(storage);
     }
 
-    /**
-     * Retrieve one {@link StorageLocation} by its id
-     * @param storageId
-     * @throws EntityNotFoundException
-     */
     public StorageLocationDTO getById(String storageId) throws ModuleException {
         Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageId);
         Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageId);
@@ -187,7 +182,7 @@ public class StorageLocationService {
         Set<StorageLocationDTO> locationsDto = Sets.newHashSet();
         // Get all monitored locations
         Map<String, StorageLocation> monitoredLocations = storageLocationRepo.findAll().stream()
-                .collect(Collectors.toMap(l -> l.getName(), l -> l));
+                .collect(Collectors.toMap(StorageLocation::getName, l -> l));
         // Get all non monitored locations
         List<StorageLocationConfiguration> confs = pLocationConfService.searchAll();
         // Handle all online storage configured
@@ -243,7 +238,7 @@ public class StorageLocationService {
         long start = System.currentTimeMillis();
         Collection<StorageMonitoringAggregation> aggregations = fileReferenceService
                 .aggragateFilesSizePerStorage(storageMonitoring.getLastFileReferenceIdMonitored());
-        LOGGER.trace("Aggregation calcul done (reset={})", reset.toString());
+        LOGGER.trace("Aggregation calcul done (reset={})", reset);
         for (StorageMonitoringAggregation agg : aggregations) {
             // Retrieve associated storage info if exists
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
@@ -281,7 +276,7 @@ public class StorageLocationService {
                     notifyAdmins(String.format("Data storage %s is almost full", storage.getName()), message,
                                  NotificationLevel.WARNING, MimeTypeUtils.TEXT_PLAIN);
                 } else {
-                    LOGGER.trace("Storage location %s monitoring done with no warnings.", storage.getName());
+                    LOGGER.trace("Storage location {} monitoring done with no warnings.", storage.getName());
                 }
             } else {
                 LOGGER.warn("[STORAGE LOCATION] Ratio calculation for {} storage disabled cause storage allowed size is not configured.",
@@ -301,8 +296,8 @@ public class StorageLocationService {
 
     /**
      * Up (if possible), the priority of the given storage location configuration
-     * @param storageLocationId
-     * @throws EntityNotFoundException
+     * @param storageLocationId storage location id
+     * @throws EntityNotFoundException if corresponding storage location cannot be found
      */
     public void increasePriority(String storageLocationId) throws EntityNotFoundException {
         pLocationConfService.increasePriority(storageLocationId);
@@ -310,18 +305,18 @@ public class StorageLocationService {
 
     /**
      * Down (if possible), the priority of the given storage location configuration
-     * @param storageLocationId
-     * @throws EntityNotFoundException
+     * @param storageLocationId storage location id
+     * @throws EntityNotFoundException if corresponding storage location cannot be found
      */
     public void decreasePriority(String storageLocationId) throws EntityNotFoundException {
         pLocationConfService.decreasePriority(storageLocationId);
     }
 
     /**
-     * Delete the given storage location informations. <br/>
+     * Delete the given storage location information. <br/>
      * Files reference are not deleted, to do so, use {@link #deleteFiles(String, Boolean, String, String)}
-     * @param storageLocationId
-     * @throws EntityNotFoundException
+     * @param storageLocationId storage location id
+     * @throws ModuleException
      */
     public void delete(String storageLocationId) throws ModuleException {
         // Delete storage location plugin configuration
@@ -340,8 +335,8 @@ public class StorageLocationService {
     }
 
     /**
-     * Delete all referenced files of the give storage location
-     * @param storageLocationId
+     * Delete all referenced files of the given storage location
+     * @param storageLocationId storage location id
      * @param forceDelete remove reference if physical file deletion fails.
      * @param sessionOwner the user who has requested the deletion of files
      * @param session tags the deletion files requests with a session name
@@ -355,13 +350,6 @@ public class StorageLocationService {
         }
     }
 
-    /**
-     * Copy files of a directory from one storage to an other
-     * @param storageLocationId
-     * @param destinationStorageId
-     * @param sourcePath
-     * @param destinationPath
-     */
     public void copyFiles(String storageLocationId, String sourcePath, String destinationStorageId,
             Optional<String> destinationPath, Collection<String> types, String sessionOwner, String session) {
         copyService
@@ -459,10 +447,6 @@ public class StorageLocationService {
                                       pLocationConfService.allowPhysicalDeletion(newConf));
     }
 
-    /**
-     * @param storageLocationId
-     * @param type
-     */
     public void deleteRequests(String storageLocationId, FileRequestType type, Optional<FileRequestStatus> status) {
         switch (type) {
             case AVAILABILITY:
@@ -499,7 +483,7 @@ public class StorageLocationService {
                 } else {
                     delRequests = deletionReqService.search(storageLocationId, page);
                 }
-                results = new PageImpl<FileRequestInfoDTO>(
+                results = new PageImpl<>(
                         delRequests.getContent().stream().map(this::toRequestInfosDto).collect(Collectors.toList()),
                         page, delRequests.getTotalElements());
                 break;
@@ -512,7 +496,7 @@ public class StorageLocationService {
                 } else {
                     requests = storageService.search(storageLocationId, page);
                 }
-                results = new PageImpl<FileRequestInfoDTO>(
+                results = new PageImpl<>(
                         requests.getContent().stream().map(this::toRequestInfosDto).collect(Collectors.toList()), page,
                         requests.getTotalElements());
                 break;
