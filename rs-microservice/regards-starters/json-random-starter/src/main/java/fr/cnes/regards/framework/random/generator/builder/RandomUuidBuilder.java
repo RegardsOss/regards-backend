@@ -16,37 +16,34 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
-
-import java.util.List;
+package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
 
-public class RandomStringFormat extends AbstractRandomGenerator<String> {
+import java.util.UUID;
 
-    private static String USAGE = "Function {} needs 2 paramters minimum format and parameters";
+public class RandomUuidBuilder implements RandomGeneratorBuilder<RandomUuidBuilder.RandomUuid> {
 
-    private String format;
-
-    private List<String> parameters;
-
-    public RandomStringFormat(FunctionDescriptor fd) {
-        super(fd);
+    @Override
+    public String getFunctionName() {
+        return "uuid";
     }
 
     @Override
-    public void parseParameters() {
-        if (fd.getParameterSize() < 2) {
-            throw new IllegalArgumentException(String.format(USAGE, fd.getType()));
-        } else {
-            parameters.addAll(fd.getParameters().values());
+    public RandomUuid build(FunctionDescriptor fd) {
+        return new RandomUuid(fd);
+    }
+
+    public static class RandomUuid extends AbstractRandomGenerator<UUID> {
+
+        public RandomUuid(FunctionDescriptor fd) {
+            super(fd);
         }
-    }
 
-    @Override
-    public String random() {
-        Object[] params = new String[parameters.size()];
-        parameters.toArray(params);
-        return String.format(format, params);
+        @Override
+        public UUID random() {
+            return UUID.randomUUID();
+        }
     }
 }

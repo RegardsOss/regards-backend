@@ -16,20 +16,37 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
-
-import java.time.OffsetDateTime;
+package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
 
-public class NowGenerator extends AbstractRandomGenerator<OffsetDateTime> {
+import java.util.Random;
 
-    public NowGenerator(FunctionDescriptor fd) {
-        super(fd);
+public class RandomEnumBuilder implements RandomGeneratorBuilder<RandomEnumBuilder.RandomEnum> {
+
+    @Override
+    public String getFunctionName() {
+        return "enum";
     }
 
     @Override
-    public OffsetDateTime random() {
-        return OffsetDateTime.now();
+    public RandomEnum build(FunctionDescriptor fd) {
+        return new RandomEnum(fd);
+    }
+
+    public static class RandomEnum extends AbstractRandomGenerator<Object> {
+
+        private static final Random random = new Random();
+
+        public RandomEnum(FunctionDescriptor fd) {
+            super(fd);
+        }
+
+        @Override
+        public Object random() {
+            Integer position = random.nextInt(fd.getParameters().size());
+            return fd.getParameter(position);
+        }
     }
 }

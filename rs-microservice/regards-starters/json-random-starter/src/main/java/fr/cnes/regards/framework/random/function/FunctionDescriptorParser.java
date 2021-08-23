@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.framework.random.function;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FunctionDescriptorParser {
 
@@ -41,7 +41,8 @@ public class FunctionDescriptorParser {
      */
     private static final String PARAM_SPLIT_REGEXP = ",(?=([^']*'[^']*')*[^']*$)";
 
-    private FunctionDescriptorParser() {}
+    private FunctionDescriptorParser() {
+    }
 
     public static FunctionDescriptor parse(Object value) {
         if (value == null) {
@@ -53,7 +54,7 @@ public class FunctionDescriptorParser {
             String function = (String) value;
             Matcher matcher = FUNCTION_PATTERN.matcher(function);
             if (matcher.matches()) {
-                FunctionDescriptor fd = new FunctionDescriptor(FunctionDescriptorType.of(matcher.group(1)));
+                FunctionDescriptor fd = new FunctionDescriptor(matcher.group(1));
                 parseParameters(fd, matcher.group(2));
                 LOGGER.debug("{}", fd);
                 return fd;

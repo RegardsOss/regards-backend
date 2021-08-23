@@ -16,39 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
+package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
 
-public class SequenceGenerator extends AbstractRandomGenerator<String> {
+import java.util.Random;
 
-    private static String USAGE = "Function {} only support an optional format as for String.format";
+public class RandomBooleanBuilder implements RandomGeneratorBuilder<RandomBooleanBuilder.RandomBoolean> {
 
-    private Integer current = 0;
-
-    private String format = "%d";
-
-    public SequenceGenerator(FunctionDescriptor fd) {
-        super(fd);
+    @Override
+    public String getFunctionName() {
+        return "boolean";
     }
 
     @Override
-    public void parseParameters() {
-        switch (fd.getParameterSize()) {
-            case 0:
-                break;
-            case 1:
-                format = fd.getParameter(0);
-                break;
-            default:
-                throw new IllegalArgumentException(String.format(USAGE, fd.getType()));
+    public RandomBoolean build(FunctionDescriptor fd) {
+        return new RandomBoolean(fd);
+    }
+
+    public static class RandomBoolean extends AbstractRandomGenerator<Boolean> {
+
+        private final Random random = new Random();
+
+        public RandomBoolean(FunctionDescriptor fd) {
+            super(fd);
         }
-    }
 
-    @Override
-    public String random() {
-        String s = String.format(format, current);
-        current++;
-        return s;
+        @Override
+        public Boolean random() {
+            return random.nextBoolean();
+        }
     }
 }

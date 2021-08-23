@@ -25,5 +25,4 @@ package fr.cnes.regards.framework.random.function;
 public interface IPropertyGetter {
 
     public String getProperty(String propertyKey);
-
 }

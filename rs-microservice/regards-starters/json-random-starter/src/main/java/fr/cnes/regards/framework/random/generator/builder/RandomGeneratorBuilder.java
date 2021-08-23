@@ -16,23 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
-
-import java.util.Random;
+package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
+import fr.cnes.regards.framework.random.generator.RandomGenerator;
 
-public class RandomEnum extends AbstractRandomGenerator<Object> {
+public interface RandomGeneratorBuilder<T extends RandomGenerator<?>> {
 
-    private static Random random = new Random();
+    String getFunctionName();
 
-    public RandomEnum(FunctionDescriptor fd) {
-        super(fd);
-    }
+    T build(FunctionDescriptor fd);
 
-    @Override
-    public Object random() {
-        Integer position = random.nextInt(fd.getParameters().size());
-        return fd.getParameter(position);
+    default T build(FunctionDescriptor fd, IPropertyGetter propertyGetter) {
+        // Default implementation does not use property getter!
+        // FIXME sbinda
+       return build(fd);
     }
 }

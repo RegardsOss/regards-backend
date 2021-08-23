@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.framework.random;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
+import fr.cnes.regards.framework.random.generator.ObjectRandomGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import fr.cnes.regards.framework.random.function.IPropertyGetter;
-import fr.cnes.regards.framework.random.generator.ObjectRandomGenerator;
-import fr.cnes.regards.framework.random.generator.RandomGenerator;
 
 public class Generator {
 
@@ -42,6 +39,19 @@ public class Generator {
 
     private ObjectRandomGenerator root;
 
+    private final RandomGeneratorResolver randomGeneratorResolver;
+
+    public Generator(RandomGeneratorResolver randomGeneratorResolver) {
+        this.randomGeneratorResolver = randomGeneratorResolver;
+    }
+
+    /**
+     * Initialize generators and generate the message batch.
+     */
+    public List<Map<String, Object>> generate(Path templatePath, Integer number) {
+        return generate(templatePath,number,null);
+    }
+
     /**
      * Initialize generators and generate the message batch.
      */
@@ -50,6 +60,13 @@ public class Generator {
         initGenerators(templatePath, propertyGetter);
         // Generate messages
         return generate(number);
+    }
+
+    /**
+     * Initialize generators from specified template. You have to call {@link #generate(Integer)} to generate message with these generators.
+     */
+    public void initGenerators(Path templatePath) {
+        initGenerators(templatePath,null);
     }
 
     /**
@@ -83,13 +100,13 @@ public class Generator {
                 generator.addGenerator(entry.getKey(), org);
             } else {
                 // Initialize generator
-                generator.addGenerator(entry.getKey(), RandomGenerator.of(entry.getValue(), propertyGetter));
+                generator.addGenerator(entry.getKey(), randomGeneratorResolver.get(entry.getValue(), propertyGetter));
             }
         }
     }
 
     /**
-     * Generate a message batch based on generators previously initialized calling {@link #initGenerators(Path)}
+     * Generate a message batch based on generators previously initialized calling {@link #initGenerators(Path, IPropertyGetter)}
      */
     public List<Map<String, Object>> generate(Integer number) {
         // Assert generators are ready!

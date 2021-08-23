@@ -16,22 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
-
-import java.util.Random;
+package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
 
-public class RandomBoolean extends AbstractRandomGenerator<Boolean> {
+public class RandomLongBuilder implements RandomGeneratorBuilder<RandomLongBuilder.RandomLong> {
 
-    private final Random random = new Random();
-
-    public RandomBoolean(FunctionDescriptor fd) {
-        super(fd);
+    @Override
+    public String getFunctionName() {
+        return "long";
     }
 
     @Override
-    public Boolean random() {
-        return random.nextBoolean();
+    public RandomLong build(FunctionDescriptor fd) {
+        return new RandomLong(fd);
+    }
+
+    public static class RandomLong extends AbstractRandomGenerator<Long> {
+
+        public RandomLong(FunctionDescriptor fd) {
+            super(fd);
+        }
+
+        @Override
+        public Long random() {
+            return random(-10_000L, 10_000L);
+        }
+
+        public Long random(Long leftLimit, Long rightLimit) {
+            return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
+        }
     }
 }

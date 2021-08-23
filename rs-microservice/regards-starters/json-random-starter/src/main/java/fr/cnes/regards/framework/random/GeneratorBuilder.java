@@ -16,26 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
+package fr.cnes.regards.framework.random;
 
-import java.util.Random;
+import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+/**
+ * Initialize a new {@link Generator} with passed template context.
+ */
+@Service
+public class GeneratorBuilder {
 
-public class RandomFloat extends AbstractRandomGenerator<Float> {
+    private RandomGeneratorResolver randomGeneratorResolver;
 
-    private static Random random = new Random();
-
-    public RandomFloat(FunctionDescriptor fd) {
-        super(fd);
+    public GeneratorBuilder(RandomGeneratorResolver randomGeneratorResolver) {
+        this.randomGeneratorResolver = randomGeneratorResolver;
     }
 
-    @Override
-    public Float random() {
-        return random.nextFloat();
-    }
-
-    public Float random(Float leftLimit, Float rightLimit) {
-        return leftLimit + (new Random().nextFloat() * (rightLimit - leftLimit));
+    public Generator build() {
+        return new Generator(randomGeneratorResolver);
     }
 }
