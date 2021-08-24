@@ -42,7 +42,6 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
         boolean isValid = false;
         if (path != null) {
             // Check that the given path is available.
-            File pathFile = path.toFile();
             try {
                 Files.createDirectories(path);
             } catch (IOException e) {
@@ -50,10 +49,11 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
             }
             // In case pathFile does not represents a directory, Files#createDirectories will throw an exception that is already relayed to the user
             // So lets just handle case when it's a directory but rights are not right (in case the directory already existed)
-            if (pathFile.isDirectory() && (!pathFile.canRead() || !pathFile.canWrite())) {
+            if (Files.isDirectory(path) && Files.isReadable(path) && Files.isWritable(path)) {
+                isValid = true;
+            } else {
                 LOGGER.error("Tenant cache path {} cannot be used by the application because of rights! "
                                      + "Ensure execution user can read and write in the directory.", path);
-                isValid = true;
             }
         }
         return isValid;
