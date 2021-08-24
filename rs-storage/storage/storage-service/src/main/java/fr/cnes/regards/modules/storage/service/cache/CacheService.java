@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.cache;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -35,26 +34,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
@@ -94,9 +87,6 @@ public class CacheService {
 
     @Value("${regards.storage.cache.schedule.purge.bulk.size:500}")
     private final int BULK_SIZE = 500;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private ICacheFileRepository cachedFileRepository;
@@ -157,43 +147,6 @@ public class CacheService {
             }
         } while (shouldBeAvailableSet.hasNext());
         toDelete.forEach(id -> cachedFileRepository.deleteById(id));
-    }
-
-    /**
-     * Run cache file system initialization when a tenant is ready (database connection is available)
-     * @param event {@link TenantConnectionReady}
-     */
-    @Transactional(propagation = Propagation.SUPPORTS)
-    @EventListener
-    public void processEvent(TenantConnectionReady event) {
-        LOGGER.info("Initializing CacheService for tenant {}", event.getTenant());
-        initCacheFileSystem(event.getTenant());
-        LOGGER.info("CacheService Initialization done for tenant {}", event.getTenant());
-    }
-
-    /**
-     * Initialize the cache file system for the given tenant
-     */
-    public void initCacheFileSystem(String tenant) {
-        runtimeTenantResolver.forceTenant(tenant);
-        Path tenantCachePath = getTenantCachePath();
-        LOGGER.debug("Initializing cache file system for tenant {} in repository {}", tenant, tenantCachePath);
-        // Check that the given cache storage path is available.
-        File cachedPathFile = tenantCachePath.toFile();
-        if (!cachedPathFile.exists()) {
-            try {
-                Files.createDirectories(tenantCachePath);
-            } catch (IOException e) {
-                throw new RsRuntimeException(e.getMessage(), e);
-            }
-        }
-        if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead() || !cachedPathFile
-                .canWrite()) {
-            throw new RsRuntimeException(String.format(
-                    "Error initializing storage cache directory. %s is not a valid directory",
-                    tenantCachePath));
-        }
-        runtimeTenantResolver.clearTenant();
     }
 
     /**
@@ -359,7 +312,8 @@ public class CacheService {
 
     private Long getMaxCacheSizeKo() {
         return dynamicTenantSettingService.read(StorageSetting.CACHE_MAX_SIZE_NAME)
-                .orElseThrow(()-> new RsRuntimeException("Max cache size setting has not been initialized")).getValue();
+                .orElseThrow(() -> new RsRuntimeException("Max cache size setting has not been initialized"))
+                .getValue();
     }
 
     public long getTotalCachedFiles() {
