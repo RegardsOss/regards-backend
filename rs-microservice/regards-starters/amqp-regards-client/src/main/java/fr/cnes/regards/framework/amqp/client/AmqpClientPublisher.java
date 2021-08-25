@@ -96,8 +96,7 @@ public class AmqpClientPublisher {
     private void doPublishWithTemplate(String exchangeName, Optional<String> queueName, Integer priority,
             Map<String, Object> headers, Path templatePath, Integer iterations) {
         // Generate messages
-        Generator randomGenerator = generatorBuilder.build();
-        randomGenerator.initGenerators(templatePath, propertyGetter);
+        Generator randomGenerator = generatorBuilder.build(templatePath, propertyGetter);
 
         Integer remaining = iterations;
         while (remaining > 0) {

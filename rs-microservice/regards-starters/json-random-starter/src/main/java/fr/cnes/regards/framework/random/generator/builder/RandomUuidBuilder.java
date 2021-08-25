@@ -20,9 +20,14 @@ package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+/**
+ * Look at spring.factories
+ */
+@Component
 public class RandomUuidBuilder implements RandomGeneratorBuilder<RandomUuidBuilder.RandomUuid> {
 
     @Override

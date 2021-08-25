@@ -1,5 +1,6 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.random.RandomGeneratorAutoConfiguration,\
+fr.cnes.regards.framework.random.GeneratorBuilder,\
+fr.cnes.regards.framework.random.RandomGeneratorResolver,\
 fr.cnes.regards.framework.random.generator.builder.RandomBooleanBuilder,\
 fr.cnes.regards.framework.random.generator.builder.RandomDoubleBuilder,\
 fr.cnes.regards.framework.random.generator.builder.RandomEnumBuilder,\

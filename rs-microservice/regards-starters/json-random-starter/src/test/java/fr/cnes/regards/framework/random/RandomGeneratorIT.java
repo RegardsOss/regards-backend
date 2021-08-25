@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.random;
 
 import fr.cnes.regards.framework.random.function.IPropertyGetter;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,56 +40,58 @@ public class RandomGeneratorIT {
     @Autowired
     private GeneratorBuilder generatorBuilder;
 
-    private Generator randomGenerator;
-
-    @Before
-    public void init() {
-        randomGenerator = generatorBuilder.build();
-    }
-
     @Test
     public void generate() {
-        randomGenerator.generate(BASE.resolve("template_001.json"), 1);
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("template_001.json"));
+        randomGenerator.generate(1);
     }
 
     @Test
     public void integerWithOrWithoutBounds() {
-        randomGenerator.generate(BASE.resolve("template_002.json"), 10);
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("template_002.json"));
+        randomGenerator.generate(10);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void badDependencyPath() {
-        randomGenerator.generate(BASE.resolve("template_003.json"), 1);
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("template_003.json"));
+        randomGenerator.generate(1);
     }
 
     @Test
     public void dependencyPath() {
-        randomGenerator.generate(BASE.resolve("template_004.json"), 1);
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("template_004.json"));
+        randomGenerator.generate(1);
     }
 
     @Test
     public void generateGeode() {
-        randomGenerator.generate(BASE.resolve("2338-template.json"), 2);
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("2338-template.json"));
+        randomGenerator.generate(2);
     }
 
     @Test
     public void generateUrnFromId() {
-        randomGenerator.generate(BASE.resolve("idAndUrn.json"), 1);
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("idAndUrn.json"));
+        randomGenerator.generate(1);
     }
 
     @Test
     public void deleteByUrn() {
-        randomGenerator.generate(BASE.resolve("deleteByUrn.json"), 1);
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("deleteByUrn.json"));
+        randomGenerator.generate(1);
     }
 
     @Test
     public void generateProperty() {
-        randomGenerator.generate(BASE.resolve("template_005.json"), 1, new PropertyGetter());
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("template_005.json"), new PropertyGetter());
+        randomGenerator.generate(1);
     }
 
     @Test
     public void generateUrnFromId2() {
-        List<Map<String, Object>> results = randomGenerator.generate(BASE.resolve("idAndUrn2.json"), 1);
+        Generator randomGenerator = generatorBuilder.build(BASE.resolve("idAndUrn2.json"));
+        List<Map<String, Object>> results = randomGenerator.generate(1);
         Assert.assertTrue(!results.isEmpty());
 
         Map<String, Object> generated = results.get(0);

@@ -20,12 +20,17 @@ package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import org.springframework.stereotype.Component;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Look at spring.factories
+ */
+@Component
 public class RandomOffsetDateTimeBuilder
         implements RandomGeneratorBuilder<RandomOffsetDateTimeBuilder.RandomOffsetDateTime> {
 

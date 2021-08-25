@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.random.generator;
 
-import java.util.Map;
-
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+
+import java.util.Map;
 
 public abstract class AbstractRandomGenerator<T> implements RandomGenerator<T> {
 
@@ -30,6 +30,11 @@ public abstract class AbstractRandomGenerator<T> implements RandomGenerator<T> {
 
     public AbstractRandomGenerator(FunctionDescriptor fd) {
         this.fd = fd;
+    }
+
+    @Override
+    public void parseParameters() {
+        // Nothing to do
     }
 
     @SuppressWarnings("unchecked")

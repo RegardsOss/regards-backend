@@ -31,53 +31,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Look at markdown for usage
+ */
 public class Generator {
-
-    private static Logger LOGGER = LoggerFactory.getLogger(Generator.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private ObjectRandomGenerator root;
+    private static Logger LOGGER = LoggerFactory.getLogger(Generator.class);
 
     private final RandomGeneratorResolver randomGeneratorResolver;
 
-    public Generator(RandomGeneratorResolver randomGeneratorResolver) {
+    private ObjectRandomGenerator root;
+
+    protected Generator(RandomGeneratorResolver randomGeneratorResolver, Path templatePath,
+            IPropertyGetter propertyGetter) {
         this.randomGeneratorResolver = randomGeneratorResolver;
-    }
-
-    /**
-     * Initialize generators and generate the message batch.
-     */
-    public List<Map<String, Object>> generate(Path templatePath, Integer number) {
-        return generate(templatePath,number,null);
-    }
-
-    /**
-     * Initialize generators and generate the message batch.
-     */
-    public List<Map<String, Object>> generate(Path templatePath, Integer number, IPropertyGetter propertyGetter) {
-        // Initialize generators
         initGenerators(templatePath, propertyGetter);
-        // Generate messages
-        return generate(number);
     }
 
     /**
      * Initialize generators from specified template. You have to call {@link #generate(Integer)} to generate message with these generators.
      */
-    public void initGenerators(Path templatePath) {
-        initGenerators(templatePath,null);
-    }
-
-    /**
-     * Initialize generators from specified template. You have to call {@link #generate(Integer)} to generate message with these generators.
-     */
-    public void initGenerators(Path templatePath, IPropertyGetter propertyGetter) {
+    private void initGenerators(Path templatePath, IPropertyGetter propertyGetter) {
         try {
             LOGGER.info("Loading JSON template from {}", templatePath);
             // Load JSON template
-            @SuppressWarnings("unchecked")
-            Map<String, Object> template = mapper.readValue(templatePath.toFile(), Map.class);
+            @SuppressWarnings("unchecked") Map<String, Object> template = mapper
+                    .readValue(templatePath.toFile(), Map.class);
             // Initialize generators
             root = new ObjectRandomGenerator();
             doInitGenerators(template, root, propertyGetter);
@@ -107,8 +88,10 @@ public class Generator {
 
     /**
      * Generate a message batch based on generators previously initialized calling {@link #initGenerators(Path, IPropertyGetter)}
+     *
+     * @param generatedObjects number of object to generate
      */
-    public List<Map<String, Object>> generate(Integer number) {
+    public List<Map<String, Object>> generate(Integer generatedObjects) {
         // Assert generators are ready!
         if (root == null) {
             throw new UnsupportedOperationException(
@@ -117,7 +100,7 @@ public class Generator {
 
         // Generated messages
         List<Map<String, Object>> messages = new ArrayList<>();
-        for (int i = 0; i < number; i++) {
+        for (int i = 0; i < generatedObjects; i++) {
             // First pass generation generates independent values
             // Second pass uses generated values!
             messages.add(root.randomWithContext(root.random()));

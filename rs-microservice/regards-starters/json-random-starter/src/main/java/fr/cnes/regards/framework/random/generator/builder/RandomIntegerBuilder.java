@@ -20,9 +20,14 @@ package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import org.springframework.stereotype.Component;
 
 import java.util.Random;
 
+/**
+ * Look at spring.factories
+ */
+@Component
 public class RandomIntegerBuilder implements RandomGeneratorBuilder<RandomIntegerBuilder.RandomInteger> {
 
     @Override

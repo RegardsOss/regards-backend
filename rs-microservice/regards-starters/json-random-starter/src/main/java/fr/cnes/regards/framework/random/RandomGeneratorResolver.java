@@ -24,19 +24,21 @@ import fr.cnes.regards.framework.random.function.IPropertyGetter;
 import fr.cnes.regards.framework.random.generator.NoopGenerator;
 import fr.cnes.regards.framework.random.generator.RandomGenerator;
 import fr.cnes.regards.framework.random.generator.builder.RandomGeneratorBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
  * Service for generator auto discovery
+ *
+ * Look at spring.factories
  */
+@Service
 public class RandomGeneratorResolver {
 
+    @Autowired
     private List<RandomGeneratorBuilder<?>> generatorBuilders;
-
-    public RandomGeneratorResolver(List<RandomGeneratorBuilder<?>> generatorBuilders) {
-        this.generatorBuilders = generatorBuilders;
-    }
 
     public RandomGenerator<?> get(Object value, IPropertyGetter propertyGetter) {
         // Parse function

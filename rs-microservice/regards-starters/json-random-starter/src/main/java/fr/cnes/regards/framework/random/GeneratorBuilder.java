@@ -18,21 +18,28 @@
  */
 package fr.cnes.regards.framework.random;
 
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
+
 /**
- * Initialize a new {@link Generator} with passed template context.
+ * Initialize a new {@link Generator} with its generator resolver.
+ *
+ * Look at spring.factories
  */
 @Service
 public class GeneratorBuilder {
 
+    @Autowired
     private RandomGeneratorResolver randomGeneratorResolver;
 
-    public GeneratorBuilder(RandomGeneratorResolver randomGeneratorResolver) {
-        this.randomGeneratorResolver = randomGeneratorResolver;
+    public Generator build(Path templatePath) {
+        return build(templatePath, null);
     }
 
-    public Generator build() {
-        return new Generator(randomGeneratorResolver);
+    public Generator build(Path templatePath, IPropertyGetter propertyGetter) {
+        return new Generator(randomGeneratorResolver, templatePath, propertyGetter);
     }
 }

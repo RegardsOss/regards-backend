@@ -24,12 +24,13 @@ import java.util.Optional;
 
 public interface RandomGenerator<T> {
 
-    default void parseParameters() {
-        // Step to parse generator parameters from function descriptor if any
-    }
+    /**
+     * Step for parsing generator parameters from function descriptor
+     */
+    void parseParameters();
 
     /**
-     * If the method return {@link Optional#empty()}, generator will call {@link #random()} method else {@link #randomWithContext(Map)}.
+     * If the method return {@link Optional#empty()}, generator will call {@link #random()} method otherwise {@link #randomWithContext(Map)}.
      * @return list of dependent property paths the generator depends on.
      */
     default Optional<List<String>> getDependentProperties() {

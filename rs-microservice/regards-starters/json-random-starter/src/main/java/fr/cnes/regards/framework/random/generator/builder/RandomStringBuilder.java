@@ -21,7 +21,12 @@ package fr.cnes.regards.framework.random.generator.builder;
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.stereotype.Component;
 
+/**
+ * Look at spring.factories
+ */
+@Component
 public class RandomStringBuilder implements RandomGeneratorBuilder<RandomStringBuilder.RandomString> {
 
     @Override
