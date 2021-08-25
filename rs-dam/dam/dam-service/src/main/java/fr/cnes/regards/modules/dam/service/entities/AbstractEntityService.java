@@ -93,23 +93,36 @@ import java.util.stream.Collectors;
 
 /**
  * Abstract parameterized entity service
- *
  * @param <U> Entity type
  * @author oroussel
  */
 public abstract class AbstractEntityService<F extends EntityFeature, U extends AbstractEntity<F>>
         extends AbstractEntityValidationService<F, U> implements IEntityService<U> {
 
-    public static final String UNABLE_TO_ACCESS_STORAGE_PLUGIN = "Unable to access storage plugin";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityValidationService.class);
 
     private static final String CATALOG_DOWNLOAD_PATH = "/downloads/{aip_id}/files/{checksum}";
+
+    public static final String UNABLE_TO_ACCESS_STORAGE_PLUGIN = "Unable to access storage plugin";
+
+    /**
+     * Map of {@link Project}s by tenant
+     */
+    private final Map<String, Project> projects = new HashMap<>();
 
     /**
      * {@link IModelService} instance
      */
     protected final IModelService modelService;
+
+    @Autowired
+    private ILocalStorageService localStorageService;
+
+    @Autowired
+    private IProjectsClient projectClient;
+
+    @Autowired
+    private INotificationClient notificationClient;
 
     protected final IDamSettingsService damSettingsService;
 
@@ -133,11 +146,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
      */
     protected final IDatasetRepository datasetRepository;
 
-    /**
-     * Map of {@link Project}s by tenant
-     */
-    private final Map<String, Project> projects = new HashMap<>();
-
     private final IDeletedEntityRepository deletedEntityRepository;
 
     private final EntityManager em;
@@ -152,17 +160,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private final IAbstractEntityRequestRepository abstractEntityRequestRepo;
-
-    @Autowired
-    private ILocalStorageService localStorageService;
-
-    @Autowired
-    private IProjectsClient projectClient;
-
-    @Autowired
-    private INotificationClient notificationClient;
-
     /**
      * The plugin's class name of type {@link IStorageService} used to store AIP entities
      */
@@ -172,15 +169,16 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     @Value("${zuul.prefix}")
     private String urlPrefix;
 
-    @Value("${spring.application.name}")
-    private String springApplicationName;
+    private final IAbstractEntityRequestRepository abstractEntityRequestRepo;
 
     public AbstractEntityService(IModelFinder modelFinder,
-            IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
-            IDamSettingsService damSettingsService, IDeletedEntityRepository deletedEntityRepository,
-            ICollectionRepository collectionRepository, IDatasetRepository datasetRepository,
-            IAbstractEntityRepository<U> repository, EntityManager em, IPublisher publisher,
-            IRuntimeTenantResolver runtimeTenantResolver, IAbstractEntityRequestRepository abstractEntityRequestRepo) {
+                                 IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
+                                 IDamSettingsService damSettingsService, IDeletedEntityRepository deletedEntityRepository,
+                                 ICollectionRepository collectionRepository,
+                                 IDatasetRepository datasetRepository, IAbstractEntityRepository<U> repository, EntityManager em,
+                                 IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
+                                 IAbstractEntityRequestRepository abstractEntityRequestRepo
+    ) {
         super(modelFinder);
         this.entityRepository = entityRepository;
         this.modelService = modelService;
@@ -193,29 +191,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.abstractEntityRequestRepo = abstractEntityRequestRepo;
-    }
-
-    private static Set<UniformResourceName> extractUrns(Set<String> tags) {
-        return tags.stream().filter(OaisUniformResourceName::isValidUrn).map(OaisUniformResourceName::fromString)
-                .collect(Collectors.toSet());
-    }
-
-    private static Set<UniformResourceName> extractUrnsOfType(Set<String> tags, EntityType entityType) {
-        return tags.stream().filter(OaisUniformResourceName::isValidUrn).map(OaisUniformResourceName::fromString)
-                .filter(urn -> urn.getEntityType() == entityType).collect(Collectors.toSet());
-    }
-
-    private static DeletedEntity createDeletedEntity(AbstractEntity<?> entity) {
-        DeletedEntity delEntity = new DeletedEntity();
-        delEntity.setCreationDate(entity.getCreationDate());
-        delEntity.setDeletionDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
-        delEntity.setIpId(entity.getIpId());
-        delEntity.setLastUpdate(entity.getLastUpdate());
-        return delEntity;
-    }
-
-    private static String encode4Uri(String str) {
-        return new String(UriUtils.encode(str, Charset.defaultCharset().name()).getBytes(), StandardCharsets.US_ASCII);
     }
 
     @Override
@@ -274,7 +249,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Check if model is loaded else load it then set it on entity.
-     *
      * @param entity concerned entity
      */
     @Override
@@ -289,10 +263,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Compute available validators
-     *
      * @param modelAttribute {@link ModelAttrAssoc}
-     * @param attributeKey   attribute key
-     * @param mode           manage update or not
+     * @param attributeKey attribute key
+     * @param mode manage update or not
      * @return {@link Validator} list
      */
     @Override
@@ -325,9 +298,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Build real attribute map extracting namespace from {@link ObjectProperty} (i.e. fragment name)
-     *
-     * @param attMap     Map to build
-     * @param namespace  namespace context
+     * @param attMap Map to build
+     * @param namespace namespace context
      * @param attributes {@link AbstractProperty} list to analyze
      */
     protected void buildAttributeMap(Map<String, IProperty<?>> attMap, String namespace, Set<IProperty<?>> attributes) {
@@ -352,9 +324,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Associate a list of {@link String} tags to the given existing entity.
-     *
      * @param entityId an AbstractEntity identifier
-     * @param tagList  UniformResourceName Set representing AbstractEntity to be associated to pCollection
+     * @param tagList UniformResourceName Set representing AbstractEntity to be associated to pCollection
      */
     @Override
     public void associate(Long entityId, Set<String> tagList) throws EntityNotFoundException {
@@ -379,8 +350,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Set IpId
         if (entity.getIpId() == null) {
             entity.setIpId(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.valueOf(entity.getType()),
-                                                       runtimeTenantResolver.getTenant(), UUID.randomUUID(), 1, null,
-                                                       null));
+                    runtimeTenantResolver.getTenant(), UUID.randomUUID(), 1, null, null));
         }
 
         // As long as their is no way to create new entity version thanks to dam,
@@ -450,7 +420,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     /**
      * If entity is a collection or a dataset, recursively follow tags to add entity groups, then, if entity is a
      * collection, retrieve and add all groups from collections and datasets tagging this entity
-     *
      * @param entity entity to manage the add of groups
      */
     private <T extends AbstractEntity<?>> void manageGroups(T entity, Set<UniformResourceName> updatedIpIds) {
@@ -495,7 +464,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     /**
      * checks if the entity requested exists and that it is modified according to one of it's former version( pEntity's
      * id is pEntityId)
-     *
      * @return current entity
      * @throws ModuleException thrown if the entity cannot be found or if entities' id do not match
      */
@@ -538,8 +506,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Really do the update of entities
-     *
-     * @param entity     updated entity to be saved
+     * @param entity updated entity to be saved
      * @param entityInDb only there for comparison for group management
      * @return updated entity with group set correclty
      */
@@ -645,8 +612,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         datasets.remove(toDelete);
         // Remove relate files
         for (Map.Entry<DataType, DataFile> entry : toDelete.getFiles().entries()) {
-            if ((entry != null) && (entry.getValue() != null) && localStorageService
-                    .isFileLocallyStored(toDelete, entry.getValue())) {
+            if ((entry != null) && (entry.getValue() != null)
+                    && localStorageService.isFileLocallyStored(toDelete, entry.getValue())) {
                 localStorageService.removeFile(toDelete, entry.getValue());
             }
         }
@@ -672,7 +639,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * @param pSource Set of UniformResourceName
-     * @param pOther  Set of UniformResourceName to remove from pSource
+     * @param pOther Set of UniformResourceName to remove from pSource
      * @return a new Set of UniformResourceName containing only the elements present into pSource and not in pOther
      */
     private Set<UniformResourceName> getDiff(Set<UniformResourceName> pSource, Set<UniformResourceName> pOther) {
@@ -687,17 +654,33 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         modelService.getModel(entity.getModel().getId());
     }
 
+    private static Set<UniformResourceName> extractUrns(Set<String> tags) {
+        return tags.stream().filter(OaisUniformResourceName::isValidUrn).map(OaisUniformResourceName::fromString)
+                .collect(Collectors.toSet());
+    }
+
+    private static Set<UniformResourceName> extractUrnsOfType(Set<String> tags, EntityType entityType) {
+        return tags.stream().filter(OaisUniformResourceName::isValidUrn).map(OaisUniformResourceName::fromString)
+                .filter(urn -> urn.getEntityType() == entityType).collect(Collectors.toSet());
+    }
+
+    private static DeletedEntity createDeletedEntity(AbstractEntity<?> entity) {
+        DeletedEntity delEntity = new DeletedEntity();
+        delEntity.setCreationDate(entity.getCreationDate());
+        delEntity.setDeletionDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
+        delEntity.setIpId(entity.getIpId());
+        delEntity.setLastUpdate(entity.getLastUpdate());
+        return delEntity;
+    }
+
     @Override
     public U attachFiles(UniformResourceName urn, DataType dataType, MultipartFile[] attachments, List<DataFile> refs,
-            String relativeFileUriTemplate) throws ModuleException {
+            String fileUriTemplate) throws ModuleException {
 
         U entity = loadWithRelations(urn);
         // Store files locally
         java.util.Collection<DataFile> files = localStorageService.attachFiles(entity, dataType, attachments,
-                                                                               getPublicFileUriTemplate(
-                                                                                       relativeFileUriTemplate,
-                                                                                       runtimeTenantResolver
-                                                                                               .getTenant()));
+                                                                               fileUriTemplate);
         // Merge previous files with new ones
         if (entity.getFiles().get(dataType) != null) {
             entity.getFiles().get(dataType).addAll(files);
@@ -712,8 +695,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                 ContentTypeValidator.supportsForReference(dataType, ref.getFilename(), ref.getMimeType().toString());
                 // Compute checksum on URI for removal
                 try {
-                    ref.setChecksum(
-                            ChecksumUtils.computeHexChecksum(ref.getUri(), LocalStorageService.DIGEST_ALGORITHM));
+                    ref.setChecksum(ChecksumUtils.computeHexChecksum(ref.getUri(),
+                                                                     LocalStorageService.DIGEST_ALGORITHM));
                     ref.setDigestAlgorithm(LocalStorageService.DIGEST_ALGORITHM);
                 } catch (NoSuchAlgorithmException | IOException e) {
                     String message = String.format("Error while computing checksum");
@@ -743,8 +726,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             }
         }
 
-        String message = String
-                .format("Data file with checksum \"%s\" in entity \"\" not found", checksum, urn.toString());
+        String message = String.format("Data file with checksum \"%s\" in entity \"\" not found", checksum,
+                                       urn.toString());
         LOGGER.error(message);
         throw new EntityNotFoundException(message);
     }
@@ -877,21 +860,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     }
 
     /**
-     * Generate public URL to access collection and dataset attached files
-     */
-    private String getPublicFileUriTemplate(String relativeFileUriTemplate, String tenant) {
-        Project project = projects.get(tenant);
-        if (project == null) {
-            FeignSecurityManager.asSystem();
-            project = projectClient.retrieveProject(tenant).getBody().getContent();
-            projects.put(tenant, project);
-            FeignSecurityManager.reset();
-        }
-        return project.getHost() + urlPrefix + "/" + encode4Uri(springApplicationName) + relativeFileUriTemplate;
-    }
-
-    /**
-     * Generate public URL to access file from REGARDS system thanks to is checksum
+     * Generate URL to access file from REGARDS system thanks to is checksum
      *
      * @param checksum
      * @return
@@ -906,5 +875,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         }
         return project.getHost() + urlPrefix + "/" + encode4Uri("rs-catalog") + CATALOG_DOWNLOAD_PATH
                 .replace("{aip_id}", uniformResourceName.toString()).replace("{checksum}", checksum);
+    }
+
+    private static String encode4Uri(String str) {
+        return new String(UriUtils.encode(str, Charset.defaultCharset().name()).getBytes(), StandardCharsets.US_ASCII);
     }
 }

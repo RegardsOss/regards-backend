@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
@@ -28,13 +36,6 @@ import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
 import fr.cnes.regards.modules.dam.service.entities.validation.IEntityValidationService;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Parameterized entity service interface
@@ -181,13 +182,13 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * @param dataType  {@link DataType}
      * @param attachments {@link MultipartFile}
      * @param refs
-     * @param relativeFileUriTemplate
+     * @param fileUriTemplate
      * @return  {@link AbstractEntity}
      * @throws ModuleException
      *
      */
     AbstractEntity<?> attachFiles(UniformResourceName urn, DataType dataType, MultipartFile[] attachments,
-            List<DataFile> refs, String relativeFileUriTemplate) throws ModuleException;
+            List<DataFile> refs, String fileUriTemplate) throws ModuleException;
 
     /**
      * Retrieve a {@link DataFile} attached to the specified entity with the specified checksum

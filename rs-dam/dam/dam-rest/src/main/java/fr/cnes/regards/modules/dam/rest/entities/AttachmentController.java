@@ -18,7 +18,31 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.google.common.net.HttpHeaders;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -31,48 +55,29 @@ import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.dam.service.entities.IEntityService;
 import fr.cnes.regards.modules.dam.service.entities.LocalStorageService;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Manage attachments for all entities in a generic way
- *
  * @author Marc Sordi
+ *
  */
 @RestController
 @RequestMapping(path = AttachmentController.TYPE_MAPPING)
 public class AttachmentController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AttachmentController.class);
+
+    public static final String TYPE_MAPPING = "/entities/{urn}/files";
 
     /**
      * POST additional mapping
      */
     public static final String ATTACHMENTS_MAPPING = "/{dataType}";
 
-    private static final String URN_PLACEHOLDER = "{urn}";
-
-    public static final String TYPE_MAPPING = "/entities/" + URN_PLACEHOLDER + "/files";
-
     /**
      * GET and REMOVE additional mapping
      */
-    private static final String CHECKSUM_PLACEHOLDER = "{checksum}";
-
-    public static final String ATTACHMENT_MAPPING = "/" + CHECKSUM_PLACEHOLDER;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AttachmentController.class);
+    public static final String ATTACHMENT_MAPPING = "/{checksum}";
 
     @Autowired
     private ICollectionService collectionService;
@@ -90,8 +95,12 @@ public class AttachmentController {
 
         LOGGER.debug("Attaching files of type \"{}\" to entity \"{}\"", dataType, urn.toString());
 
-        String relativeFileUriTemplate = (TYPE_MAPPING + ATTACHMENT_MAPPING).replace(URN_PLACEHOLDER, urn.toString())
-                .replace(CHECKSUM_PLACEHOLDER, LocalStorageService.FILE_CHECKSUM_URL_TEMPLATE);
+        // Build local URI template
+        WebMvcLinkBuilder controllerLinkBuilder = WebMvcLinkBuilder
+                .linkTo(this.getClass(),
+                        this.getClass().getMethod("getFile", String.class, UniformResourceName.class, String.class,
+                                                  HttpServletResponse.class),
+                        urn, LocalStorageService.FILE_CHECKSUM_URL_TEMPLATE);
 
         // Manage reference
         List<DataFile> dataFileRefs = new ArrayList<>();
@@ -100,8 +109,8 @@ public class AttachmentController {
         }
 
         // Attach files to the entity
-        AbstractEntity<?> entity = getEntityService(urn)
-                .attachFiles(urn, dataType, attachments, dataFileRefs, relativeFileUriTemplate);
+        AbstractEntity<?> entity = getEntityService(urn).attachFiles(urn, dataType, attachments, dataFileRefs,
+                                                                     controllerLinkBuilder.toUri().toString());
         return ResponseEntity.ok(new EntityModel<>(entity));
     }
 
@@ -139,7 +148,6 @@ public class AttachmentController {
 
     /**
      * Entry point to delete a file from a document
-     *
      * @param urn
      * @param checksum
      * @return the deleted document

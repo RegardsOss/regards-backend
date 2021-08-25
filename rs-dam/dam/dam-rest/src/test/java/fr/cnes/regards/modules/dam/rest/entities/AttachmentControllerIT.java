@@ -18,8 +18,30 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.matchers.JsonPathMatchers;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -32,36 +54,12 @@ import fr.cnes.regards.modules.dam.service.entities.ICollectionService;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Test entity attachments processing
  *
  * @author Marc Sordi
+ *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=attachment",
         "regards.dam.local_storage.path=target/store" })
@@ -70,20 +68,17 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Path ATTACHMENT_FOLDER = Paths.get("src", "test", "resources", "attachments");
 
-    private static final String PDF_CONTENT_TYPE =
-            MediaType.APPLICATION_PDF_VALUE + " ;charset=" + StandardCharsets.UTF_8.toString();
+    private static final String PDF_CONTENT_TYPE = MediaType.APPLICATION_PDF_VALUE + " ;charset="
+            + StandardCharsets.UTF_8.toString();
 
-    private static final String HTML_CONTENT_TYPE =
-            MediaType.TEXT_HTML_VALUE + " ;charset=" + StandardCharsets.UTF_8.toString();
+    private static final String HTML_CONTENT_TYPE = MediaType.TEXT_HTML_VALUE + " ;charset="
+            + StandardCharsets.UTF_8.toString();
 
     @Autowired
     private IModelService modelService;
 
     @Autowired
     private ICollectionService collectionService;
-
-    @Autowired
-    private IProjectsClient projectsClient;
 
     private Collection collection;
 
@@ -97,12 +92,6 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         // Create a collection
         collection = new Collection(collectionModel, getDefaultTenant(), "COL1", "Collection label");
         collectionService.create(collection);
-
-        Project defaultProject = new Project();
-        defaultProject.setHost("https://regards.org/");
-        defaultProject.setName(getDefaultTenant());
-        Mockito.when(projectsClient.retrieveProject(getDefaultTenant()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(defaultProject), HttpStatus.OK));
     }
 
     private MockMultipartFile getMultipartFile(String originalFilename, String contentType) throws IOException {
@@ -113,7 +102,7 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
             throws IOException {
         Path filePath = ATTACHMENT_FOLDER.resolve(filename);
         MockMultipartFile file = new MockMultipartFile("file", originalFilename, contentType,
-                                                       Files.newInputStream(filePath));
+                Files.newInputStream(filePath));
         return file;
     }
 
@@ -121,15 +110,17 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertNotNull(refs);
         String contentAsString = gson(Arrays.asList(refs));
         MockMultipartFile file = new MockMultipartFile("refs", "", MediaType.APPLICATION_JSON_VALUE,
-                                                       contentAsString.getBytes());
+                contentAsString.getBytes());
         return file;
     }
 
     @Test
     public void attachDescription() throws IOException {
 
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expect(MockMvcResultMatchers.jsonPath(
-                "$.content.feature.files." + DataType.DESCRIPTION.toString() + ".length()", Matchers.equalTo(2)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers
+                        .jsonPath("$.content.feature.files." + DataType.DESCRIPTION.toString() + ".length()",
+                                  Matchers.equalTo(2)));
 
         List<MockMultipartFile> files = new ArrayList<>();
         files.add(getMultipartFile("description.pdf", PDF_CONTENT_TYPE));
@@ -142,8 +133,10 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void attachUrlDescription() throws IOException {
 
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expect(MockMvcResultMatchers.jsonPath(
-                "$.content.feature.files." + DataType.DESCRIPTION.toString() + ".length()", Matchers.equalTo(1)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers
+                        .jsonPath("$.content.feature.files." + DataType.DESCRIPTION.toString() + ".length()",
+                                  Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();
 
@@ -162,8 +155,10 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void attachGetAndRemoveDescription() throws IOException {
 
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expect(MockMvcResultMatchers.jsonPath(
-                "$.content.feature.files." + DataType.DESCRIPTION.toString() + ".length()", Matchers.equalTo(1)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers
+                        .jsonPath("$.content.feature.files." + DataType.DESCRIPTION.toString() + ".length()",
+                                  Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();
 
@@ -175,13 +170,13 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
         files.add(getMultipartFileRefs(ref));
 
-        ResultActions result = performDefaultFileUpload(
-                AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING, files, customizer,
-                "Attachment error", collection.getIpId().toString(), DataType.DESCRIPTION);
+        ResultActions result = performDefaultFileUpload(AttachmentController.TYPE_MAPPING
+                + AttachmentController.ATTACHMENTS_MAPPING, files, customizer, "Attachment error",
+                                                        collection.getIpId().toString(), DataType.DESCRIPTION);
 
         String json = payload(result);
-        String checksum = JsonPath
-                .read(json, "$.content.feature.files." + DataType.DESCRIPTION.toString() + "[0].checksum");
+        String checksum = JsonPath.read(json,
+                                        "$.content.feature.files." + DataType.DESCRIPTION.toString() + "[0].checksum");
         Assert.assertNotNull(checksum);
 
         // Get it
@@ -203,8 +198,10 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void attachRefAndNormalDescription() throws IOException {
 
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expect(MockMvcResultMatchers.jsonPath(
-                "$.content.feature.files." + DataType.DESCRIPTION.toString() + ".length()", Matchers.equalTo(2)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers
+                        .jsonPath("$.content.feature.files." + DataType.DESCRIPTION.toString() + ".length()",
+                                  Matchers.equalTo(2)));
 
         List<MockMultipartFile> files = new ArrayList<>();
 
@@ -250,8 +247,10 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
     private void uploadDocument() throws IOException {
         // Upload document
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expect(MockMvcResultMatchers.jsonPath(
-                "$.content.feature.files." + DataType.DOCUMENT.toString() + ".length()", Matchers.equalTo(1)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers
+                        .jsonPath("$.content.feature.files." + DataType.DOCUMENT.toString() + ".length()",
+                                  Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();
         files.add(getMultipartFile("description.docx", MediaType.APPLICATION_OCTET_STREAM_VALUE));
