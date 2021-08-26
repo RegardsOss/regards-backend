@@ -51,22 +51,23 @@ public final class CommonFileUtils {
     }
 
     /**
-     * Return the first non existing file name into the pDirectory {@link Path} given and related to the given {@link String} pOrigineFileName.
-     * If a file exists in the pDirectory with the pOrigineFileName as name, so this method return a file name as :<br/>
-     * [pOrigineFileName without extension]_[i].[pOrigineFileName extension] where i is an integer.
-     * @param pDirectory {@link Path} Directory to scan for existings files.
-     * @param pOrigineFileName {@link String} Original file name wanted.
+     * Return the first non existing file name into the directory {@link Path} given and related to the given {@link String} originFileName.
+     * If a file exists in the directory with the originFileName as name, so this method return a file name as :<br/>
+     * [originFileName without extension]_[i].[originFileName extension] where i is an integer if filename has an extension.<br/>
+     * [originFileName without extension]_[i] where i is an integer if filename has no extension.
+     * @param directory {@link Path} Directory to scan for existing files.
+     * @param originFileName {@link String} Original file name wanted.
      * @return {@link String} First available file name.
-     * @throws IOException Error reading the {@link Path} pDirectory
+     * @throws IOException Error reading the {@link Path} directory
      */
-    public static String getAvailableFileName(Path pDirectory, String pOrigineFileName) throws IOException {
+    public static String getAvailableFileName(Path directory, String originFileName) throws IOException {
 
-        String availableFileName = pOrigineFileName;
+        String availableFileName = originFileName;
 
         int cpt = 1;
         // Get all existing file names
         Set<String> fileNames = Sets.newHashSet();
-        try (Stream<Path> walk = Files.walk(pDirectory, 1)) {
+        try (Stream<Path> walk = Files.walk(directory, 1)) {
             walk.forEach(f -> fileNames.add(f.getFileName().toString()));
         }
         while (fileNames.contains(availableFileName)) {
@@ -74,6 +75,9 @@ public final class CommonFileUtils {
             if (index > 0) {
                 availableFileName = String.format("%s_%d.%s", availableFileName.substring(0, index), cpt,
                                                   availableFileName.substring(index + 1));
+            } else {
+                // handle case when file has no extension to avoid infinite loop
+                availableFileName = String.format("%s_%d", availableFileName, cpt);
             }
             cpt++;
         }
