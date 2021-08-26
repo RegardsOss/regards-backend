@@ -54,6 +54,8 @@ public class ZuulInputLogFilter extends ZuulFilter {
 
     protected static final int ORDER = DEBUG_FILTER_ORDER;
 
+    private static final String LOG_PREFIX = "Inbound request (tracking id {}) : ";
+
     private static final Set<String> FORWARDED_HEADER_NAMES = Collections
             .newSetFromMap(new LinkedCaseInsensitiveMap<>(6, Locale.ENGLISH));
 
@@ -106,7 +108,7 @@ public class ZuulInputLogFilter extends ZuulFilter {
         MDC.put(ClassicConstants.REQUEST_X_FORWARDED_FOR, xForwardedFor);
 
         String remoteAddr = request.getRemoteAddr();
-        LOGGER.info(LogConstants.SECURITY_MARKER + "Inbound request (tracking id {}) : {}@{} from {}",
+        LOGGER.info(LogConstants.SECURITY_MARKER + LOG_PREFIX + "{}@{} from {}",
                     ctx.getZuulRequestHeaders().get(CORRELATION_ID), requestURI, requestMethod, remoteAddr);
 
         if (xForwardedFor != null && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
@@ -117,10 +119,23 @@ public class ZuulInputLogFilter extends ZuulFilter {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            FORWARDED_HEADER_NAMES.stream().forEach(h -> LOGGER.debug("{} : {}", h,
-                                                                      ctx.getRequest().getHeader(h) == null ?
-                                                                              ctx.getZuulRequestHeaders().get(h) :
-                                                                              ctx.getRequest().getHeader(h)));
+            LOGGER.debug(LOG_PREFIX,
+                         "Scheme: {}, Remote host: {}, Remote addr: {}, Remote port: {}, Remote user: {}, Header names: {}",
+                         ctx.getZuulRequestHeaders().get(CORRELATION_ID), request.getScheme(), request.getRemoteHost(),
+                         request.getRemoteAddr(), request.getRemotePort(), request.getRemoteUser(),
+                         request.getHeaderNames());
+
+            StringBuffer buffer = new StringBuffer();
+            FORWARDED_HEADER_NAMES.stream().forEach(h -> {
+                String headerValue = ctx.getRequest().getHeader(h) == null ?
+                        ctx.getZuulRequestHeaders().get(h) :
+                        ctx.getRequest().getHeader(h);
+                if (headerValue != null) {
+                    buffer.append(String.format("%s: %s", h, headerValue));
+                }
+            });
+            LOGGER.debug(LOG_PREFIX + "Forwarded headers => {}", ctx.getZuulRequestHeaders().get(CORRELATION_ID),
+                         buffer);
         }
 
         return null;
