@@ -117,8 +117,10 @@ public class ZuulInputLogFilter extends ZuulFilter {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            FORWARDED_HEADER_NAMES.stream()
-                    .forEach(h -> LOGGER.debug("{} : {}", h, ctx.getZuulRequestHeaders().get(h)));
+            FORWARDED_HEADER_NAMES.stream().forEach(h -> LOGGER.debug("{} : {}", h,
+                                                                      ctx.getRequest().getHeader(h) == null ?
+                                                                              ctx.getZuulRequestHeaders().get(h) :
+                                                                              ctx.getRequest().getHeader(h)));
         }
 
         return null;
