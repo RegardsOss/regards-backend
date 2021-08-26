@@ -71,8 +71,9 @@ public final class CommonFileUtils {
             walk.forEach(f -> fileNames.add(f.getFileName().toString()));
         }
         while (fileNames.contains(availableFileName)) {
-            int index = availableFileName.indexOf('.');
+            int index = availableFileName.lastIndexOf('.');
             if (index > 0) {
+                // with lastIndexOf we are sure to get the extension
                 availableFileName = String.format("%s_%d.%s", availableFileName.substring(0, index), cpt,
                                                   availableFileName.substring(index + 1));
             } else {
