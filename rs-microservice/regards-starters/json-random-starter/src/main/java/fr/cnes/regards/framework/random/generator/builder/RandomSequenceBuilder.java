@@ -38,7 +38,7 @@ public class RandomSequenceBuilder implements RandomGeneratorBuilder<RandomSeque
         return new SequenceGenerator(fd);
     }
 
-    public static class SequenceGenerator extends AbstractRandomGenerator<String> {
+    static class SequenceGenerator extends AbstractRandomGenerator<String> {
 
         private static final String USAGE = "Function %s only support an optional format as for String.format";
 

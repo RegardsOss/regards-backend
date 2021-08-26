@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
-import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import fr.cnes.regards.framework.random.generator.AbstractNoParameterRandomGenerator;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -40,7 +40,7 @@ public class RandomUuidBuilder implements RandomGeneratorBuilder<RandomUuidBuild
         return new RandomUuid(fd);
     }
 
-    public static class RandomUuid extends AbstractRandomGenerator<UUID> {
+    static class RandomUuid extends AbstractNoParameterRandomGenerator<UUID> {
 
         public RandomUuid(FunctionDescriptor fd) {
             super(fd);

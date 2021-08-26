@@ -39,7 +39,7 @@ public class RandomStringBuilder implements RandomGeneratorBuilder<RandomStringB
         return new RandomString(fd);
     }
 
-    public static class RandomString extends AbstractRandomGenerator<String> {
+    static class RandomString extends AbstractRandomGenerator<String> {
 
         private static final String USAGE = "Function %s only support 0 or 2 arguments";
 

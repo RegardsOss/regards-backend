@@ -47,7 +47,7 @@ public class RandomPropertyBuilder implements RandomGeneratorBuilder<RandomPrope
     /**
      * @author sbinda
      */
-    public static class PropertyGenerator extends AbstractRandomGenerator<String> {
+    static class PropertyGenerator extends AbstractRandomGenerator<String> {
 
         private static final String USAGE = "Function %s only support a property key as parameter like example.myproperty";
 

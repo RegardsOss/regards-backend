@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, Object>> {
+public class ObjectRandomGenerator extends AbstractNoParameterRandomGenerator<Map<String, Object>> {
 
     /**
      * If a key is prefixed by {@link #KEYS_TO_REMOVE_PREFIX},

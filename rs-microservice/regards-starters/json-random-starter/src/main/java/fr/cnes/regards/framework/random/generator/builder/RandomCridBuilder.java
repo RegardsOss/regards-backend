@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
-import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import fr.cnes.regards.framework.random.generator.AbstractNoParameterRandomGenerator;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.Locale;
@@ -43,7 +43,7 @@ public class RandomCridBuilder implements RandomGeneratorBuilder<RandomCridBuild
         return new RandomCrid(fd);
     }
 
-    public static class RandomCrid extends AbstractRandomGenerator<String> {
+    static class RandomCrid extends AbstractNoParameterRandomGenerator<String> {
 
         public RandomCrid(FunctionDescriptor fd) {
             super(fd);

@@ -41,7 +41,7 @@ public class RandomStringFormatBuilder implements RandomGeneratorBuilder<RandomS
         return new RandomStringFormat(fd);
     }
 
-    public static class RandomStringFormat extends AbstractRandomGenerator<String> {
+    static class RandomStringFormat extends AbstractRandomGenerator<String> {
 
         private static final String USAGE = "Function %s needs 2 parameters minimum format and parameters";
 

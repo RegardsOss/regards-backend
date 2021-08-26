@@ -40,7 +40,7 @@ public class RandomUrnBuilder implements RandomGeneratorBuilder<RandomUrnBuilder
         return new RandomUrn(fd);
     }
 
-    public static class RandomUrn extends AbstractRandomGenerator<String> {
+    static class RandomUrn extends AbstractRandomGenerator<String> {
 
         private static final String USAGE = "Function %s only support 1 or 2 arguments";
 

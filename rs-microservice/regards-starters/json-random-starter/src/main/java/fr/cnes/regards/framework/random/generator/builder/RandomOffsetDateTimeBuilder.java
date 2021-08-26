@@ -44,7 +44,7 @@ public class RandomOffsetDateTimeBuilder
         return new RandomOffsetDateTime(fd);
     }
 
-    public static class RandomOffsetDateTime extends AbstractRandomGenerator<OffsetDateTime> {
+    static class RandomOffsetDateTime extends AbstractRandomGenerator<OffsetDateTime> {
 
         private static final ZoneOffset REF_ZONE_OFFSET = ZoneOffset.UTC;
 

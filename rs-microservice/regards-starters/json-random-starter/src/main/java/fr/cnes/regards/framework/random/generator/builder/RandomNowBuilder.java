@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
-import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import fr.cnes.regards.framework.random.generator.AbstractNoParameterRandomGenerator;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -40,7 +40,7 @@ public class RandomNowBuilder implements RandomGeneratorBuilder<RandomNowBuilder
         return new NowGenerator(fd);
     }
 
-    public static class NowGenerator extends AbstractRandomGenerator<OffsetDateTime> {
+    static class NowGenerator extends AbstractNoParameterRandomGenerator<OffsetDateTime> {
 
         public NowGenerator(FunctionDescriptor fd) {
             super(fd);

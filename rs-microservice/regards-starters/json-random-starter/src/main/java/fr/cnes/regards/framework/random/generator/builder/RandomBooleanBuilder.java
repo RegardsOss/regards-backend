@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
-import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import fr.cnes.regards.framework.random.generator.AbstractNoParameterRandomGenerator;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -40,7 +40,7 @@ public class RandomBooleanBuilder implements RandomGeneratorBuilder<RandomBoolea
         return new RandomBoolean(fd);
     }
 
-    public static class RandomBoolean extends AbstractRandomGenerator<Boolean> {
+    static class RandomBoolean extends AbstractNoParameterRandomGenerator<Boolean> {
 
         private final Random random = new Random();
 

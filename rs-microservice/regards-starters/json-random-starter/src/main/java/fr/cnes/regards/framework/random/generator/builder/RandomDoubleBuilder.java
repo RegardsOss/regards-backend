@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
-import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import fr.cnes.regards.framework.random.generator.AbstractNoParameterRandomGenerator;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -42,7 +42,7 @@ public class RandomDoubleBuilder implements RandomGeneratorBuilder<RandomDoubleB
         return new RandomDouble(fd);
     }
 
-    public static class RandomDouble extends AbstractRandomGenerator<Double> {
+    static class RandomDouble extends AbstractNoParameterRandomGenerator<Double> {
 
         public RandomDouble(FunctionDescriptor fd) {
             super(fd);

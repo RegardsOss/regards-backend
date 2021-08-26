@@ -40,7 +40,7 @@ public class RandomIntegerBuilder implements RandomGeneratorBuilder<RandomIntege
         return new RandomInteger(fd);
     }
 
-    public static class RandomInteger extends AbstractRandomGenerator<Integer> {
+    static class RandomInteger extends AbstractRandomGenerator<Integer> {
 
         private static final String USAGE = "Function %s only support 0 or 2 arguments";
 

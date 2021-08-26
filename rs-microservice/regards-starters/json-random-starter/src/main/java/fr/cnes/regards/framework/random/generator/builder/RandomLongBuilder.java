@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
-import fr.cnes.regards.framework.random.generator.AbstractRandomGenerator;
+import fr.cnes.regards.framework.random.generator.AbstractNoParameterRandomGenerator;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,7 +38,7 @@ public class RandomLongBuilder implements RandomGeneratorBuilder<RandomLongBuild
         return new RandomLong(fd);
     }
 
-    public static class RandomLong extends AbstractRandomGenerator<Long> {
+    static class RandomLong extends AbstractNoParameterRandomGenerator<Long> {
 
         public RandomLong(FunctionDescriptor fd) {
             super(fd);

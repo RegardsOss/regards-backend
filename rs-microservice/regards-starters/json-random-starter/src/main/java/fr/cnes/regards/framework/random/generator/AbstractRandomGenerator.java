@@ -32,11 +32,6 @@ public abstract class AbstractRandomGenerator<T> implements RandomGenerator<T> {
         this.fd = fd;
     }
 
-    @Override
-    public void parseParameters() {
-        // Nothing to do
-    }
-
     @SuppressWarnings("unchecked")
     protected Object findValue(Map<String, Object> context, String jsonPath) {
         int firstSeparator = jsonPath.indexOf(JSON_PATH_SEPARATOR);

@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.framework.random.generator;
 
-public class NoopGenerator extends AbstractNoParameterRandomGenerator<Object> {
+import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 
-    private final Object value;
+public abstract class AbstractNoParameterRandomGenerator<T> extends AbstractRandomGenerator<T> {
 
-    public NoopGenerator(Object value) {
-        super(null);
-        this.value = value;
+    public AbstractNoParameterRandomGenerator(FunctionDescriptor fd) {
+        super(fd);
     }
 
     @Override
-    public Object random() {
-        return value;
+    public void parseParameters() {
+        // Nothing to do
     }
 }
