@@ -119,8 +119,8 @@ public class ZuulInputLogFilter extends ZuulFilter {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(LOG_PREFIX,
-                         "Scheme: {}, Remote host: {}, Remote addr: {}, Remote port: {}, Remote user: {}, Header names: {}",
+            LOGGER.debug(LOG_PREFIX
+                                 + "Scheme: {}, Remote host: {}, Remote addr: {}, Remote port: {}, Remote user: {}, Header names: {}",
                          ctx.getZuulRequestHeaders().get(CORRELATION_ID), request.getScheme(), request.getRemoteHost(),
                          request.getRemoteAddr(), request.getRemotePort(), request.getRemoteUser(),
                          request.getHeaderNames());
@@ -131,7 +131,7 @@ public class ZuulInputLogFilter extends ZuulFilter {
                         ctx.getZuulRequestHeaders().get(h) :
                         ctx.getRequest().getHeader(h);
                 if (headerValue != null) {
-                    buffer.append(String.format("%s: %s", h, headerValue));
+                    buffer.append(String.format("%s: %s, ", h, headerValue));
                 }
             });
             LOGGER.debug(LOG_PREFIX + "Forwarded headers => {}", ctx.getZuulRequestHeaders().get(CORRELATION_ID),
