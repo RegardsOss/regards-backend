@@ -27,9 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 
 import javax.servlet.http.HttpServletRequest;
-
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.DEBUG_FILTER_ORDER;
@@ -38,6 +41,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 /**
  * This class is a Zuul proxy filter. It aims to log the HTTP method and the URL.</br>
  * It adds to the request header the X-Forwarded-For field.
+ *
  * @author Sébastien Binda
  * @author Christophe Mertz
  */
@@ -48,9 +52,22 @@ public class ZuulInputLogFilter extends ZuulFilter {
 
     public static final String COMMA = ", ";
 
+    protected static final int ORDER = DEBUG_FILTER_ORDER;
+
+    private static final Set<String> FORWARDED_HEADER_NAMES = Collections
+            .newSetFromMap(new LinkedCaseInsensitiveMap<>(6, Locale.ENGLISH));
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ZuulInputLogFilter.class);
 
-    protected static final int ORDER = DEBUG_FILTER_ORDER;
+    static {
+        FORWARDED_HEADER_NAMES.add("X-Forwarded-For"); // Deprecated
+        FORWARDED_HEADER_NAMES.add("Forwarded");
+        FORWARDED_HEADER_NAMES.add("X-Forwarded-Host");
+        FORWARDED_HEADER_NAMES.add("X-Forwarded-Port");
+        FORWARDED_HEADER_NAMES.add("X-Forwarded-Proto");
+        FORWARDED_HEADER_NAMES.add("X-Forwarded-Prefix");
+        FORWARDED_HEADER_NAMES.add("X-Forwarded-Ssl");
+    }
 
     @Override
     public String filterType() {
@@ -90,10 +107,7 @@ public class ZuulInputLogFilter extends ZuulFilter {
 
         String remoteAddr = request.getRemoteAddr();
         LOGGER.info(LogConstants.SECURITY_MARKER + "Inbound request (tracking id {}) : {}@{} from {}",
-                    ctx.getZuulRequestHeaders().get(CORRELATION_ID),
-                    requestURI,
-                    requestMethod,
-                    remoteAddr);
+                    ctx.getZuulRequestHeaders().get(CORRELATION_ID), requestURI, requestMethod, remoteAddr);
 
         if (xForwardedFor != null && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
             xForwardedFor = xForwardedFor + COMMA + remoteAddr;
@@ -103,7 +117,8 @@ public class ZuulInputLogFilter extends ZuulFilter {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("{} is set to request header : {}", HttpHeaders.X_FORWARDED_FOR, xForwardedFor);
+            FORWARDED_HEADER_NAMES.stream()
+                    .forEach(h -> LOGGER.debug("{} : {}", h, ctx.getZuulRequestHeaders().get(h)));
         }
 
         return null;

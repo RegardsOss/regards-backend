@@ -56,7 +56,7 @@ public class ZuulOutputLogFilter extends ZuulFilter {
     public Object run() throws ZuulException {
         RequestContext ctx = RequestContext.getCurrentContext();
         // Propagate correlation id
-        String correlationId = ctx.getRequest().getHeader(ZuulInputLogFilter.CORRELATION_ID);
+        String correlationId = ctx.getZuulRequestHeaders().get(ZuulInputLogFilter.CORRELATION_ID);
         ctx.getResponse().addHeader(ZuulInputLogFilter.CORRELATION_ID, correlationId);
 
         HttpServletRequest request = ctx.getRequest();
