@@ -1,9 +1,12 @@
 package fr.cnes.regards.framework.utils.file;
 
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,30 +20,15 @@ public class CommonFileUtilsTests {
     public void testGetAvailableFileNameWithExtension() throws IOException {
         // create new file in target for walk
         Path dirWithFile = Paths.get("target", "CommonFileUtilsTests", "testGetAvailableFileNameWithExtension");
-        String fileName = "toto.titi";
-        Path alreadyExistingFile = dirWithFile.resolve(fileName);
-        Files.createDirectories(dirWithFile);
-        Files.createFile(alreadyExistingFile);
-        String availableFileName = CommonFileUtils.getAvailableFileName(dirWithFile, fileName);
-        Assert.assertEquals(
-                fileName + " already exist so next available file name for " + fileName + " should be toto_1.titi",
-                "toto_1.titi",
-                availableFileName);
+        testGetAvailableFileName(dirWithFile, "toto.titi", "toto_1.titi");
     }
 
     @Test
     public void testGetAvailableFileNameWithExtensionAndDotInMiddle() throws IOException {
         // create new file in target for walk
-        Path dirWithFile = Paths.get("target", "CommonFileUtilsTests", "testGetAvailableFileNameWithExtensionAndDotInMiddle");
-        String fileName = "to.to.titi";
-        Path alreadyExistingFile = dirWithFile.resolve(fileName);
-        Files.createDirectories(dirWithFile);
-        Files.createFile(alreadyExistingFile);
-        String availableFileName = CommonFileUtils.getAvailableFileName(dirWithFile, fileName);
-        Assert.assertEquals(
-                fileName + " already exist so next available file name for " + fileName + " should be to.to_1.titi",
-                "to.to_1.titi",
-                availableFileName);
+        Path dirWithFile = Paths
+                .get("target", "CommonFileUtilsTests", "testGetAvailableFileNameWithExtensionAndDotInMiddle");
+        testGetAvailableFileName(dirWithFile, "to.to.titi", "to.to_1.titi");
     }
 
     @Test
@@ -48,30 +36,14 @@ public class CommonFileUtilsTests {
         // create new file in target for walk
         Path dirWithFile = Paths
                 .get("target", "CommonFileUtilsTests", "testGetAvailableFileNameWithExtensionStartsWithDot");
-        String fileName = ".toto.titi";
-        Path alreadyExistingFile = dirWithFile.resolve(fileName);
-        Files.createDirectories(dirWithFile);
-        Files.createFile(alreadyExistingFile);
-        String availableFileName = CommonFileUtils.getAvailableFileName(dirWithFile, fileName);
-        Assert.assertEquals(
-                fileName + " already exist so next available file name for " + fileName + " should be .toto_1.titi",
-                ".toto_1.titi",
-                availableFileName);
+        testGetAvailableFileName(dirWithFile, ".toto.titi", ".toto_1.titi");
     }
 
     @Test
     public void testGetAvailableFileNameWithoutExtension() throws IOException {
         // create new file in target for walk
         Path dirWithFile = Paths.get("target", "CommonFileUtilsTests", "testGetAvailableFileNameWithoutExtension");
-        String fileName = "toto";
-        Path alreadyExistingFile = dirWithFile.resolve(fileName);
-        Files.createDirectories(dirWithFile);
-        Files.createFile(alreadyExistingFile);
-        String availableFileName = CommonFileUtils.getAvailableFileName(dirWithFile, fileName);
-        Assert.assertEquals(
-                fileName + " already exist so next available file name for " + fileName + " should be toto_1",
-                "toto_1",
-                availableFileName);
+        testGetAvailableFileName(dirWithFile, "toto", "toto_1");
     }
 
     @Test
@@ -79,15 +51,39 @@ public class CommonFileUtilsTests {
         // create new file in target for walk
         Path dirWithFile = Paths
                 .get("target", "CommonFileUtilsTests", "testGetAvailableFileNameWithoutExtensionStartsWithDot");
-        String fileName = ".toto";
+        testGetAvailableFileName(dirWithFile, ".toto", ".toto_1");
+    }
+
+    @Test
+    public void testGetAvailableFileNameEndsWithDot() throws IOException {
+        // create new file in target for walk
+        Path dirWithFile = Paths.get("target", "CommonFileUtilsTests", "testGetAvailableFileNameEndsWithDot");
+        testGetAvailableFileName(dirWithFile, "toto.", "toto_1.");
+    }
+
+    private void testGetAvailableFileName(Path dirWithFile, String fileName, String expectedFileName)
+            throws IOException {
         Path alreadyExistingFile = dirWithFile.resolve(fileName);
         Files.createDirectories(dirWithFile);
         Files.createFile(alreadyExistingFile);
         String availableFileName = CommonFileUtils.getAvailableFileName(dirWithFile, fileName);
-        Assert.assertEquals(
-                fileName + " already exist so next available file name for " + fileName + " should be .toto_1",
-                ".toto_1",
-                availableFileName);
+        Assert.assertEquals(fileName + " already exist so next available file name for " + fileName + " should be "
+                                    + expectedFileName, expectedFileName, availableFileName);
+        //clean dir for next test run
+        Files.walkFileTree(dirWithFile, new SimpleFileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
 }
