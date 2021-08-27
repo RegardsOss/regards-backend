@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -99,7 +100,7 @@ public class AttachmentController {
         WebMvcLinkBuilder controllerLinkBuilder = WebMvcLinkBuilder
                 .linkTo(this.getClass(),
                         this.getClass().getMethod("getFile", String.class, UniformResourceName.class, String.class,
-                                                  HttpServletResponse.class),
+                                                  Boolean.class, HttpServletResponse.class),
                         urn, LocalStorageService.FILE_CHECKSUM_URL_TEMPLATE);
 
         // Manage reference
@@ -117,7 +118,8 @@ public class AttachmentController {
     @RequestMapping(method = RequestMethod.GET, value = ATTACHMENT_MAPPING)
     @ResourceAccess(description = "Retrieve file with specified checksum for given entity", role = DefaultRole.PUBLIC)
     public void getFile(@RequestParam(required = false) String origin, @Valid @PathVariable UniformResourceName urn,
-            @PathVariable String checksum, HttpServletResponse response) throws ModuleException, IOException {
+            @PathVariable String checksum,
+            @RequestParam(name="isContentInline", required=false) Boolean isContentInline, HttpServletResponse response) throws ModuleException, IOException {
 
         LOGGER.debug("Downloading file with checksum \"{}\" for entity \"{}\"", checksum, urn.toString());
 
@@ -127,7 +129,16 @@ public class AttachmentController {
         if (origin != null) {
             response.setHeader(HttpHeaders.X_FRAME_OPTIONS, "ALLOW-FROM " + origin);
         }
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + dataFile.getFilename());
+        // By default, return the attachment header, forcing browser to download the file
+        if (isContentInline == null || !isContentInline) {
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                               ContentDisposition.builder("attachment").filename(dataFile.getFilename()).toString());
+        } else {
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                               ContentDisposition.builder("inline").filename(dataFile.getFilename()).toString());
+            // Allows iframe to display inside REGARDS interface
+            response.setHeader(HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
+        }
         // NOTE : Do not set content type after download. It can be ignored.
         response.setContentType(dataFile.getMimeType().toString());
         if (dataFile.getFilesize() != null) {
