@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
@@ -96,6 +97,9 @@ public class CacheService {
 
     @Autowired
     private IJobInfoService jobService;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Creates a new cache file if the checksum does not match an existing file.
