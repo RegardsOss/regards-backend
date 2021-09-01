@@ -22,58 +22,24 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
-import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
-import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePlugin;
-import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
-import fr.cnes.regards.modules.crawler.test.CrawlerConfiguration;
-import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRepository;
-import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
-import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
-import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourcePluginConstants;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.dam.domain.entities.event.DatasetEvent;
-import fr.cnes.regards.modules.dam.domain.entities.event.NotDatasetEntityEvent;
-import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
-import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
-import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
-import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
-import fr.cnes.regards.modules.model.dao.IFragmentRepository;
-import fr.cnes.regards.modules.model.dao.IModelAttrAssocRepository;
-import fr.cnes.regards.modules.model.dao.IModelRepository;
-import fr.cnes.regards.modules.model.domain.Model;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
-import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactoryEventHandler;
-import fr.cnes.regards.modules.model.service.IAttributeModelService;
-import fr.cnes.regards.modules.model.service.IModelService;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -89,38 +55,17 @@ import org.elasticsearch.search.aggregations.metrics.max.ParsedMax;
 import org.elasticsearch.search.aggregations.metrics.min.ParsedMin;
 import org.elasticsearch.search.aggregations.metrics.sum.ParsedSum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServiceDataSourceIT {
 
@@ -192,7 +137,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         checkDatasetComputedAttribute(dataset1, objectSearchKey, summary1.getSavedObjectsCount());
         // Search for DataObjects tagging dataset1
         Page<DataObject> objectsPage = searchService.search(objectSearchKey, 10000,
-                                                            ICriterion.eq("tags", dataset1.getIpId().toString()));
+                                                            ICriterion.eq("tags", dataset1.getIpId().toString(), StringMatchType.KEYWORD));
         Assert.assertTrue(objectsPage.getContent().size() > 0);
         Assert.assertEquals(summary1.getSavedObjectsCount(), objectsPage.getContent().size());
         IProperty<JsonObject> rawFeature = (IProperty<JsonObject>) objectsPage.getContent().get(0).getFeature()
@@ -210,7 +155,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
 
         // Search again for DataObjects tagging this dataset
         objectsPage = searchService.search(objectSearchKey, 10000,
-                                           ICriterion.eq("tags", dataset1.getIpId().toString()));
+                                           ICriterion.eq("tags", dataset1.getIpId().toString(), StringMatchType.KEYWORD));
         Assert.assertTrue(objectsPage.getContent().isEmpty());
         // Adding some free tag
         objectsPage.getContent().forEach(object -> object.addTags("TOTO"));
@@ -220,7 +165,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
 
         // Search for DataObjects tagging dataset2
         objectsPage = searchService.search(objectSearchKey, 10000,
-                                           ICriterion.eq("tags", dataset2.getIpId().toString()));
+                                           ICriterion.eq("tags", dataset2.getIpId().toString(), StringMatchType.KEYWORD));
         Assert.assertTrue(objectsPage.getContent().size() > 0);
         Assert.assertEquals(summary1.getSavedObjectsCount(), objectsPage.getContent().size());
 
@@ -275,9 +220,9 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
             case 0:
                 return criterion;
             case 1:
-                return ICriterion.and(ICriterion.eq("type", types[0]), criterion);
+                return ICriterion.and(ICriterion.eq("type", types[0], StringMatchType.KEYWORD), criterion);
             default:
-                ICriterion orCrit = ICriterion.or(Arrays.stream(types).map(type -> ICriterion.eq("type", type))
+                ICriterion orCrit = ICriterion.or(Arrays.stream(types).map(type -> ICriterion.eq("type", type, StringMatchType.KEYWORD))
                         .toArray(n -> new ICriterion[n]));
                 return ICriterion.and(orCrit, criterion);
         }
@@ -302,7 +247,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         // max(STOP_DATE), sum(FILE_SIZE) via aggregation, the count of element in this context is already known:
         // objectsCreationCount
         QueryBuilderCriterionVisitor critVisitor = new QueryBuilderCriterionVisitor();
-        ICriterion crit = ICriterion.eq("tags", dataset.getIpId().toString());
+        ICriterion crit = ICriterion.eq("tags", dataset.getIpId().toString(), StringMatchType.KEYWORD);
         crit = addTypes(crit, objectSearchKey.getSearchTypes());
         QueryBuilder qb = QueryBuilders.boolQuery().must(QueryBuilders.matchAllQuery())
                 .filter(crit.accept(critVisitor));

@@ -18,14 +18,22 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import static fr.cnes.regards.modules.indexer.service.GeoUtil.toWgs84;
-
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.Point;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.indexer.dao.EsHelper;
+import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+import fr.cnes.regards.modules.indexer.service.test.SearchConfiguration;
+import fr.cnes.regards.modules.model.domain.Model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -39,21 +47,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.indexer.dao.EsHelper;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
-import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
-import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
-import fr.cnes.regards.modules.indexer.service.test.SearchConfiguration;
-import fr.cnes.regards.modules.model.domain.Model;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.indexer.service.GeoUtil.toWgs84;
 
 /**
  * @author oroussel
@@ -147,7 +147,7 @@ public class SearchServiceTest {
 
     private void computeCircleOnOnlyPolygonsSymetricTest(double[] center, Double distance) {
         this.computeCircleTest("SYMETRIC POLYGONS", center, distance,
-                               ICriterion.and(ICriterion.startsWith("feature.label", "POLYGON"),
+                               ICriterion.and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD),
                                               ICriterion.intersectsCircle(center, distance.toString())));
     }
 
@@ -338,7 +338,7 @@ public class SearchServiceTest {
     @Test
     public void testConvexSimplePolygonNearEquatorOnlyPolygonsInto() {
         ICriterion criterion = ICriterion
-                .and(ICriterion.startsWith("feature.label", "POLYGON"), ICriterion.intersectsPolygon(new double[][][] {
+                .and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD), ICriterion.intersectsPolygon(new double[][][] {
                         { { 0.3, 0.3 }, { 0.6, 0.3 }, { 0.6, 0.6 }, { 0.3, 0.6 }, { 0.3, 0.3 } } }));
         computePolygonTest("INNER POLYGON", criterion, 1);
     }
@@ -346,7 +346,7 @@ public class SearchServiceTest {
     @Test
     public void testConvexSimplePolygonNearEquatorOnlyPolygonsEqual() {
         ICriterion criterion = ICriterion
-                .and(ICriterion.startsWith("feature.label", "POLYGON"), ICriterion.intersectsPolygon(new double[][][] {
+                .and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD), ICriterion.intersectsPolygon(new double[][][] {
                         { { 0., 0. }, { 1., 0. }, { 1., 1. }, { 0., 1. }, { 0., 0. } } }));
         computePolygonTest("EQUAL POLYGON", criterion, 1);
     }
@@ -354,7 +354,7 @@ public class SearchServiceTest {
     @Test
     public void testConvexSimplePolygonNearEquatorOnlyPolygonsContains() {
         ICriterion criterion = ICriterion
-                .and(ICriterion.startsWith("feature.label", "POLYGON"), ICriterion.intersectsPolygon(new double[][][] {
+                .and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD), ICriterion.intersectsPolygon(new double[][][] {
                         { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, -0.3 } } }));
         computePolygonTest("CONTAINS POLYGON", criterion, 1);
     }
@@ -362,7 +362,7 @@ public class SearchServiceTest {
     @Test
     public void testConvexSimplePolygonNearEquatorOnlyPolygonsIntersects() {
         ICriterion criterion = ICriterion
-                .and(ICriterion.startsWith("feature.label", "POLYGON"), ICriterion.intersectsPolygon(new double[][][] {
+                .and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD), ICriterion.intersectsPolygon(new double[][][] {
                         { { 0.6, 0.6 }, { 1.3, 0.6 }, { 1.3, 1.3 }, { 0.6, 1.3 }, { 0.6, 0.6 } } }));
         computePolygonTest("INTERSECT POLYGON", criterion, 1);
     }
@@ -398,7 +398,7 @@ public class SearchServiceTest {
 
     @Test
     public void testConcaveSimplePolygonNearEquatorOnlyPolygonsOuto() {
-        ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label", "POLYGON"),
+        ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD),
                                               ICriterion.intersectsPolygon(new double[][][] { { { -0.3, -0.3 },
                                                       { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, 1.1 },
                                                       { 1.1, 1.1 }, { 1.1, -0.1 }, { -0.3, -0.1 }, { -0.3, -0.3 } } }));

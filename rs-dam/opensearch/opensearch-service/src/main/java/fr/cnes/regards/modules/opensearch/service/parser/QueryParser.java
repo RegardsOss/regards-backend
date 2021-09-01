@@ -67,6 +67,11 @@ public class QueryParser extends QueryParserHelper implements IParser {
     public static final String MULTISEARCH = "@multisearch";
 
     /**
+     * Separator to detect and parse string matching behavior
+     */
+    public static final String STRING_MATCH_TYPE_SEPARATOR = "@";
+
+    /**
      * Constructor
      * @param finder provides access to {@link AttributeModel}s with caching facilities
      */

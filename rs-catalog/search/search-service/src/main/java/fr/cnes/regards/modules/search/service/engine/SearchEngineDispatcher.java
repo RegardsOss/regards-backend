@@ -18,10 +18,18 @@
  */
 package fr.cnes.regards.modules.search.service.engine;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.StringJoiner;
-
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.search.domain.plugin.*;
+import fr.cnes.regards.modules.search.service.IBusinessSearchService;
+import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,22 +40,9 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
-import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
-import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
-import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import fr.cnes.regards.modules.search.service.IBusinessSearchService;
-import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 /**
  * Search engine service dispatcher.<br/>
@@ -209,9 +204,9 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             ICriterion idsCrit = null;
             for (String ipId : searchRequest.getEntityIdsToInclude()) {
                 if (idsCrit == null) {
-                    idsCrit = ICriterion.eq(StaticProperties.IP_ID, ipId);
+                    idsCrit = ICriterion.eq(StaticProperties.IP_ID, ipId, StringMatchType.KEYWORD);
                 } else {
-                    idsCrit = ICriterion.or(idsCrit, ICriterion.eq(StaticProperties.IP_ID, ipId));
+                    idsCrit = ICriterion.or(idsCrit, ICriterion.eq(StaticProperties.IP_ID, ipId, StringMatchType.KEYWORD));
                 }
             }
             if (idsCrit != null) {
@@ -222,7 +217,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         // Exclude ids criterion
         if ((searchRequest.getEntityIdsToExclude() != null) && !searchRequest.getEntityIdsToExclude().isEmpty()) {
             for (String ipId : searchRequest.getEntityIdsToExclude()) {
-                reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId)));
+                reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId, StringMatchType.KEYWORD)));
             }
         }
 

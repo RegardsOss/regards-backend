@@ -19,34 +19,15 @@
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
 /**
- * String specialized AbstractMatchCriterion
+ * For String type fields, Elasticsearch is configured with two Lucene indexes:
+ * - Full text search CASE INSENSITIVE index
+ * - Keyword search CASE SENSITIVE index (field suffixed with .keyword according to our elastic field mapping)
  *
- * @author oroussel
  * @author Marc SORDI
  */
-public class StringMatchCriterion extends AbstractMatchCriterion<String> {
-
-    /**
-     * See {@link StringMatchType} for explanation
-     */
-    private final StringMatchType matchType;
-
-    public StringMatchCriterion(String name, MatchType type, String value, StringMatchType matchType) {
-        super(name, type, value);
-        this.matchType = matchType;
-    }
-
-    @Override
-    public StringMatchCriterion copy() {
-        return new StringMatchCriterion(super.name, super.type, super.value, matchType);
-    }
-
-    @Override
-    public <U> U accept(ICriterionVisitor<U> visitor) {
-        return visitor.visitStringMatchCriterion(this);
-    }
-
-    public StringMatchType getMatchType() {
-        return matchType;
-    }
+public enum StringMatchType {
+    // String matching relies on text type index (look at elastic standard analyser) : tokenized text, case insensitive
+    FULL_TEXT_SEARCH,
+    // String matching relies on keyword type index : whole text, case sensitive
+    KEYWORD
 }

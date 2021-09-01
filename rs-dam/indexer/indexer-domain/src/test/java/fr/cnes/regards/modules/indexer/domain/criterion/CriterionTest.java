@@ -1,5 +1,13 @@
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -8,16 +16,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 
 // CHECKSTYLE:OFF
 public class CriterionTest {
@@ -41,13 +39,13 @@ public class CriterionTest {
                 + "(NOT (attributes.number4 ∈ { x / x ≥ 999.0, x ≤ 1001.0 })) AND "
                 + "(attributes.number3 ∈ { x / x ≥ 3.141582653589793, x ≤ 3.141602653589793 }))";
         // textAtt contains "testContains"
-        ICriterion containsCrit = ICriterion.contains("attributes.text", "testContains");
+        ICriterion containsCrit = ICriterion.contains("attributes.text", "testContains", StringMatchType.KEYWORD);
         // textAtt ends with "testEndsWith"
-        ICriterion endsWithCrit = ICriterion.endsWith("attributes.text", "testEndsWith");
+        ICriterion endsWithCrit = ICriterion.endsWith("attributes.text", "testEndsWith", StringMatchType.KEYWORD);
         // textAtt startsWith "testStartsWith"
-        ICriterion startsWithCrit = ICriterion.startsWith("attributes.text", "testStartsWith");
+        ICriterion startsWithCrit = ICriterion.startsWith("attributes.text", "testStartsWith", StringMatchType.KEYWORD);
         // textAtt strictly equals "testEquals"
-        ICriterion equalsCrit = ICriterion.eq("attributes.text", "testEquals");
+        ICriterion equalsCrit = ICriterion.eq("attributes.text", "testEquals", StringMatchType.KEYWORD);
         ICriterionVisitor<String> visitor = new TestCriterionVisitor();
 
         List<ICriterion> numericCritList = new ArrayList<>();
@@ -123,8 +121,8 @@ public class CriterionTest {
     public void test5() throws IOException {
         final String RESULT = "(att.text IN (\"toto\", \"titi\", \"tutu\")) OR "
                 + "((att.text EQUALS \"toto tutu\") OR (att.text EQUALS \"titi tata\"))";
-        ICriterion rootCrit = ICriterion.or(ICriterion.in("att.text", "toto", "titi", "tutu"),
-                                            ICriterion.in("att.text", "toto tutu", "titi tata"));
+        ICriterion rootCrit = ICriterion.or(ICriterion.in("att.text", StringMatchType.KEYWORD, "toto", "titi", "tutu"),
+                                            ICriterion.in("att.text", StringMatchType.KEYWORD, "toto tutu", "titi tata"));
 
         ICriterionVisitor<String> visitor = new TestCriterionVisitor();
         Assert.assertEquals(RESULT, rootCrit.accept(visitor));

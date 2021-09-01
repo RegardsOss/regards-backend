@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
@@ -223,14 +224,14 @@ public class DatasetServiceTest {
      */
     private ICriterion getValidClause() {
         // textAtt contains "testContains"
-        ICriterion containsCrit = ICriterion.contains("attributes." + attString.getName(), "testContains");
+        ICriterion containsCrit = ICriterion.contains("attributes." + attString.getName(), "testContains", StringMatchType.KEYWORD);
         // textAtt ends with "testEndsWith"
         ICriterion endsWithCrit = ICriterion
-                .endsWith("attributes." + GEO_CRS.getFragment().getName() + "." + GEO_CRS.getName(), "testEndsWith");
+                .endsWith("attributes." + GEO_CRS.getFragment().getName() + "." + GEO_CRS.getName(), "testEndsWith", StringMatchType.KEYWORD);
         // textAtt strictly equals "testEquals"
         ICriterion equalsCrit = ICriterion
                 .eq("attributes." + Contact_Phone.getFragment().getName() + "." + Contact_Phone.getName(),
-                    "testEquals");
+                    "testEquals", StringMatchType.KEYWORD);
 
         ICriterion booleanCrit = new BooleanMatchCriterion("attributes." + attBoolean.getName(), true);
 

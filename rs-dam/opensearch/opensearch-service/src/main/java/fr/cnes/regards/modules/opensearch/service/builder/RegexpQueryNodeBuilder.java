@@ -18,20 +18,21 @@
  */
 package fr.cnes.regards.modules.opensearch.service.builder;
 
-import java.util.Set;
-
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
-import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
-import org.apache.lucene.queryparser.flexible.standard.nodes.RegexpQueryNode;
-
 import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
+import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
+import org.apache.lucene.queryparser.flexible.standard.nodes.RegexpQueryNode;
+import org.springframework.data.util.Pair;
+
+import java.util.Set;
 
 /**
  * Builds a {@link StringMatchCriterion} type REGEXP from a {@link RegexpQueryNode} object<br>
@@ -72,16 +73,19 @@ public class RegexpQueryNodeBuilder implements ICriterionQueryBuilder {
             }
         }
 
+        // Detect string matching behavior before finding related attribute to get real attribute name
+        Pair<String, StringMatchType> fieldAndMatchType = parse(field);
+
         AttributeModel attributeModel;
         try {
-            attributeModel = finder.findByName(field);
+            attributeModel = finder.findByName(fieldAndMatchType.getFirst());
         } catch (OpenSearchUnknownParameter e) {
             throw new QueryNodeException(new MessageImpl(
                     fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages.FIELD_TYPE_UNDETERMINATED,
                     e.getMessage()), e);
         }
 
-        return IFeatureCriterion.regexp(attributeModel, value);
+        return IFeatureCriterion.regexp(attributeModel, value, fieldAndMatchType.getSecond());
     }
 
 }

@@ -33,17 +33,13 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
+ *
  * Criterion visitor implementation to generate Elasticsearch QueryBuilder from
  * a search criterion
  *
  * @author oroussel
  */
 public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuilder> {
-
-    /**
-     * Text subfield mapping used for string search criterions
-     */
-    private static final String KEYWORD = ".keyword";
 
     private static final Double WEST_DATELINE = -180.0;
 
@@ -69,8 +65,8 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     @Override
     public QueryBuilder visitAndCriterion(AbstractMultiCriterion criterion) {
         BoolQueryBuilder andQueryBuilder = QueryBuilders.boolQuery();
-        for (ICriterion crit : criterion.getCriterions()) {
-            andQueryBuilder.must(crit.accept(this));
+        for (ICriterion embedded : criterion.getCriterions()) {
+            andQueryBuilder.must(embedded.accept(this));
         }
         return andQueryBuilder;
     }
@@ -78,8 +74,8 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     @Override
     public QueryBuilder visitOrCriterion(AbstractMultiCriterion criterion) {
         BoolQueryBuilder orQueryBuilder = QueryBuilders.boolQuery();
-        for (ICriterion crit : criterion.getCriterions()) {
-            orQueryBuilder.should(crit.accept(this));
+        for (ICriterion embedded : criterion.getCriterions()) {
+            orQueryBuilder.should(embedded.accept(this));
         }
         return orQueryBuilder;
     }
@@ -89,26 +85,44 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         return QueryBuilders.boolQuery().mustNot(criterion.getCriterion().accept(this));
     }
 
+    /**
+     * Build sensitive or insensitive search matching
+     *
+     * @see StringMatchCriterion for explanations
+     */
     @Override
     public QueryBuilder visitStringMatchCriterion(StringMatchCriterion criterion) {
+        switch (criterion.getMatchType()) {
+            case KEYWORD:
+                return visitStringMatchCriterion(criterion, ".keyword");
+            case FULL_TEXT_SEARCH:
+                return visitStringMatchCriterion(criterion, "");
+            default:
+                throw new IllegalArgumentException(
+                        String.format("Unsupported string match type %s", criterion.getMatchType()));
+        }
+    }
+
+    protected QueryBuilder visitStringMatchCriterion(StringMatchCriterion criterion, String searchIndexSuffix) {
         String searchValue = criterion.getValue();
         String attName = criterion.getName();
+
         switch (criterion.getType()) {
             case EQUALS:
                 // attribute type is declared by hand so there is no corresponding keyword field.
                 if (attName.equals("type")) {
                     return QueryBuilders.matchPhraseQuery(attName, searchValue);
                 } else {
-                    return QueryBuilders.matchPhraseQuery(attName + KEYWORD, searchValue);
+                    return QueryBuilders.matchPhraseQuery(attName + searchIndexSuffix, searchValue);
                 }
             case STARTS_WITH:
                 return QueryBuilders.matchPhrasePrefixQuery(attName, searchValue).maxExpansions(10_000);
             case ENDS_WITH:
-                return QueryBuilders.regexpQuery(attName + KEYWORD, ".*" + escape(searchValue));
+                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + escape(searchValue));
             case CONTAINS:
-                return QueryBuilders.regexpQuery(attName + KEYWORD, ".*" + escape(searchValue) + ".*");
+                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + escape(searchValue) + ".*");
             case REGEXP:
-                return QueryBuilders.regexpQuery(attName + KEYWORD, searchValue);
+                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, searchValue);
             default:
                 return null;
         }
@@ -249,7 +263,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         }
         checkYLimits(criterion.getMinY());
         checkYLimits(criterion.getMaxY());
-        
+
         if (criterion.getMaxX() - criterion.getMinX() >= MAX_X_EXTENT) {
             // EAST - WEST >= 360
             // bbox reaches the max extent : relocate into single bbox with max longitude extent

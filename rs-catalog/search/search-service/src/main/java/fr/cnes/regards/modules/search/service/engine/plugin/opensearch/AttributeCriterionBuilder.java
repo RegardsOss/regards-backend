@@ -18,17 +18,18 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.GeometryCriterionBuilder;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * {@link ICriterion} builder for catalog searches.
@@ -94,8 +95,7 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Boolean {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
-     * value.
+     * Build an Boolean {@link ICriterion} for catalog searches from a given search parameter and value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of boolean parameter value
      * @param operator {@link ParameterOperator} for search
@@ -118,8 +118,7 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Date {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
-     * value.
+     * Build an Date {@link ICriterion} for catalog searches from a given search parameter and value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of date parameter value
      * @param operator {@link ParameterOperator} for search
@@ -143,8 +142,7 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Integer {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
-     * value.
+     * Build an Integer {@link ICriterion} for catalog searches from a given search parameter and value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of integer parameter value
      * @param operator {@link ParameterOperator} for search
@@ -179,8 +177,7 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Double {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
-     * value.
+     * Build an Double {@link ICriterion} for catalog searches from a given search parameter and value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of double parameter value
      * @param operator {@link ParameterOperator} for search
@@ -204,8 +201,7 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an Long {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
-     * value.
+     * Build an Long {@link ICriterion} for catalog searches from a given search parameter and value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of long parameter value
      * @param operator {@link ParameterOperator} for search
@@ -239,8 +235,7 @@ public class AttributeCriterionBuilder {
     }
 
     /**
-     * Build an String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
-     * value.
+     * Build an String {@link ICriterion} for catalog searches from a given search parameter and value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of parameter value
      * @param operator {@link ParameterOperator} for search
@@ -258,13 +253,12 @@ public class AttributeCriterionBuilder {
                         String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S, operator.toString(), attribute));
             case EQ:
             default:
-                return IFeatureCriterion.eq(attribute, value);
+                return IFeatureCriterion.eq(attribute, value, StringMatchType.KEYWORD);
         }
     }
 
     /**
-     * Build a String {@link ICriterion} for catalog searches from a given {@link openSearchParameter} and a search
-     * value.
+     * Build a String {@link ICriterion} for catalog searches from a given search parameter and value.
      * @param attribute {@link AttributeModel} to search for
      * @param value String representation of parameter value
      * @param operator {@link ParameterOperator} for search
@@ -282,7 +276,7 @@ public class AttributeCriterionBuilder {
                         String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S, operator.toString(), attribute));
             case EQ:
             default:
-                return IFeatureCriterion.contains(attribute, value);
+                return IFeatureCriterion.contains(attribute, value, StringMatchType.KEYWORD);
         }
     }
 

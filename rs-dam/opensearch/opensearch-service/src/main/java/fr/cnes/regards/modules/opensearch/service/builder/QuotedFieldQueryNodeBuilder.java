@@ -1,20 +1,21 @@
 package fr.cnes.regards.modules.opensearch.service.builder;
 
-import java.util.Set;
-
-import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
-import org.apache.lucene.queryparser.flexible.core.nodes.FieldQueryNode;
-import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
-import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
-
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
+import org.apache.lucene.queryparser.flexible.core.nodes.FieldQueryNode;
+import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
+import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
+import org.springframework.data.util.Pair;
+
+import java.util.Set;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -45,9 +46,12 @@ public class QuotedFieldQueryNodeBuilder implements ICriterionQueryBuilder {
             }
         }
 
+        // Detect string matching behavior before finding related attribute to get real attribute name
+        Pair<String, StringMatchType> fieldAndMatchType = parse(field);
+
         AttributeModel attributeModel;
         try {
-            attributeModel = attributeFinder.findByName(field);
+            attributeModel = attributeFinder.findByName(fieldAndMatchType.getFirst());
         } catch (OpenSearchUnknownParameter e) {
             throw new QueryNodeException(new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED, e.getMessage()),
                     e);
@@ -90,7 +94,7 @@ public class QuotedFieldQueryNodeBuilder implements ICriterionQueryBuilder {
                 return IFeatureCriterion.eq(attributeModel, valL);
             case STRING:
             case STRING_ARRAY:
-                return IFeatureCriterion.eq(attributeModel, value);
+                return IFeatureCriterion.eq(attributeModel, value, fieldAndMatchType.getSecond());
             case DATE_ISO8601:
                 return IFeatureCriterion.eq(attributeModel, OffsetDateTimeAdapter.parse(value));
             case BOOLEAN:

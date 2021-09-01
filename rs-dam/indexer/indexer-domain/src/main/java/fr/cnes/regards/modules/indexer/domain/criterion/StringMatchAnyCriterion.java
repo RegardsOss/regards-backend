@@ -26,13 +26,19 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
  */
 public class StringMatchAnyCriterion extends AbstractMatchCriterion<String[]> {
 
-    public StringMatchAnyCriterion(String name, String... value) {
+    /**
+     * See {@link StringMatchType} for explanation
+     */
+    private final StringMatchType matchType;
+
+    public StringMatchAnyCriterion(String name, StringMatchType matchType, String... value) {
         super(name, MatchType.CONTAINS_ANY, value);
+        this.matchType = matchType;
     }
 
     @Override
     public StringMatchAnyCriterion copy() {
-        return new StringMatchAnyCriterion(super.name, super.value);
+        return new StringMatchAnyCriterion(super.name, matchType, super.value);
     }
 
     @Override
@@ -40,4 +46,7 @@ public class StringMatchAnyCriterion extends AbstractMatchCriterion<String[]> {
         return visitor.visitStringMatchAnyCriterion(this);
     }
 
+    public StringMatchType getMatchType() {
+        return matchType;
+    }
 }

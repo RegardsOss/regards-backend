@@ -18,23 +18,15 @@
  */
 package fr.cnes.regards.modules.indexer.dao.builder;
 
-import java.util.Arrays;
-
+import fr.cnes.regards.modules.indexer.dao.EsHelper;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
+import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
+import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.data.util.Pair;
 
-import fr.cnes.regards.modules.indexer.dao.EsHelper;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
-import fr.cnes.regards.modules.indexer.domain.criterion.AndCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.OrCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
+import java.util.Arrays;
 
 /**
  * @author oroussel
@@ -92,7 +84,7 @@ public class GeoCriterionWithCircleVisitorTest {
     public void criterionWithCircleTest() {
         // Geo cricle visitor on Mars
         GeoCriterionWithCircleVisitor visitor = new GeoCriterionWithCircleVisitor(Crs.MARS_49900);
-        ICriterion criterion = ICriterion.and(ICriterion.in("toto", "text1", "text2"), ICriterion.eq("count", 25),
+        ICriterion criterion = ICriterion.and(ICriterion.in("toto", StringMatchType.KEYWORD, "text1", "text2"), ICriterion.eq("count", 25),
                                               ICriterion.or(ICriterion.ge("altitude", 2552.36), ICriterion
                                                       .intersectsCircle(new double[] { 45, 45 }, "50m")));
 

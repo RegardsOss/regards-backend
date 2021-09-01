@@ -1,62 +1,43 @@
 package fr.cnes.regards.modules.indexer.dao.builder;
 
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
-import fr.cnes.regards.modules.indexer.dao.deser.GsonDeserializeIIndexableStrategy;
-import fr.cnes.regards.modules.indexer.dao.deser.JsoniterDeserializeIIndexableStrategy;
-import org.elasticsearch.client.transport.NoNodeAvailableException;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
 import fr.cnes.regards.modules.indexer.dao.EsRepository;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.converter.LinkedHashMapToSort;
+import fr.cnes.regards.modules.indexer.dao.deser.JsoniterDeserializeIIndexableStrategy;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.facet.DateFacet;
-import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
-import fr.cnes.regards.modules.indexer.domain.facet.NumericFacet;
-import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import fr.cnes.regards.modules.indexer.domain.facet.*;
+import org.elasticsearch.client.transport.NoNodeAvailableException;
+import org.junit.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Ignore
 public class EsQueryTest {
@@ -228,7 +209,7 @@ public class EsQueryTest {
         for (int i = 0; i < 100; i++) {
             String id = Integer.toString(random.nextInt(BIG_VOLUME_SIZE));
             long start = System.currentTimeMillis();
-            Page<Item> page = repository.search(searchKey, 1, ICriterion.eq("docId", id));
+            Page<Item> page = repository.search(searchKey, 1, ICriterion.eq("docId", id, StringMatchType.KEYWORD));
             cumul += System.currentTimeMillis() - start;
             Assert.assertEquals(id, page.getContent().get(0).getDocId());
         }
@@ -437,19 +418,19 @@ public class EsQueryTest {
         Assert.assertEquals(1, repository.search(searchKey, 10, almostEqualsCrit).getContent().size());
 
         // On Strings
-        ICriterion mortCrit = ICriterion.eq("properties.text", "mort");
+        ICriterion mortCrit = ICriterion.eq("properties.text", "mort", StringMatchType.KEYWORD);
         Assert.assertEquals(2, repository.search(searchKey, 10, mortCrit).getContent().size());
 
-        ICriterion optionaltextWithoutBlanksCrit = ICriterion.in("properties.text", "Le", "petit", "chat", "est",
+        ICriterion optionaltextWithoutBlanksCrit = ICriterion.in("properties.text", StringMatchType.KEYWORD, "Le", "petit", "chat", "est",
                                                                  "mort", "de", "sa", "belle");
         Assert.assertEquals(9, repository.search(searchKey, 10, optionaltextWithoutBlanksCrit).getContent().size());
 
-        ICriterion optionaltextWithBlanksCrit = ICriterion.in("properties.text", "mort", "ou écrasé on sait pas trop");
+        ICriterion optionaltextWithBlanksCrit = ICriterion.in("properties.text", StringMatchType.KEYWORD, "mort", "ou écrasé on sait pas trop");
         Assert.assertEquals(3, repository.search(searchKey, 10, optionaltextWithBlanksCrit).getContent().size());
-        ICriterion startsWithCrit = ICriterion.startsWith("properties.text", "ou é");
+        ICriterion startsWithCrit = ICriterion.startsWith("properties.text", "ou é", StringMatchType.KEYWORD);
         Assert.assertEquals(1, repository.search(searchKey, 10, startsWithCrit).getContent().size());
 
-        ICriterion endsWithCrit = ICriterion.endsWith("properties.text", "t");
+        ICriterion endsWithCrit = ICriterion.endsWith("properties.text", "t", StringMatchType.KEYWORD);
         Assert.assertEquals(5, repository.search(searchKey, 10, endsWithCrit).getContent().size());
 
         // On Dates
@@ -466,7 +447,7 @@ public class EsQueryTest {
         Assert.assertEquals(3, repository.search(searchKey, 10, betweenDateCriterion).getContent().size());
 
         // On strings array
-        ICriterion containsStringCrit = ICriterion.contains("properties.tags", "dolor");
+        ICriterion containsStringCrit = ICriterion.contains("properties.tags", "dolor", StringMatchType.KEYWORD);
         Assert.assertEquals(6, repository.search(searchKey, 10, containsStringCrit).getContent().size());
         // On int array
         ICriterion containsIntCrit = ICriterion.contains("properties.ints", 3);
