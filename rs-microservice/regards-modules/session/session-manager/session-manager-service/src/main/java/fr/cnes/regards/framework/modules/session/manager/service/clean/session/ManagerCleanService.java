@@ -68,7 +68,7 @@ public class ManagerCleanService {
     @Value("${regards.session.manager.clean.session.limit.store:30}")
     private int limitStoreSessionSteps;
 
-    @Value("${regards.session.manager.clean.session.page:1000}")
+    @Value("${regards.session.manager.clean.session.page:100}")
     private int pageSize;
 
     /**
