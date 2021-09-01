@@ -53,6 +53,7 @@ public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
                 return new StringMatchAnyCriterion(
                         criterion.toString("name"),
                         criterion.as(StringMatchType.class, "matchType"),
+
                         List.ofAll(criterion.get(VALUE).asList()).map(Any::toString).toJavaArray(String[]::new)
                 );
             }
