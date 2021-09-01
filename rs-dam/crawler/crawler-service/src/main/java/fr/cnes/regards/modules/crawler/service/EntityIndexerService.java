@@ -38,11 +38,7 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
-import fr.cnes.regards.modules.crawler.service.consumer.DataObjectAssocRemover;
-import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocRemover;
-import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocUpdater;
-import fr.cnes.regards.modules.crawler.service.consumer.DataObjectUpdater;
-import fr.cnes.regards.modules.crawler.service.consumer.SaveDataObjectsCallable;
+import fr.cnes.regards.modules.crawler.service.consumer.*;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.session.SessionNotifier;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
@@ -64,35 +60,12 @@ import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
-import java.io.IOException;
-import java.text.ParseException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
@@ -116,6 +89,23 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.ObjectError;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -351,7 +341,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         sendDataSourceMessage(String.format("      Searching for all data objects tagging dataset IP_ID %s", ipId),
                               dsiId);
         AtomicInteger objectsCount = new AtomicInteger(0);
-        ICriterion taggingObjectsCrit = ICriterion.eq("tags", ipId);
+        ICriterion taggingObjectsCrit = ICriterion.eq("tags", ipId, StringMatchType.KEYWORD);
 
         Set<DataObject> toSaveObjects = new HashSet<>();
         OffsetDateTime updateDate = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
@@ -635,7 +625,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         // First : remove association between dataset and data objects for data objects that are no more associated to
         // new subsetting clause so search data objects that are tagged with dataset IPID and with NOT(user subsetting
         // clause)
-        ICriterion oldAssociatedObjectsCrit = ICriterion.and(ICriterion.eq("tags", dataset.getIpId().toString()),
+        ICriterion oldAssociatedObjectsCrit = ICriterion.and(ICriterion.eq("tags", dataset.getIpId().toString(), StringMatchType.KEYWORD),
                                                              ICriterion.not(dataset.getUserSubsettingClause()));
         // Create a Consumer to be executed on each data object of dataset subsetting criteria results
         DataObjectAssocRemover dataObjectAssocRemover = new DataObjectAssocRemover(dataset, updateDate, toSaveObjects,
@@ -675,8 +665,8 @@ public class EntityIndexerService implements IEntityIndexerService {
         sendDataSourceMessage(String.format("          Removing old data objects group <%s> association...", groupName),
                               dsiId);
         // First : Retrieve objects associated to given group and not matching the groupSubsettingClause
-        ICriterion oldAssociatedObjectsCrit = ICriterion.and(ICriterion.eq("tags", dataset.getIpId().toString()),
-                                                             ICriterion.contains("groups", groupName),
+        ICriterion oldAssociatedObjectsCrit = ICriterion.and(ICriterion.eq("tags", dataset.getIpId().toString(), StringMatchType.KEYWORD),
+                                                             ICriterion.contains("groups", groupName, StringMatchType.KEYWORD),
                                                              ICriterion.not(groupSubsettingClause));
         // For each objet remove group if not associated throught an other dataset
         DataObjectGroupAssocRemover dataObjectAssocRemover = new DataObjectGroupAssocRemover(dataset, updateDate,

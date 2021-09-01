@@ -1,32 +1,15 @@
 package fr.cnes.regards.modules.indexer.dao;
 
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMultiMatchCriterion;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -94,13 +77,12 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
             if (urn.isLast()) {
                 // this is a virtualId
                 // lets find the corresponding entity
-                AbstractEntity entity = esRepo.getByVirtualId(urn.getTenant(),
-                                                              urn.getEntityType().toString(),
-                                                              critValue,
-                                                              AbstractEntity.class);
+                AbstractEntity entity = esRepo
+                        .getByVirtualId(urn.getTenant(), urn.getEntityType().toString(), critValue,
+                                        AbstractEntity.class);
                 if (entity != null) {
-                    return ICriterion
-                            .or(ICriterion.eq(attName, critValue), ICriterion.eq(attName, entity.getIpId().toString()));
+                    return ICriterion.or(ICriterion.eq(attName, critValue, criterion.getMatchType()),
+                                         ICriterion.eq(attName, entity.getIpId().toString(), criterion.getMatchType()));
                 } else {
                     // we are looking for something that does not exists(anymore?) so we don't need to change the criterion
                     return criterion;
@@ -110,8 +92,9 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
                 AbstractEntity entity = esRepo
                         .get(urn.getTenant(), urn.getEntityType().toString(), critValue, AbstractEntity.class);
                 if (entity != null && entity.isLast()) {
-                    return ICriterion.or(ICriterion.eq(attName, entity.getVirtualId().toString()),
-                                         ICriterion.eq(attName, critValue));
+                    return ICriterion
+                            .or(ICriterion.eq(attName, entity.getVirtualId().toString(), criterion.getMatchType()),
+                                ICriterion.eq(attName, critValue, criterion.getMatchType()));
                 } else {
                     // we are looking for something that does not exists(anymore?) so we don't need to change the criterion
                     return criterion;
@@ -189,7 +172,7 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
                     }
                 }
                 // now that we have added values needed, just recreate the criterion
-                return ICriterion.in(attName, critValues.toArray(new String[0]));
+                return ICriterion.in(attName, criterion.getMatchType(), critValues.toArray(new String[0]));
             }
         } else {
             return criterion;

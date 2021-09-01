@@ -18,8 +18,18 @@
  */
 package fr.cnes.regards.modules.catalog.services.helper;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import fr.cnes.regards.modules.indexer.service.ISearchService;
+import fr.cnes.regards.modules.indexer.service.Searches;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.search.service.engine.SearchEngineDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,17 +38,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.service.ISearchService;
-import fr.cnes.regards.modules.indexer.service.Searches;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
-import fr.cnes.regards.modules.search.service.engine.SearchEngineDispatcher;
+import java.util.List;
 
 /**
  * Helper to handle catalog entities searches for all Catalogue service plugins.
@@ -58,12 +58,6 @@ public class ServiceHelper implements IServiceHelper {
     @Autowired
     private SearchEngineDispatcher dispatcher;
 
-    /**
-     * Constructor
-     * @param searchService
-     * @param openSearchService
-     * @param tenantResolver
-     */
     public ServiceHelper(ISearchService searchService, IRuntimeTenantResolver tenantResolver) {
         super();
         this.searchService = searchService;
@@ -75,7 +69,7 @@ public class ServiceHelper implements IServiceHelper {
         ICriterion[] idCrits = new ICriterion[entityIds.size()];
         int count = 0;
         for (String id : entityIds) {
-            idCrits[count] = ICriterion.eq("ipId", id);
+            idCrits[count] = ICriterion.eq("ipId", id, StringMatchType.KEYWORD);
             count++;
         }
         PageRequest pageReq = PageRequest.of(pageIndex, nbEntitiesByPage);

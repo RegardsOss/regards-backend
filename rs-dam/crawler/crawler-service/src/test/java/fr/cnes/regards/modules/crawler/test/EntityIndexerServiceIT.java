@@ -56,11 +56,7 @@ import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityFilter;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.*;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -73,16 +69,12 @@ import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -96,6 +88,12 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Test class.
@@ -349,7 +347,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                 .onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(TENANT);
         @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService
-                .search(searchKey, 100, ICriterion.contains("groups", "group1"));
+                .search(searchKey, 100, ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
         Assert.assertEquals(3, results.getTotalElements());
 
     }
@@ -369,7 +367,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService
                 .search(searchKey, 100, ICriterion.all());
         Assert.assertEquals(objects.size(), results.getTotalElements());
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group1"));
+        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
         Assert.assertEquals(0, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -381,7 +379,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar = rightsService.createAccessRight(ar);
         // All data should be only in group1
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group1"));
+        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -394,8 +392,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // All data should be only in group1 and group2
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.contains("groups", "group1"),
-                                                      ICriterion.contains("groups", "group2")));
+                                       ICriterion.and(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD),
+                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD)));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -407,8 +405,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // All data should be only in group2
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1")),
-                                                      ICriterion.contains("groups", "group2")));
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD)),
+                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD)));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -425,15 +423,15 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // All data should be in group2 and only one (DO1) in group3
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1")),
-                                                      ICriterion.contains("groups", "group2"),
-                                                      ICriterion.contains("groups", "group3")));
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD)),
+                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD),
+                                                      ICriterion.contains("groups", "group3", StringMatchType.KEYWORD)));
         Assert.assertEquals(1, results.getTotalElements());
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1")),
-                                                      ICriterion.contains("groups", "group2"),
-                                                      ICriterion.not(ICriterion.contains("groups", "group3"))));
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD)),
+                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD),
+                                                      ICriterion.not(ICriterion.contains("groups", "group3", StringMatchType.KEYWORD))));
         Assert.assertEquals(objects.size() - 1, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -446,12 +444,12 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // All data should be in group2 and only one (DO1) in group3
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1")),
-                                                      ICriterion.contains("groups", "group2"),
-                                                      ICriterion.not(ICriterion.contains("groups", "group3"))));
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD)),
+                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD),
+                                                      ICriterion.not(ICriterion.contains("groups", "group3", StringMatchType.KEYWORD))));
         Assert.assertEquals(objects.size(), results.getTotalElements());
         // No data should be in group3 as "unkown" label is not a valid label of existing objects
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3"));
+        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
         Assert.assertEquals(0, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -462,7 +460,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         dataAccessPlugin = pluginService.updatePluginConfiguration(dataAccessPlugin);
         pluginService.cleanPluginCache();
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3"));
+        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
         Assert.assertEquals(1, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -477,14 +475,14 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar4.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
         ar4 = rightsService.createAccessRight(ar4);
         indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), OffsetDateTime.now(), false);
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group4"));
+        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group4", StringMatchType.KEYWORD));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.contains("groups", "group4"),
-                                                      ICriterion.contains("groups", "group3"),
-                                                      ICriterion.contains("groups", "group2")));
+                                       ICriterion.and(ICriterion.contains("groups", "group4", StringMatchType.KEYWORD),
+                                                      ICriterion.contains("groups", "group3", StringMatchType.KEYWORD),
+                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD)));
         Assert.assertEquals(1, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -493,7 +491,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar3.setAccessLevel(AccessLevel.NO_ACCESS);
         ar3 = rightsService.updateAccessRight(ar3.getId(), ar3);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3"));
+        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
         Assert.assertEquals(0, results.getTotalElements());
 
     }
@@ -511,9 +509,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(TENANT);
         Page<AbstractEntity> fromIpId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", dataset.getIpId().toString()));
+                .search(searchKey, 100, ICriterion.contains("tags", dataset.getIpId().toString(), StringMatchType.KEYWORD));
         Page<AbstractEntity> fromVirtualId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", dataset.getVirtualId().toString()));
+                .search(searchKey, 100, ICriterion.contains("tags", dataset.getVirtualId().toString(), StringMatchType.KEYWORD));
         Assert.assertEquals(fromIpId.getSize(), fromVirtualId.getSize());
         Assert.assertTrue("results from ipId search should contains all results from virtualId search",
                           fromIpId.getContent().containsAll(fromVirtualId.getContent()));
@@ -532,11 +530,11 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                          Lists.newArrayList(taggedWithLatest),
                                          "");
         Page<AbstractEntity> taggedWithVirtualId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString()));
+                .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString(), StringMatchType.KEYWORD));
         Assert.assertTrue("we should have the object we just created and tagged",
                           taggedWithVirtualId.getContent().contains(taggedWithLatest));
         taggedWithVirtualId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", taggingWith.getIpId().toString()));
+                .search(searchKey, 100, ICriterion.contains("tags", taggingWith.getIpId().toString(), StringMatchType.KEYWORD));
         Assert.assertTrue("we should have the object we just created and tagged with virtualId by looking for ipId",
                           taggedWithVirtualId.getContent().contains(taggedWithLatest));
 
@@ -600,7 +598,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                 "");
 
         Page<AbstractEntity> taggedWithVirtualId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString()));
+                .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString(), StringMatchType.KEYWORD));
 
         DataObject dataObject = (DataObject) taggedWithVirtualId.getContent().get(0);
 

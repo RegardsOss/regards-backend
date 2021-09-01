@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.legacy;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkRelation;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.RepresentationModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
-
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -40,17 +26,23 @@ import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
-import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
-import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
-import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import fr.cnes.regards.modules.search.domain.plugin.*;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Legacy search engine for compatibility with legacy system
@@ -128,7 +120,7 @@ public class LegacySearchEngine implements
         if (context.getDatasetUrn().isPresent()) {
             criterion = ICriterion
                     .and(criterion,
-                         ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH, context.getDatasetUrn().get().toString()));
+                         ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH, context.getDatasetUrn().get().toString(), StringMatchType.KEYWORD));
         }
         return criterion;
     }

@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities.criterion;
 
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 
 /**
  * Search criterion builder from an {@link AttributeModel}.<br/>
@@ -114,12 +115,12 @@ public interface IFeatureCriterion extends ICriterion {
      * Criterion to test if a parameter is exactly the provided text or if a String array parameter contains an element
      * which is exactly the provided text
      * @param att {@link AttributeModel}
-     * @param attName String or String array attribute
      * @param text provided text
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion eq(AttributeModel att, String text) {
-        return ICriterion.eq(att.getFullJsonPath(), text);
+    static ICriterion eq(AttributeModel att, String text, StringMatchType matchType) {
+        return ICriterion.eq(att.getFullJsonPath(), text, matchType);
     }
 
     /**
@@ -137,22 +138,23 @@ public interface IFeatureCriterion extends ICriterion {
      * that starts with the provided text
      * @param att {@link AttributeModel}
      * @param text provided text
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion startsWith(AttributeModel att, String text) {
-        return ICriterion.startsWith(att.getFullJsonPath(), text);
+    static ICriterion startsWith(AttributeModel att, String text, StringMatchType matchType) {
+        return ICriterion.startsWith(att.getFullJsonPath(), text, matchType);
     }
 
     /**
      * Criterion to test if a parameter ends with the provided text or if a String array parameter contains an element
      * that ends with the provided text
      * @param att {@link AttributeModel}
-     * @param attName String or String array attribute
      * @param text provided text
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion endsWith(AttributeModel att, String text) {
-        return ICriterion.endsWith(att.getFullJsonPath(), text);
+    static ICriterion endsWith(AttributeModel att, String text, StringMatchType matchType) {
+        return ICriterion.endsWith(att.getFullJsonPath(), text, matchType);
     }
 
     /**
@@ -160,10 +162,11 @@ public interface IFeatureCriterion extends ICriterion {
      * that contains the provided text
      * @param att {@link AttributeModel}
      * @param text provided text
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion contains(AttributeModel att, String text) {
-        return ICriterion.contains(att.getFullJsonPath(), text);
+    static ICriterion contains(AttributeModel att, String text, StringMatchType matchType) {
+        return ICriterion.contains(att.getFullJsonPath(), text, matchType);
     }
 
 
@@ -172,10 +175,11 @@ public interface IFeatureCriterion extends ICriterion {
      * element which follows given regular expression
      * @param att {@link AttributeModel}
      * @param text provided regular expression
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion regexp(AttributeModel att, String text) {
-        return ICriterion.regexp(att.getFullJsonPath(), text);
+    static ICriterion regexp(AttributeModel att, String text, StringMatchType matchType) {
+        return ICriterion.regexp(att.getFullJsonPath(), text, matchType);
     }
 
     /**
@@ -223,11 +227,12 @@ public interface IFeatureCriterion extends ICriterion {
     /**
      * Criterion to test if a string parameter has one of the provided values
      * @param att {@link AttributeModel}
+     * @param matchType string matching behavior
      * @param texts text array to test
      * @return criterion
      */
-    static ICriterion in(AttributeModel att, String... texts) {
-        return ICriterion.in(att.getFullJsonPath(), texts);
+    static ICriterion in(AttributeModel att, StringMatchType matchType, String... texts) {
+        return ICriterion.in(att.getFullJsonPath(), matchType, texts);
     }
 
     /**

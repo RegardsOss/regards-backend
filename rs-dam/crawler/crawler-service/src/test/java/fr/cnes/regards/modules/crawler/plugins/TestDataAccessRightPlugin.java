@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.IDataObjectAccessFilterPlugin;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 
 @Plugin(id = "TestDataAccessRightPlugin", version = "4.0.0-SNAPSHOT", description = "test", author = "REGARDS Team",
         contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
@@ -34,7 +35,7 @@ public class TestDataAccessRightPlugin implements IDataObjectAccessFilterPlugin 
 
     @Override
     public ICriterion getSearchFilter() {
-        return ICriterion.eq("feature.label", this.label);
+        return ICriterion.eq("feature.label", this.label, StringMatchType.KEYWORD);
     }
 
     @Override

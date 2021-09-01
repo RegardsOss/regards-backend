@@ -18,24 +18,6 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -56,6 +38,24 @@ import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceExceptio
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle {@link DatasourceIngestion}
@@ -243,7 +243,7 @@ public class DatasourceIngestionService {
         threadPoolExecutor.submit(() -> {
             try {
                 LOGGER.info("Removing all data objects associated to data source {}...", dataSourceId);
-                long deletedCount = esRepos.deleteByQuery(tenant, ICriterion.eq("dataSourceId", dataSourceId));
+                long deletedCount = esRepos.deleteByQuery(tenant, ICriterion.eq("dataSourceId", dataSourceId, StringMatchType.KEYWORD));
                 LOGGER.info("...{} data objects removed.", deletedCount);
             } catch (RsRuntimeException e) {
                 LOGGER.error("...Cannot remove data objects associated to data source", e);

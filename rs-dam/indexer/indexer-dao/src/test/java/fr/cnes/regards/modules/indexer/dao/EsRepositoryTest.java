@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.model.domain.Model;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
@@ -601,7 +602,7 @@ public class EsRepositoryTest {
         repository.refresh(itemsIndexName);
 
 //        ICriterion all = ICriterion.all();
-        ICriterion all = ICriterion.contains("groups", "group1");
+        ICriterion all = ICriterion.contains("groups", "group1", StringMatchType.KEYWORD);
         SearchKey<Item, Item> searchKey = new SearchKey<>(TYPE, Item.class);
         searchKey.setSearchIndex(itemsIndexName);
         Aggregations aggregations = repository.getAggregations(searchKey, all, (Collection<QueryableAttribute>) qas.values());
@@ -661,7 +662,7 @@ public class EsRepositoryTest {
         qas.put("nwPoint", new QueryableAttribute("nwPoint", null,
                 false, 10, false, true));
 
-        ICriterion all = ICriterion.contains("tags", "group1");
+        ICriterion all = ICriterion.contains("tags", "group1", StringMatchType.KEYWORD);
         repository.refresh(itemsTenant);
         Assert.assertTrue(repository.indexExists(itemsTenant));
 

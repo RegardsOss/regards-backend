@@ -54,10 +54,7 @@ import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.IMapping;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
 import fr.cnes.regards.modules.indexer.domain.facet.*;
 import fr.cnes.regards.modules.indexer.domain.reminder.SearchAfterReminder;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
@@ -65,7 +62,6 @@ import fr.cnes.regards.modules.indexer.domain.spatial.ILocalizable;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
-import io.vavr.control.Try;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -401,13 +397,13 @@ public class EsRepository implements IEsRepository {
             case 0:
                 return criterion;
             case 1:
-                return ICriterion.and(ICriterion.eq("type", types[0]), criterion);
+                return ICriterion
+                        .and(ICriterion.eq("type", types[0], StringMatchType.KEYWORD), criterion);
             default:
-                ICriterion orCrit = ICriterion
-                        .or(Arrays.stream(types).map(type -> ICriterion.eq("type", type)).toArray(ICriterion[]::new));
+                ICriterion orCrit = ICriterion.or(Arrays.stream(types).map(type -> ICriterion
+                        .eq("type", type, StringMatchType.KEYWORD)).toArray(ICriterion[]::new));
                 return ICriterion.and(orCrit, criterion);
         }
-
     }
 
     /**
@@ -857,7 +853,8 @@ public class EsRepository implements IEsRepository {
         // use search0
         SimpleSearchKey<T> searchKey = new SimpleSearchKey(docType, clazz);
         searchKey.setSearchIndex(tenant);
-        ICriterion virtualIdCrit = ICriterion.eq("feature.virtualId", virtualId);
+        ICriterion virtualIdCrit = ICriterion
+                .eq("feature.virtualId", virtualId, StringMatchType.KEYWORD);
         return search0(searchKey, PageRequest.of(0, 1), virtualIdCrit, null).getContent().get(0);
     }
 

@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
+import fr.cnes.regards.framework.gson.annotation.Gsonable;
+import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+
 import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-
-import fr.cnes.regards.framework.gson.annotation.Gsonable;
-import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 
 /**
  * Search criterion
@@ -180,10 +179,11 @@ public interface ICriterion {
      * which is exactly the provided text
      * @param attName String or String array attribute
      * @param text provided text
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion eq(String attName, String text) {
-        return new StringMatchCriterion(attName, MatchType.EQUALS, text);
+    static ICriterion eq(String attName, String text, StringMatchType matchType) {
+        return new StringMatchCriterion(attName, MatchType.EQUALS, text, matchType);
     }
 
     /**
@@ -201,10 +201,11 @@ public interface ICriterion {
      * that starts with the provided text
      * @param attName String or String array attribute
      * @param text provided text
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion startsWith(String attName, String text) {
-        return new StringMatchCriterion(attName, MatchType.STARTS_WITH, text);
+    static ICriterion startsWith(String attName, String text, StringMatchType matchType) {
+        return new StringMatchCriterion(attName, MatchType.STARTS_WITH, text, matchType);
     }
 
     /**
@@ -212,10 +213,11 @@ public interface ICriterion {
      * that ends with the provided text
      * @param attName String or String array attribute
      * @param text provided text
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion endsWith(String attName, String text) {
-        return new StringMatchCriterion(attName, MatchType.ENDS_WITH, text);
+    static ICriterion endsWith(String attName, String text, StringMatchType matchType) {
+        return new StringMatchCriterion(attName, MatchType.ENDS_WITH, text, matchType);
     }
 
     /**
@@ -225,8 +227,8 @@ public interface ICriterion {
      * @param text provided text
      * @return criterion
      */
-    static ICriterion contains(String attName, String text) {
-        return new StringMatchCriterion(attName, MatchType.CONTAINS, text);
+    static ICriterion contains(String attName, String text, StringMatchType matchType) {
+        return new StringMatchCriterion(attName, MatchType.CONTAINS, text, matchType);
     }
 
     /**
@@ -234,10 +236,11 @@ public interface ICriterion {
      * element which follows given regular expression
      * @param attName String or String array attribute
      * @param regexp provided regular expression
+     * @param matchType string matching behavior
      * @return criterion
      */
-    static ICriterion regexp(String attName, String regexp) {
-        return new StringMatchCriterion(attName, MatchType.REGEXP, regexp);
+    static ICriterion regexp(String attName, String regexp, StringMatchType matchType) {
+        return new StringMatchCriterion(attName, MatchType.REGEXP, regexp, matchType);
     }
 
     /**
@@ -285,19 +288,20 @@ public interface ICriterion {
     /**
      * Criterion to test if a string parameter has one of the provided values
      * @param attName attribute name
+     * @param matchType string matching behavior
      * @param texts text array to test
      * @return criterion
      */
-    static ICriterion in(String attName, String... texts) {
+    static ICriterion in(String attName, StringMatchType matchType, String... texts) {
         if (texts.length == 0) {
             return new NotCriterion(all());
         }
         // If one of the texts contains a blank character, StringMatchAnyCriterion cannot be used due to ES limitations
         if (Stream.of(texts).anyMatch(str -> str.contains(" "))) {
             return new OrCriterion(
-                    Stream.of(texts).map(str -> ICriterion.eq(attName, str)).collect(Collectors.toList()));
+                    Stream.of(texts).map(str -> ICriterion.eq(attName, str, matchType)).collect(Collectors.toList()));
         }
-        return new StringMatchAnyCriterion(attName, texts);
+        return new StringMatchAnyCriterion(attName, matchType, texts);
     }
 
     /**
@@ -486,11 +490,7 @@ public interface ICriterion {
     }
 
     /**
-     * Criterion to test the intersaction with a boundary box
-     * @param left
-     * @param bottom
-     * @param right
-     * @param top
+     * Criterion to test the intersection with a boundary box
      * @return  {@link ICriterion}
      */
     static ICriterion intersectsBbox(double left, double bottom, double right, double top) {

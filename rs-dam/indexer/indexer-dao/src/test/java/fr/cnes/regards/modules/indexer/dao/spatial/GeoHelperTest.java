@@ -20,24 +20,14 @@ package fr.cnes.regards.modules.indexer.dao.spatial;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.framework.geojson.geometry.*;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.spring.SpringContext;
 import fr.cnes.regards.modules.indexer.dao.EsHelper;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -50,6 +40,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -172,14 +170,14 @@ public class GeoHelperTest {
 
     @Test
     public void containsGeoCriterionTest() {
-        ICriterion criterion = ICriterion.and(ICriterion.in("toto", "text1", "text2"), ICriterion.eq("count", 25),
+        ICriterion criterion = ICriterion.and(ICriterion.in("toto", StringMatchType.KEYWORD, "text1", "text2"), ICriterion.eq("count", 25),
                                               ICriterion.or(ICriterion.ge("altitude", 2552.36), ICriterion
                                                       .intersectsCircle(new double[] { 45, 45 }, "50m")));
 
         Assert.assertTrue(GeoHelper.containsCircleCriterion(criterion));
         Assert.assertFalse(GeoHelper.containsPolygonOrBboxCriterion(criterion));
 
-        criterion = ICriterion.and(ICriterion.in("toto", "text1", "text2"), ICriterion.eq("count", 25), ICriterion
+        criterion = ICriterion.and(ICriterion.in("toto", StringMatchType.KEYWORD, "text1", "text2"), ICriterion.eq("count", 25), ICriterion
                 .or(ICriterion.ge("altitude", 2552.36), ICriterion.intersectsPolygon(new double[][][] {})));
 
         Assert.assertTrue(GeoHelper.containsPolygonOrBboxCriterion(criterion));

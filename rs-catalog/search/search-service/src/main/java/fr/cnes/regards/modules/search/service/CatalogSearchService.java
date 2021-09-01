@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
@@ -308,7 +309,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             // the user access rights group)
             // page size to max value because datasets count isn't too large...
             ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream()
-                    .map(group -> ICriterion.contains("groups", group))
+                    .map(group -> ICriterion.contains("groups", group, StringMatchType.KEYWORD))
                     .collect(Collectors.toSet()));
             Page<Dataset> page = searchService.search(Searches.onSingleEntity(EntityType.DATASET),
                                                       ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
@@ -354,9 +355,9 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Add partialText contains criterion if not empty
             if (!Strings.isNullOrEmpty(partialText)) {
                 if (attModel != null) {
-                    criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText));
+                    criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText, StringMatchType.KEYWORD));
                 } else {
-                    criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText));
+                    criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText, StringMatchType.KEYWORD));
                 }
             }
             return searchService.searchUniqueTopValues(searchKey, criterion, attributePath, maxCount);
@@ -396,7 +397,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
         AbstractEntity<?> abstractEntity = get(urn);
         //We look for collection's dataobjects by urn in tags
-        ICriterion tags = ICriterion.contains("tags", urn.toString());
+        ICriterion tags = ICriterion.contains("tags", urn.toString(), StringMatchType.KEYWORD);
         List<Aggregation> aggregations = retrievePropertiesStats(tags, searchType, attributes);
         return new CollectionWithStats(abstractEntity, aggregations);
     }
