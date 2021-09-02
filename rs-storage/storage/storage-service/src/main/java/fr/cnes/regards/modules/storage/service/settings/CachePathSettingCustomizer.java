@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.service.settings;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,14 +38,22 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
         return valueIsValid && defaultValueIsValid;
     }
 
-    private boolean isValidPath(Path settingValue) {
+    private boolean isValidPath(Path path) {
         boolean isValid = false;
-        if(settingValue != null) {
+        if (path != null) {
+            // Check that the given path is available.
             try {
-                Files.createDirectories(settingValue);
-                isValid=true;
+                Files.createDirectories(path);
+                // In case pathFile does not represents a directory, Files#createDirectories will throw an exception that is already relayed to the user
+                // So lets just handle rights issues (in case the directory already existed)
+                if (Files.isReadable(path) && Files.isWritable(path)) {
+                    isValid = true;
+                } else {
+                    LOGGER.error("Tenant cache path {} cannot be used by the application because of rights! "
+                                         + "Ensure execution user can read and write in the directory.", path);
+                }
             } catch (IOException e) {
-                LOGGER.error(String.format("Tenant cache path %s is invalid!", settingValue), e);
+                LOGGER.error(String.format("Tenant cache path %s is invalid!", path), e);
             }
         }
         return isValid;
