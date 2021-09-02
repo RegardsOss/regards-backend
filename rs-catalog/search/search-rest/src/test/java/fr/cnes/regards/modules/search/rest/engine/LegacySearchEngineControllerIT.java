@@ -18,8 +18,14 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import java.util.List;
-
+import com.jayway.jsonpath.JsonPath;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,13 +38,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.jayway.jsonpath.JsonPath;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import java.util.List;
 
 /**
  * Search engine tests
@@ -127,6 +127,16 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
         addCommontMatchers(customizer);
         customizer.addParameter(SEARCH_TERMS_QUERY, STAR + ":" + SUN);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchCollectionsWithShortNameAndInFullTextSearch() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        addCommontMatchers(customizer);
+        customizer.addParameter(SEARCH_TERMS_QUERY, fullTextMatching(STAR) + ":" + SUN.toLowerCase());
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -357,5 +367,14 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
      */
     private void addFullTextSearchQuery(RequestBuilderCustomizer customizer, String value) {
         customizer.addParameter(SEARCH_TERMS_QUERY, value);
+    }
+
+    private String fullTextMatching(String property) {
+        return property + IFeatureCriterion.STRING_MATCH_TYPE_SEPARATOR + StringMatchType.FULL_TEXT_SEARCH
+                .getMatchTypeValue();
+    }
+
+    private String keywordMatching(String property) {
+        return property + IFeatureCriterion.STRING_MATCH_TYPE_SEPARATOR + StringMatchType.KEYWORD.getMatchTypeValue();
     }
 }
