@@ -44,6 +44,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Propagation;
 
 /**
  * Service to clean old {@link SessionStep} and {@link Session}.
@@ -88,22 +89,13 @@ public class ManagerCleanService {
         int nbSessions = 0;
         Pageable page = PageRequest.of(0, pageSize, Sort.by("id"));
         Page<Session> sessionPage;
-        Map<String, Source> sourceMap = new HashMap<>();
 
         // find all sessions to be deleted and update the source information (they are related to the sessions)
         do {
-            // find a list of sessions outdated
-            sessionPage = this.sessionRepo.findByLastUpdateDateBefore(startClean, page);
-            List<Session> sessionList = sessionPage.getContent();
-            // update source aggregation information due to session removal
-            updateSource(sourceMap, sessionList);
-            // delete expired sessions
-            this.sessionRepo.deleteInBatch(sessionPage);
-            nbSessions += sessionList.size();
+            sessionPage = processOnePage(startClean, page);
+            nbSessions += sessionPage.getNumberOfElements();
         } while (!interrupted && sessionPage.hasNext());
 
-        // save all changes on sources
-        this.sourceRepo.saveAll(sourceMap.values());
         // delete source not associated to any sessions
         this.sourceRepo.deleteByNbSessions(0L);
         // delete expired session steps
@@ -116,21 +108,33 @@ public class ManagerCleanService {
         return nbSessions;
     }
 
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    public Page<Session> processOnePage(OffsetDateTime startClean, Pageable page) {
+        // Find a list of sessions outdated
+        Page<Session> sessionPage = this.sessionRepo.findByLastUpdateDateBefore(startClean, page);
+        // Update source aggregation information due to session removal
+        Map<String, Source> updatedSourcesMap = updateSources(sessionPage.getContent());
+        // Delete expired sessions
+        this.sessionRepo.deleteInBatch(sessionPage);
+        // Save all changes on sources
+        this.sourceRepo.saveAll(updatedSourcesMap.values());
+        return sessionPage;
+    }
+
     /**
      * Update source information due to the session removals
-     * @param sourceMap map of sourceName - source
      * @param sessionList list of sessions related to a source
      */
-    private void updateSource(Map<String, Source> sourceMap, List<Session> sessionList) {
-        // create a map to handle sessions by source
-        Map<String, List<Session>> sessionBySource = sessionList.stream()
+    private Map<String, Source> updateSources(List<Session> sessionList) {
+        Map<String, Source> updatedSourcesMap = new HashMap<>();
+        Map<String, List<Session>> sessionsRetrievedBySource = sessionList.stream()
                 .collect(Collectors.groupingBy(Session::getSource));
 
         // iterate on all sessions of the source
-        for (Map.Entry<String, List<Session>> entry : sessionBySource.entrySet()) {
+        for (Map.Entry<String, List<Session>> entry : sessionsRetrievedBySource.entrySet()) {
             String sourceName = entry.getKey();
             // retrieve the source from the database
-            Source source = sourceMap
+            Source source = updatedSourcesMap
                     .computeIfAbsent(sourceName, value -> this.sourceRepo.findByName(sourceName).orElse(null));
             // if a source was found, update its related information
             if (source != null) {
@@ -144,9 +148,10 @@ public class ManagerCleanService {
                 // update source with the updated parameters
                 updateSourceAgg(source, deltaByType);
                 // put updated source in map
-                sourceMap.put(sourceName, source);
+                updatedSourcesMap.put(sourceName, source);
             }
         }
+        return updatedSourcesMap;
     }
 
     /**

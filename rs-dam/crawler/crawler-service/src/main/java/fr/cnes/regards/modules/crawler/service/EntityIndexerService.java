@@ -777,6 +777,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         do {
             pageSessionStep = this.sessionStepRepository.findBy(pageToRequest);
             sessionNotifier.notifyGlobalIndexDeletion(pageSessionStep.getContent());
+            pageToRequest = pageSessionStep.nextPageable();
         } while (pageSessionStep.hasNext());
         //2. Then re-create all entities
         createIndexIfNeeded(tenant);
