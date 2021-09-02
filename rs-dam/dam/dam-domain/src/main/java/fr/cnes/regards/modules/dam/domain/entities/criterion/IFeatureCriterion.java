@@ -21,9 +21,14 @@ package fr.cnes.regards.modules.dam.domain.entities.criterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.util.Pair;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -34,6 +39,13 @@ import java.util.Set;
  *
  */
 public interface IFeatureCriterion extends ICriterion {
+
+    Logger LOGGER = LoggerFactory.getLogger(IFeatureCriterion.class);
+
+    /**
+     * Separator to detect and parse string matching behavior
+     */
+    String STRING_MATCH_TYPE_SEPARATOR = "@";
 
     static <T extends Number & Comparable<T>> ICriterion gt(AttributeModel att, T value) {
         return ICriterion.gt(att.getFullJsonPath(), value);
@@ -400,5 +412,46 @@ public interface IFeatureCriterion extends ICriterion {
         Set<String> attNames = new HashSet<>();
         atts.forEach(att -> attNames.add(att.getFullJsonPath()));
         return ICriterion.multiMatchStartWith(attNames, text);
+    }
+
+    /**
+     * Method to parse string field ant its matching behavior when search field is build as follow :
+     * {field_name}+{@link #STRING_MATCH_TYPE_SEPARATOR}+{matchTypeValue}
+     * <br/>
+     * <br/>
+     *
+     *
+     * If field contains {@link #STRING_MATCH_TYPE_SEPARATOR},
+     * retrieve real field name and extract string matching behavior.<br/>
+     * If not, just return field parameter as is!<br/>
+     * Parsing must be done before finding related attribute to get the real attribute name to find.
+     *
+     * @param field field to parse
+     * @return Pair representing real field name and its string matching behavior (only representative for strings)
+     */
+    static Pair<String, StringMatchType> parse(String field) {
+        if (field.contains(STRING_MATCH_TYPE_SEPARATOR)) {
+            String[] fieldParts = field.split(STRING_MATCH_TYPE_SEPARATOR);
+            StringMatchType matchType;
+
+            Optional<StringMatchType> stringMatchType = parseStringMatchType(fieldParts[1]);
+            if (stringMatchType.isPresent()) {
+                matchType = stringMatchType.get();
+            } else {
+                // Default behavior
+                matchType = StringMatchType.KEYWORD;
+                LOGGER.warn(
+                        "Cannot detect string matching behavior with field {} and behavior {}. Falling back to {}!",
+                        field, fieldParts[1], matchType);
+            }
+            return Pair.of(fieldParts[0], matchType);
+        }
+        // Default behavior
+        return Pair.of(field, StringMatchType.KEYWORD);
+    }
+
+    static Optional<StringMatchType> parseStringMatchType(String matchTypeValue) {
+        return Arrays.stream(StringMatchType.values())
+                .filter(t -> t.getMatchTypeValue().equalsIgnoreCase(matchTypeValue)).findFirst();
     }
 }
