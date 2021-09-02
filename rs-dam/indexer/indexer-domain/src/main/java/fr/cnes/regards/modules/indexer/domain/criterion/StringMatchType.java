@@ -26,8 +26,22 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
  * @author Marc SORDI
  */
 public enum StringMatchType {
+    
     // String matching relies on text type index (look at elastic standard analyser) : tokenized text, case insensitive
-    FULL_TEXT_SEARCH,
+    FULL_TEXT_SEARCH("text"),
     // String matching relies on keyword type index : whole text, case sensitive
-    KEYWORD
+    KEYWORD("keyword");
+
+    /**
+     * This value is used to detect and extract string match type per field from input query parameters
+     */
+    private final String matchTypeValue;
+
+    StringMatchType(String matchTypeValue) {
+        this.matchTypeValue = matchTypeValue;
+    }
+
+    public String getMatchTypeValue() {
+        return matchTypeValue;
+    }
 }

@@ -74,7 +74,7 @@ public class RegexpQueryNodeBuilder implements ICriterionQueryBuilder {
         }
 
         // Detect string matching behavior before finding related attribute to get real attribute name
-        Pair<String, StringMatchType> fieldAndMatchType = parse(field);
+        Pair<String, StringMatchType> fieldAndMatchType = IFeatureCriterion.parse(field);
 
         AttributeModel attributeModel;
         try {
