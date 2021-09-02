@@ -35,33 +35,6 @@ import org.springframework.data.util.Pair;
 @FunctionalInterface
 public interface ICriterionQueryBuilder extends QueryBuilder {
 
-    Logger LOGGER = LoggerFactory.getLogger(ICriterionQueryBuilder.class);
-
     @Override
     ICriterion build(QueryNode pQueryNode) throws QueryNodeException;
-
-    /**
-     * If field contains {@link QueryParser#STRING_MATCH_TYPE_SEPARATOR},
-     * retrieve real field name and extract string matching behavior.<br/>
-     * If not, just return field parameter as is!<br/>
-     * Parsing must be done before finding related attribute to get the real attribute name to find.
-     */
-    default Pair<String, StringMatchType> parse(String field) {
-        if (field.contains(QueryParser.STRING_MATCH_TYPE_SEPARATOR)) {
-            String[] fieldParts = field.split(QueryParser.STRING_MATCH_TYPE_SEPARATOR);
-            StringMatchType matchType;
-            try {
-                matchType = StringMatchType.valueOf(fieldParts[1]);
-            } catch (Exception ex) {
-                // Default behavior
-                matchType = StringMatchType.KEYWORD;
-                LOGGER.warn(
-                        "Criterion builder cannot detect string matching behavior with field {} and behavior {}. Falling back to {}!",
-                        field, fieldParts[1], matchType);
-            }
-            return Pair.of(fieldParts[0], matchType);
-        }
-        // Default behavior
-        return Pair.of(field, StringMatchType.KEYWORD);
-    }
 }
