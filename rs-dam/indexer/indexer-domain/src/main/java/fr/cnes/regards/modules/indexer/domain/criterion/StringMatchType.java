@@ -19,6 +19,10 @@
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
 /**
+ *
+ * Programmatic string matching behavior<br/>
+ * Only client knows how to match string values.
+ *
  * For String type fields, Elasticsearch is configured with two Lucene indexes:
  * - Full text search CASE INSENSITIVE index
  * - Keyword search CASE SENSITIVE index (field suffixed with .keyword according to our elastic field mapping)
