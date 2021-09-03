@@ -46,13 +46,13 @@ public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
                         criterion.toString("name"),
                         criterion.as(MatchType.class, "type"),
                         criterion.toString(VALUE),
-                        criterion.as(StringMatchType.class, "caseSensitive")
+                        criterion.as(StringMatchType.class, "matchType")
                 );
             }
             else if (critType.equals(StringMatchAnyCriterion.class)) {
                 return new StringMatchAnyCriterion(
                         criterion.toString("name"),
-                        criterion.as(StringMatchType.class, "caseSensitive"),
+                        criterion.as(StringMatchType.class, "matchType"),
                         List.ofAll(criterion.get(VALUE).asList()).map(Any::toString).toJavaArray(String[]::new)
                 );
             }
