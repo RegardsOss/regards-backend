@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.dao;
 
-/**
- * @author Iliana Ghazali
- **/
-
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
@@ -38,7 +34,6 @@ import org.springframework.stereotype.Repository;
  *
  * @author Iliana Ghazali
  **/
-
 @Repository
 public interface IStepPropertyUpdateRequestRepository extends JpaRepository<StepPropertyUpdateRequest, Long> {
 
@@ -52,7 +47,7 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
 
     long countBySourceAndRegistrationDateBefore(String source, OffsetDateTime lastUpdate);
 
-    List<StepPropertyUpdateRequest> findBySessionStepIn(List<SessionStep> content);
+    void deleteBySessionStepIn(List<SessionStep> sessionSteps);
 
     List<StepPropertyUpdateRequest> findBySession(String session);
 

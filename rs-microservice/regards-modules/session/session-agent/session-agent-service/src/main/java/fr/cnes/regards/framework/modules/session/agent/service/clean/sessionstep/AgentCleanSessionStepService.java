@@ -33,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Propagation;
 
 /**
  * Service to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
@@ -54,7 +55,7 @@ public class AgentCleanSessionStepService {
     @Value("${regards.session.agent.clean.session.step.limit.store:30}")
     private int limitStoreSessionSteps;
 
-    @Value("${regards.session.agent.clean.session.step.page:1000}")
+    @Value("${regards.session.agent.clean.session.step.page:100}")
     private int pageSize;
 
     public int clean() {
@@ -66,13 +67,7 @@ public class AgentCleanSessionStepService {
         Pageable page = PageRequest.of(0, pageSize, Sort.by("lastUpdateDate"));
         Page<SessionStep> sessionStepsToDelete;
         do {
-            // Get all session steps to delete older than startClean
-            sessionStepsToDelete = sessionStepRepo.findByLastUpdateDateBefore(startClean, page);
-            // Delete all related StepPropertyUpdateRequests
-            this.stepPropertyRepo
-                    .deleteInBatch(stepPropertyRepo.findBySessionStepIn(sessionStepsToDelete.getContent()));
-            // Delete SessionSteps
-            this.sessionStepRepo.deleteInBatch(sessionStepsToDelete);
+            sessionStepsToDelete = deleteOnePage(startClean, page);
             nbSessionStepsDeleted += sessionStepsToDelete.getNumberOfElements();
         } while (!interrupted && sessionStepsToDelete.hasNext());
 
@@ -81,5 +76,16 @@ public class AgentCleanSessionStepService {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
         }
         return nbSessionStepsDeleted;
+    }
+
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    public Page<SessionStep> deleteOnePage(OffsetDateTime startClean, Pageable page) {
+        // Get all session steps to delete older than startClean
+        Page<SessionStep> sessionStepsToDelete = sessionStepRepo.findByLastUpdateDateBefore(startClean, page);
+        // Delete all related StepPropertyUpdateRequests
+        stepPropertyRepo.deleteBySessionStepIn(sessionStepsToDelete.getContent());
+        // Delete SessionSteps
+        this.sessionStepRepo.deleteInBatch(sessionStepsToDelete.getContent());
+        return sessionStepsToDelete;
     }
 }
