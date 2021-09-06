@@ -3,6 +3,8 @@ package fr.cnes.regards.modules.storage.service.settings;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
@@ -14,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
@@ -27,6 +32,8 @@ import fr.cnes.regards.modules.storage.domain.StorageSetting;
 @Service
 @RegardsTransactional
 public class StorageSettingService extends AbstractSettingService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageSettingService.class);
 
     @Autowired
     private ITenantResolver tenantsResolver;
@@ -60,23 +67,25 @@ public class StorageSettingService extends AbstractSettingService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) throws EntityException {
         for (String tenant : tenantsResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            try {
-                self.init();
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
+            initialize(tenant);
         }
     }
 
-    @EventListener
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void onTenantConnectionReady(TenantConnectionReady event) throws EntityException {
-        runtimeTenantResolver.forceTenant(event.getTenant());
+    private void initialize(String tenant)
+            throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+        runtimeTenantResolver.forceTenant(tenant);
+        LOGGER.info("Initializing dynamic tenant settings for tenant {}", tenant);
         try {
             self.init();
         } finally {
             runtimeTenantResolver.clearTenant();
         }
+        LOGGER.info("Dynamic tenant settings initialization done for tenant {}", tenant);
+    }
+
+    @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void onTenantConnectionReady(TenantConnectionReady event) throws EntityException {
+        initialize(event.getTenant());
     }
 }
