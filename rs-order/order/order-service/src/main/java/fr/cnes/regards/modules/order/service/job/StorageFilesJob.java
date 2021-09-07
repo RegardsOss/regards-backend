@@ -201,9 +201,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
             }
             alreadyHandledFiles.add(checksum);
         } else {
-            for (OrderDataFile df : dataFiles) {
-                logger.debug("File {} - {} is now in error.", df.getFilename(), df.getChecksum());
-                df.setState(FileState.ERROR);
+            for (OrderDataFile dataFile : dataFiles) {
+                logger.debug("File {} - {} is now in error.", dataFile.getFilename(), dataFile.getChecksum());
+                dataFile.setState(FileState.ERROR);
             }
             alreadyHandledFiles.add(checksum);
         }
@@ -215,18 +215,18 @@ public class StorageFilesJob extends AbstractJob<Void> {
         Set<String> availableFilesOrderedByThisJob = new HashSet<>(checksumsAvailable);
         availableFilesOrderedByThisJob.retainAll(dataFilesMultimap.keySet());
         availableFilesOrderedByThisJob.removeAll(alreadyHandledFiles);
-        List<OrderDataFile> orderDataFilesHandled = new ArrayList<>(availableFilesOrderedByThisJob.size());
+        List<OrderDataFile> handledOrderDataFiles = new ArrayList<>(availableFilesOrderedByThisJob.size());
         for (String available: availableFilesOrderedByThisJob) {
             Collection<OrderDataFile> dataFiles = dataFilesMultimap.get(available);
             for (OrderDataFile df : dataFiles) {
                 logger.debug("File {} - {} is now in state: {}.", df.getFilename(), df.getChecksum(), fileState);
                 df.setState(fileState);
-                orderDataFilesHandled.add(df);
+                handledOrderDataFiles.add(df);
             }
             alreadyHandledFiles.add(available);
             this.advanceCompletion();
             this.semaphore.release();
         }
-        orderDataFileRepository.saveAll(orderDataFilesHandled);
+        orderDataFileRepository.saveAll(handledOrderDataFiles);
     }
 }

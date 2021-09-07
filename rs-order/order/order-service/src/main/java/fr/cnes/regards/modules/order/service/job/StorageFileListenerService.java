@@ -41,14 +41,14 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
 
     @Override
     public void onFileAvailable(List<FileReferenceEventDTO> available) {
-        Set<String> checksumsAvailable = available.stream().map(FileReferenceEventDTO::getChecksum).collect(Collectors.toSet());
-        subscribers.forEach(subscriber -> subscriber.changeFilesState(checksumsAvailable, FileState.AVAILABLE));
+        Set<String> availableChecksums = available.stream().map(FileReferenceEventDTO::getChecksum).collect(Collectors.toSet());
+        subscribers.forEach(subscriber -> subscriber.changeFilesState(availableChecksums, FileState.AVAILABLE));
     }
 
     @Override
     public void onFileNotAvailable(List<FileReferenceEventDTO> availabilityError) {
-        Set<String> checksumsInError = availabilityError.stream().map(FileReferenceEventDTO::getChecksum).collect(Collectors.toSet());
-        subscribers.forEach(subscriber -> subscriber.changeFilesState(checksumsInError, FileState.ERROR));
+        Set<String> inErrorChecksum = availabilityError.stream().map(FileReferenceEventDTO::getChecksum).collect(Collectors.toSet());
+        subscribers.forEach(subscriber -> subscriber.changeFilesState(inErrorChecksum, FileState.ERROR));
     }
 
     @Override
