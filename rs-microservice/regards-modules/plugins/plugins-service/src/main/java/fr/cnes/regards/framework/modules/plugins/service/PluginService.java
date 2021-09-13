@@ -71,6 +71,8 @@ public class PluginService implements IPluginService {
 
     private static final String PLUGIN_BUSINESS_ID_REQUIRED_MSG = "Plugin configuration business identifier is required";
 
+    public static final String ERROR_WHILE_GETTING_THE_PLUGIN_CONFIGURATION = "Error while getting the plugin configuration {}.";
+
     /**
      * {@link PluginConfiguration} JPA Repository
      */
@@ -279,7 +281,7 @@ public class PluginService implements IPluginService {
         if (plgConf.isPresent()) {
             return getPluginConfiguration(plgConf.get().getBusinessId());
         } else {
-            LOGGER.error("Error while getting the plugin configuration {}.", id);
+            LOGGER.error(ERROR_WHILE_GETTING_THE_PLUGIN_CONFIGURATION, id);
             throw new EntityNotFoundException(id, PluginConfiguration.class);
         }
     }
@@ -289,7 +291,7 @@ public class PluginService implements IPluginService {
     public PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException {
         PluginConfiguration plgConf = repos.findCompleteByBusinessId(businessId);
         if (plgConf == null) {
-            LOGGER.error("Error while getting the plugin configuration {}.", businessId);
+            LOGGER.error(ERROR_WHILE_GETTING_THE_PLUGIN_CONFIGURATION, businessId);
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
         PluginMetaData meta = PluginUtils.getPlugins().get(plgConf.getPluginId());
@@ -329,7 +331,7 @@ public class PluginService implements IPluginService {
         final PluginConfiguration oldConf = repos.findCompleteByBusinessId(pluginConf.getBusinessId());
         if (oldConf == null) {
             LOGGER.error("Error while updating the plugin configuration {}.", pluginConf.getId());
-            throw new EntityNotFoundException(pluginConf.getId().toString(), PluginConfiguration.class);
+            throw new EntityNotFoundException(pluginConf.getLabel(), PluginConfiguration.class);
         }
         // Retrieve id
         pluginConf.setId(oldConf.getId());
@@ -428,7 +430,6 @@ public class PluginService implements IPluginService {
     }
 
     /**
-     * @param businessId
      * @return list of dependent plugin configuration
      */
     private Set<PluginConfiguration> getDependentPlugins(String businessId) {
@@ -516,7 +517,7 @@ public class PluginService implements IPluginService {
      * We consider only plugin without dynamic parameters so we can profit from the cache system.
      * @return whether a plugin conf, without dynamic parameters is instanciable or not
      * @throws ModuleException when no plugin configuration with this business id exists
-     * @throws NotAvailablePluginConfigurationException
+     * @throws NotAvailablePluginConfigurationException as per {@link #getPlugin(String, IPluginParam...)}
      */
     @Override
     public boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException {
@@ -537,7 +538,7 @@ public class PluginService implements IPluginService {
         if (plgConf.isPresent()) {
             return getPlugin(plgConf.get().getBusinessId(), dynamicPluginParameters);
         } else {
-            LOGGER.error("Error while getting the plugin configuration {}.", id);
+            LOGGER.error(ERROR_WHILE_GETTING_THE_PLUGIN_CONFIGURATION, id);
             throw new EntityNotFoundException(id, PluginConfiguration.class);
         }
     }

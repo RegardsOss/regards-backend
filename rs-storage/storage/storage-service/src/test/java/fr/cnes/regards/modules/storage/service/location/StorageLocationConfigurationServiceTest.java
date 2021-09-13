@@ -34,8 +34,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -46,6 +48,7 @@ import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
+import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
 
 /**
@@ -112,22 +115,46 @@ public class StorageLocationConfigurationServiceTest extends AbstractMultitenant
         Assert.assertEquals(0L, updated.getAllocatedSizeInKo().longValue());
     }
 
-    private PluginConfiguration getPluginConf(String label) throws IOException, URISyntaxException {
+    @Test(expected = EntityInvalidException.class)
+    public void testUpdateWithNewPluginType() throws ModuleException, IOException, URISyntaxException {
+        String name = "updateConf";
+        StorageLocationConfiguration pds = createStorageLocationConf(name);
+        pds.setPluginConfiguration(getNearlineOnlinePluginConf(pds.getName(), pds.getPluginConfiguration().getBusinessId()));
+        storageLocationConfService.update(name, pds);
+    }
+
+    private PluginConfiguration getNearlineOnlinePluginConf(String label, String businessId) throws IOException, URISyntaxException {
         URL baseStorageLocation = new URL("file", "", Paths.get(targetPath).toFile().getAbsolutePath());
 
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                         baseStorageLocation.toString()),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
                      IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(label, parameters, 0, dataStoMeta.getPluginId());
+        pluginConfiguration.setBusinessId(businessId);
+        return pluginConfiguration;
+    }
+
+    private PluginConfiguration getSimpleOnlinePluginConf(String label) throws IOException, URISyntaxException {
+        URL baseStorageLocation = new URL("file", "", Paths.get(targetPath).toFile().getAbsolutePath());
+
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
+        Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                        baseStorageLocation.toString()),
+                     IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
+                     IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN, "restErr.*"),
+                     IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
         return new PluginConfiguration(label, parameters, 0, dataStoMeta.getPluginId());
     }
 
     private StorageLocationConfiguration createStorageLocationConf(String name)
             throws IOException, URISyntaxException, ModuleException {
-        PluginConfiguration dataStorageConf = getPluginConf(name);
+        PluginConfiguration dataStorageConf = getSimpleOnlinePluginConf(name);
         return storageLocationConfService.create(name, dataStorageConf, 1_000_000L);
     }
 }
