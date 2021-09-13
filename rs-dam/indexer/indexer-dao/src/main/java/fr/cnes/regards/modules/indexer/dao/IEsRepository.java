@@ -27,9 +27,7 @@ import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.springframework.data.domain.Page;
@@ -369,32 +367,21 @@ public interface IEsRepository {
     }
 
     /**
-     * Same as {@link #search(SearchKey, ICriterion, String, Function)} without transformation
+     * Used only for testing purposes
+     * Search objects in cache based on criterion
      * @return all results (ordered is garanteed to be always the same)
      */
     <T> List<T> search(SearchKey<?, T> searchKey, ICriterion crit, String pSourceAttribute);
 
     /**
-     * Same as {@link #search(SearchKey, ICriterion, String, Predicate, Function, Map)} without intermediate filtering and with no facets
+     * Search objects with criteria retrieved from other objects.
+     * First, input objects are retrieved from the cache, then objects requested with matching criteria are retrieved
+     * from the ES repository.
      */
-    <T, U> List<U> search(SearchKey<?, T> searchKey, ICriterion crit, String pSourceAttribute,
-            Function<T, U> transformFct);
-
-    /**
-     * Searching first page of elements from index giving page size and facet map. The results are reduced to given inner property that's why no sorting can be done.
-     * @param searchKey the search key specifying on which index and type the search must be applied and the class of return objects type
-     * @param criterion search criterion
-     * @param sourceAttribute if the search is on a document but the result should be an inner property of the results documents
-     *                        @param filterPredicate predicate to be applied on result to filter further the results
-     *                        @param transformFct transform function to apply on all results
-     *                        @param facetsMap facets on the inner type wanted
-     * @param <T> class of inner sourceAttribute
-     * @param <U> result class of transform function
-     * @return all results (ordered is guaranteed to be always the same) and facets (order not guaranteed)
-     */
-    <T, U> Tuple<List<U>, Set<IFacet<?>>> search(SearchKey<?, T[]> searchKey, ICriterion criterion,
-            String sourceAttribute, Predicate<T> filterPredicate, Function<T, U> transformFct,
-            Map<String, FacetType> facetsMap);
+    <R, T extends IIndexable> FacetPage<T> search(SearchKey<?, R[]> inputSearchKey,
+            ICriterion inputSearchCriterion, String inputSourceAttribute, Predicate<R> inputFilterPredicate,
+            Function<Set<R>, Page<T>> toAskEntityFct, Predicate<T> outputFilterPredicate,
+            Map<String, FacetType> facetsMap, Pageable pageable);
 
     /**
      * Count result

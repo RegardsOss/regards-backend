@@ -109,8 +109,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void searchAll() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        // Should be 2 for the legacy request on planet type
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(11)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(14)));
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -205,8 +204,8 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                 .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID, null, OffsetDateTime.now(),
                                          Lists.newArrayList(astroObjects.get(JUPITER).getIpId().toString())));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        // Should be 9 for the legacy all request (-1) for excluded id of jupiter
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(10)));
+        // Should be 14 for the legacy all request (-1) for excluded id of jupiter
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(13)));
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -214,8 +213,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void computeDatasetSummary() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        // Should be 2 for the legacy request on planet type
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.documentsCount", Matchers.equalTo(11)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.documentsCount", Matchers.equalTo(14)));
         customizer.expect(MockMvcResultMatchers.jsonPath("$.filesCount", Matchers.equalTo(1)));
         customizer.expect(MockMvcResultMatchers.jsonPath("$.filesSize", Matchers.equalTo(10)));
         performDefaultPost(ComplexSearchController.TYPE_MAPPING + ComplexSearchController.SUMMARY_MAPPING, request,

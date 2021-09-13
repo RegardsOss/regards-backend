@@ -28,24 +28,32 @@ import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
-import fr.cnes.regards.modules.indexer.domain.*;
+import fr.cnes.regards.modules.indexer.domain.IDocFiles;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
+import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import org.elasticsearch.common.collect.Tuple;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
 public class SearchService implements ISearchService {
@@ -106,29 +114,32 @@ public class SearchService implements ISearchService {
         SearchKey<S, String[]> tagSearchKey = new SearchKey<>(searchKey.getSearchTypeMap(), String[].class);
         addProjectInfos(tagSearchKey);
         // Predicate to filter each tag : it must be a valid URN and this URN must concern wanted result type
-        Predicate<String> askedTypePredicate = tag -> OaisUniformResourceName.isValidUrn(tag) && (Searches.TYPE_MAP
-                .get(OaisUniformResourceName.fromString(tag).getEntityType()) == searchKey.getResultClass());
-        // Function to get Entity from its ipId (URN) (from Elasticsearch)
-        Function<String, T> toAskedEntityFct = tag -> repository
-                .get(searchKey.getSearchIndex(), Searches.TYPE_MAP.inverse().get(searchKey.getResultClass()).toString(),
-                     tag, searchKey.getResultClass());
-        Tuple<List<T>, Set<IFacet<?>>> objectsNFacets = repository
-                .search(tagSearchKey, criterion, "tags", askedTypePredicate, toAskedEntityFct, facetsMap);
-        List<T> objects = objectsNFacets.v1();
-        if (searchResultFilter != null) {
-            objects = objects.stream().filter(searchResultFilter).collect(Collectors.toList());
-        }
-        int total = objects.size();
-        if (!objects.isEmpty()) {
-            objects = objects
-                    .subList((int) pageRequest.getOffset(),
-                             (int) Math.min(pageRequest.getOffset() + pageRequest.getPageSize(), objects.size()));
-        }
-        return new FacetPage<>(objects, objectsNFacets.v2(), pageRequest, total);
+        Predicate<String> askedTypePredicate = tag -> OaisUniformResourceName.isValidUrn(tag) && (
+                Searches.TYPE_MAP.get(OaisUniformResourceName.fromString(tag).getEntityType()) == searchKey
+                        .getResultClass());
+        // Create a new search key to search elements based on the result class of the joinedSearchKey
+        SearchKey<T, T> outputSearchKey = new SearchKey<>(Collections.singletonMap(
+                Searches.TYPE_MAP.inverse().get(searchKey.getResultClass()).toString(), searchKey.getResultClass()));
+        addProjectInfos(searchKey);
+        outputSearchKey.setSearchIndex(searchKey.getSearchIndex());
+        // Retrieve objects with matching URN from ES Repository
+        Function<Set<String>, Page<T>> toAskEntityFct = inputObjects -> repository.search(outputSearchKey, pageRequest,
+                                                                                          ICriterion
+                                                                                                  .in(StaticProperties.IP_ID,
+                                                                                                      StringMatchType.KEYWORD,
+                                                                                                      inputObjects
+                                                                                                              .stream()
+                                                                                                              .map(String.class::cast)
+                                                                                                              .toArray(
+                                                                                                                      String[]::new)));
+        return repository
+                .search(tagSearchKey, criterion, StaticProperties.FEATURE_TAGS, askedTypePredicate, toAskEntityFct,
+                        searchResultFilter, facetsMap, pageRequest);
     }
 
     @Override
-    public <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object value,
+    public <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest,
+            Object value,
             String... fields) {
         addProjectInfos(searchKey);
         return repository.multiFieldsSearch(searchKey, pageRequest, value, fields);

@@ -18,37 +18,12 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import java.net.URI;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
-import org.apache.commons.collections4.map.HashedMap;
-import org.assertj.core.util.Lists;
-import org.junit.Before;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.util.MimeType;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import com.google.common.collect.Sets;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -88,6 +63,31 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Parameter
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.commons.collections4.map.HashedMap;
+import org.assertj.core.util.Lists;
+import org.junit.Before;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.util.MimeType;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Engine common methods
@@ -114,11 +114,23 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected static final String SUN = "Sun";
 
     // Star system properties
-    protected static final String STAR_SYSTEM = "startSystem";
+    protected static final String STAR_SYSTEM = "starSystem";
 
-    protected static final String SOLAR_SYSTEM = "Solar system";
+    protected static final String NUMBER_OF_PLANETS = "numberOfPlanets";
+
+    protected static final String SOLAR_SYSTEM = "Solar planetary system";
 
     protected static final String KEPLER_90 = "Kepler 90 planetary system";
+
+    protected static final String KEPLER_16 = "Kepler 16 planetary system";
+
+    protected static final String PEGASI_51 = "Pegasi 51 planetary system";
+
+    protected static final String STUDY_DATE = "studyDate";
+
+    protected static final String RESEARCH_LAB = "researchLab";
+
+    protected static final String DISTANCE_TO_SOLAR_SYSTEM = "distanceToSolarSystem";
 
     // Planet properties
     protected static final String PLANET = "planet";
@@ -308,17 +320,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         finder.refresh(getDefaultTenant());
 
         // Create data
-        indexerService.saveBulkEntities(getDefaultTenant(), createGalaxies(galaxyModel));
-        indexerService.saveBulkEntities(getDefaultTenant(), createStars(starModel));
-
-        solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
-        indexerService.saveEntity(getDefaultTenant(), solarSystem);
-        indexerService.saveBulkEntities(getDefaultTenant(), createPlanets(planetModel, solarSystem.getIpId()));
-
-        Dataset kepler90System = createStelarSystem(starSystemModel, KEPLER_90);
-        indexerService.saveEntity(getDefaultTenant(), kepler90System);
-        DataObject kepler90b = createPlanet(planetModel, "Kepler 90b", PLANET_TYPE_TELLURIC, 1000, 50_000_000L);
-        indexerService.saveEntity(getDefaultTenant(), kepler90b);
+        createData(galaxyModel, starModel, starSystemModel, planetModel);
 
         // Add test datas
         indexerService.saveBulkEntities(getDefaultTenant(), createTestData(testModel));
@@ -327,6 +329,51 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         indexerService.refresh(getDefaultTenant());
 
         initPlugins();
+    }
+
+    private void createData(Model galaxyModel, Model starModel, Model starSystemModel, Model planetModel) {
+        indexerService.saveBulkEntities(getDefaultTenant(), createGalaxies(galaxyModel));
+        indexerService.saveBulkEntities(getDefaultTenant(), createStars(starModel));
+
+        // SOLAR SYSTEM
+        solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
+        List<DataObject> solarPlanets = createSolarSystemPlanets(planetModel, solarSystem.getIpId());
+        solarSystem.addProperty(IProperty.buildDate(STUDY_DATE, OffsetDateTime
+                .of(LocalDate.of(2020, 1, 1), LocalTime.of(0, 0, 0, 0), ZoneOffset.UTC)));
+        solarSystem.addProperty(IProperty.buildInteger(NUMBER_OF_PLANETS, solarPlanets.size()));
+        solarSystem.addProperty(IProperty.buildUrl(RESEARCH_LAB, "https://esa.int"));
+        solarSystem.addProperty(IProperty.buildDouble(DISTANCE_TO_SOLAR_SYSTEM, 0.0));
+        indexerService.saveEntity(getDefaultTenant(), solarSystem);
+        indexerService.saveBulkEntities(getDefaultTenant(), solarPlanets);
+
+        // KEPLER 90 SYSTEM
+        Dataset kepler90System = createStelarSystem(starSystemModel, KEPLER_90);
+        List<DataObject> kepler90Planets = createKepler90SystemPlanets(planetModel, kepler90System.getIpId());
+        kepler90System.addProperty(IProperty.buildDate(STUDY_DATE, OffsetDateTime
+                .of(LocalDate.of(2019, 1, 1), LocalTime.of(0, 0, 0, 0), ZoneOffset.UTC)));
+        kepler90System.addProperty(IProperty.buildInteger(NUMBER_OF_PLANETS, kepler90Planets.size()));
+        kepler90System.addProperty(IProperty.buildUrl(RESEARCH_LAB, "https://roscosmos.ru"));
+        kepler90System.addProperty(IProperty.buildDouble(DISTANCE_TO_SOLAR_SYSTEM, 2.544));
+        indexerService.saveEntity(getDefaultTenant(), kepler90System);
+        indexerService.saveBulkEntities(getDefaultTenant(), kepler90Planets);
+
+        // KEPLER 16 SYSTEM
+        Dataset kepler16System = createStelarSystem(starSystemModel, KEPLER_16);
+        List<DataObject> kepler16Planets = createKepler16SystemPlanets(planetModel, kepler16System.getIpId());
+        kepler16System.addProperty(IProperty.buildInteger(NUMBER_OF_PLANETS, kepler16Planets.size()));
+        kepler16System.addProperty(IProperty.buildUrl(RESEARCH_LAB, "https://cnes.fr"));
+        kepler16System.addProperty(IProperty.buildDouble(DISTANCE_TO_SOLAR_SYSTEM, 200.0));
+        indexerService.saveEntity(getDefaultTenant(), kepler16System);
+        indexerService.saveBulkEntities(getDefaultTenant(), kepler16Planets);
+
+        // PEGASI 51 SYSTEM
+        Dataset pegasi51System = createStelarSystem(starSystemModel, PEGASI_51);
+        List<DataObject> pegasi51Planets = createPegasi51SystemPlanets(planetModel, pegasi51System.getIpId());
+        pegasi51System.addProperty(IProperty.buildInteger(NUMBER_OF_PLANETS, kepler16Planets.size()));
+        pegasi51System.addProperty(IProperty.buildUrl(RESEARCH_LAB, "https://cnes.fr"));
+        pegasi51System.addProperty(IProperty.buildDouble(DISTANCE_TO_SOLAR_SYSTEM, 50.91));
+        indexerService.saveEntity(getDefaultTenant(), pegasi51System);
+        indexerService.saveBulkEntities(getDefaultTenant(), pegasi51Planets);
     }
 
     protected void initPlugins() throws ModuleException {
@@ -343,7 +390,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planetParameter.setAttributeModelJsonPath("properties.planet");
         planetParameter.setName("planet");
         planetParameter.setOptionsEnabled(true);
-        planetParameter.setOptionsCardinality(10);
+        planetParameter.setOptionsCardinality(12);
         paramConfigurations.add(planetParameter);
 
         ParameterConfiguration startTimeParameter = new ParameterConfiguration();
@@ -423,10 +470,11 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         solarSystem.addTags("REGARDS");
         solarSystem.addTags("CNES");
         solarSystem.addTags("CS-SI");
+        solarSystem.addTags(label);
         return solarSystem;
     }
 
-    protected List<DataObject> createPlanets(Model planetModel, UniformResourceName dataset) {
+    protected List<DataObject> createSolarSystemPlanets(Model planetModel, UniformResourceName dataset) {
         // Create planets
         List<DataObject> planets = new ArrayList<>();
         planets.add(createMercury(planetModel));
@@ -439,6 +487,34 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planets.add(createPlanet(planetModel, "Saturn", PLANET_TYPE_GAS_GIANT, 120_536, 1_427_000_000L));
         planets.add(createPlanet(planetModel, "Uranus", PLANET_TYPE_ICE_GIANT, 51_800, 2_800_000_000L));
         planets.add(createPlanet(planetModel, "Neptune", PLANET_TYPE_ICE_GIANT, 49_500, 4_489_435_980L));
+        // Attach planets to dataset
+        planets.forEach(planet -> planet.addTags(dataset.toString()));
+        return planets;
+    }
+
+    protected List<DataObject> createKepler90SystemPlanets(Model planetModel, UniformResourceName dataset) {
+        // Create planets
+        List<DataObject> planets = new ArrayList<>();
+        planets.add(createPlanet(planetModel, "Kepler 90b", PLANET_TYPE_TELLURIC, 1000, 50_000_000L));
+        planets.add(createPlanet(planetModel, "Kepler 90c", PLANET_TYPE_TELLURIC, 30000, 150_000_000L));
+        // Attach planets to dataset
+        planets.forEach(planet -> planet.addTags(dataset.toString()));
+        return planets;
+    }
+
+    protected List<DataObject> createKepler16SystemPlanets(Model planetModel, UniformResourceName dataset) {
+        // Create planets
+        List<DataObject> planets = new ArrayList<>();
+        planets.add(createPlanet(planetModel, "Kepler 16b", PLANET_TYPE_GAS_GIANT, 105000, 150_000_000L));
+        // Attach planets to dataset
+        planets.forEach(planet -> planet.addTags(dataset.toString()));
+        return planets;
+    }
+
+    protected List<DataObject> createPegasi51SystemPlanets(Model planetModel, UniformResourceName dataset) {
+        // Create planets
+        List<DataObject> planets = new ArrayList<>();
+        planets.add(createPlanet(planetModel, "Pegasi b", PLANET_TYPE_GAS_GIANT, 8000000, 7_000_000L));
         // Attach planets to dataset
         planets.forEach(planet -> planet.addTags(dataset.toString()));
         return planets;
@@ -549,8 +625,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return new HashSet<>(Arrays.asList(params));
     }
 
-    protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long sunDistance) {
-        return createPlanet(planetModel, name, type, diameter, sunDistance, null);
+    protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long localSunDistance) {
+        return createPlanet(planetModel, name, type, diameter, localSunDistance, null);
     }
 
     /**

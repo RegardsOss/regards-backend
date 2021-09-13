@@ -1,11 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
+	   xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
 	<name>DATASET_ENGINE</name>
 	<type>DATASET</type>
 	<attribute>
-		<label>Start system name</label>
-		<name>startSystem</name>
+		<label>Star system name</label>
+		<name>starSystem</name>
 		<type>STRING</type>
+	</attribute>
+	<attribute>
+		<label>Number of planets</label>
+		<name>numberOfPlanets</name>
+		<type>INTEGER</type>
+	</attribute>
+	<attribute>
+		<label>Distance to solar system (Light year)</label>
+		<name>distanceToSolarSystem</name>
+		<type>DOUBLE</type>
+	</attribute>
+	<attribute>
+		<label>Beggining of the study</label>
+		<name>studyDate</name>
+		<type>DATE_ISO8601</type>
+	</attribute>
+	<attribute>
+		<label>Associated laboratory</label>
+		<name>researchLab</name>
+		<type>URL</type>
 	</attribute>
 </model>

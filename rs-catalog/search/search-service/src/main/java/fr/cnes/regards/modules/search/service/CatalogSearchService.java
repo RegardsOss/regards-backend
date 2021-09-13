@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
+import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
@@ -136,12 +137,6 @@ public class CatalogSearchService implements ICatalogSearchService {
         try {
             SearchKey<?, ?> searchKey = inSearchKey;
 
-            // Retrieve current user access groups. Null means superuser with all rights
-            final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
-
-            // Apply security filter
-            criterion = accessRightFilter.addAccessRights(criterion);
-
             // Build search facets from query facets
             Map<String, String> reverseFacetNames = new HashMap<>();
             Map<String, FacetType> searchFacets = facetConverter.convert(facets, reverseFacetNames);
@@ -151,10 +146,15 @@ public class CatalogSearchService implements ICatalogSearchService {
             // JoinEntitySearchKey<?, Dataset> without any criterion on searchType => just directly search
             // datasets (ie SimpleSearchKey<DataSet>)
             // This is correct because all
-            if ((criterion == null) && (searchKey instanceof JoinEntitySearchKey)
+            if ((criterion == null || criterion instanceof EmptyCriterion) && (searchKey instanceof JoinEntitySearchKey)
                     && (TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)) {
                 searchKey = Searches.onSingleEntity(Searches.fromClass(searchKey.getResultClass()));
             }
+
+            // Apply security filters before performing a search to limit the results that can be seen by the user
+            // Retrieve current user access groups. Null means superuser with all rights
+            final Set<String> accessGroups = accessRightFilter.getUserAccessGroups();
+            criterion = accessRightFilter.addAccessRights(criterion);
 
             // Perform search
             FacetPage<R> facetPage;

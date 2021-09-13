@@ -21,11 +21,13 @@ package fr.cnes.regards.modules.search.rest.engine;
 import com.jayway.jsonpath.JsonPath;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,13 +40,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.List;
-
 /**
  * Search engine tests
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
         properties = { "regards.tenant=legacy", "spring.jpa.properties.hibernate.default_schema=legacy" })
@@ -167,6 +166,101 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    @Purpose("Test if the sorting is properly done on datasets returned by the ES search when there is no search "
+            + "criteria")
+    public void searchDataobjectsReturnDatasetsWithoutSearchCriterion() {
+        // Sort on STRING
+        RequestBuilderCustomizer customizerOnString1 = customizer().expectStatusOk();
+        customizerOnString1.addParameter("page", "0");
+        customizerOnString1.addParameter("size", "2");
+        customizerOnString1.addParameter("sort", String.format("%s,DESC", StaticProperties.FEATURE_LABEL));
+        addCommontMatchers(customizerOnString1);
+        customizerOnString1.expectValue("$.content[0].content.providerId", SOLAR_SYSTEM);
+        customizerOnString1.expectValue("$.content[1].content.providerId", PEGASI_51);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
+                          customizerOnString1, "Search all error", ENGINE_TYPE);
+        RequestBuilderCustomizer customizerOnString2 = customizer().expectStatusOk();
+        customizerOnString2.addParameter("page", "1");
+        customizerOnString2.addParameter("size", "2");
+        customizerOnString2.addParameter("sort", String.format("%s,DESC", StaticProperties.FEATURE_LABEL));
+        addCommontMatchers(customizerOnString2);
+        customizerOnString2.expectValue("$.content[0].content.providerId", KEPLER_90);
+        customizerOnString2.expectValue("$.content[1].content.providerId", KEPLER_16);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
+                          customizerOnString2, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    @Purpose("Test if the sorting is properly done on datasets returned by the ES search when there is search criteria")
+    public void searchDataobjectsReturnDatasetsWithSearchCriterion() {
+       // Sort on DATE
+        RequestBuilderCustomizer customizerOnDate = customizer().expectStatusOk();
+        customizerOnDate.addParameter(SEARCH_TERMS_QUERY, String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)));
+        customizerOnDate.addParameter("page", "0");
+        customizerOnDate.addParameter("sort", String.format("properties.%s,DESC", STUDY_DATE));
+        customizerOnDate.addParameter("sort", String.format("%s,ASC", StaticProperties.FEATURE_LABEL));
+        addCommontMatchers(customizerOnDate);
+        customizerOnDate.expectValue("$.content[0].content.providerId", SOLAR_SYSTEM);
+        customizerOnDate.expectValue("$.content[1].content.providerId", KEPLER_16);
+        customizerOnDate.expectValue("$.content[2].content.providerId", PEGASI_51);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
+                          customizerOnDate, "Search all error", ENGINE_TYPE);
+
+        // Sort on INT
+        RequestBuilderCustomizer customizerOnInt = customizer().expectStatusOk();
+        customizerOnInt.addParameter(SEARCH_TERMS_QUERY, String.format("%s:[35000 TO *]", PLANET_DIAMETER));
+        customizerOnInt.addParameter("page", "0");
+        customizerOnInt.addParameter("sort", String.format("properties.%s,ASC", NUMBER_OF_PLANETS));
+        customizerOnInt.addParameter("sort", String.format("properties.%s,ASC", RESEARCH_LAB));
+        customizerOnInt.addParameter("sort", String.format("%s,ASC", StaticProperties.FEATURE_LABEL));
+        addCommontMatchers(customizerOnInt);
+        customizerOnInt.expectValue("$.content[0].content.providerId", KEPLER_16);
+        customizerOnInt.expectValue("$.content[1].content.providerId", PEGASI_51);
+        customizerOnInt.expectValue("$.content[2].content.providerId", SOLAR_SYSTEM);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
+                          customizerOnInt, "Search all error", ENGINE_TYPE);
+
+        // Sort on DOUBLE
+        RequestBuilderCustomizer customizerOnDouble1 = customizer().expectStatusOk();
+        customizerOnDouble1.addParameter(SEARCH_TERMS_QUERY, String.format("%s:[* TO 50000]", PLANET_DIAMETER));
+        customizerOnDouble1.addParameter("page", "0");
+        customizerOnDouble1.addParameter("size", "2");
+        customizerOnDouble1.addParameter("sort", String.format("properties.%s,DESC", DISTANCE_TO_SOLAR_SYSTEM));
+        addCommontMatchers(customizerOnDouble1);
+        customizerOnDouble1.expectValue("$.content[0].content.providerId", KEPLER_90);
+        customizerOnDouble1.expectValue("$.content[1].content.providerId", SOLAR_SYSTEM);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
+                          customizerOnDouble1, "Search all error", ENGINE_TYPE);
+
+        // Sort on URL with two pages
+        RequestBuilderCustomizer customizerOnUrl1 = customizer().expectStatusOk();
+        customizerOnUrl1.addParameter(SEARCH_TERMS_QUERY, String.format("%s:%d",StaticProperties.FEATURE_VERSION, 1));
+        customizerOnUrl1.addParameter("page", "0");
+        customizerOnUrl1.addParameter("size", "2");
+        customizerOnUrl1.addParameter("sort", String.format("properties.%s,DESC", RESEARCH_LAB));
+        customizerOnUrl1.addParameter("sort", String.format("%s,DESC", StaticProperties.FEATURE_LABEL));
+        addCommontMatchers(customizerOnUrl1);
+        customizerOnUrl1.expectValue("$.content[0].content.providerId", KEPLER_90);
+        customizerOnUrl1.expectValue("$.content[1].content.providerId", SOLAR_SYSTEM);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
+                          customizerOnUrl1, "Search all error", ENGINE_TYPE);
+
+        RequestBuilderCustomizer customizerOnUrl2 = customizer().expectStatusOk();
+        customizerOnUrl2.addParameter(SEARCH_TERMS_QUERY, String.format("%s:%d",StaticProperties.FEATURE_VERSION, 1));
+        customizerOnUrl2.addParameter("page", "1");
+        customizerOnUrl2.addParameter("size", "2");
+        customizerOnUrl2.addParameter("sort", String.format("properties.%s,DESC", RESEARCH_LAB));
+        customizerOnUrl2.addParameter("sort", String.format("%s,DESC", StaticProperties.FEATURE_LABEL));
+        addCommontMatchers(customizerOnUrl2);
+        customizerOnUrl2.expectValue("$.content[0].content.providerId", PEGASI_51);
+        customizerOnUrl2.expectValue("$.content[1].content.providerId", KEPLER_16);
+
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
+                          customizerOnUrl2, "Search all error", ENGINE_TYPE);
+
+    }
+
+    @Test
     public void searchDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
@@ -207,7 +301,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         customizer.addParameter("sort", "providerId" + ",ASC");
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(9)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(12)));
         addSearchTermQuery(customizer, "origine.name", "CNE*");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -271,9 +365,9 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
         // Search the 9 planets
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(9)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(12)));
 
-        customizer.addParameter("maxCount", "10");
+        customizer.addParameter("maxCount", "13");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTY_VALUES,
                           customizer, "Search all error", ENGINE_TYPE,
                           StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
@@ -314,11 +408,11 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.diameter')].lowerBound",
                                                          Matchers.hasItem(1000)));
         customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.diameter')].upperBound",
-                                                         Matchers.hasItem(143000)));
+                                                         Matchers.hasItem(8000000)));
 
         customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.sun_distance')]").exists());
         customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.sun_distance')].lowerBound",
-                                                         Matchers.hasItem(50000000)));
+                                                         Matchers.hasItem(7000000)));
         customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.sun_distance')].upperBound",
                                                          Matchers.hasItem(4_489_435_980L)));
 

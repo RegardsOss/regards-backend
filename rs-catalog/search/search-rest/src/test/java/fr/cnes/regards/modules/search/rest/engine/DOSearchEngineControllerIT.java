@@ -95,7 +95,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     private ResultActions searchDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // 9 data from planets & 2 datas from test datas
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(11)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(14)));
         return performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                                  customizer, "Search all error", ENGINE_TYPE);
     }
@@ -106,7 +106,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         String json = payload(searchDataobjects());
 
         List<Object> thumbnails = JsonPath.read(json, "$..THUMBNAIL");
-        Assert.assertTrue(thumbnails.size() == 1);
+        Assert.assertEquals(1, thumbnails.size());
 
         List<Object> rawdata = JsonPath.read(json, "$..RAWDATA");
         Assert.assertTrue(rawdata.isEmpty());
@@ -126,10 +126,10 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         String json = payload(searchDataobjects());
 
         List<Object> thumbnails = JsonPath.read(json, "$..THUMBNAIL");
-        Assert.assertTrue(thumbnails.size() == 1);
+        Assert.assertEquals(1, thumbnails.size());
 
         List<Object> rawdata = JsonPath.read(json, "$..RAWDATA");
-        Assert.assertTrue(rawdata.size() == 1);
+        Assert.assertEquals(1, rawdata.size());
     }
 
     @Test

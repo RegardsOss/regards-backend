@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.indexer.dao;
 
 import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
@@ -28,7 +29,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
@@ -39,6 +44,8 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
@@ -46,22 +53,60 @@ import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
 import fr.cnes.regards.modules.indexer.dao.deser.JsonDeserializeStrategy;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping.stringMapping;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.array;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.*;
-import fr.cnes.regards.modules.indexer.domain.facet.*;
+import fr.cnes.regards.modules.indexer.domain.facet.BooleanFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.DateFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.NumericFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
 import fr.cnes.regards.modules.indexer.domain.reminder.SearchAfterReminder;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import fr.cnes.regards.modules.indexer.domain.spatial.ILocalizable;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -95,9 +140,17 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.*;
+import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RequestOptions.Builder;
+import org.elasticsearch.client.Requests;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.common.Strings;
@@ -139,30 +192,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Repository;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping.stringMapping;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.*;
-import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
 
 /**
  * Elasticsearch repository implementation
@@ -1061,6 +1097,9 @@ public class EsRepository implements IEsRepository {
         }
     }
 
+    /**
+     * @deprecated
+     */
     @Override
     @Deprecated
     public <T extends IIndexable> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest) {
@@ -1661,6 +1700,7 @@ public class EsRepository implements IEsRepository {
 
     @SuppressWarnings("unchecked")
     @Override
+    @VisibleForTesting
     public <R> List<R> search(SearchKey<?, R> searchKey, ICriterion criterion, String sourceAttribute) {
         try {
             SortedSet<Object> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
@@ -1671,33 +1711,28 @@ public class EsRepository implements IEsRepository {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <R, U> List<U> search(SearchKey<?, R> searchKey, ICriterion criterion, String sourceAttribute,
-            Function<R, U> transformFct) {
-        try {
-            SortedSet<Object> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
-                    addTypes(criterion, searchKey.getSearchTypes()), sourceAttribute)).v1();
-            return objects.stream().map(o -> (R) o).map(transformFct).collect(Collectors.toList());
-        } catch (final JsonSyntaxException e) {
-            throw new RsRuntimeException(e);
+    public <R, U extends IIndexable> FacetPage<U> search(SearchKey<?, R[]> inputSearchKey,
+            ICriterion inputSearchCriterion, String inputSourceAttribute, Predicate<R> inputFilterPredicate,
+            Function<Set<R>, Page<U>> toAskEntityFct, Predicate<U> outputFilterPredicate,
+            Map<String, FacetType> facetsMap, Pageable pageRequest) {
+        // --- INPUT SEARCH ---
+        // Search input elements from the ES cache
+        Tuple<SortedSet<Object>, Set<IFacet<?>>> tupleInputObjects = searchAllCache.getUnchecked(
+                new CacheKey(inputSearchKey, addTypes(inputSearchCriterion, inputSearchKey.getSearchTypes()),
+                             inputSourceAttribute, facetsMap));
+        Set<R> inputObjects = tupleInputObjects.v1().stream().map(o -> (R) o).collect(Collectors.toSet());
+        if(inputFilterPredicate != null) {
+            inputObjects = inputObjects.stream().filter(inputFilterPredicate).collect(Collectors.toSet());
         }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <R, U> Tuple<List<U>, Set<IFacet<?>>> search(SearchKey<?, R[]> searchKey, ICriterion criterion,
-            String sourceAttribute, Predicate<R> filterPredicate, Function<R, U> transformFct,
-            Map<String, FacetType> facetsMap) {
-        try {
-            Tuple<SortedSet<Object>, Set<IFacet<?>>> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
-                    addTypes(criterion, searchKey.getSearchTypes()), sourceAttribute, facetsMap));
-            return new Tuple<>(objects.v1().stream().map(o -> (R) o).distinct().filter(filterPredicate)
-                    .map(transformFct).collect(Collectors.toList()), objects.v2());
-
-        } catch (final JsonSyntaxException e) {
-            throw new RsRuntimeException(e);
+        // --- JOINED OBJECT SEARCH ---
+        // Retrieve objects from ES repository based on inputObjects
+        List<U> outputObjectsFound = toAskEntityFct.apply(inputObjects).getContent();
+        if(outputFilterPredicate != null) {
+            outputObjectsFound = outputObjectsFound.stream().filter(outputFilterPredicate).collect(Collectors.toList());
         }
+       // return objects, facets with no modification, page and size of input objects to make nextPageable work
+       return new FacetPage<>(outputObjectsFound, tupleInputObjects.v2(), pageRequest, inputObjects.size());
     }
 
     /**

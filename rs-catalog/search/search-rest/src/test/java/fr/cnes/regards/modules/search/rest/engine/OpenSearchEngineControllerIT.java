@@ -18,25 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-
-import javax.xml.xpath.XPathExpressionException;
-
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import com.google.common.net.HttpHeaders;
-
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -47,6 +29,20 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description.DescriptionBuilder;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import javax.xml.xpath.XPathExpressionException;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 /**
  * Search engine tests
@@ -71,7 +67,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("page", "2");
         customizer.addParameter("maxRecords", "3");
         customizer.expect(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("3")));
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("11")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("14")));
         customizer.expect(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("4")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -95,7 +91,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         // Test specific opensearch pagination parameters
         customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME, "1");
         customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME, "100");
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(11)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(14)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -171,7 +167,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("TimePeriod.startDate", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("TimePeriod.stopDate", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(12)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
 
@@ -192,7 +188,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("debut", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(12)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
 
@@ -204,7 +200,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                 String.format("(TimePeriod.startDate:[%s TO %s])",
                                               startDateValue.format(DateTimeFormatter.ISO_DATE_TIME),
                                               stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME)));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(12)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -286,12 +282,11 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                   .exists());
 
         // Check options
-        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet' and count(Option)=9]")
-                .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet' and count(Option)=12]").exists());
 
         // Check double boundaries
         customizer.expect(MockMvcResultMatchers
-                .xpath(atomUrl + "/Parameter[@name='sun_distance' and @minInclusive='5.0E7']").exists());
+                .xpath(atomUrl + "/Parameter[@name='sun_distance' and @minInclusive='7000000.0']").exists());
         customizer.expect(MockMvcResultMatchers
                 .xpath(atomUrl + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']").exists());
 
@@ -316,7 +311,6 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                         .exists());
 
         // customizer.addParameter("token", "public_token");
-
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
                           customizer, "open search description error", ENGINE_TYPE, OpenSearchEngine.EXTRA_DESCRIPTION);
     }
@@ -352,7 +346,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("15")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("20")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }
@@ -363,7 +357,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("11")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("14")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -390,7 +384,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(15)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(20)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }
