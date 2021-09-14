@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import feign.form.multipart.ManyFilesWriter;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;

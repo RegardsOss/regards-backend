@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.random.generator;
 
-public class NoopGenerator extends AbstractRandomGenerator<Object> {
+public class NoopGenerator extends AbstractNoParameterRandomGenerator<Object> {
 
     private final Object value;
 

@@ -18,12 +18,18 @@
  */
 package fr.cnes.regards.framework.amqp.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.random.Generator;
+import fr.cnes.regards.framework.random.GeneratorBuilder;
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,22 +38,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.random.Generator;
-import fr.cnes.regards.framework.random.function.IPropertyGetter;
-
 @Service
 @SuppressWarnings("unchecked")
 public class AmqpClientPublisher {
-
-    private static Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
 
     private final static String TEMPLATE_REGEXP = "^.*-template.json";
 
@@ -57,13 +50,18 @@ public class AmqpClientPublisher {
 
     private final static Integer BATCH_SIZE = 1000;
 
+    private static Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
+
+    private final ObjectMapper mapper = new ObjectMapper();
+
     @Autowired
     private IPublisher publisher;
 
     @Autowired
     private IPropertyGetter propertyGetter;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    @Autowired
+    private GeneratorBuilder generatorBuilder;
 
     /**
      * Publish a single message loaded from specified JSON file
@@ -98,15 +96,14 @@ public class AmqpClientPublisher {
     private void doPublishWithTemplate(String exchangeName, Optional<String> queueName, Integer priority,
             Map<String, Object> headers, Path templatePath, Integer iterations) {
         // Generate messages
-        Generator generator = new Generator();
-        generator.initGenerators(templatePath, propertyGetter);
+        Generator randomGenerator = generatorBuilder.build(templatePath, propertyGetter);
 
         Integer remaining = iterations;
         while (remaining > 0) {
             Integer batchSize = remaining >= BATCH_SIZE ? BATCH_SIZE : remaining;
             remaining = remaining - batchSize;
             // Generate batch
-            List<Map<String, Object>> messages = generator.generate(batchSize);
+            List<Map<String, Object>> messages = randomGenerator.generate(batchSize);
             List<Object> oMessages = new ArrayList<>();
             messages.forEach(m -> oMessages.add(manageHeaders(m)));
             // Broadcast

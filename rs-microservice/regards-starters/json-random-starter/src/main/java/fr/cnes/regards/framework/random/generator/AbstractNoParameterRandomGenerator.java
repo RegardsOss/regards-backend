@@ -20,35 +20,14 @@ package fr.cnes.regards.framework.random.generator;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 
-public class SequenceGenerator extends AbstractRandomGenerator<String> {
+public abstract class AbstractNoParameterRandomGenerator<T> extends AbstractRandomGenerator<T> {
 
-    private static String USAGE = "Function {} only support an optional format as for String.format";
-
-    private Integer current = 0;
-
-    private String format = "%d";
-
-    public SequenceGenerator(FunctionDescriptor fd) {
+    public AbstractNoParameterRandomGenerator(FunctionDescriptor fd) {
         super(fd);
     }
 
     @Override
     public void parseParameters() {
-        switch (fd.getParameterSize()) {
-            case 0:
-                break;
-            case 1:
-                format = fd.getParameter(0);
-                break;
-            default:
-                throw new IllegalArgumentException(String.format(USAGE, fd.getType()));
-        }
-    }
-
-    @Override
-    public String random() {
-        String s = String.format(format, current);
-        current++;
-        return s;
+        // Nothing to do
     }
 }

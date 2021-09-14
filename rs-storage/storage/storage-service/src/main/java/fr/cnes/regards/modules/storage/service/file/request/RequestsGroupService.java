@@ -137,7 +137,7 @@ public class RequestsGroupService {
      * @param groupId
      * @param type
      * @param nbRequestInGroup
-     * @param silent           True to avoid sending bus message about group granted. Used internally in storage microservice.
+     * @param silent True to avoid sending bus message about group granted. Used internally in storage microservice.
      */
     public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent,
             OffsetDateTime expirationDate) {
@@ -187,6 +187,9 @@ public class RequestsGroupService {
         reqGroupRepository.saveAll(toSave);
     }
 
+    /**
+    * Check for all current request groups if all requests are terminated. If so send a SUCCESS or ERROR event on the bus message.
+    */
     public void checkRequestsGroupsDone() {
         LOGGER.debug("[REQUEST GROUPS] Start checking request groups expired ... ");
         long start = System.currentTimeMillis();

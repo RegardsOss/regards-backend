@@ -23,20 +23,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class FunctionDescriptor {
 
-    private FunctionDescriptorType type;
+    private final String functionName;
 
     private final Map<Integer, String> parameters = new ConcurrentHashMap<>();
 
-    public FunctionDescriptor(FunctionDescriptorType type) {
-        this.type = type;
+    public FunctionDescriptor(String functionName) {
+        this.functionName = functionName;
     }
 
-    public FunctionDescriptorType getType() {
-        return type;
-    }
-
-    public void setType(FunctionDescriptorType type) {
-        this.type = type;
+    public String getFunctionName() {
+        return functionName;
     }
 
     public Map<Integer, String> getParameters() {
@@ -57,6 +53,6 @@ public class FunctionDescriptor {
 
     @Override
     public String toString() {
-        return "FunctionDescriptor [type=" + type + ", parameters=" + parameters + "]";
+        return "FunctionDescriptor [name=" + functionName + ", parameters=" + parameters + "]";
     }
 }

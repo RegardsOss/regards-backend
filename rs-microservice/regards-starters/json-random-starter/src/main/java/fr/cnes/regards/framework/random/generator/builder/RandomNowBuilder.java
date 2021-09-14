@@ -16,22 +16,39 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
+package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+import fr.cnes.regards.framework.random.generator.AbstractNoParameterRandomGenerator;
+import org.springframework.stereotype.Component;
 
-public class RandomLong extends AbstractRandomGenerator<Long> {
+import java.time.OffsetDateTime;
 
-    public RandomLong(FunctionDescriptor fd) {
-        super(fd);
+/**
+ * Look at spring.factories
+ */
+@Component
+public class RandomNowBuilder implements RandomGeneratorBuilder<RandomNowBuilder.NowGenerator> {
+
+    @Override
+    public String getFunctionName() {
+        return "now";
     }
 
     @Override
-    public Long random() {
-        return random(-10_000L, 10_000L);
+    public NowGenerator build(FunctionDescriptor fd) {
+        return new NowGenerator(fd);
     }
 
-    public Long random(Long leftLimit, Long rightLimit) {
-        return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
+    static class NowGenerator extends AbstractNoParameterRandomGenerator<OffsetDateTime> {
+
+        public NowGenerator(FunctionDescriptor fd) {
+            super(fd);
+        }
+
+        @Override
+        public OffsetDateTime random() {
+            return OffsetDateTime.now();
+        }
     }
 }

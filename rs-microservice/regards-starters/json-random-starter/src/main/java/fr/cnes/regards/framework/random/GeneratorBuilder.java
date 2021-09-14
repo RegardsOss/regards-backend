@@ -16,26 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
+package fr.cnes.regards.framework.random;
 
-import java.util.Random;
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+import java.nio.file.Path;
 
-public class RandomFloat extends AbstractRandomGenerator<Float> {
+/**
+ * Initialize a new {@link Generator} with its generator resolver.
+ *
+ * Look at spring.factories
+ */
+@Service
+public class GeneratorBuilder {
 
-    private static Random random = new Random();
+    @Autowired
+    private RandomGeneratorResolver randomGeneratorResolver;
 
-    public RandomFloat(FunctionDescriptor fd) {
-        super(fd);
+    public Generator build(Path templatePath) {
+        return build(templatePath, null);
     }
 
-    @Override
-    public Float random() {
-        return random.nextFloat();
-    }
-
-    public Float random(Float leftLimit, Float rightLimit) {
-        return leftLimit + (new Random().nextFloat() * (rightLimit - leftLimit));
+    public Generator build(Path templatePath, IPropertyGetter propertyGetter) {
+        return new Generator(randomGeneratorResolver, templatePath, propertyGetter);
     }
 }

@@ -16,22 +16,39 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random.generator;
-
-import java.util.Random;
+package fr.cnes.regards.framework.random.generator.builder;
 
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+import fr.cnes.regards.framework.random.generator.AbstractNoParameterRandomGenerator;
+import org.springframework.stereotype.Component;
 
-public class RandomBoolean extends AbstractRandomGenerator<Boolean> {
+import java.util.UUID;
 
-    private final Random random = new Random();
+/**
+ * Look at spring.factories
+ */
+@Component
+public class RandomUuidBuilder implements RandomGeneratorBuilder<RandomUuidBuilder.RandomUuid> {
 
-    public RandomBoolean(FunctionDescriptor fd) {
-        super(fd);
+    @Override
+    public String getFunctionName() {
+        return "uuid";
     }
 
     @Override
-    public Boolean random() {
-        return random.nextBoolean();
+    public RandomUuid build(FunctionDescriptor fd) {
+        return new RandomUuid(fd);
+    }
+
+    static class RandomUuid extends AbstractNoParameterRandomGenerator<UUID> {
+
+        public RandomUuid(FunctionDescriptor fd) {
+            super(fd);
+        }
+
+        @Override
+        public UUID random() {
+            return UUID.randomUUID();
+        }
     }
 }

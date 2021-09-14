@@ -18,16 +18,11 @@
  */
 package fr.cnes.regards.modules.opensearch.service.builder;
 
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
-import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.util.Pair;
+
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 
 /**
  * @author Marc Sordi

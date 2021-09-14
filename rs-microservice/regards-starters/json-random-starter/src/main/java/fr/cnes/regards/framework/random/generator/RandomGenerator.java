@@ -22,18 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import fr.cnes.regards.framework.random.function.FunctionDescriptor;
-import fr.cnes.regards.framework.random.function.FunctionDescriptorParser;
-import fr.cnes.regards.framework.random.function.IPropertyGetter;
-
 public interface RandomGenerator<T> {
 
-    default void parseParameters() {
-        // Step to parse generator parameters from function descriptor if any
-    }
+    /**
+     * Step for parsing generator parameters from function descriptor
+     */
+    void parseParameters();
 
     /**
-     * If the method return {@link Optional#empty()}, generator will call {@link #random()} method else {@link #randomWithContext(Map)}.
+     * If the method return {@link Optional#empty()}, generator will call {@link #random()} method otherwise {@link #randomWithContext(Map)}.
      * @return list of dependent property paths the generator depends on.
      */
     default Optional<List<String>> getDependentProperties() {
@@ -53,67 +50,5 @@ public interface RandomGenerator<T> {
     default T randomWithContext(Map<String, Object> context) {
         throw new UnsupportedOperationException(
                 "Random with context must be overridden for dependent property generation");
-    }
-
-    static RandomGenerator<?> of(Object value, IPropertyGetter propertyGetter) {
-        // Parse function
-        FunctionDescriptor fd = FunctionDescriptorParser.parse(value);
-        if (fd == null) {
-            return new NoopGenerator(value);
-        }
-
-        // Get random generator
-        RandomGenerator<?> rg;
-        switch (fd.getType()) {
-            case BOOLEAN:
-                rg = new RandomBoolean(fd);
-                break;
-            case OFFSET_DATE_TIME:
-                rg = new RandomOffsetDateTime(fd);
-                break;
-            case DOUBLE:
-                rg = new RandomDouble(fd);
-                break;
-            case ENUM:
-                rg = new RandomEnum(fd);
-                break;
-            case FLOAT:
-                rg = new RandomFloat(fd);
-                break;
-            case INTEGER:
-                rg = new RandomInteger(fd);
-                break;
-            case LONG:
-                rg = new RandomLong(fd);
-                break;
-            case NOW:
-                rg = new NowGenerator(fd);
-                break;
-            case SEQUENCE:
-                rg = new SequenceGenerator(fd);
-                break;
-            case STRING:
-                rg = new RandomString(fd);
-                break;
-            case STRING_FORMAT:
-                rg = new RandomStringFormat(fd);
-                break;
-            case URN:
-                rg = new RandomUrn(fd);
-                break;
-            case UUID:
-                rg = new RandomUuid(fd);
-                break;
-            case PROPERTY:
-                rg = new PropertyGenerator(fd, propertyGetter);
-                break;
-            case CRID:
-                rg = new RandomCrid(fd);
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("Unsupported function %s", fd.getType()));
-        }
-        rg.parseParameters();
-        return rg;
     }
 }
