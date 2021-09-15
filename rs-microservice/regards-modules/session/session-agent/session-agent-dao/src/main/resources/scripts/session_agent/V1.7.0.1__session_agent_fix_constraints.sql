@@ -1,0 +1,1 @@
+ALTER table t_step_property_update_request ALTER COLUMN registration_date SET NOT NULL;
