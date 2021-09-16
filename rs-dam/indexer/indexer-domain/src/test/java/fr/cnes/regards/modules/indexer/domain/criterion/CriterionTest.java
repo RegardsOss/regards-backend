@@ -130,7 +130,7 @@ public class CriterionTest {
     @Test
     public void test5() throws IOException {
         final String RESULT = "(att.text IN (\"toto\", \"titi\", \"tutu\")) OR "
-                + "((att.text EQUALS \"toto tutu\") OR (att.text EQUALS \"titi tata\"))";
+                + "(att.text IN (\"toto tutu\", \"titi tata\"))";
         ICriterion rootCrit = ICriterion.or(ICriterion.in("att.text", StringMatchType.KEYWORD, "toto", "titi", "tutu"),
                                             ICriterion.in("att.text", StringMatchType.KEYWORD, "toto tutu", "titi tata"));
 
