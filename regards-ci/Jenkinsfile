@@ -58,8 +58,6 @@ pipeline {
             }
             environment {
                 MODE="deploy"
-                RQMT_DIR="/RQMT/RQMT/${JOB_NAME}/"
-                DOC_DIR="/RQMT/APIDoc/${BRANCH_NAME}/${JOB_NAME}/"
             }
             steps {
                 sh 'printenv'
@@ -71,16 +69,6 @@ pipeline {
                             --exit-code-from rs-build \
                             --abort-on-container-exit \
                             rs-build'
-
-                echo 'Harvest requirements reports'
-                sh 'rm -rf ' + RQMT_DIR
-                sh 'mkdir -p ' + RQMT_DIR
-                sh 'find . -wholename \'*/target/requirement-reports/RQMT*\' -type f -exec cp {} ' + RQMT_DIR + ' \\;'
-
-                echo 'Harvest documentation snippets'
-                sh 'rm -rf ' + DOC_DIR
-                sh 'mkdir -p ' + DOC_DIR
-                sh 'find . -maxdepth 5 -type d -wholename \'*/target/generated-snippets/*\' -exec cp -r {} '+ DOC_DIR + ' \\;'
             }
         }
     }
