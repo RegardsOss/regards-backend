@@ -132,10 +132,10 @@ public class AttachmentController {
         // By default, return the attachment header, forcing browser to download the file
         if (isContentInline == null || !isContentInline) {
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                               ContentDisposition.builder("attachment").filename(dataFile.getFilename()).toString());
+                               ContentDisposition.builder("attachment").filename(dataFile.getFilename()).build().toString());
         } else {
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                               ContentDisposition.builder("inline").filename(dataFile.getFilename()).toString());
+                               ContentDisposition.builder("inline").filename(dataFile.getFilename()).build().toString());
             // Allows iframe to display inside REGARDS interface
             response.setHeader(HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
         }
