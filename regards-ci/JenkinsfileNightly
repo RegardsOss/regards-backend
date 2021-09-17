@@ -69,7 +69,7 @@ pipeline {
     }
     post {
         failure {
-            echo 'The nightly build FAILED'
+            echo 'The nightly build FAILEED'
         }
         cleanup {
             echo 'lets clean up the mess!'
