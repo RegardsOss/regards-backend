@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.indexer.dao.builder;
 
-import com.google.common.base.Joiner;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoQueries;
@@ -143,8 +142,16 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     }
 
     @Override
-    public QueryBuilder visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion) {
-        return QueryBuilders.termsQuery(criterion.getName() + KEYWORD, criterion.getValue());
+    public QueryBuilder visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion){
+        switch (criterion.getMatchType()) {
+            case KEYWORD:
+                return QueryBuilders.termsQuery(criterion.getName() + ".keyword", criterion.getValue());
+            case FULL_TEXT_SEARCH:
+                return QueryBuilders.matchQuery(criterion.getName(), criterion.getValue());
+            default:
+                throw new IllegalArgumentException(
+                        String.format("Unsupported string match type %s", criterion.getMatchType()));
+        }
     }
 
     @Override
