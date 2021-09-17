@@ -38,8 +38,9 @@ public class StringMatchAnyCriterion extends AbstractMatchCriterion<String[]> {
         this.matchType = matchType;
     }
 
-    public StringMatchAnyCriterion(String name, Collection<String> values) {
+    public StringMatchAnyCriterion(String name, StringMatchType matchType, Collection<String> values) {
         super(name, MatchType.CONTAINS_ANY, values.toArray(new String[0]));
+        this.matchType = matchType;
     }
 
     @Override

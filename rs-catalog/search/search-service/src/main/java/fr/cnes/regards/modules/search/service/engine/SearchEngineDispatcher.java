@@ -40,9 +40,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * Search engine service dispatcher.<br/>
@@ -70,8 +68,6 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     @Autowired
     private ISearchEngineConfigurationService searchEngineService;
-
-    private static int id_limit = 1_000;
 
     /**
      * Business search service
@@ -207,7 +203,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             for (String ipId : searchRequest.getEntityIdsToInclude()) {
                 values.add(ipId);
             }
-            reqCrit = ICriterion.and(reqCrit, ICriterion.in(StaticProperties.IP_ID, values));
+            reqCrit = ICriterion.and(reqCrit, ICriterion.in(StaticProperties.IP_ID, StringMatchType.KEYWORD, values));
             values.clear();
         }
 
@@ -217,7 +213,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             for (String ipId : searchRequest.getEntityIdsToExclude()) {
                 values.add(ipId);
             }
-            reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.in(StaticProperties.IP_ID, values)));
+            reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.in(StaticProperties.IP_ID, StringMatchType.KEYWORD,values)));
             values.clear();
         }
 

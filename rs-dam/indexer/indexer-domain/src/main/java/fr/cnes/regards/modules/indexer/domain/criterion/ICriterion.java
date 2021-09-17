@@ -148,11 +148,22 @@ public interface ICriterion {
                 IntStream.of(values).mapToObj(val -> new IntMatchCriterion(attName, val)).collect(Collectors.toList()));
     }
 
-    static ICriterion in(String attName, Collection<String> values) {
-        if (values.isEmpty()) {
+    static ICriterion in(String attName, StringMatchType matchType, Collection<String> values) {
+        if (values == null || values.isEmpty()) {
             return new NotCriterion(all());
         }
-        return new StringMatchAnyCriterion(attName, values);
+        return new StringMatchAnyCriterion(attName, matchType, values);
+    }
+
+    /**
+     * Criterion to test if a string parameter has one of the provided values
+     * @param attName attribute name
+     * @param matchType string matching behavior
+     * @param texts text array to test
+     * @return criterion
+     */
+    static ICriterion in(String attName, StringMatchType matchType, String... texts) {
+        return in(attName, matchType, Stream.of(texts).collect(Collectors.toList()));
     }
 
     static ICriterion in(String attName, long... values) {
@@ -162,6 +173,7 @@ public interface ICriterion {
         return new OrCriterion(LongStream.of(values).mapToObj(val -> new LongMatchCriterion(attName, val))
                 .collect(Collectors.toList()));
     }
+
 
     static ICriterion eq(String attName, double value, double precision) {
         RangeCriterion<Double> crit = new RangeCriterion<>(attName);
@@ -291,25 +303,6 @@ public interface ICriterion {
      */
     static ICriterion containsDateBetween(String attName, OffsetDateTime lowerDate, OffsetDateTime upperDate) {
         return ICriterion.between(attName, lowerDate, upperDate);
-    }
-
-    /**
-     * Criterion to test if a string parameter has one of the provided values
-     * @param attName attribute name
-     * @param matchType string matching behavior
-     * @param texts text array to test
-     * @return criterion
-     */
-    static ICriterion in(String attName, StringMatchType matchType, String... texts) {
-        if (texts.length == 0) {
-            return new NotCriterion(all());
-        }
-        // If one of the texts contains a blank character, StringMatchAnyCriterion cannot be used due to ES limitations
-        if (Stream.of(texts).anyMatch(str -> str.contains(" "))) {
-            return new OrCriterion(
-                    Stream.of(texts).map(str -> ICriterion.eq(attName, str, matchType)).collect(Collectors.toList()));
-        }
-        return new StringMatchAnyCriterion(attName, matchType, texts);
     }
 
     /**

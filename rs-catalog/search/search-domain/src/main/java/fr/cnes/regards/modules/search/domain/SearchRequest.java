@@ -38,6 +38,8 @@ public class SearchRequest {
 
     private static final String SORT_PARAMETER = "sort";
 
+    private static final int ID_LIMIT = 1_000;
+
     /**
      * Engine to use for the research
      */
@@ -57,13 +59,13 @@ public class SearchRequest {
     /**
      * Additional entity ids to return with the search results.
      */
-    @Size(max=1_000,message = "Number of entity ids to include in one request must be between 0 and 1000")
+    @Size(max=SearchRequest.ID_LIMIT, message = "Number of entity ids to include in one request must be between 0 and 1000")
     private final Collection<String> entityIdsToInclude;
 
     /**
      * Entity ids to exclud from search results.
      */
-    @Size(max=1_000,message = "Number of entity ids to exclude in one request must be between 0 and 1000")
+    @Size(max=SearchRequest.ID_LIMIT, message = "Number of entity ids to exclude in one request must be between 0 and 1000")
     private final Collection<String> entityIdsToExclude;
 
     /**

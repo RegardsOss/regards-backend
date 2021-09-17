@@ -32,7 +32,7 @@ public class CriterionTest {
         values.add("TOTO");
         values.add("TITI");
         values.add("TUTU");
-        ICriterion crit = ICriterion.in("attributes.text", values);
+        ICriterion crit = ICriterion.in("attributes.text", StringMatchType.KEYWORD, values);
         ICriterionVisitor<String> visitor = new TestCriterionVisitor();
         Assert.assertEquals(RESULT, crit.accept(visitor));
     }
