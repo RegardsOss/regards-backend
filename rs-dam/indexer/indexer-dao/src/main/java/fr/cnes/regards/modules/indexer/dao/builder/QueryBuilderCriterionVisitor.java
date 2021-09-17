@@ -144,7 +144,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
 
     @Override
     public QueryBuilder visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion) {
-        return QueryBuilders.matchQuery(criterion.getName(), Joiner.on(" ").join(criterion.getValue()));
+        return QueryBuilders.termsQuery(criterion.getName() + KEYWORD, criterion.getValue());
     }
 
     @Override

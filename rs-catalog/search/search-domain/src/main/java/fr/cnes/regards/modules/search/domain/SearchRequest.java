@@ -25,6 +25,9 @@ import java.util.Map.Entry;
 
 import org.springframework.util.MultiValueMap;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
 /**
  * POJO Containig information to handle a new search on catalog from complex search system controller
  * @author Sébastien Binda
@@ -38,6 +41,7 @@ public class SearchRequest {
     /**
      * Engine to use for the research
      */
+    @NotEmpty
     private final String engineType;
 
     /**
@@ -53,11 +57,13 @@ public class SearchRequest {
     /**
      * Additional entity ids to return with the search results.
      */
+    @Size(max=1_000,message = "Number of entity ids to include in one request must be between 0 and 1000")
     private final Collection<String> entityIdsToInclude;
 
     /**
      * Entity ids to exclud from search results.
      */
+    @Size(max=1_000,message = "Number of entity ids to exclude in one request must be between 0 and 1000")
     private final Collection<String> entityIdsToExclude;
 
     /**

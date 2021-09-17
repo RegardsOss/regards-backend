@@ -71,7 +71,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
     @Autowired
     private ISearchEngineConfigurationService searchEngineService;
 
-    private static int id_limit = 20_000;
+    private static int id_limit = 1_000;
 
     /**
      * Business search service
@@ -203,41 +203,22 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
         // Include ids criterion
         if ((searchRequest.getEntityIdsToInclude() != null) && !searchRequest.getEntityIdsToInclude().isEmpty()) {
-            ICriterion idsCrit = null;
-            if (searchRequest.getEntityIdsToInclude().size() > id_limit) {
-                throw new ModuleException(String.format("Number of ids to include %s is over valid limit of %s",searchRequest.getEntityIdsToInclude().size(), id_limit));
-            } else {
-                LOGGER.info("Number of id criterion to process {}",searchRequest.getEntityIdsToInclude().size());
-            }
             List<String> values = new ArrayList<>();
             for (String ipId : searchRequest.getEntityIdsToInclude()) {
                 values.add(ipId);
-                if (values.size() > 100) {
-                    if (idsCrit == null) {
-                        idsCrit = ICriterion.in(StaticProperties.IP_ID, values);
-                    } else {
-                        idsCrit = ICriterion.or(idsCrit, ICriterion.in(StaticProperties.IP_ID, values));
-                    }
-                    values.clear();
-                }
             }
-            if (values.size() > 0 ) {
-                if (idsCrit == null) {
-                    idsCrit = ICriterion.in(StaticProperties.IP_ID, values);
-                } else {
-                    idsCrit = ICriterion.or(idsCrit, ICriterion.in(StaticProperties.IP_ID, values));
-                }
-            }
-            if (idsCrit != null) {
-                reqCrit = ICriterion.and(reqCrit, idsCrit);
-            }
+            reqCrit = ICriterion.and(reqCrit, ICriterion.in(StaticProperties.IP_ID, values));
+            values.clear();
         }
 
         // Exclude ids criterion
         if ((searchRequest.getEntityIdsToExclude() != null) && !searchRequest.getEntityIdsToExclude().isEmpty()) {
+            List<String> values = new ArrayList<>();
             for (String ipId : searchRequest.getEntityIdsToExclude()) {
-                reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId, StringMatchType.KEYWORD)));
+                values.add(ipId);
             }
+            reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.in(StaticProperties.IP_ID, values)));
+            values.clear();
         }
 
         return reqCrit;
