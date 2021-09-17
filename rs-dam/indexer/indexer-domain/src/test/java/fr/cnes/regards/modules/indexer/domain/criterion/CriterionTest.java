@@ -61,6 +61,7 @@ public class CriterionTest {
         numericCritList.add(ICriterion.ne("attributes.number4", 1000., 1.e0));
 
         numericCritList.add(ICriterion.eq("attributes.number3", Math.PI, 1.e-5));
+
         ICriterion numericAndCriterion = ICriterion.and(numericCritList);
 
         // All theses criterions (AND)

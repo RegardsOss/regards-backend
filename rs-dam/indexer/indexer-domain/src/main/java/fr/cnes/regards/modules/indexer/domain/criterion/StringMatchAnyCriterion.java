@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
+import java.util.Collection;
+
 /**
  * String[] specialized AbstractMatchCriterion ie a criterion to test if an attribute belongs to an array of
  * values.<br/>
@@ -34,6 +36,10 @@ public class StringMatchAnyCriterion extends AbstractMatchCriterion<String[]> {
     public StringMatchAnyCriterion(String name, StringMatchType matchType, String... value) {
         super(name, MatchType.CONTAINS_ANY, value);
         this.matchType = matchType;
+    }
+
+    public StringMatchAnyCriterion(String name, Collection<String> values) {
+        super(name, MatchType.CONTAINS_ANY, values.toArray(new String[0]));
     }
 
     @Override

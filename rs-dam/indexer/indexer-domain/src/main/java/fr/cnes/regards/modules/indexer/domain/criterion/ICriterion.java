@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometr
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -145,6 +146,13 @@ public interface ICriterion {
         }
         return new OrCriterion(
                 IntStream.of(values).mapToObj(val -> new IntMatchCriterion(attName, val)).collect(Collectors.toList()));
+    }
+
+    static ICriterion in(String attName, Collection<String> values) {
+        if (values.isEmpty()) {
+            return new NotCriterion(all());
+        }
+        return new StringMatchAnyCriterion(attName, values);
     }
 
     static ICriterion in(String attName, long... values) {
