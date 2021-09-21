@@ -58,7 +58,7 @@ pipeline {
         }
         stage("Harvest documentation snippets") {
             environment {
-                DOC_DIR="/RQMT/APIDoc/${BRANCH_NAME}/${JOB_NAME}/"
+                DOC_DIR="/RQMT/APIDoc/${JOB_NAME}/"
             }
             steps {
                 sh 'rm -rf ' + DOC_DIR
