@@ -1,13 +1,5 @@
 package fr.cnes.regards.modules.crawler.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
@@ -18,6 +10,13 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionTy
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -40,7 +39,7 @@ public class MappingService implements IMappingService {
                 AttributeModel attribute = modelAttribute.getAttribute();
                 // If attribute is JSON type, then generate virtual attributes from given jsonSchema to create mapping.
                 if ((attribute.getType() == PropertyType.JSON)
-                        && (attribute.getRestrictionType() == RestrictionType.JSON_SCHEMA)) {
+                        && (RestrictionType.JSON_SCHEMA.equals(attribute.getRestrictionType()) && attribute.getEsMapping() == null)) {
                     JsonSchemaRestriction restriction = (JsonSchemaRestriction) attribute.getRestriction();
                     AbstractAttributeHelper.fromJsonSchema(attribute.getJsonPropertyPath(), restriction.getJsonSchema())
                             .forEach(a -> {

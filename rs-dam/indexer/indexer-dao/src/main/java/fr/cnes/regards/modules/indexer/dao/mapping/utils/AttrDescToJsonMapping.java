@@ -1,23 +1,21 @@
 package fr.cnes.regards.modules.indexer.dao.mapping.utils;
 
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
-import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping.RANGE_LOWER_BOUND;
-import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping.RANGE_UPPER_BOUND;
-
-import java.util.Arrays;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
+import io.vavr.control.Option;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.util.Arrays;
 
-import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
-import io.vavr.control.Option;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
+import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping.RANGE_LOWER_BOUND;
+import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping.RANGE_UPPER_BOUND;
 
 public class AttrDescToJsonMapping {
 
@@ -115,7 +113,7 @@ public class AttrDescToJsonMapping {
     }
 
     private JsonObject toURLJsonMapping(AttributeDescription attrDesc) {
-        return nestedPropertiesStructure(attrDesc.getPath(), type("text"));
+        return nestedPropertiesStructure(attrDesc.getPath(), stringMapping());
     }
 
     private JsonObject toBooleanJsonMapping(AttributeDescription attrDesc) {
