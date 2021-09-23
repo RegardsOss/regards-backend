@@ -323,6 +323,7 @@
 		<module>rs-microservice</module>
 		<module>rs-notifier</module>
 		<module>rs-order</module>
+		<module>rs-processing</module>
 		<module>rs-storage</module>
     </modules>
 

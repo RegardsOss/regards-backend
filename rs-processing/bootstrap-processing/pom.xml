@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ 
+ This file is part of REGARDS.
+ 
+ REGARDS is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ REGARDS is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>fr.cnes.regards.microservices.processing</groupId>
+    <artifactId>bootstrap-processing</artifactId>
+    <version>${processing.bootstrap.version}</version>
+
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-boot-parent</artifactId>
+        <version>${regards.boot.parent.version}</version>
+        <relativePath>../../rs-bom/regards-boot-parent/pom.xml</relativePath>
+    </parent>
+
+    <properties>
+        <spring.boot.version>2.3.2.RELEASE</spring.boot.version>
+
+        <fr.cnes.regards.docker.image.name>rs-processing</fr.cnes.regards.docker.image.name>
+        <docker.entryPoint><![CDATA[["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--","./wait-for-it.sh", "rs-dam:9035", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx1g"]]]></docker.entryPoint>
+    </properties>
+
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Module -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-spring-config</artifactId>
+            <version>${modules.processing.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-rest</artifactId>
+            <version>${modules.processing.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-order-processes</artifactId>
+            <version>${modules.processing.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-dao</artifactId>
+            <version>${modules.processing.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-engine-jobs</artifactId>
+            <version>${modules.processing.version}</version>
+        </dependency>
+
+        <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-core-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.microservices.administration</groupId>
+            <artifactId>remote-tenant-resolver</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.microservices.administration</groupId>
+            <artifactId>remote-authorities-provider</artifactId>
+        </dependency>
+
+        <!-- Framework -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-reactor-netty</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Libraries -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>7.5.0</version>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-test</artifactId>
+            <version>${modules.processing.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-client</artifactId>
+            <version>${modules.processing.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <DependencyConvergence/>
+                            </rules>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin-->
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- Default properties -->
+                <filter.name>development</filter.name>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/filters/${filter.name}.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <!-- Default properties -->
+                <filter.name>docker</filter.name>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/filters/${filter.name}.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>delivery</id>
+        </profile>
+        <profile>
+            <!-- Used when creating an image destined to be run locally, without rs-admin or rs-dam -->
+            <id>localcontainer</id>
+            <properties>
+                <docker.entryPoint><![CDATA[["./start.sh","${project.build.finalName}.${project.packaging}","-Xmx1g"]]]></docker.entryPoint>
+            </properties>
+        </profile>
+    </profiles>
+
+</project>
