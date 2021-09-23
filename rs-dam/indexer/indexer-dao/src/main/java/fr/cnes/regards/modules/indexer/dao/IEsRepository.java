@@ -378,10 +378,10 @@ public interface IEsRepository {
      * First, input objects are retrieved from the cache, then objects requested with matching criteria are retrieved
      * from the ES repository.
      */
-    <R, T extends IIndexable> FacetPage<T> search(SearchKey<?, R[]> inputSearchKey,
-            ICriterion inputSearchCriterion, String inputSourceAttribute, Predicate<R> inputFilterPredicate,
-            Function<Set<R>, Page<T>> toAskEntityFct, Predicate<T> outputFilterPredicate,
-            Map<String, FacetType> facetsMap, Pageable pageable);
+    <R, T extends IIndexable> FacetPage<T> search(SearchKey<?, R[]> sourceSearchKey,
+                                                  ICriterion sourceSearchCriterion, String sourceAttribute, Predicate<R> sourceFilterPredicate,
+                                                  Function<Set<R>, Page<T>> toAskEntityFct,
+                                                  Map<String, FacetType> facetsMap, Pageable pageable);
 
     /**
      * Count result

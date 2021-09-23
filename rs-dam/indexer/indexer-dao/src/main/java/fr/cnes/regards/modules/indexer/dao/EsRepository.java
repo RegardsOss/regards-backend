@@ -1712,27 +1712,22 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public <R, U extends IIndexable> FacetPage<U> search(SearchKey<?, R[]> inputSearchKey,
-            ICriterion inputSearchCriterion, String inputSourceAttribute, Predicate<R> inputFilterPredicate,
-            Function<Set<R>, Page<U>> toAskEntityFct, Predicate<U> outputFilterPredicate,
-            Map<String, FacetType> facetsMap, Pageable pageRequest) {
+    public <R, U extends IIndexable> FacetPage<U> search(SearchKey<?, R[]> sourceSearchKey,
+                                                         ICriterion sourceSearchCriterion, String sourceAttribute, Predicate<R> sourceFilterPredicate,
+                                                         Function<Set<R>, Page<U>> toAskEntityFct,
+                                                         Map<String, FacetType> facetsMap, Pageable pageRequest) {
         // --- INPUT SEARCH ---
         // Search input elements from the ES cache
         Tuple<SortedSet<Object>, Set<IFacet<?>>> tupleInputObjects = searchAllCache.getUnchecked(
-                new CacheKey(inputSearchKey, addTypes(inputSearchCriterion, inputSearchKey.getSearchTypes()),
-                             inputSourceAttribute, facetsMap));
+                new CacheKey(sourceSearchKey, addTypes(sourceSearchCriterion, sourceSearchKey.getSearchTypes()),
+                        sourceAttribute, facetsMap));
         Set<R> inputObjects = tupleInputObjects.v1().stream().map(o -> (R) o).collect(Collectors.toSet());
-        if(inputFilterPredicate != null) {
-            inputObjects = inputObjects.stream().filter(inputFilterPredicate).collect(Collectors.toSet());
+        if(sourceFilterPredicate != null) {
+            inputObjects = inputObjects.stream().filter(sourceFilterPredicate).collect(Collectors.toSet());
         }
         // --- JOINED OBJECT SEARCH ---
-        // Retrieve objects from ES repository based on inputObjects
-        List<U> outputObjectsFound = toAskEntityFct.apply(inputObjects).getContent();
-        if(outputFilterPredicate != null) {
-            outputObjectsFound = outputObjectsFound.stream().filter(outputFilterPredicate).collect(Collectors.toList());
-        }
-       // return objects, facets with no modification, page and size of input objects to make nextPageable work
-       return new FacetPage<>(outputObjectsFound, tupleInputObjects.v2(), pageRequest, inputObjects.size());
+        // return objects from ES repository based on inputObjects, facets with no modification, page and size of input objects to make nextPageable work
+        return new FacetPage<>(toAskEntityFct.apply(inputObjects).getContent(), tupleInputObjects.v2(), pageRequest, inputObjects.size());
     }
 
     /**

@@ -18,17 +18,6 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Predicate;
-
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -42,6 +31,14 @@ import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Elasticsearch search service. This service contains all search and get methods. For other methods, check
@@ -63,54 +60,58 @@ public interface ISearchService {
 
     /**
      * Search ordered documents into index following criterion. Some facets are asked for.
-     * @param searchKey identity search key
+     *
+     * @param searchKey   identity search key
      * @param pageRequest pagination information ({@link PageRequest}
-     * @param criterion search criterion
-     * @param facetsMap a map of { document property name, facet type }
+     * @param criterion   search criterion
+     * @param facetsMap   a map of { document property name, facet type }
      * @return a simple page of documents if facet are not asked for, a {@link FacetPage} else
      */
     <T extends IIndexable> FacetPage<T> search(SimpleSearchKey<T> searchKey, Pageable pageRequest, ICriterion criterion,
-            Map<String, FacetType> facetsMap);
+                                               Map<String, FacetType> facetsMap);
 
     /**
      * Search documents as usual BUT return joined entity whom type is specified into searchKey
-     * @param searchKey the search key. <b>Be careful, the search type must be the type concerned by criterion, result
-     *            class must be joined entity class </b>
+     *
+     * @param searchKey   the search key. <b>Be careful, the search type must be the type concerned by criterion, result
+     *                    class must be joined entity class </b>
      * @param pageRequest pagination information ({@link PageRequest}
-     * @param criterion search criterion on document
-     * @param facetsMap facets, on data, to be calculated
-     * @param <S> entity class on which request is done
-     * @param <R> Joined entity class ("result" type)
+     * @param criterion   search criterion on document
+     * @param facetsMap   facets, on data, to be calculated
+     * @param <S>         entity class on which request is done
+     * @param <R>         Joined entity class ("result" type)
      * @return a page of joined entities
      */
     default <S, R extends IIndexable> FacetPage<R> search(JoinEntitySearchKey<S, R> searchKey, Pageable pageRequest,
-            ICriterion criterion, Map<String, FacetType> facetsMap) {
-        return search(searchKey, pageRequest, criterion, null, facetsMap);
+                                                          ICriterion criterion, Map<String, FacetType> facetsMap) {
+        return search(searchKey, pageRequest, criterion, ICriterion.all(), facetsMap);
     }
 
     /**
      * Search documents as usual BUT return joined entity whom type is specified into searchKey
-     * @param searchKey the search key. <b>Be careful, the search type must be the type concerned by criterion, result
-     *            class must be joined entity class </b>
-     * @param pageRequest pagination information ({@link PageRequest}
-     * @param criterion search criterion on document
-     * @param searchResultFilter a result filter to be used before result pagination. Can be null.
-     * @param facetsMap facets, on data, to be calculated
-     * @param <S> entity class on which request is done
-     * @param <R> Joined entity class ("result" type)
+     *
+     * @param <S>                   entity class on which request is done
+     * @param <R>                   Joined entity class ("result" type)
+     * @param searchKey             the search key. <b>Be careful, the search type must be the type concerned by criterion, result
+     *                              class must be joined entity class </b>
+     * @param pageRequest           pagination information ({@link PageRequest}
+     * @param criterion             search criterion on document
+     * @param searchResultCriterion a filter to be used on the join entity search. Can be null.
+     * @param facetsMap             facets, on data, to be calculated
      * @return a page of joined entities
      */
     <S, R extends IIndexable> FacetPage<R> search(JoinEntitySearchKey<S, R> searchKey, Pageable pageRequest,
-            ICriterion criterion, Predicate<R> searchResultFilter, Map<String, FacetType> facetsMap);
+                                                  ICriterion criterion, ICriterion searchResultCriterion, Map<String, FacetType> facetsMap);
 
     /**
      * Searching specified page of elements from index giving page size
-     * @param searchKey the search key
+     *
+     * @param searchKey   the search key
      * @param pageRequest page request (use {@link Page#nextPageable()} method for example)
-     * @param pValue value to search
-     * @param fields fields to search on (use '.' for inner objects, ie "attributes.tags"). Wildcards '*' can be used
-     *            too (ie attributes.dataRange.*). <b>Fields types must be consistent with given value type</b>
-     * @param <T> document type
+     * @param pValue      value to search
+     * @param fields      fields to search on (use '.' for inner objects, ie "attributes.tags"). Wildcards '*' can be used
+     *                    too (ie attributes.dataRange.*). <b>Fields types must be consistent with given value type</b>
+     * @param <T>         document type
      * @return specified result page
      */
     <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object pValue, String... fields);
@@ -120,7 +121,7 @@ public interface ISearchService {
     }
 
     default <S, R extends IIndexable> FacetPage<R> search(JoinEntitySearchKey<S, R> searchKey, int pageSize,
-            ICriterion criterion, Map<String, FacetType> facetsMap) {
+                                                          ICriterion criterion, Map<String, FacetType> facetsMap) {
         return this.search(searchKey, PageRequest.of(0, pageSize), criterion, facetsMap);
     }
 
@@ -129,26 +130,27 @@ public interface ISearchService {
     }
 
     default <T extends IIndexable> Page<T> search(SimpleSearchKey<T> searchKey, Pageable pageRequest,
-            ICriterion criterion) {
+                                                  ICriterion criterion) {
         return search(searchKey, pageRequest, criterion, null);
     }
 
     <T extends IIndexable> Aggregations getAggregations(SimpleSearchKey<T> searchKey, ICriterion criterion,
-            Collection<QueryableAttribute> attributes);
+                                                        Collection<QueryableAttribute> attributes);
 
     /**
      * Compute a DocFilesSummary for given request distributing results based on disciminantProperty for given file
      * types
+     *
      * @param <T> document type (must be of type IIndexable to be searched and IDocFiles to provide "files" property)
      * @return the compmuted summary
      */
     <T extends IIndexable & IDocFiles> DocFilesSummary computeDataFilesSummary(SearchKey<T, T> searchKey,
-            ICriterion crit, String discriminantProperty, Optional<String> discriminentPropertyInclude,
-            List<DataType> dataTypes);
+                                                                               ICriterion crit, String discriminantProperty, Optional<String> discriminentPropertyInclude,
+                                                                               List<DataType> dataTypes);
 
     /**
      * Search for alphabeticly sorted top maxCount values of given attribute following given request
      */
     <T extends IIndexable> List<String> searchUniqueTopValues(SearchKey<T, T> searchKey, ICriterion criterion,
-            String attName, int maxCount);
+                                                              String attName, int maxCount);
 }

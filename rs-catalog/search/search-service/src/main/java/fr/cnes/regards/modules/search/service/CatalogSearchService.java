@@ -71,7 +71,6 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -166,10 +165,8 @@ public class CatalogSearchService implements ICatalogSearchService {
                 // getting datasets on which user has no right
                 if ((TypeToken.of(searchKey.getResultClass()).getRawType() == Dataset.class)
                         && (accessGroups != null)) { // accessGroups null means superuser
-                    Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
-                            .isEmpty();
                     facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
-                                                     criterion, (Predicate<R>) datasetGroupAccessFilter, searchFacets);
+                            criterion, ICriterion.in(StaticProperties.GROUPS, StringMatchType.KEYWORD, accessGroups), searchFacets);
                 } else {
                     facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
                                                      criterion, searchFacets);

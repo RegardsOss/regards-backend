@@ -108,7 +108,7 @@ public class SearchService implements ISearchService {
 
     @Override
     public <S, T extends IIndexable> FacetPage<T> search(JoinEntitySearchKey<S, T> searchKey, Pageable pageRequest,
-            ICriterion criterion, Predicate<T> searchResultFilter, Map<String, FacetType> facetsMap) {
+                                                         ICriterion criterion, ICriterion searchResultCriterion, Map<String, FacetType> facetsMap) {
         addProjectInfos(searchKey);
         // Create a new SearchKey to search on asked type but to only retrieve tags of found results
         SearchKey<S, String[]> tagSearchKey = new SearchKey<>(searchKey.getSearchTypeMap(), String[].class);
@@ -120,21 +120,20 @@ public class SearchService implements ISearchService {
         // Create a new search key to search elements based on the result class of the joinedSearchKey
         SearchKey<T, T> outputSearchKey = new SearchKey<>(Collections.singletonMap(
                 Searches.TYPE_MAP.inverse().get(searchKey.getResultClass()).toString(), searchKey.getResultClass()));
-        addProjectInfos(searchKey);
-        outputSearchKey.setSearchIndex(searchKey.getSearchIndex());
+        addProjectInfos(outputSearchKey);
         // Retrieve objects with matching URN from ES Repository
         Function<Set<String>, Page<T>> toAskEntityFct = inputObjects -> repository.search(outputSearchKey, pageRequest,
-                                                                                          ICriterion
-                                                                                                  .in(StaticProperties.IP_ID,
-                                                                                                      StringMatchType.KEYWORD,
-                                                                                                      inputObjects
-                                                                                                              .stream()
-                                                                                                              .map(String.class::cast)
-                                                                                                              .toArray(
-                                                                                                                      String[]::new)));
+                ICriterion.and(ICriterion
+                        .in(StaticProperties.IP_ID,
+                                StringMatchType.KEYWORD,
+                                inputObjects
+                                        .stream()
+                                        .map(String.class::cast)
+                                        .toArray(
+                                                String[]::new)), searchResultCriterion));
         return repository
                 .search(tagSearchKey, criterion, StaticProperties.FEATURE_TAGS, askedTypePredicate, toAskEntityFct,
-                        searchResultFilter, facetsMap, pageRequest);
+                        facetsMap, pageRequest);
     }
 
     @Override
