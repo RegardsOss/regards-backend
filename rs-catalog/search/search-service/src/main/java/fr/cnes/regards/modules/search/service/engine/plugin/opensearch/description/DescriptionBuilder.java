@@ -79,6 +79,7 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension
 
 /**
  * Opensearch description.xml builder.
+ *
  * @author Sébastien Binda
  */
 @Component
@@ -135,14 +136,15 @@ public class DescriptionBuilder {
 
     /**
      * Build an OpenSearch descriptor for the current tenant(i.e. project) on the given path and entity type
-     * @param context {@link SearchContext}
-     * @param extensions {@link IOpenSearchExtension} extensions to use
+     *
+     * @param context        {@link SearchContext}
+     * @param extensions     {@link IOpenSearchExtension} extensions to use
      * @param parameterConfs {@link ParameterConfiguration}s parameters configuration.
      * @return {@link OpenSearchDescription}
      */
     public OpenSearchDescription build(SearchContext context, ICriterion criterion,
-            List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs,
-            EngineConfiguration engineConf, Optional<EntityFeature> dataset, IEntityLinkBuilder linkBuilder)
+                                       List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs,
+                                       EngineConfiguration engineConf, Optional<EntityFeature> dataset, IEntityLinkBuilder linkBuilder)
             throws ModuleException {
 
         // Retrieve informations about current projet
@@ -150,7 +152,7 @@ public class DescriptionBuilder {
 
         // Get all attributes for the given search type.
         List<DescriptionParameter> descParameters = getDescParameters(criterion, context, parameterConfs,
-                                                                      currentTenant);
+                currentTenant);
 
         // Build descriptor generic metadatas
         OpenSearchDescription desc = buildMetadata(engineConf, dataset);
@@ -164,11 +166,11 @@ public class DescriptionBuilder {
         // Build urls
         Link searchLink = linkBuilder.buildPaginationLink(resourceService, context, LinkRelation.of("search"));
         desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE,
-                                   context.getQueryParams().isEmpty()));
+                context.getQueryParams().isEmpty()));
         desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE,
-                                   context.getQueryParams().isEmpty()));
+                context.getQueryParams().isEmpty()));
         desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE,
-                                   context.getQueryParams().isEmpty()));
+                context.getQueryParams().isEmpty()));
 
         // Apply active extensions to global description
         extensions.stream().filter(IOpenSearchExtension::isActivated).forEach(ext -> ext.applyToDescription(desc));
@@ -178,6 +180,7 @@ public class DescriptionBuilder {
 
     /**
      * Build metadata of the {@link OpenSearchDescription}
+     *
      * @param dataset
      * @return
      */
@@ -212,14 +215,15 @@ public class DescriptionBuilder {
 
     /**
      * Build an {@link UrlType} to add into the {@link OpenSearchDescription}
-     * @param parameters {@link OpenSearchParameter}s parameters of the url
-     * @param endpoint {@link String} endpoint of the search request
-     * @param mediaType {@link String} MediaType of the search request response
+     *
+     * @param parameters     {@link OpenSearchParameter}s parameters of the url
+     * @param endpoint       {@link String} endpoint of the search request
+     * @param mediaType      {@link String} MediaType of the search request response
      * @param queryDelimiter whether to inject "?" into template or not
      * @return {@link UrlType}
      */
     private UrlType buildUrl(List<OpenSearchParameter> parameters, String endpoint, String mediaType,
-            boolean queryDelimiter) {
+                             boolean queryDelimiter) {
         UrlType url = new UrlType();
         url.getParameter().addAll(parameters);
         url.setRel(configuration.getUrlsRel());
@@ -238,12 +242,13 @@ public class DescriptionBuilder {
     /**
      * Build a {@link QueryType} for the given {@link AttributeModel}s.
      * The generate query is an example to shox syntax of the global searchTerms
+     *
      * @return {@link QueryType}
      */
     private QueryType buildQuery(List<DescriptionParameter> descParameters) {
         QueryType query = new QueryType();
         query.setRole("example");
-        query.setSearchTerms(getSearchTermExample(descParameters.stream().map(dp -> dp.getAttributeModel())
+        query.setSearchTerms(getSearchTermExample(descParameters.stream().map(DescriptionParameter::getAttributeModel)
                 .collect(Collectors.toList())));
         return query;
     }
@@ -251,11 +256,12 @@ public class DescriptionBuilder {
     /**
      * Build {@link OpenSearchParameter}s to add for the parameter extension in each {@link UrlType} of the
      * {@link OpenSearchDescription}
+     *
      * @param extensions {@link IOpenSearchExtension}s to apply on parameters
      * @return generated {@link OpenSearchParameter}s
      */
     private List<OpenSearchParameter> buildParameters(List<DescriptionParameter> descParameters,
-            List<IOpenSearchExtension> extensions) {
+                                                      List<IOpenSearchExtension> extensions) {
         List<OpenSearchParameter> parameters = Lists.newArrayList();
 
         // Add standard q parameter
@@ -296,11 +302,12 @@ public class DescriptionBuilder {
 
     /**
      * Build a {@link OpenSearchParameter} for a given {@link AttributeModel}
+     *
      * @param extensions {@link IOpenSearchExtension} opensearch extensions to handle.
      * @return
      */
     private OpenSearchParameter buildParameter(DescriptionParameter descParameter,
-            List<IOpenSearchExtension> extensions) {
+                                               List<IOpenSearchExtension> extensions) {
         OpenSearchParameter parameter = new OpenSearchParameter();
         if ((descParameter.getConfiguration() != null) && (descParameter.getConfiguration().getAllias() != null)) {
             parameter.setName(descParameter.getConfiguration().getAllias());
@@ -345,14 +352,15 @@ public class DescriptionBuilder {
      * For each attribute, this method return a couple {@link AttributeModel}/{@link QueryableAttribute}.
      * {@link AttributeModel} is the attribute definition (metadatas)
      * {@link QueryableAttribute} is the attribute available informations for query as boundaries for example.
-     * @param criterion {@link ICriterion} search criterion
-     * @param context {@link SearchContext}
+     *
+     * @param criterion      {@link ICriterion} search criterion
+     * @param context        {@link SearchContext}
      * @param parameterConfs {@link ParameterConfiguration} configured parameters.
      * @param pCurrentTenant {@link String} tenant or project.
      * @return {@link Map}<{@link AttributeModel}, {@link QueryableAttribute}>
      */
     private List<DescriptionParameter> getDescParameters(ICriterion criterion, SearchContext context,
-            List<ParameterConfiguration> parameterConfs, String pCurrentTenant) throws ModuleException {
+                                                         List<ParameterConfiguration> parameterConfs, String pCurrentTenant) throws ModuleException {
 
         List<DescriptionParameter> parameters = Lists.newArrayList();
 
@@ -367,13 +375,8 @@ public class DescriptionBuilder {
                 parameters.add(new DescriptionParameter(finder.findName(att), att, conf.orElse(null), queryableAtt));
             }
         }
-        try {
-            // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
-            searchService.retrievePropertiesStats(criterion, context.getSearchType(), queryableAttributes);
-        } catch (SearchException e) {
-            LOGGER.error("Error retrieving properties for each parameters of the OpenSearchDescription (parameter extension",
-                         e);
-        }
+        // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
+        searchService.retrievePropertiesStats(criterion, context.getSearchType(), queryableAttributes);
         return parameters;
     }
 
@@ -409,12 +412,13 @@ public class DescriptionBuilder {
     /**
      * Create an new empty {@link QueryableAttribute} object for the given {@link AttributeModel}
      * and the associated {@link ParameterConfiguration}
-     * @param att {@link AttributeModel}
+     *
+     * @param att  {@link AttributeModel}
      * @param conf {@link ParameterConfiguration}
      * @return {@link QueryableAttribute}
      */
     private QueryableAttribute createEmptyQueryableAttribute(AttributeModel att,
-            Optional<ParameterConfiguration> conf) {
+                                                             Optional<ParameterConfiguration> conf) {
 
         // Build full real path for the attribute in index.
         String name = att.getFullJsonPath();
@@ -430,6 +434,7 @@ public class DescriptionBuilder {
 
     /**
      * Convert {@link SearchType} to {@link EntityType}
+     *
      * @param searchType {@link SearchType}
      * @return {@link EntityType}
      */
@@ -445,12 +450,13 @@ public class DescriptionBuilder {
             case DATAOBJECTS_RETURN_DATASETS:
             default:
                 throw new UnsupportedOperationException(
-                        String.format("Unsupproted entity type for open search. %s", searchType.toString()));
+                        String.format("Unsupproted entity type for open search. %s", searchType));
         }
     }
 
     /**
      * Generate an example search query for searchTerms standard opensearch parameter.
+     *
      * @param pAttrs {@link AttributeModel}s to handle in query
      * @return {@link String} example query
      */
