@@ -39,8 +39,11 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfigurationWithFilesNotAvailable;
+import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -60,9 +63,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author oroussel
@@ -93,9 +93,6 @@ public class OrderServiceUnavailableFilesIT {
     private IBasketRepository basketRepos;
 
     @Autowired
-    private IJobInfoRepository jobInfoRepos;
-
-    @Autowired
     private IAuthenticationResolver authResolver;
 
     @Autowired
@@ -116,6 +113,8 @@ public class OrderServiceUnavailableFilesIT {
     @MockBean
     private IProjectUsersClient projectUsersClient;
 
+    @MockBean
+    private IProcessingRestClient processingClient;
 
     @Before
     public void init() {
@@ -139,7 +138,7 @@ public class OrderServiceUnavailableFilesIT {
         basketRepos.deleteAll();
         orderRepos.deleteAll();
         dataFileRepos.deleteAll();
-        jobInfoRepos.deleteAll();
+        jobInfoRepo.deleteAll();
     }
 
     @Test

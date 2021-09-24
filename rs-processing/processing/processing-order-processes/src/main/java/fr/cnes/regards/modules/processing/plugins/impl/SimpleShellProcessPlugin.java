@@ -177,7 +177,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
                 Cardinality.valueOf(cardinality),
                 getRequiredDataTypes().toList(),
                 new SizeLimit(SizeLimit.Type.FEATURES, maxFeaturesInInput),
-                this.sizeForecast().get()
+                this.sizeForecast().get(), Boolean.FALSE
         );
     }
 

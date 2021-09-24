@@ -38,5 +38,6 @@ public class OrderProcessInfo {
     List<DataType> requiredDatatypes;
     SizeLimit sizeLimit;
     IResultSizeForecast sizeForecast;
+    Boolean forbidSplitInSuborders;
 
 }

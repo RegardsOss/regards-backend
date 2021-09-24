@@ -125,6 +125,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     @Autowired protected TaskExecutor taskExecutor;
     @Autowired protected ExecResultHandlerResultEventHandler execResultHandlerResultEventHandler;
     @Autowired protected OrderCreationCompletedEventHandler orderCreationCompletedEventHandler;
+    @Autowired protected IBasketService basketService;
 
     @MockBean
     protected IProjectUsersClient projectUsersClient;
@@ -155,10 +156,12 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
 
     protected void clean() {
         basketRepos.deleteAll();
+        dsSelRepo.deleteAll();
         orderRepos.deleteAll();
         dataFileRepos.deleteAll();
         jobInfoRepos.deleteAll();
         execResultHandlerResultEventHandler.clear();
+        orderCreationCompletedEventHandler.clear();
     }
 
     protected void showMetalink(Order order) throws IOException {
@@ -193,25 +196,9 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     }
 
     protected void setupMocksAndHandlers(UUID processBusinessId, OrderProcessInfoMapper processInfoMapper, OrderProcessInfo processInfo, String defaultTenant, ProcessingMock processingMock, AtomicInteger sendProcessingRequestCallCount, String orderOwner, CountDownLatch orderCreatedLatch, CountDownLatch receivedExecutionResultsLatch) {
-        Mockito.reset(processingClient, processingEventSender);
+        Mockito.reset(processingEventSender);
 
-        when(processingClient.findByUuid(processBusinessId.toString())).thenAnswer(i -> {
-            return new ResponseEntity<>(new PProcessDTO(
-                    processBusinessId,
-                    "the-process-name",
-                    true,
-                    processInfoMapper.toMap(processInfo),
-                    List.of(new ExecutionParamDTO("the-param-name", ExecutionParameterType.STRING, "The param desc"))
-            ), HttpStatus.OK);
-        });
-
-        when(processingClient.createBatch(any())).thenAnswer(i -> {
-            PBatchRequest req = i.getArgument(0);
-            String correlationId = req.getCorrelationId();
-            UUID batchId = UUID.randomUUID();
-            batchCorrelations.put(batchId, correlationId);
-            return new ResponseEntity<>(new PBatchResponse(batchId, correlationId), HttpStatus.OK);
-        });
+        setUpProcessingClient(processBusinessId, processInfoMapper, processInfo);
 
         when(processingEventSender.sendProcessingRequest(any())).thenAnswer(i -> {
             sendProcessingRequestCallCount.incrementAndGet();
@@ -234,6 +221,30 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
             receivedExecutionResultsLatch.countDown();
         });
     }
+
+    protected void setUpProcessingClient(UUID processBusinessId, OrderProcessInfoMapper processInfoMapper,
+                                 OrderProcessInfo processInfo) {
+        Mockito.reset(processingClient);
+
+        when(processingClient.findByUuid(processBusinessId.toString())).thenAnswer(i -> {
+            return new ResponseEntity<>(new PProcessDTO(
+                    processBusinessId,
+                    "the-process-name",
+                    true,
+                    processInfoMapper.toMap(processInfo),
+                    List.of(new ExecutionParamDTO("the-param-name", ExecutionParameterType.STRING, "The param desc"))
+            ), HttpStatus.OK);
+        });
+
+        when(processingClient.createBatch(any())).thenAnswer(i -> {
+            PBatchRequest req = i.getArgument(0);
+            String correlationId = req.getCorrelationId();
+            UUID batchId = UUID.randomUUID();
+            batchCorrelations.put(batchId, correlationId);
+            return new ResponseEntity<>(new PBatchResponse(batchId, correlationId), HttpStatus.OK);
+        });
+    }
+
 
     protected Basket createBasket(String orderOwner, String defaultTenant, UUID processBusinessId, Map<String, String> processParameters) {
         Basket basket = new Basket(orderOwner);
@@ -369,11 +380,16 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
 
     @Component
     public static class OrderCreationCompletedEventHandler implements ApplicationListener<OrderCreationService.OrderCreationCompletedEvent> {
+        protected final java.util.Queue<OrderCreationService.OrderCreationCompletedEvent> events = new ConcurrentLinkedQueue<>();
         protected Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer = e -> {};
         public void setConsumer(Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer) { this.consumer = consumer; }
         @Override public synchronized void onApplicationEvent(OrderCreationService.OrderCreationCompletedEvent event) {
+            events.add(event);
             consumer.accept(event);
         }
+        public List<OrderCreationService.OrderCreationCompletedEvent> getEvents() { return List.ofAll(events); }
+        public void clear() { events.clear(); }
+
     }
 
 }

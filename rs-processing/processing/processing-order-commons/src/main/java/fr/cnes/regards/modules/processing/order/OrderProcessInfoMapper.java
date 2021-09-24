@@ -38,25 +38,31 @@ public class OrderProcessInfoMapper extends AbstractMapper<OrderProcessInfo> {
 
     public Map<String, String> toMap(OrderProcessInfo params) {
         return HashMap.of(
-            SCOPE, params.getScope().name(),
-            CARDINALITY, params.getCardinality().name(),
-            DATATYPES, params.getRequiredDatatypes()
-                .map(DataType::toString)
-                .reduceOption((a,b) -> String.format("%s,%s", a, b))
-                .getOrElse(""),
-            SIZE_LIMIT_TYPE, params.getSizeLimit().getType().name(),
-            SIZE_LIMIT_VALUE, params.getSizeLimit().getLimit().toString(),
-            SIZE_FORECAST, params.getSizeForecast().format()
+                SCOPE, params.getScope().name(),
+                CARDINALITY, params.getCardinality().name(),
+                DATATYPES, params.getRequiredDatatypes()
+                        .map(DataType::toString)
+                        .reduceOption((a, b) -> String.format("%s,%s", a, b))
+                        .getOrElse(""),
+                SIZE_LIMIT_TYPE, params.getSizeLimit().getType().name(),
+                SIZE_LIMIT_VALUE, params.getSizeLimit().getLimit().toString(),
+                SIZE_FORECAST, params.getSizeForecast().format(),
+                FORBID_SPLIT_IN_SUBORDERS, params.getForbidSplitInSuborders().toString()
         );
     }
 
     public Option<OrderProcessInfo> fromMap(Map<String, String> map) {
         return parse(map, SCOPE, Scope.class)
-            .flatMap(scope -> parse(map, CARDINALITY, Cardinality.class)
-                .flatMap(card -> parseDatatypes(map)
-                    .flatMap(datatypes -> parseSizeLimit(map)
-                        .flatMap(sizeLimit -> parseSizeForecast(map)
-                            .map(sizeForecast -> new OrderProcessInfo(scope, card, datatypes, sizeLimit, sizeForecast))))));
+                .flatMap(scope -> parse(map, CARDINALITY, Cardinality.class)
+                        .flatMap(card -> parseDatatypes(map)
+                                .flatMap(datatypes -> parseSizeLimit(map)
+                                        .flatMap(sizeLimit -> parseSizeForecast(map)
+                                                .flatMap(sizeForecast -> parseForbidSplitInSubOrder(map)
+                                                        .map(forbidSplitInSuborders -> new OrderProcessInfo(scope, card, datatypes, sizeLimit, sizeForecast, forbidSplitInSuborders)))))));
+    }
+
+    private Option<Boolean> parseForbidSplitInSubOrder(Map<String, String> map) {
+        return map.get(FORBID_SPLIT_IN_SUBORDERS).flatMap(fc -> parseBoolean(map, FORBID_SPLIT_IN_SUBORDERS));
     }
 
     protected Option<IResultSizeForecast> parseSizeForecast(Map<String, String> map) {

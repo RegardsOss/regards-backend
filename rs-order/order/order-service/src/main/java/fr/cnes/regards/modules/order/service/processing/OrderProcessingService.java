@@ -31,13 +31,26 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
 import fr.cnes.regards.modules.order.service.job.BasketDatasetSelectionDescriptor;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
-import fr.cnes.regards.modules.order.service.job.parameters.*;
+import fr.cnes.regards.modules.order.service.job.parameters.BasketDatasetSelectionJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessBatchCorrelationIdJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessDTOJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeature;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeatureJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessJobInfoJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessOutputFeatureDesc;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessOutputFilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.TenantJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
 import fr.cnes.regards.modules.order.service.processing.correlation.BatchSuborderCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.processing.correlation.ProcessInputCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
@@ -46,10 +59,19 @@ import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
-import fr.cnes.regards.modules.processing.order.*;
+import fr.cnes.regards.modules.processing.order.Cardinality;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
+import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.SizeLimit;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
+import java.util.Collections;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.NotImplementedException;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -65,12 +87,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
-
-import java.util.Collections;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import reactor.util.function.Tuples;
 
 /**
  * Complement to OrderService when dealing with dataset selections having processing.
@@ -140,34 +157,41 @@ public class OrderProcessingService implements IOrderProcessingService {
                 // Creates datasetTasks with required data types and update estimated size
                 DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, requiredDatatypes.toJavaList());
                 dsTask.setFilesSize(orderProcessInfo.getSizeForecast().expectedResultSizeInBytes(dsTask.getFilesSize()));
-        
+
                 AtomicLong suborderCount = new AtomicLong(1);
-        
                 OrderCounts result = basketSelectionPageSearch.fluxSearchDataObjects(dsSel)
-                    .groupBy(feature -> hasAtLeastOneRequiredFileInStorage(feature, requiredDatatypes))
-                    .flatMap(featureGroup -> discriminateBetweenSomeInStorageOrOnlyExternal(
-                        order, dsSel,
-                        tenant, user, userRole,
-                        processDto, orderProcessInfo,
-                        suborderCount, featureGroup,
-                        subOrderDuration
-                    ))
-                    .doOnNext(dsTask::addReliantTask)
-                    .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1, Collections.singleton(filesTask.getJobInfo().getId())))
-                    .reduce(OrderCounts.initial(), OrderCounts::add)
-                    .block();
-        
+                        .groupBy(feature -> hasAtLeastOneRequiredFileInStorage(feature, requiredDatatypes))
+                        .flatMap(featureGroup -> discriminateBetweenSomeInStorageOrOnlyExternal(
+                                        order, dsSel,
+                                        tenant, user, userRole,
+                                        processDto, orderProcessInfo,
+                                        suborderCount, featureGroup,
+                                        subOrderDuration
+                                ))
+                        .doOnNext(dsTask::addReliantTask)
+                        .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1, Collections.singleton(filesTask.getJobInfo().getId())))
+                        .reduce(OrderCounts.initial(), OrderCounts::add)
+                        .block();
+
                 if (!dsTask.getReliantTasks().isEmpty()) {
                     order.addDatasetOrderTask(dsTask);
                 }
-                
                 return OrderCounts.add(orderCounts, result);
             } else {
-                throw new ModuleException("Error retrieving  process infor for id " + processIdStr) ;
+                throw new ModuleException("Error retrieving process id " + processIdStr);
             }
+
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(e.getMessage(),e);
             throw new ModuleException(e.getMessage());
+        } catch (RuntimeException e) {
+            // catch a runtime exception if fluxSearchDataObjects throws a module exception wrapped in a runtime
+            // reactor exception
+            if(e.getCause() instanceof TooManyItemsSelectedInBasketException) {
+                throw (TooManyItemsSelectedInBasketException) e.getCause();
+            } else {
+                throw e;
+            }
         }
     }
 
@@ -212,7 +236,6 @@ public class OrderProcessingService implements IOrderProcessingService {
             String user,
             String userRole
     ) {
-
         return windowAccordingToScopeAndSizeLimit(order.getId(), pProcessDTO.getProcessId(), featureGroup, orderProcessInfo)
             .flatMap(features -> {
                 if (orderProcessInfo.getScope() == Scope.SUBORDER) {
@@ -423,13 +446,34 @@ public class OrderProcessingService implements IOrderProcessingService {
             GroupedFlux<Boolean, EntityFeature> featureGroup,
             OrderProcessInfo orderProcessInfo
     ) {
-        return featureGroup
-            .publish(fg -> fg.zipWith(fg.scan(
-                new FeatureAccumulator(orderId, processBusinessId),
-                (acc, f) -> acc.addFeatureAndReturnInitialAccumulatorIfOverLimits(f, orderProcessInfo))
-            )
-            .bufferUntil(featAndAcc -> featAndAcc.getT2().isInitial(), true)
-            .map(featsAndAccs -> List.ofAll(featsAndAccs).map(Tuple2::getT1)));
+        Flux<List<Tuple2<EntityFeature, FeatureAccumulator>>> publish = featureGroup
+                .publish(fg -> fg.zipWith(fg.scan(
+                                new FeatureAccumulator(orderId, processBusinessId),
+                                (acc, f) -> acc.addFeatureAndReturnInitialAccumulatorIfOverLimits(f, orderProcessInfo)))
+                        .bufferUntil(featAndAcc -> featAndAcc.getT2().isInitial(), true)
+                        .map(List::ofAll));
+
+        // Check if the order can be split in multiple suborders
+        if(!orderProcessInfo.getForbidSplitInSuborders()) {
+            return publish.map(featAndAcc -> featAndAcc.map(Tuple2::getT1));
+        } else {
+            // if not, check the size of the buffer. If it contains more than one featureGroup, it means one of the
+            // SizeLimit was reached, an exception is thrown because of the active parameter forbitSplitInSuborders
+            return publish
+                    .filter(featAndAcc -> !featAndAcc.isEmpty())
+                    .buffer(2)
+                    .flatMap(featuresBuffer -> {
+                        if (featuresBuffer.size() > 1) {
+                            return Mono.error(new TooManyItemsSelectedInBasketException(String.format(
+                                    "%s. The order cannot be processed because the parameter " +
+                                            "forbitSplitInSuborders is active. Please decrease the number of items " +
+                                            "ordered or contact the administrator for more information.",
+                                    featuresBuffer.get(1).last().getT2().newSubOrderMsg)));
+                        } else {
+                            return Mono.just(featuresBuffer.get(0).map(Tuple2::getT1));
+                        }
+                    });
+        }
     }
 
     protected Flux<FilesTask> manageFeaturesWithFilesInStorage(
@@ -544,6 +588,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         int fileCount;
         int featureCount;
         long size;
+        String newSubOrderMsg;
 
         public FeatureAccumulator(Long orderId, UUID processBusinessId) {
             this.orderId = orderId;
@@ -551,21 +596,38 @@ public class OrderProcessingService implements IOrderProcessingService {
             this.fileCount = 0;
             this.featureCount = 0;
             this.size = 0L;
+            this.newSubOrderMsg = "";
         }
 
-        public FeatureAccumulator addFeatureAndReturnInitialAccumulatorIfOverLimits(EntityFeature feature, OrderProcessInfo orderProcessInfo) {
+        public FeatureAccumulator(Long orderId, UUID processBusinessId, String newSubOrderMsg) {
+            this.orderId = orderId;
+            this.processBusinessId = processBusinessId;
+            this.fileCount = 0;
+            this.featureCount = 0;
+            this.size = 0L;
+            this.newSubOrderMsg = newSubOrderMsg;
+        }
+
+        public FeatureAccumulator addFeatureAndReturnInitialAccumulatorIfOverLimits(EntityFeature feature,
+                                                                                    OrderProcessInfo orderProcessInfo) {
             List<DataFile> files = featureRequiredDatafiles(feature, orderProcessInfo.getRequiredDatatypes()).collect(List.collector());
             int deltaCount = files.size();
             long deltaSize = files.map(DataFile::getFilesize).sum().longValue();
             FeatureAccumulator newAcc = new FeatureAccumulator(orderId, processBusinessId,
                     fileCount + deltaCount,
                     featureCount + 1,
-                    size + deltaSize
+                    size + deltaSize, newSubOrderMsg
             );
-            return newAcc.isOverProcessAndStorageLimits(orderProcessInfo) ? new FeatureAccumulator(orderId, processBusinessId) : newAcc;
+            Tuple2<Boolean, String> resultTuple = newAcc.isOverProcessAndStorageLimits(orderProcessInfo);
+
+             if(resultTuple.getT1()) {
+                 return new FeatureAccumulator(orderId, processBusinessId, resultTuple.getT2());
+             } else {
+                return newAcc;
+             }
         }
 
-        public boolean isOverProcessAndStorageLimits(OrderProcessInfo orderProcessInfo) {
+        public Tuple2<Boolean, String> isOverProcessAndStorageLimits(OrderProcessInfo orderProcessInfo) {
             SizeLimit sizeLimit = orderProcessInfo.getSizeLimit();
             SizeLimit.Type processLimitType = sizeLimit.getType();
             boolean countExceedsMaxExternalBucketSize = fileCount >= suborderSizeCounter.maxExternalBucketSize();
@@ -576,23 +638,26 @@ public class OrderProcessingService implements IOrderProcessingService {
 
             boolean result = countExceedsMaxExternalBucketSize || sizeExceedsStorageBucketSize;
             result |= countExceedsProcessFilesLimit || countExceedsProcessFeatureLimit || sizeExceedsProcessBytesLimit;
-            
+
+            String subOrderMsg = "";
             if (result) {
-                LOGGER.info("order={} processUuid={} Suborder interrupted for reason: " +
-                        " max external bucket = {}," +
-                        " storage bucket size = {}," +
-                        " process info file limit = {}," +
-                        " process info feature limit = {}," +
-                        " process info size limit = {}",
-                    orderId, processBusinessId,
-                    countExceedsMaxExternalBucketSize,
-                    sizeExceedsStorageBucketSize,
-                    countExceedsProcessFilesLimit,
-                    countExceedsProcessFeatureLimit,
-                    sizeExceedsProcessBytesLimit
+                subOrderMsg = String.format("order=%s processUuid=%s Suborder interrupted because one of the " +
+                                "following limit was reached : " +
+                                " \"%s\" = %s," +
+                                " \"%s\" = %s," +
+                                " process info \"%s\" = %s," +
+                                " process info \"%s\" = %s," +
+                                " process info \"%s\" (size limit) = %s",
+                        orderId, processBusinessId,
+                        "MAX_EXTERNAL_BUCKET_FILE_COUNT", countExceedsMaxExternalBucketSize,
+                        "MAX_STORAGE_BUCKET_SIZE", sizeExceedsStorageBucketSize,
+                        SizeLimit.Type.FILES, countExceedsProcessFilesLimit,
+                        SizeLimit.Type.FEATURES, countExceedsProcessFeatureLimit,
+                        SizeLimit.Type.BYTES, sizeExceedsProcessBytesLimit
                 );
+                LOGGER.info(subOrderMsg);
             }
-            return result;
+            return Tuples.of(result, subOrderMsg);
         }
 
         public boolean isInitial() {

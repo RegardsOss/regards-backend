@@ -52,7 +52,7 @@ public class UselessProcessPlugin implements IProcessDefinition {
             Cardinality.ONE_PER_INPUT_FILE,
             List.of(DataType.RAWDATA),
             new SizeLimit(SizeLimit.Type.FILES, 0L),
-            sizeForecast
+            sizeForecast, Boolean.FALSE
         );
     }
 

@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.BasketDto;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
+import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ public class BasketController implements IResourceController<BasketDto> {
     @ResourceAccess(description = "Add a selection to the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, value = SELECTION)
     public ResponseEntity<EntityModel<BasketDto>> addSelection(
-            @Valid @RequestBody BasketSelectionRequest basketSelectionRequest) throws EmptySelectionException {
+            @Valid @RequestBody BasketSelectionRequest basketSelectionRequest) throws EmptySelectionException, TooManyItemsSelectedInBasketException {
         String user = authResolver.getUser();
         Basket basket = basketService.findOrCreate(user);
         basket = basketService.addSelection(basket.getId(), basketSelectionRequest);
@@ -99,7 +100,7 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<EntityModel<BasketDto>> attachProcessDescriptionToDatasetSelection(
             @PathVariable("datasetSelectionId") Long dsSelectionId,
             @RequestBody(required = false) ProcessDatasetDescription description
-    ) throws EmptyBasketException {
+    ) throws EmptyBasketException, TooManyItemsSelectedInBasketException {
         Basket basket = basketService.find(authResolver.getUser());
         Basket modified = basketService.attachProcessing(basket, dsSelectionId, description);
         BasketDto dto = BasketDto.makeBasketDto(modified);

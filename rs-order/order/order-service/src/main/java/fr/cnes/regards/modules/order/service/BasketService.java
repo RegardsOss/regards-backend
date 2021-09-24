@@ -28,28 +28,41 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.domain.basket.*;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
+import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.service.processing.OrderProcessingService;
+import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
+import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
+import fr.cnes.regards.modules.processing.order.SizeLimit;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.persistence.EntityNotFoundException;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 
 /**
  * @author oroussel
@@ -70,6 +83,9 @@ public class BasketService implements IBasketService {
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IProcessingRestClient processingClient;
 
     @Override
     public Basket findOrCreate(String user) {
@@ -100,7 +116,7 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest) throws EmptySelectionException {
+    public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest) throws EmptySelectionException, TooManyItemsSelectedInBasketException {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
             throw new EntityNotFoundException("Basket with id " + basketId + " doesn't exist");
@@ -148,6 +164,15 @@ public class BasketService implements IBasketService {
 
                 // Add items selection to dataset selection
                 datasetSelection.getItemsSelections().add(itemsSelection);
+
+                // check if a process is associated to the dataset
+                // if not, add the selection without check
+                // if yes, get the associated process and check if the updated number of items to process is
+                // less that the limit defined.
+                if(datasetSelection.getProcessDatasetDescription() != null) {
+                    checkLimitElementsInOrder(datasetSelection.getProcessDatasetDescription().getProcessBusinessId().toString(),
+                            datasetSelection);
+                }
 
                 // Update DatasetSelection (summary)
                 computeSummaryAndUpdateDatasetSelection(datasetSelection);
@@ -201,12 +226,59 @@ public class BasketService implements IBasketService {
             Basket basket,
             Long datasetId,
             @Nullable ProcessDatasetDescription desc
-    ) {
-        return basket.getDatasetSelections().stream()
+    ) throws TooManyItemsSelectedInBasketException {
+        // find dataset selection with selected id
+        BasketDatasetSelection basketSelection = basket.getDatasetSelections().stream()
                 .filter(ds -> ds.getId().equals(datasetId))
-                .findFirst()
-                .map(ds -> attachProcessToDatasetSelectionAndSaveBasket(basket, ds, desc))
-                .orElseThrow(() -> new EntityNotFoundException("Basket selection with id " + datasetId + " doesn't exist"));
+                .findFirst().orElseThrow(() -> new EntityNotFoundException("Basket selection with id " + datasetId + " doesn't exist"));
+        // check the number of items in the basket only if a process is associated to the dataset
+        if (desc != null) {
+            checkLimitElementsInOrder(desc.getProcessBusinessId().toString(), basketSelection);
+        }
+        // attach the process to the dataset if no error has occurred
+        attachProcessToDatasetSelectionAndSaveBasket(basket, basketSelection, desc);
+        return basket;
+    }
+
+    private void checkLimitElementsInOrder(String processBusinessId,
+                                           BasketDatasetSelection basketSelection) throws TooManyItemsSelectedInBasketException {
+        // retrieve the processing to get configuration parameters
+        ResponseEntity<PProcessDTO> processResponse = processingClient.findByUuid(processBusinessId);
+        if (processResponse.getBody() != null && processResponse.getStatusCode() == HttpStatus.OK) {
+            OrderProcessInfoMapper orderProcessInfoMapper = new OrderProcessInfoMapper();
+            OrderProcessInfo processInfo =
+                    orderProcessInfoMapper.fromMap(processResponse.getBody().getProcessInfo()).getOrElseThrow(() -> new OrderProcessingService.UnparsableProcessInfoException(
+                            String.format("Unparsable description info from process plugin with id %s", processBusinessId)));
+
+            // check if the number of items in the basket does not exceed maximum number of items configured
+            // by the process. The numberOfElementsToCheck is init to 0 by default in case there is no limit
+            // configured in the process
+            long numberOfElementsToCheck = 0L;
+            SortedSet<BasketDatedItemsSelection> selectedItemsInOrder = basketSelection.getItemsSelections();
+            SizeLimit sizeLimit = processInfo.getSizeLimit();
+            switch (sizeLimit.getType()) {
+                case FEATURES:
+                    numberOfElementsToCheck = selectedItemsInOrder.stream().map(BasketDatedItemsSelection::getObjectsCount).reduce(0, Integer::sum);
+                    break;
+                case FILES:
+                    numberOfElementsToCheck =
+                            selectedItemsInOrder.stream().map(item -> item.getFileTypesCount().values().stream().reduce(0L, Long::sum)).reduce(0L, Long::sum);
+                    break;
+                case BYTES:
+                    numberOfElementsToCheck =
+                            selectedItemsInOrder.stream().map(item -> item.getFileTypesSizes().values().stream().reduce(0L, Long::sum)).reduce(0L, Long::sum);
+                    break;
+                default:
+                    break;
+            }
+            if (numberOfElementsToCheck > processInfo.getSizeLimit().getLimit()) {
+                throw new TooManyItemsSelectedInBasketException(String.format("The number of selected \"%s\" in " +
+                                "the basket [%d] exceeds the maximum number of \"%s\" allowed [%d]. Please, decrease the " +
+                                "number of selected items or contact the administrator for more information.",
+                        sizeLimit.getType(), numberOfElementsToCheck, sizeLimit.getType(),
+                        processInfo.getSizeLimit().getLimit()));
+            }
+        }
     }
 
     @Override

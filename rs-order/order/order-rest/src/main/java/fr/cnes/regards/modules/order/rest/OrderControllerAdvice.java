@@ -47,6 +47,11 @@ public class OrderControllerAdvice {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @ExceptionHandler(TooManyItemsSelectedInBasketException.class)
+    public ResponseEntity<ServerErrorResponse> handleTooManyItemsSelectedInBasketException(TooManyItemsSelectedInBasketException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(e.getMessage(), e));
+    }
+
     @ExceptionHandler(NotYetAvailableException.class)
     public ResponseEntity<ServerErrorResponse> handleNotYetAvailableException(NotYetAvailableException e) {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage(), e));

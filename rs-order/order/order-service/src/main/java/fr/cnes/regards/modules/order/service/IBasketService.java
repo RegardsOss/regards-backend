@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
+import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import org.springframework.lang.Nullable;
 
@@ -64,13 +65,15 @@ public interface IBasketService {
 
     /**
      * Add a selection to a basket through an opensearch request. The selection concerns a priori several datasets.
-     * Adding a selection concerns RAWDATA and QUICKLOOKS files
+     * Adding a selection concerns RAWDATA and QUICKLOOKS files. If a process is associated to a selected dataset, a
+     * check is done to verify if the number of items to process is less than the limit defined by the process
      * @param basketId
      * @param selectionRequest
      * @return {@link Basket}
      * @throws EmptySelectionException
+     * @throws TooManyItemsSelectedInBasketException
      */
-    Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest) throws EmptySelectionException;
+    Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest) throws EmptySelectionException, TooManyItemsSelectedInBasketException;
 
     /**
      * Remove specified dataset selection from basket
@@ -90,14 +93,16 @@ public interface IBasketService {
     Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate);
 
     /**
-     * Attach a process uuid to the dataset selection
+     * Attach a process uuid to the dataset selection.
      *
      * @param basket      the user's basket
      * @param datasetId   the id of the dataset selection to modify
      * @param description the process UUID and parameters to attach to the dataset selection, remove the existing process desc if null
      * @return update {@link Basket}
+     * @throws TooManyItemsSelectedInBasketException if the number of items to process is greater than the limit
+     * defined by the process
      */
-    Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescription description);
+    Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescription description) throws TooManyItemsSelectedInBasketException;
 
     /**
      * Duplicates a basket with the exact same content, but with a new owner

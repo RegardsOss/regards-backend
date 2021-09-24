@@ -36,6 +36,8 @@ public interface Constants {
 
     String SIZE_FORECAST = "sizeForecast";
 
+    String FORBID_SPLIT_IN_SUBORDERS = "forbidSplitInSubOrders";
+
     String INTERNAL = "internal";
 
     String FEATURE_ID = "featureId";

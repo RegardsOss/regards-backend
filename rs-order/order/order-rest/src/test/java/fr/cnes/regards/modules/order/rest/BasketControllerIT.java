@@ -18,15 +18,34 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.io.UnsupportedEncodingException;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.rest.mock.ProcessingClientMock;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
+import io.vavr.collection.HashMap;
 import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
@@ -42,30 +61,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
-import io.vavr.collection.HashMap;
 
 /**
  * @author oroussel
@@ -95,7 +90,6 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
     @MockBean
     private IProjectUsersClient projectUsersClient;
-
 
     private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {
         BasketSelectionRequest request = new BasketSelectionRequest();
@@ -186,6 +180,81 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
                            customizer().expectStatusNoContent(), "error");
+    }
+
+
+    @Test
+    @Purpose("Attach a process to a basket when the limit of items added is not reached")
+    public void testAddProcessToDatasetSuccess() {
+        // init parameters
+        java.util.HashMap<String, String> parameters = HashMap.of("key", "value").toJavaMap();
+        Basket basket = createBasket();
+
+        // Attach processing when FEATURES is below limit
+        UUID processBusinessIdFeatures = UUID.fromString(ProcessingClientMock.PROCESS_ID_FEATURES_5L);
+        RequestBuilderCustomizer customizerAddFeatures = customizer().expectStatusOk()
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                        processBusinessIdFeatures.toString())
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                new ProcessDatasetDescription(processBusinessIdFeatures, parameters), customizerAddFeatures, "error",
+                basket.getDatasetSelections().first().getId());
+
+        // Attach processing when FILES is below limit
+        UUID processBusinessIdFiles = UUID.fromString(ProcessingClientMock.PROCESS_ID_FILES_20L);
+        RequestBuilderCustomizer customizerAddFiles = customizer().expectStatusOk()
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                        processBusinessIdFiles.toString())
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                new ProcessDatasetDescription(processBusinessIdFiles, parameters), customizerAddFiles, "error",
+                basket.getDatasetSelections().first().getId());
+
+        // Attach processing when BYTES is below limit
+        UUID processBusinessIdSize = UUID.fromString(ProcessingClientMock.PROCESS_ID_BYTES_300000L);
+        RequestBuilderCustomizer customizerAddSize = customizer().expectStatusOk()
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                        processBusinessIdSize.toString())
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                new ProcessDatasetDescription(processBusinessIdSize, parameters), customizerAddSize, "error",
+                basket.getDatasetSelections().first().getId());
+
+        // Attach processing when there is no limit
+        UUID processBusinessIdNoLimit = UUID.fromString(ProcessingClientMock.PROCESS_ID_NO_LIMIT);
+        RequestBuilderCustomizer customizerAddNoLimit = customizer().expectStatusOk()
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                        processBusinessIdNoLimit.toString())
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                new ProcessDatasetDescription(processBusinessIdNoLimit, parameters), customizerAddNoLimit, "error",
+                basket.getDatasetSelections().first().getId());
+    }
+
+    @Test
+    @Purpose("Attach a process to a basket when the limit of items added is reached")
+    public void testAddProcessToDatasetFail() {
+        // init parameters
+        java.util.HashMap<String, String> parameters = HashMap.of("key", "value").toJavaMap();
+        Basket basket = createBasket();
+        RequestBuilderCustomizer customizerAdd = customizer().expectStatus(HttpStatus.CONFLICT);
+
+        // Fail to attach processing because FEATURES limit is reached
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_FEATURES_2L), parameters), customizerAdd, "error",
+                basket.getDatasetSelections().first().getId());
+
+        // Fail to attach processing because FILES limit is reached
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_FILES_10L),
+                        parameters), customizerAdd, "error",
+                basket.getDatasetSelections().first().getId());
+
+        // Fail to attach processing because BYTES limit is reached
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_BYTES_150L), parameters),
+                customizerAdd, "error",
+                basket.getDatasetSelections().first().getId());
     }
 
     @Test

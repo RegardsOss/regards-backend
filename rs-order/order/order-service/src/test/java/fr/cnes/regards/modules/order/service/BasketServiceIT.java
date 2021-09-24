@@ -18,39 +18,50 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.domain.basket.*;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
+import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.service.processing.AbstractOrderProcessingServiceIT;
 import fr.cnes.regards.modules.order.test.SearchClientMock;
+import static fr.cnes.regards.modules.order.test.SearchClientMock.DS1_IP_ID;
+import static fr.cnes.regards.modules.order.test.SearchClientMock.DS2_IP_ID;
+import static fr.cnes.regards.modules.order.test.SearchClientMock.DS3_IP_ID;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.processing.forecast.MultiplierResultSizeForecast;
+import fr.cnes.regards.modules.processing.order.Cardinality;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
+import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.SizeLimit;
+import io.vavr.collection.List;
+import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-
-import static fr.cnes.regards.modules.order.test.SearchClientMock.*;
 
 /**
  * @author oroussel
@@ -58,42 +69,16 @@ import static fr.cnes.regards.modules.order.test.SearchClientMock.*;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @ActiveProfiles("test")
-public class BasketServiceIT {
-
-    @Autowired
-    private IBasketService basketService;
-
-    @Autowired
-    private IBasketRepository basketRepository;
-
-    @Autowired
-    private IOrderService orderService;
+public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 
     @Autowired
     private IOrderMaintenanceService orderMaintenanceService;
-
-    @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
-    private IProjectsClient projectsClient;
-
-    @MockBean
-    private IProjectUsersClient projectUsersClient;
 
     private static final String USER_EMAIL = "test@test.fr";
 
     @Before
     public void setUp() {
-        basketRepository.deleteAll();
-        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Mockito.when(authResolver.getUser()).thenReturn(USER_EMAIL);
-
-        Project project = new Project();
-        project.setHost("regardsHost");
-        Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
-
         Role role = new Role();
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
@@ -119,7 +104,7 @@ public class BasketServiceIT {
      */
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
-    public void test() throws EmptyBasketException, EmptySelectionException, InterruptedException, EntityInvalidException {
+    public void test() throws EmptyBasketException, EmptySelectionException, InterruptedException, EntityInvalidException, TooManyItemsSelectedInBasketException {
         Basket basket = basketService.findOrCreate(USER_EMAIL);
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));
@@ -208,8 +193,96 @@ public class BasketServiceIT {
         orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
 
         // manage periodic email notifications
-        orderMaintenanceService.sendPeriodicNotifications();
+       orderMaintenanceService.sendPeriodicNotifications();
     }
 
-    static SimpleMailMessage mailMessage;
+
+
+    @Test
+    @Purpose("Test if the selection is in error when too many features are added")
+    public void addOversizedSelectionTestForFeatures() throws EmptyBasketException, EmptySelectionException {
+       OrderProcessInfo orderProcessInfo =  new OrderProcessInfo(
+                Scope.FEATURE,
+                Cardinality.ONE_PER_INPUT_FILE,
+                List.of(DataType.RAWDATA),
+                new SizeLimit(SizeLimit.Type.FEATURES, 2L),
+                new MultiplierResultSizeForecast(1d), Boolean.FALSE);
+        testSelectionOverProcessSizeLimit(orderProcessInfo, true);
+    }
+
+    @Test
+    @Purpose("Test if the selection is in error when too many files are added")
+    public void addOversizedSelectionTestForFiles() throws EmptyBasketException, EmptySelectionException {
+        OrderProcessInfo orderProcessInfo =  new OrderProcessInfo(
+                Scope.FEATURE,
+                Cardinality.ONE_PER_INPUT_FILE,
+                List.of(DataType.RAWDATA),
+                new SizeLimit(SizeLimit.Type.FILES, 16L),
+                new MultiplierResultSizeForecast(1d), Boolean.FALSE);
+        testSelectionOverProcessSizeLimit(orderProcessInfo, true);
+    }
+
+    @Test
+    @Purpose("Test if the selection is in error when file sizes exceed the process limit")
+    public void addOversizedSelectionTestForFileSizes() throws EmptyBasketException, EmptySelectionException {
+        OrderProcessInfo orderProcessInfo =  new OrderProcessInfo(
+                Scope.FEATURE,
+                Cardinality.ONE_PER_INPUT_FILE,
+                List.of(DataType.RAWDATA),
+                new SizeLimit(SizeLimit.Type.BYTES, 4040404L),
+                new MultiplierResultSizeForecast(1d), Boolean.FALSE);
+        testSelectionOverProcessSizeLimit(orderProcessInfo, true);
+    }
+
+
+    @Test
+    @Purpose("Test if the selection is working when there is no limit")
+    public void addOversizedSelectionTestWithNoLimit() throws EmptyBasketException, EmptySelectionException {
+        OrderProcessInfo orderProcessInfo =  new OrderProcessInfo(
+                Scope.FEATURE,
+                Cardinality.ONE_PER_INPUT_FILE,
+                List.of(DataType.RAWDATA),
+                new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
+                new MultiplierResultSizeForecast(1d), Boolean.FALSE);
+        testSelectionOverProcessSizeLimit(orderProcessInfo, false);
+    }
+
+
+    private void testSelectionOverProcessSizeLimit(OrderProcessInfo orderProcessInfo, boolean expectedException) throws EmptyBasketException,
+            EmptySelectionException {
+        UUID processBusinessId = UUID.randomUUID();
+        setUpProcessingClient(processBusinessId, new OrderProcessInfoMapper(), orderProcessInfo);
+        // Create a basket add multiple selections to the basket
+        Basket basket = basketService.findOrCreate(USER_EMAIL);
+        Long basketId = basket.getId();
+        Assert.assertNotNull(basketService.find(USER_EMAIL));
+        try {
+            basketService.addSelection(basketId, createBasketSelectionRequest(DS2_IP_ID.toString(), ""));
+            basket = basketService.load(basketId);
+
+            // Attach a processing to the basket
+            basketService.attachProcessing(basket,
+                    basket.getDatasetSelections().stream().findFirst().get().getId(),
+                    new ProcessDatasetDescription(processBusinessId, null));
+        } catch (TooManyItemsSelectedInBasketException e) {
+            LOGGER.error(e.getMessage(), e);
+            Assert.fail("No error is expected at this point.");
+        }
+
+        // Add a selection to the basket and check an exception is thrown in case there is a limit defined by
+        // the process (if the number of items to add is higher than the limit)
+        try {
+            basketService.addSelection(basketId, createBasketSelectionRequest(null, SearchClientMock.QUERY_DS2_DS3));
+            if (expectedException) {
+                Assert.fail(String.format("Expected %s exception to occur",
+                        TooManyItemsSelectedInBasketException.class.getName()));
+            } else {
+                basket = basketService.load(basketId);
+                // assert the selection was correctly added
+                Assert.assertEquals("The selection was not correctly added",  2,  basket.getDatasetSelections().size());
+            }
+         } catch(TooManyItemsSelectedInBasketException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
 }

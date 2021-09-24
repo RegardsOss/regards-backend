@@ -17,20 +17,36 @@
 */
 package fr.cnes.regards.modules.order.service.processing;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.service.OrderCreationService;
 import fr.cnes.regards.modules.order.service.OrderServiceTestIT;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.processing.forecast.MultiplierResultSizeForecast;
-import fr.cnes.regards.modules.processing.order.*;
+import fr.cnes.regards.modules.processing.order.Cardinality;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
+import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.SizeLimit;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -39,13 +55,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @TestPropertySource(properties = {
         "spring.jpa.properties.hibernate.default_schema=order_processing_test_it_scope_item",
@@ -56,9 +65,17 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
     OrderProcessInfoMapper processInfoMapper  = new OrderProcessInfoMapper();
 
+    @Before
+    public void initProjectUser() {
+        Role role = new Role();
+        role.setName(DefaultRole.REGISTERED_USER.name());
+        ProjectUser projectUser = new ProjectUser();
+        projectUser.setRole(role);
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+    }
+
     @Test
     public void runAllTestsInSingleInstance() throws Exception {
-
         // TODO: one day, split this test into more @Test methods.
         // Right now, it is not the case because the tests refuse to run
         // when launched in succession (they work when run independently)
@@ -69,12 +86,6 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         // For now, the only reliable way to make all three tests run
         // successfully in sequence is to have them in the same spring context
         // and in the same @Test method.
-
-        Role role = new Role();
-        role.setName(DefaultRole.REGISTERED_USER.name());
-        ProjectUser projectUser = new ProjectUser();
-        projectUser.setRole(role);
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
 
         simpleOrderWithProcessItemFiles();
         clean();
@@ -87,137 +98,73 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
     }
 
     private void simpleOrderWithProcessItemFiles() throws Exception {
-        //########################
-        //######## GIVEN
-
         // The important params are those:
         OrderProcessInfo processInfo = new OrderProcessInfo(
                 Scope.FEATURE,
                 Cardinality.ONE_PER_INPUT_FILE,
                 List.of(DataType.RAWDATA),
                 new SizeLimit(SizeLimit.Type.FILES, 1L),
-                new MultiplierResultSizeForecast(1d)
+                new MultiplierResultSizeForecast(1d), Boolean.FALSE
         );
-        int expectedExecutions = 10;
-
-        // These parameters are necessary for tests but do not define the test behaviour:
-        UUID processBusinessId = UUID.randomUUID();
-        Map<String, String> processParameters = HashMap.of("param", "value").toJavaMap();
-        String defaultTenant = getDefaultTenant();
-        tenantResolver.forceTenant(defaultTenant);
-        ProcessingMock processingMock = new ProcessingMock(runtimeTenantResolver, publisher, taskExecutor, batchCorrelations);
-        AtomicInteger sendProcessingRequestCallCount = new AtomicInteger();
-        String orderOwner = randomLabel("simpleOrder");
-        Basket basket = createBasket(orderOwner, defaultTenant, processBusinessId, processParameters);
-
-        CountDownLatch orderCreatedLatch = new CountDownLatch(1);
-        CountDownLatch receivedExecutionResultsLatch = new CountDownLatch(expectedExecutions);
-
-        setupMocksAndHandlers(
-                processBusinessId,
-                processInfoMapper,
-                processInfo,
-                defaultTenant,
-                processingMock,
-                sendProcessingRequestCallCount,
-                orderOwner,
-                orderCreatedLatch,
-                receivedExecutionResultsLatch
-        );
-
-        Long storageJobsSuccessBefore = jobInfoRepos.countByClassNameAndStatusStatusIn(StorageFilesJob.class.getName(), JobStatus.SUCCEEDED);
-        Long execJobsSuccessBefore = jobInfoRepos.countByClassNameAndStatusStatusIn(ProcessExecutionJob.class.getName(), JobStatus.SUCCEEDED);
-
-        //########################
-        //######## WHEN
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
-        LOGGER.info("Order has been created !!");
-
-        //########################
-        //######## THEN
-        awaitLatches(orderCreatedLatch, receivedExecutionResultsLatch);
-
-        assertProcessingEventSizes(expectedExecutions, processingMock, storageJobsSuccessBefore, execJobsSuccessBefore);
-
-        showMetalink(order);
-
-        List<ExecResultHandlerResultEvent> execResultEvents = execResultHandlerResultEventHandler.getEvents();
-        assertThat(execResultEvents).hasSize(expectedExecutions);
+        launchOrderAndExpectResults(processInfo,10, Collections.singletonList(OrderStatus.RUNNING));
     }
 
-    private void simpleOrderWithProcessSuborderFeatures() throws Exception {
-        //########################
-        //######## GIVEN
 
+
+    private void simpleOrderWithProcessSuborderFeatures() throws Exception {
         // The important params are those:
         OrderProcessInfo processInfo = new OrderProcessInfo(
                 Scope.SUBORDER,
                 Cardinality.ONE_PER_FEATURE,
                 List.of(DataType.RAWDATA),
                 new SizeLimit(SizeLimit.Type.FILES, 4L),
-                new MultiplierResultSizeForecast(1d)
+                new MultiplierResultSizeForecast(1d), Boolean.FALSE
         );
-        int expectedExecutions = 3;
-
-        // These parameters are necessary for tests but do not define the test behaviour:
-        UUID processBusinessId = UUID.randomUUID();
-        Map<String, String> processParameters = HashMap.of("param", "value").toJavaMap();
-        String defaultTenant = getDefaultTenant();
-        tenantResolver.forceTenant(defaultTenant);
-        ProcessingMock processingMock = new ProcessingMock(runtimeTenantResolver, publisher, taskExecutor, batchCorrelations);
-        AtomicInteger sendProcessingRequestCallCount = new AtomicInteger();
-        String orderOwner = randomLabel("simpleOrder");
-        Basket basket = createBasket(orderOwner, defaultTenant, processBusinessId, processParameters);
-
-        CountDownLatch orderCreatedLatch = new CountDownLatch(1);
-        CountDownLatch receivedExecutionResultsLatch = new CountDownLatch(expectedExecutions);
-
-        setupMocksAndHandlers(
-                processBusinessId,
-                processInfoMapper,
-                processInfo,
-                defaultTenant,
-                processingMock,
-                sendProcessingRequestCallCount,
-                orderOwner,
-                orderCreatedLatch,
-                receivedExecutionResultsLatch
-        );
-
-        Long storageJobsSuccessBefore = jobInfoRepos.countByClassNameAndStatusStatusIn(StorageFilesJob.class.getName(), JobStatus.SUCCEEDED);
-        Long execJobsSuccessBefore = jobInfoRepos.countByClassNameAndStatusStatusIn(ProcessExecutionJob.class.getName(), JobStatus.SUCCEEDED);
-
-        //########################
-        //######## WHEN
-        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com", 240);
-        LOGGER.info("Order has been created !!");
-
-        //########################
-        //######## THEN
-        awaitLatches(orderCreatedLatch, receivedExecutionResultsLatch);
-
-        assertProcessingEventSizes(expectedExecutions, processingMock, storageJobsSuccessBefore, execJobsSuccessBefore);
-
-        showMetalink(order);
-
-        List<ExecResultHandlerResultEvent> execResultEvents = execResultHandlerResultEventHandler.getEvents();
-        assertThat(execResultEvents).hasSize(expectedExecutions);
+        launchOrderAndExpectResults(processInfo,3, Collections.singletonList(OrderStatus.RUNNING));
     }
 
     private void simpleOrderWithProcessSuborderExecution() throws Exception {
-        //########################
-        //######## GIVEN
-
         // The important params are those:
         OrderProcessInfo processInfo = new OrderProcessInfo(
                 Scope.SUBORDER,
                 Cardinality.ONE_PER_EXECUTION,
                 List.of(DataType.RAWDATA),
                 new SizeLimit(SizeLimit.Type.FILES, 5L),
-                new MultiplierResultSizeForecast(1d)
+                new MultiplierResultSizeForecast(1d), Boolean.FALSE
         );
-        int expectedExecutions = 2;
+        launchOrderAndExpectResults(processInfo,2, Collections.singletonList(OrderStatus.RUNNING));
+    }
 
+
+    @Test
+    public void simpleOrderWithProcessSuborderExecutionWithForbidSplitValid() throws Exception {
+        // The important params are those:
+        OrderProcessInfo processInfo = new OrderProcessInfo(
+                Scope.SUBORDER,
+                Cardinality.ONE_PER_EXECUTION,
+                List.of(DataType.RAWDATA),
+                new SizeLimit(SizeLimit.Type.FEATURES, 10L),
+                new MultiplierResultSizeForecast(1d), Boolean.TRUE
+        );
+        launchOrderAndExpectResults(processInfo,1, Collections.singletonList(OrderStatus.RUNNING));
+    }
+
+    @Test
+    public void simpleOrderWithProcessSuborderExecutionWithForbidSplitInvalid() throws Exception {
+        // The important params are those:
+        OrderProcessInfo processInfo = new OrderProcessInfo(
+                Scope.SUBORDER,
+                Cardinality.ONE_PER_EXECUTION,
+                List.of(DataType.QUICKLOOK_SD),
+                new SizeLimit(SizeLimit.Type.FEATURES, 9L),
+                new MultiplierResultSizeForecast(1d), Boolean.TRUE
+        );
+        launchOrderAndExpectResults(processInfo,0, Collections.singletonList(OrderStatus.FAILED));
+    }
+
+    private void launchOrderAndExpectResults(OrderProcessInfo processInfo, int expectedExecutions, java.util.List<OrderStatus> expectedOrderStatus) throws EntityInvalidException, InterruptedException, IOException {
+        //########################
+        //######## GIVE
         // These parameters are necessary for tests but do not define the test behaviour:
         UUID processBusinessId = UUID.randomUUID();
         Map<String, String> processParameters = HashMap.of("param", "value").toJavaMap();
@@ -257,10 +204,17 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
         assertProcessingEventSizes(expectedExecutions, processingMock, storageJobsSuccessBefore, execJobsSuccessBefore);
 
-        showMetalink(order);
-
+        if(expectedExecutions > 0) {
+            showMetalink(order);
+        }
+        
         List<ExecResultHandlerResultEvent> execResultEvents = execResultHandlerResultEventHandler.getEvents();
         assertThat(execResultEvents).hasSize(expectedExecutions);
+
+        // check the status of the event processed
+        java.util.List<OrderCreationService.OrderCreationCompletedEvent> orderExecutions = orderCreationCompletedEventHandler.getEvents().asJava();
+        assertThat(orderExecutions).isNotEmpty();
+        assertTrue("Unexpected status after order execution", expectedOrderStatus.contains(orderExecutions.get(0).getOrder().getStatus()));
     }
 
 }
