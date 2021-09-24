@@ -317,7 +317,7 @@ public class OrderService implements IOrderService {
     public void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
             throws IOException {
         List<Order> orders = orderRepository.findAll(OrderSpecifications.search(status, from, to), Sort.by(Sort.Direction.ASC, "id"));
-        writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
+        writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR;FILES_SIZE;FILES_COUNT");
         writer.newLine();
         for (Order order : orders) {
             writer.append(order.getId().toString()).append(';');
@@ -328,6 +328,10 @@ public class OrderService implements IOrderService {
             writer.append(OffsetDateTimeAdapter.format(order.getStatusDate())).append(';');
             writer.append(Integer.toString(order.getPercentCompleted())).append(';');
             writer.append(Integer.toString(order.getFilesInErrorCount()));
+            writer.append(Integer.toString(order.getPercentCompleted())).append(';');
+            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesSize()).sum()));
+            writer.append(Integer.toString(order.getPercentCompleted())).append(';');
+            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesCount()).sum()));
             writer.newLine();
         }
         writer.close();
