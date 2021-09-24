@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link IAccessRightFilter}.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -53,12 +55,6 @@ public class AccessRightFilter implements IAccessRightFilter {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessRightFilter.class);
-
-    /**
-     * Function which creates a {@link StringMatchCriterion} from an {@link AccessGroup}.
-     */
-    private static final Function<AccessGroup, ICriterion> GROUP_TO_CRITERION = group -> ICriterion
-            .eq(Terms.GROUPS.getName(), group.getName(), StringMatchType.KEYWORD);
 
     private static final String CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP = "Cannot set access right filter because user %s does not have any access group";
 
@@ -77,7 +73,7 @@ public class AccessRightFilter implements IAccessRightFilter {
     private final IAuthenticationResolver authResolver;
 
     public AccessRightFilter(final IAuthenticationResolver authResolver, IAccessGroupCache pCache,
-            IRuntimeTenantResolver pRuntimeTenantResolver, IProjectUsersClient pProjectUserClient) {
+                             IRuntimeTenantResolver pRuntimeTenantResolver, IProjectUsersClient pProjectUserClient) {
         super();
         this.authResolver = authResolver;
         this.cache = pCache;
@@ -87,6 +83,7 @@ public class AccessRightFilter implements IAccessRightFilter {
 
     /**
      * First, check current user role. If role is a custom one, call admin to know if its an admin role.
+     *
      * @return true if current authentified user is an admin
      */
     private boolean isAdmin() {
@@ -124,30 +121,16 @@ public class AccessRightFilter implements IAccessRightFilter {
     @Override
     public ICriterion addAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
 
-        if (!isAdmin()) {
+        Set<String> accessGroupNames = getUserAccessGroups();
+        if (accessGroupNames != null) {
 
-            // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(
-                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
-
-            // Add explicitly associated group
-            accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
-
-            // Throw an error if no access group
-            if (accessGroups.isEmpty()) {
-                String errorMessage = String
-                        .format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
-                                authResolver.getUser());
-                LOGGER.error(errorMessage);
-                throw new AccessRightFilterException(errorMessage);
-            }
 
             List<ICriterion> searchCriterion = new ArrayList<>();
 
             // Add security filter
-            List<ICriterion> groupCriterions = new ArrayList<>();
-            accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
-            searchCriterion.add(ICriterion.or(groupCriterions));
+            ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS, StringMatchType.KEYWORD,
+                    accessGroupNames);
+            searchCriterion.add(groupCriterion);
 
             // Add user criterion (theorically, userCriterion should not be null at this point but...)
             if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
@@ -163,41 +146,7 @@ public class AccessRightFilter implements IAccessRightFilter {
     // TODO : by now, is the same as previous method
     @Override
     public ICriterion addDataAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
-
-        if (!isAdmin()) {
-
-            // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(
-                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
-
-            // Add explicitly associated group
-            accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
-
-            // Throw an error if no access group
-            if (accessGroups.isEmpty()) {
-                String errorMessage = String
-                        .format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
-                                authResolver.getUser());
-                LOGGER.error(errorMessage);
-                throw new AccessRightFilterException(errorMessage);
-            }
-
-            List<ICriterion> searchCriterion = new ArrayList<>();
-
-            // Add security filter
-            List<ICriterion> groupCriterions = new ArrayList<>();
-            accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
-            searchCriterion.add(ICriterion.or(groupCriterions));
-
-            // Add user criterion (theorically, userCriterion should not be null at this point but...)
-            if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
-                searchCriterion.add(userCriterion);
-            }
-
-            // Build the final "and" criterion
-            return ICriterion.and(searchCriterion);
-        }
-        return userCriterion;
+        return addAccessRights(userCriterion);
     }
 
     @Override

@@ -83,7 +83,7 @@ public interface ICatalogSearchService {
      * Same as below but using {@link SearchType}
      */
     DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, UniformResourceName dataset,
-            List<DataType> dataTypes) throws SearchException;
+            List<DataType> dataTypes);
 
     /**
      * Retrieve entity
@@ -102,8 +102,7 @@ public interface ICatalogSearchService {
      * @param partialText text that property should contains (can be null)
      */
     <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
-            throws SearchException, OpenSearchUnknownParameter;
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText);
 
     /**
      * Retrieve property values for specified property name
@@ -114,7 +113,7 @@ public interface ICatalogSearchService {
      * @param partialText text that property should contains (can be null)
      */
     List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType, String propertyPath,
-            int maxCount, String partialText) throws SearchException, OpenSearchUnknownParameter;
+            int maxCount, String partialText) ;
 
     /**
      * Retrieve statistics for given attribute from a search context with search criterions and searcType.
@@ -122,10 +121,9 @@ public interface ICatalogSearchService {
      * @param searchType {@link SearchType} for searc context
      * @param attributes {@link AttributeModel}s to retrieve statistics on.
      * @return {@link QueryableAttribute}s for each attribute
-     * @throws SearchException
      */
     List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
-            Collection<QueryableAttribute> attributes) throws SearchException;
+            Collection<QueryableAttribute> attributes);
 
     /**
      * Get collection by urn and get its dataobjects statistics
@@ -133,9 +131,8 @@ public interface ICatalogSearchService {
      * @param searchType {@link SearchType} for search context
      * @param attributes {@link AttributeModel} to retrieve statistics on
      * @return {@link CollectionWithStats}
-     * @throws SearchException
-     * @throws EntityOperationForbiddenException
-     * @throws EntityNotFoundException
+     * @throws EntityOperationForbiddenException according to {@link #get(UniformResourceName)}
+     * @throws EntityNotFoundException according to {@link #get(UniformResourceName)}
      */
     CollectionWithStats getCollectionWithDataObjectsStats(UniformResourceName urn, SearchType searchType,
                                                           Collection<QueryableAttribute> attributes) throws SearchException, EntityOperationForbiddenException, EntityNotFoundException;
@@ -143,16 +140,14 @@ public interface ICatalogSearchService {
     /**
      * Retrieve {@link PropertyBound}s for each property given and {@link ICriterion} search.
      * @return @link PropertyBound}s
-     * @throws SearchException
      */
-    List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion parse, SearchType type)
-            throws SearchException;
+    List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion parse, SearchType type);
 
     /**
      * Know if we have acces to file for the given urn
      * @param urn {@link UniformResourceName} to access
      * @return if we have access
-     * @throws EntityNotFoundException
+     * @throws EntityNotFoundException according to {@link #get(UniformResourceName)}
      */
     boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException;
 }

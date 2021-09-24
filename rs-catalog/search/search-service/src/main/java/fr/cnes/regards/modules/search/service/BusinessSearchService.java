@@ -63,9 +63,8 @@ public class BusinessSearchService implements IBusinessSearchService {
         facetPage.getContent().forEach(entity -> features.add((F) entity.getFeature()));
 
         // Build facet page with features
-        FacetPage<F> featureFacetPage = new FacetPage<>(features, facetPage.getFacets(), facetPage.getPageable(),
+        return new FacetPage<>(features, facetPage.getFacets(), facetPage.getPageable(),
                 facetPage.getTotalElements());
-        return featureFacetPage;
     }
 
     @Override
@@ -77,14 +76,14 @@ public class BusinessSearchService implements IBusinessSearchService {
 
     @Override
     public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType,
-            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException {
+            UniformResourceName dataset, List<DataType> dataTypes) {
         // Just delegate to entity search service
         return searchService.computeDatasetsSummary(criterion, searchType, dataset, dataTypes);
     }
 
     @Override
     public List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType,
-            String propertyPath, int maxCount, String partialText) throws SearchException, OpenSearchUnknownParameter {
+            String propertyPath, int maxCount, String partialText) {
         // Just delegate to entity search service
         return searchService.retrieveEnumeratedPropertyValues(criterion, searchType, propertyPath, maxCount,
                                                               partialText);
