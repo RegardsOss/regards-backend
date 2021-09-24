@@ -40,7 +40,7 @@ public class LastAIPEntity {
     private Long aipId;
 
     @NotBlank(message = "Provider ID is required")
-    @Column(name = "provider_id", length = 100, nullable = false)
+    @Column(name = "provider_id", length = 120, nullable = false)
     private String providerId;
 
     public LastAIPEntity() {

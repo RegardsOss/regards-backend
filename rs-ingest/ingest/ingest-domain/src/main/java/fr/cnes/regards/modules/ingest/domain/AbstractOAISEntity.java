@@ -60,7 +60,7 @@ public abstract class AbstractOAISEntity {
      * and propagated to children (i.e. AIPs)
      */
     @NotBlank(message = "Provider ID is required")
-    @Column(name = "provider_id", length = 100, nullable = false)
+    @Column(name = "provider_id", length = 120, nullable = false)
     private String providerId;
 
     /**
