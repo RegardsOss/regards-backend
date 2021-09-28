@@ -327,10 +327,8 @@ public class OrderService implements IOrderService {
             writer.append(order.getStatus().toString()).append(';');
             writer.append(OffsetDateTimeAdapter.format(order.getStatusDate())).append(';');
             writer.append(Integer.toString(order.getPercentCompleted())).append(';');
-            writer.append(Integer.toString(order.getFilesInErrorCount()));
-            writer.append(Integer.toString(order.getPercentCompleted())).append(';');
-            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesSize()).sum()));
-            writer.append(Integer.toString(order.getPercentCompleted())).append(';');
+            writer.append(Integer.toString(order.getFilesInErrorCount())).append(';');
+            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesSize()).sum())).append(';');;
             writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesCount()).sum()));
             writer.newLine();
         }
