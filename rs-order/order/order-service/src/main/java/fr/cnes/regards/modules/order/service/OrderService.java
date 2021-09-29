@@ -322,7 +322,10 @@ public class OrderService implements IOrderService {
         for (Order order : orders) {
             writer.append(order.getId().toString()).append(';');
             writer.append(OffsetDateTimeAdapter.format(order.getCreationDate())).append(';');
-            writer.append(OffsetDateTimeAdapter.format(order.getExpirationDate())).append(';');
+            if (order.getExpirationDate() != null) {
+                writer.append(OffsetDateTimeAdapter.format(order.getExpirationDate()));
+            }
+            writer.append(';');
             writer.append(order.getOwner()).append(';');
             writer.append(order.getStatus().toString()).append(';');
             writer.append(OffsetDateTimeAdapter.format(order.getStatusDate())).append(';');
