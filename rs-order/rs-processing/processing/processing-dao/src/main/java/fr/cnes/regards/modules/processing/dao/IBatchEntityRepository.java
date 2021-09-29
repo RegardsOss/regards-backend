@@ -48,10 +48,10 @@ public interface IBatchEntityRepository extends ReactiveCrudRepository<BatchEnti
             "      WHERE current_status IN ('FAILURE', 'SUCCESS', 'TIMED_OUT', 'CANCELLED') " +
             "      AND  EXTRACT(EPOCH FROM now()) - EXTRACT(EPOCH FROM E.last_updated) > (:tooOldDuration / 1000) " +
             "    ) AS count_finished_execs " +
-            "  FROM public.t_execution as E " +
+            "  FROM t_execution as E " +
             "  GROUP BY E.batch_id " +
             ") " +
-            "SELECT * FROM public.t_batch AS B " +
+            "SELECT * FROM t_batch AS B " +
             "LEFT JOIN counts ON B.id = counts.batch_id " +
             "WHERE counts.count_all_execs IS NULL" +
             "   OR counts.count_all_execs = counts.count_finished_execs"

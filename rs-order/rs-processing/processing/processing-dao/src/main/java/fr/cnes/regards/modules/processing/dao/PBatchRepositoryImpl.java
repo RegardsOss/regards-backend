@@ -56,20 +56,12 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
 
     private final DomainEntityMapper.Batch mapper;
 
-    private final DatabaseClient databaseClient;
-
-    private final ReactiveTransactionManager reactiveTransactionManager;
-
     @Autowired
     public PBatchRepositoryImpl(
             IBatchEntityRepository delegate,
-            DomainEntityMapper.Batch mapper,
-            DatabaseClient databaseClient,
-            ReactiveTransactionManager reactiveTransactionManager) {
+            DomainEntityMapper.Batch mapper) {
         this.delegate = delegate;
         this.mapper = mapper;
-        this.databaseClient = databaseClient;
-        this.reactiveTransactionManager = reactiveTransactionManager;
     }
 
     @Override public Mono<PBatch> save(PBatch domain) {
