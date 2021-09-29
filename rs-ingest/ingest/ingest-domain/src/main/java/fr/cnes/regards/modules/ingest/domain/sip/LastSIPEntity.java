@@ -40,7 +40,7 @@ public class LastSIPEntity {
     private Long sipId;
 
     @NotBlank(message = "Provider ID is required")
-    @Column(name = "provider_id", length = 120, nullable = false)
+    @Column(name = "provider_id", length = 255, nullable = false)
     private String providerId;
 
     public LastSIPEntity() {
