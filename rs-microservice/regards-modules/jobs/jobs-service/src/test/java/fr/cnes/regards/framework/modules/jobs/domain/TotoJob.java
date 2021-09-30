@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * @author xbrochard
  */
-public class FootJob extends AbstractNoParamJob<Toto> {
+public class TotoJob extends AbstractNoParamJob<Toto> {
 
     @Override
     public void run() {

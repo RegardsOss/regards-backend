@@ -1,32 +1,6 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -40,16 +14,39 @@ import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
 import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
-import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
+import fr.cnes.regards.framework.modules.jobs.task.JobInfoTaskScheduler;
+import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Test of Jobs executions (status, pool, spring autowiring, ...)
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { JobConfiguration.class })
-@Ignore
+@ContextConfiguration(classes = { JobTestConfiguration.class })
 public class JobServiceTest {
 
     public static final String TENANT = "JOBS";
@@ -78,6 +75,9 @@ public class JobServiceTest {
     @Autowired
     private ISubscriber subscriber;
 
+    @Autowired
+    private JobInfoTaskScheduler jobInfoTaskScheduler;
+
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
 
@@ -94,6 +94,7 @@ public class JobServiceTest {
         GsonUtil.setGson(gson);
 
         tenantResolver.forceTenant(TENANT);
+        jobInfoRepos.deleteAll();
 
         if (!subscriptionsDone) {
             subscriber.subscribeTo(JobEvent.class, jobHandler);
@@ -102,19 +103,9 @@ public class JobServiceTest {
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
     }
 
-    @After
-    public void tearDown() {
-        tenantResolver.forceTenant(TENANT);
-        jobInfoRepos.deleteAll();
-    }
-
     @Test
     public void testSucceeded() throws InterruptedException {
-        JobInfo waitJobInfo = new JobInfo(false);
-        waitJobInfo.setPriority(10);
-        waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500L),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
+        JobInfo waitJobInfo = createWaitJob(500L, 1, 10);
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
         // Wait for job to terminate
@@ -127,11 +118,7 @@ public class JobServiceTest {
 
     @Test
     public void testAbortion() throws InterruptedException {
-        JobInfo waitJobInfo = new JobInfo(false);
-        waitJobInfo.setPriority(10);
-        waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
+        JobInfo waitJobInfo = createWaitJob(1000L, 3, 10);
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
         jobInfoService.stopJob(waitJobInfo.getId());
         LOGGER.info("ASK for " + waitJobInfo.getId() + " TO BE STOPPED");
@@ -142,11 +129,7 @@ public class JobServiceTest {
 
     @Test
     public void testAborted() throws InterruptedException {
-        JobInfo waitJobInfo = new JobInfo(false);
-        waitJobInfo.setPriority(10);
-        waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
-                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
+        JobInfo waitJobInfo = createWaitJob(1000L, 3, 10);
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
         Thread.sleep(2_000);
@@ -177,15 +160,32 @@ public class JobServiceTest {
     }
 
     @Test
+    public void testPendingTrigger() {
+        OffsetDateTime triggerDate = OffsetDateTime.now();
+        JobInfo jobToBeTriggered = jobInfoService.createPendingTriggerJob(createWaitJob(1L, 1, 10), triggerDate);
+        JobInfo jobNotToBeTriggered = jobInfoService.createPendingTriggerJob(createWaitJob(1L, 1, 10), triggerDate.plusDays(1));
+        jobInfoTaskScheduler.triggerPendingJobs();
+        // check the status of jobToBeTriggered has changed to QUEUED or TO_BE_RUN (triggerPendingJobs changes the
+        // status to QUEUED and JobService#manage changes it to TO_BE_RUN)
+        // the status of jobNotToBeTriggered is still the same because the trigger date is not expired
+        Optional<JobInfo> jobToBeTriggeredUpdated = jobInfoRepos.findById(jobToBeTriggered.getId());
+        Optional<JobInfo> jobNotToBeTriggeredNotUpdated = jobInfoRepos.findById(jobNotToBeTriggered.getId());
+        Assert.assertTrue("jobToBeTriggered should be present", jobToBeTriggeredUpdated.isPresent());
+        Assert.assertTrue("jobNotToBeTriggered should be present", jobNotToBeTriggeredNotUpdated.isPresent());
+        Assert.assertTrue("Unexpected jobToBeTriggered status",
+                jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.QUEUED) ||
+                        jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.TO_BE_RUN)
+        );
+        Assert.assertEquals("Unexpected jobNotToBeTriggered status", JobStatus.PENDING,
+                jobNotToBeTriggeredNotUpdated.get().getStatus().getStatus());
+    }
+
+    @Test
     public void testPool() throws InterruptedException {
         // Create 6 waitJob
         JobInfo[] jobInfos = new JobInfo[6];
         for (int i = 0; i < jobInfos.length; i++) {
-            jobInfos[i] = new JobInfo(false);
-            jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
-            jobInfos[i].setClassName(WaiterJob.class.getName());
-            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
-                                      new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
+            jobInfos[i] = createWaitJob(1000L, 2, 20-i); // makes it easier to know which ones are launched first
         }
         for (int i = 0; i < jobInfos.length; i++) {
             jobInfos[i] = jobInfoService.createAsQueued(jobInfos[i]);
@@ -203,12 +203,13 @@ public class JobServiceTest {
         }
         // Retrieve all jobs
         List<JobInfo> results = new ArrayList<>(jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED));
-        // sort by stopDate
-        results.sort(Comparator.comparing(j -> j.getStatus().getStopDate()));
+        // sort by startDate to make sure the top priority jobs were executed first
+        results.sort(Comparator.comparing(j -> j.getStatus().getStartDate()));
+        LOGGER.info(results.toString());
         int lastPriority = -1;
         for (JobInfo job : results) {
             if (lastPriority != -1) {
-                Assert.assertTrue(job.getPriority() <= lastPriority);
+                Assert.assertTrue("The jobs were not launched by top priority", job.getPriority() <= lastPriority);
             }
             lastPriority = job.getPriority();
         }
@@ -257,5 +258,14 @@ public class JobServiceTest {
                             + JobServiceTest.class.getSimpleName());
             }
         }
+    }
+
+    private JobInfo createWaitJob(long waitPeriod, int waitPeriodCount, int jobPriority) {
+        JobInfo waitJobInfo = new JobInfo(false);
+        waitJobInfo.setPriority(jobPriority);
+        waitJobInfo.setClassName(WaiterJob.class.getName());
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, waitPeriod),
+                new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, waitPeriodCount));
+        return waitJobInfo;
     }
 }

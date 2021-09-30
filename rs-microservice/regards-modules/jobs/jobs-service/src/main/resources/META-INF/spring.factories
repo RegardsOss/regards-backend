@@ -3,4 +3,6 @@ fr.cnes.regards.framework.modules.jobs.service.JobServiceConfiguration,\
 fr.cnes.regards.framework.modules.jobs.service.JobInitializer,\
 fr.cnes.regards.framework.modules.jobs.service.JobInfoService,\
 fr.cnes.regards.framework.modules.jobs.service.JobService,\
-fr.cnes.regards.framework.modules.jobs.task.JobTaskScheduler
+fr.cnes.regards.framework.modules.jobs.task.JobTaskScheduler,\
+fr.cnes.regards.framework.modules.jobs.task.JobInfoTaskScheduler
+

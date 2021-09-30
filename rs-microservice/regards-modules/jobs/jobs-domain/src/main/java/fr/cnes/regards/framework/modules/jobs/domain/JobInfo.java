@@ -129,6 +129,12 @@ public class JobInfo {
     private OffsetDateTime lastHeartbeatDate;
 
     /**
+     * Date from which jobs with expired date are triggered
+     */
+    @Column(name = "trigger_after_date")
+    private OffsetDateTime triggerAfterDate;
+
+    /**
      * Field characteristics of this job. Saved on cascade
      */
     @Embedded
@@ -334,6 +340,14 @@ public class JobInfo {
 
     public void setLastHeartbeatDate(OffsetDateTime lastHeartbeatDate) {
         this.lastHeartbeatDate = lastHeartbeatDate;
+    }
+
+    public OffsetDateTime getTriggerAfterDate() {
+        return triggerAfterDate;
+    }
+
+    public void setTriggerAfterDate(OffsetDateTime triggerAfterDate) {
+        this.triggerAfterDate = triggerAfterDate;
     }
 
     /**

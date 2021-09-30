@@ -30,7 +30,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.BlowJob;
+import fr.cnes.regards.framework.modules.jobs.domain.RandomFloatJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
@@ -66,7 +66,7 @@ public class MultiJobServiceTest {
 
     private JobInfo waitJobInfo;
 
-    private JobInfo blowJob;
+    private JobInfo randomFloatJob;
 
     @Before
     public void tearUp() {
@@ -79,9 +79,9 @@ public class MultiJobServiceTest {
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
-        blowJob = new JobInfo(false);
-        blowJob.setClassName(BlowJob.class.getName());
-        blowJob = jobInfoService.createAsQueued(blowJob);
+        randomFloatJob = new JobInfo(false);
+        randomFloatJob.setClassName(RandomFloatJob.class.getName());
+        randomFloatJob = jobInfoService.createAsQueued(randomFloatJob);
     }
 
     @After

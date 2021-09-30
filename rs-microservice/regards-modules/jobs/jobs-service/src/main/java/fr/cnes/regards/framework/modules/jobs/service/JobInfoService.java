@@ -30,6 +30,14 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,15 +49,13 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
 
 /**
  * @author oroussel
@@ -58,7 +64,7 @@ import java.util.*;
 @MultitenantTransactional
 public class JobInfoService implements IJobInfoService, ApplicationContextAware {
 
-    public static final String SOME_FUNNY_MESSAGE = "Please use create method for creating, you dumb...";
+    public static final String ERROR_CREATE_JOB_INFO = "An error occurred while creating the JobInfo...";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobInfoService.class);
 
@@ -133,7 +139,7 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     @Override
     public JobInfo createAsPending(JobInfo jobInfo) {
         if (jobInfo.getId() != null) {
-            throw new IllegalArgumentException(SOME_FUNNY_MESSAGE);
+            throw new IllegalArgumentException(ERROR_CREATE_JOB_INFO);
         }
         jobInfo.updateStatus(JobStatus.PENDING);
         return jobInfoRepository.save(jobInfo);
@@ -142,10 +148,30 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     @Override
     public JobInfo createAsQueued(JobInfo jobInfo) {
         if (jobInfo.getId() != null) {
-            throw new IllegalArgumentException(SOME_FUNNY_MESSAGE);
+            throw new IllegalArgumentException(ERROR_CREATE_JOB_INFO);
         }
         jobInfo.updateStatus(JobStatus.QUEUED);
         return jobInfoRepository.save(jobInfo);
+    }
+
+    @Override
+    public JobInfo createPendingTriggerJob(JobInfo jobInfo, OffsetDateTime dateToTriggerJob) {
+        if (jobInfo.getId() != null) {
+            throw new IllegalArgumentException(ERROR_CREATE_JOB_INFO);
+        }
+        jobInfo.updateStatus(JobStatus.PENDING);
+        jobInfo.setTriggerAfterDate(dateToTriggerJob);
+        return jobInfoRepository.save(jobInfo);
+    }
+
+    @Override
+    public List<JobInfo> updatePendingJobsToBeTriggered(OffsetDateTime startSearching, int maxJobsToRetrieve) {
+        Pageable pageToRequest = PageRequest.of(0, maxJobsToRetrieve, Sort.by("status.statusDate"));
+        List<JobInfo> jobInfoToBeTriggered = jobInfoRepository.findByStatusStatusAndTriggerAfterDateLessThan(
+                JobStatus.PENDING, startSearching, pageToRequest);
+        jobInfoToBeTriggered.forEach(jobInfo -> jobInfo.updateStatus(JobStatus.QUEUED));
+        LOGGER.debug("{} jobs status updated from PENDING to QUEUED.", jobInfoToBeTriggered.size());
+        return jobInfoToBeTriggered;
     }
 
     @Override
@@ -158,7 +184,7 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     @Override
     public JobInfo save(final JobInfo jobInfo) {
         if (jobInfo.getId() == null) {
-            throw new IllegalArgumentException(SOME_FUNNY_MESSAGE);
+            throw new IllegalArgumentException(ERROR_CREATE_JOB_INFO);
         }
         return jobInfoRepository.save(jobInfo);
     }

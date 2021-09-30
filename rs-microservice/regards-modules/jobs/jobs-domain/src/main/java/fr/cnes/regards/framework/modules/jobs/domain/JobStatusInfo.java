@@ -184,4 +184,19 @@ public class JobStatusInfo implements Observer {
             completionChanged.set(true);
         }
     }
+
+    @Override
+    public String toString() {
+        return "JobStatusInfo{" +
+                "status=" + status +
+                ", statusDate=" + statusDate +
+                ", estimatedCompletion=" + estimatedCompletion +
+                ", percentCompleted=" + percentCompleted +
+                ", startDate=" + startDate +
+                ", stopDate=" + stopDate +
+                ", queuedDate=" + queuedDate +
+                ", stackTrace='" + stackTrace + '\'' +
+                ", completionChanged=" + completionChanged +
+                '}';
+    }
 }

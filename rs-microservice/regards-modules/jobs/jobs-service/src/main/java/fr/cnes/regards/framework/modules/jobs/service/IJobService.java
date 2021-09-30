@@ -1,11 +1,8 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.util.concurrent.RunnableFuture;
-
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.scheduling.annotation.Scheduled;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import java.util.concurrent.RunnableFuture;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 /**
  * Job service. It's a daemon that listen for jobs to be executed and a service that handles abort, suspend or

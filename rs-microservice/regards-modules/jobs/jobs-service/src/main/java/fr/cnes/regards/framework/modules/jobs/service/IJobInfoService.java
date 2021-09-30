@@ -50,6 +50,16 @@ public interface IJobInfoService {
     JobInfo createAsPending(JobInfo jobInfo);
 
     /**
+     * Create jobs with pending status and a date to trigger the job
+     */
+    JobInfo createPendingTriggerJob(JobInfo jobInfo, OffsetDateTime dateToTriggerJob);
+
+    /**
+     * Update pending jobs with a trigger date expired
+     */
+    List<JobInfo> updatePendingJobsToBeTriggered(OffsetDateTime startSearching, int maxJobsToRetrieve);
+
+    /**
      * Create a JobInfo setting its state as QUEUED ie <b>it will be taken into account by job service as soon as
      * possible</b>
      */

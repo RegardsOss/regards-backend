@@ -14,7 +14,7 @@ public class LongJob extends AbstractNoParamJob<Void> {
                 super.advanceCompletion();
             }
         } catch (InterruptedException e) {
-            // Don't give a shit
+            // nothing to do
         }
     }
 

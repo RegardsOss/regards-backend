@@ -19,15 +19,15 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.BlowJob;
-import fr.cnes.regards.framework.modules.jobs.domain.FootJob;
-import fr.cnes.regards.framework.modules.jobs.domain.HandJob;
+import fr.cnes.regards.framework.modules.jobs.domain.RandomFloatJob;
+import fr.cnes.regards.framework.modules.jobs.domain.TotoJob;
+import fr.cnes.regards.framework.modules.jobs.domain.DoubleJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.LongJob;
 import fr.cnes.regards.framework.modules.jobs.domain.Titi;
 import fr.cnes.regards.framework.modules.jobs.domain.Toto;
-import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
+import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = TestApplication.class)
-@ContextConfiguration(classes = { JobConfiguration.class })
+@ContextConfiguration(classes = { JobTestConfiguration.class })
 public class JobEndTest {
 
     public static final String TENANT = "JOBS";
@@ -95,19 +95,19 @@ public class JobEndTest {
 
     @Test
     public void testWithResults1() throws InterruptedException {
-        JobInfo blowJob = new JobInfo(false);
-        blowJob.setClassName(BlowJob.class.getName());
-        blowJob = jobInfoService.createAsQueued(blowJob);
+        JobInfo randomFloatJob = new JobInfo(false);
+        randomFloatJob.setClassName(RandomFloatJob.class.getName());
+        randomFloatJob = jobInfoService.createAsQueued(randomFloatJob);
 
         Thread.sleep(1_000);
         // Look at jobInfo from database
         do {
-            blowJob = jobInfoRepos.findById(blowJob.getId()).get();
-        } while (blowJob.getStatus().getStatus() != JobStatus.SUCCEEDED
-                && blowJob.getStatus().getStatus() != JobStatus.FAILED);
-        Assert.assertEquals(JobStatus.SUCCEEDED, blowJob.getStatus().getStatus());
-        Assert.assertNotNull(blowJob.getResult());
-        Assert.assertTrue(blowJob.getResult() instanceof Float);
+            randomFloatJob = jobInfoRepos.findById(randomFloatJob.getId()).get();
+        } while (randomFloatJob.getStatus().getStatus() != JobStatus.SUCCEEDED
+                && randomFloatJob.getStatus().getStatus() != JobStatus.FAILED);
+        Assert.assertEquals(JobStatus.SUCCEEDED, randomFloatJob.getStatus().getStatus());
+        Assert.assertNotNull(randomFloatJob.getResult());
+        Assert.assertTrue(randomFloatJob.getResult() instanceof Float);
 
         Thread.sleep(5_000);
     }
@@ -115,52 +115,52 @@ public class JobEndTest {
     @SuppressWarnings("rawtypes")
     @Test
     public void testWithResults2() throws InterruptedException {
-        JobInfo handJob = new JobInfo(false);
-        handJob.setClassName(HandJob.class.getName());
-        handJob = jobInfoService.createAsQueued(handJob);
+        JobInfo doubleJob = new JobInfo(false);
+        doubleJob.setClassName(DoubleJob.class.getName());
+        doubleJob = jobInfoService.createAsQueued(doubleJob);
 
         Thread.sleep(1_000);
         // Look at jobInfo from database
         do {
-            handJob = jobInfoRepos.findById(handJob.getId()).get();
-        } while (handJob.getStatus().getStatus() != JobStatus.SUCCEEDED
-                && handJob.getStatus().getStatus() != JobStatus.FAILED);
-        Assert.assertEquals(JobStatus.SUCCEEDED, handJob.getStatus().getStatus());
-        Assert.assertNotNull(handJob.getResult());
-        Assert.assertTrue(handJob.getResult() instanceof Map);
-        Assert.assertTrue(((Map) handJob.getResult()).containsKey("tutu"));
-        Assert.assertTrue(((Map) handJob.getResult()).containsKey("toto"));
-        Assert.assertTrue(((Map) handJob.getResult()).containsKey("titi"));
-        Assert.assertEquals(1.0, ((Map) handJob.getResult()).get("toto"));
-        Assert.assertEquals(3.0, ((Map) handJob.getResult()).get("titi"));
-        Assert.assertEquals(2.0, ((Map) handJob.getResult()).get("tutu"));
+            doubleJob = jobInfoRepos.findById(doubleJob.getId()).get();
+        } while (doubleJob.getStatus().getStatus() != JobStatus.SUCCEEDED
+                && doubleJob.getStatus().getStatus() != JobStatus.FAILED);
+        Assert.assertEquals(JobStatus.SUCCEEDED, doubleJob.getStatus().getStatus());
+        Assert.assertNotNull(doubleJob.getResult());
+        Assert.assertTrue(doubleJob.getResult() instanceof Map);
+        Assert.assertTrue(((Map) doubleJob.getResult()).containsKey("tutu"));
+        Assert.assertTrue(((Map) doubleJob.getResult()).containsKey("toto"));
+        Assert.assertTrue(((Map) doubleJob.getResult()).containsKey("titi"));
+        Assert.assertEquals(1.0, ((Map) doubleJob.getResult()).get("toto"));
+        Assert.assertEquals(3.0, ((Map) doubleJob.getResult()).get("titi"));
+        Assert.assertEquals(2.0, ((Map) doubleJob.getResult()).get("tutu"));
 
         Thread.sleep(5_000);
     }
 
     @Test
     public void testWithResults3() throws InterruptedException {
-        JobInfo footJob = new JobInfo(false);
-        footJob.setClassName(FootJob.class.getName());
-        footJob = jobInfoService.createAsQueued(footJob);
+        JobInfo totoJob = new JobInfo(false);
+        totoJob.setClassName(TotoJob.class.getName());
+        totoJob = jobInfoService.createAsQueued(totoJob);
 
         Thread.sleep(1_000);
         // Look at jobInfo from database
         do {
-            footJob = jobInfoRepos.findById(footJob.getId()).get();
-        } while (footJob.getStatus().getStatus() != JobStatus.SUCCEEDED
-                && footJob.getStatus().getStatus() != JobStatus.FAILED);
-        Assert.assertEquals(JobStatus.SUCCEEDED, footJob.getStatus().getStatus());
-        Assert.assertNotNull(footJob.getResult());
-        Assert.assertTrue(footJob.getResult() instanceof Toto);
+            totoJob = jobInfoRepos.findById(totoJob.getId()).get();
+        } while (totoJob.getStatus().getStatus() != JobStatus.SUCCEEDED
+                && totoJob.getStatus().getStatus() != JobStatus.FAILED);
+        Assert.assertEquals(JobStatus.SUCCEEDED, totoJob.getStatus().getStatus());
+        Assert.assertNotNull(totoJob.getResult());
+        Assert.assertTrue(totoJob.getResult() instanceof Toto);
         Toto toto = new Toto();
         toto.setI(15);
-        Assert.assertEquals(toto, footJob.getResult());
+        Assert.assertEquals(toto, totoJob.getResult());
         Titi titi = new Titi();
         titi.setJ(150);
-        Assert.assertNotNull(((Toto) footJob.getResult()).getList());
-        Assert.assertEquals(1, ((Toto) footJob.getResult()).getList().size());
-        Assert.assertEquals(titi, ((Toto) footJob.getResult()).getList().get(0));
+        Assert.assertNotNull(((Toto) totoJob.getResult()).getList());
+        Assert.assertEquals(1, ((Toto) totoJob.getResult()).getList().size());
+        Assert.assertEquals(titi, ((Toto) totoJob.getResult()).getList().get(0));
 
         Thread.sleep(5_000);
     }

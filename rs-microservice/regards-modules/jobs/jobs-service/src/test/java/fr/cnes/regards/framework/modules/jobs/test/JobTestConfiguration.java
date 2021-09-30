@@ -15,6 +15,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         ignoreResourceNotFound = true)
 @EnableAsync
 @EnableScheduling
-public class JobConfiguration {
+public class JobTestConfiguration {
 
 }

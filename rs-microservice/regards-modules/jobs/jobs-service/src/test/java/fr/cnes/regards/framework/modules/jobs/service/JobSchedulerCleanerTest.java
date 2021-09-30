@@ -3,11 +3,9 @@ package fr.cnes.regards.framework.modules.jobs.service;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -17,10 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
-import fr.cnes.regards.framework.modules.jobs.test.JobConfiguration;
+import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -28,7 +24,7 @@ import static org.junit.Assert.assertEquals;
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { JobConfiguration.class })
+@ContextConfiguration(classes = { JobTestConfiguration.class })
 @ActiveProfiles("noscheduler")
 public class JobSchedulerCleanerTest {
 
