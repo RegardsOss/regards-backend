@@ -107,6 +107,11 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
+    public ResponseEntity<Void> updateOrigin(String email, String origin) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(final Long pUserId) {
         return null;
     }

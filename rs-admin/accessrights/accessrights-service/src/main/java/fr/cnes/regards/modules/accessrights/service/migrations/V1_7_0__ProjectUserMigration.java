@@ -5,8 +5,7 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
-import fr.cnes.regards.modules.authentication.domain.dto.ServiceProviderDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParameters;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
@@ -18,12 +17,9 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.time.Instant;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -34,18 +30,21 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1_7_0__ProjectUserMigration.class);
 
     private static final int RETRY_DELAY = 30;
-    private static final String SELECT_USERS = "SELECT email FROM t_project_user";
+    private static final Instant NOW = Instant.now();
+
     private static final String EMAIL_COLUMN = "email";
+    private static final String FIRSTNAME_COLUMN = "firstname";
+    private static final String NAME_COLUMN = "lastname";
+    private static final String CREATION_DATE_COLUMN = "created";
+    private static final String SELECT_USERS = "SELECT " + EMAIL_COLUMN + " FROM t_project_user";
+    private static final String UPDATE_USERS =
+            "UPDATE t_project_user SET " + FIRSTNAME_COLUMN + "=?, " + NAME_COLUMN + "=?, " + CREATION_DATE_COLUMN + "=? WHERE " + EMAIL_COLUMN + "=?";
 
     private final IAccountsClient accountsClient;
-    private final IExternalAuthenticationClient externalAuthenticationClient;
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private String uniqueServiceProvider;
-
-    public V1_7_0__ProjectUserMigration(IAccountsClient accountsClient, IExternalAuthenticationClient externalAuthenticationClient, IRuntimeTenantResolver runtimeTenantResolver) {
+    public V1_7_0__ProjectUserMigration(IAccountsClient accountsClient, IRuntimeTenantResolver runtimeTenantResolver) {
         this.accountsClient = accountsClient;
-        this.externalAuthenticationClient = externalAuthenticationClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
@@ -57,18 +56,18 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
 
         Connection connection = context.getConnection();
 
-        init();
+        checkAdminInstanceServiceCanBeAccessed();
 
         Set<String> users = getUsers(connection);
 
         LOGGER.info("Found {} users to update", users.size());
 
-        users.forEach(this::updateUser);
+        users.forEach(email -> updateUser(email, connection));
 
         LOGGER.info("Completed Java migration {}", this.getClass().getSimpleName());
     }
 
-    private void init() throws InterruptedException {
+    private void checkAdminInstanceServiceCanBeAccessed() throws InterruptedException {
 
         int maxAttempts = 3;
         int attempt = 0;
@@ -76,18 +75,11 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
         while (attempt++ < maxAttempts) {
 
             try {
-
                 FeignSecurityManager.asSystem();
-
-                // Retrieve service providers and set uniqueServiceProvider only if there's only one
-                ResponseEntity<PagedModel<EntityModel<ServiceProviderDto>>> response = externalAuthenticationClient.getServiceProviders();
+                ResponseEntity<PagedModel<EntityModel<Account>>> response = accountsClient.retrieveAccountList(new AccountSearchParameters(), 0, 1);
                 if (response != null && response.getStatusCode().is2xxSuccessful()) {
-                    PagedModel<EntityModel<ServiceProviderDto>> body = response.getBody();
+                    PagedModel<EntityModel<Account>> body = response.getBody();
                     if (body != null) {
-                        List<ServiceProviderDto> serviceProviders = HateoasUtils.unwrapCollection(body.getContent());
-                        if (serviceProviders.size() == 1) {
-                            uniqueServiceProvider = serviceProviders.get(0).getName();
-                        }
                         LOGGER.info("Successfully contacted rs-admin-instance");
                     }
                     break;
@@ -124,9 +116,9 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
         return users;
     }
 
-    private void updateUser(String email) {
+    private void updateUser(String email, Connection connection) {
 
-        LOGGER.info("Updating groups for user {}", email);
+        LOGGER.info("Updating projects for user {}", email);
 
         String error = "Unable to update user " + email;
 
@@ -134,27 +126,13 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
 
             FeignSecurityManager.asSystem();
 
-            // Link Project to Account
             ResponseEntity<Void> linkResponse = accountsClient.link(email, runtimeTenantResolver.getTenant());
             if (linkResponse == null || !linkResponse.getStatusCode().is2xxSuccessful()) {
                 throw new FlywayException(error);
             }
-            // Fetch Account and update origin IF account is external and there's a unique service provider for project
-            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient.retrieveAccounByEmail(email);
-            if (accountResponse == null || !accountResponse.getStatusCode().is2xxSuccessful()) {
-                throw new FlywayException(error);
-            }
-            Account account = HateoasUtils.unwrap(accountResponse.getBody());
-            if (account == null) {
-                throw new FlywayException(error);
-            }
-            if (account.isExternal() && uniqueServiceProvider != null) {
-                account.setOrigin(uniqueServiceProvider);
-                ResponseEntity<EntityModel<Account>> updateResponse = accountsClient.updateAccount(account.getId(), account);
-                if (updateResponse == null || !updateResponse.getStatusCode().is2xxSuccessful()) {
-                    throw new FlywayException(error);
-                }
-            }
+
+            Account account = HateoasUtils.unwrap(accountsClient.retrieveAccounByEmail(email).getBody());
+            updateUser(email, account.getFirstName(), account.getLastName(), connection);
 
         } catch (Exception e) {
             LOGGER.error(error, e);
@@ -163,6 +141,19 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
             FeignSecurityManager.reset();
         }
 
+    }
+
+    private void updateUser(String email, String firstName, String lastName, Connection connection) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_USERS)) {
+            preparedStatement.setString(1, firstName);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setTimestamp(3, Timestamp.from(NOW));
+            preparedStatement.setString(4, email);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new FlywayException(e);
+        }
     }
 
 }

@@ -138,6 +138,11 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     }
 
     @Override
+    public ResponseEntity<Void> updateOrigin(String email, String origin) {
+        return null;
+    }
+
+    @Override
     public EntityModel<ProjectUser> toResource(ProjectUser element, Object... extras) {
         return resourceService.toResource(element);
     }

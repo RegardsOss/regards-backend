@@ -85,4 +85,9 @@ public class ProjectUsersClientMock implements IProjectUsersClient {
         return null;
     }
 
+    @Override
+    public ResponseEntity<Void> updateOrigin(String email, String origin) {
+        return null;
+    }
+
 }

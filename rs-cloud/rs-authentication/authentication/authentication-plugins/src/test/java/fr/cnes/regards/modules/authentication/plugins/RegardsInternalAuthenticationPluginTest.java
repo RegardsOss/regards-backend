@@ -93,8 +93,10 @@ public class RegardsInternalAuthenticationPluginTest {
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
+            Account account = new Account(email, "firstName", "lastName", "password");
+            account.setOrigin(Account.REGARDS_ORIGIN);
             final ResponseEntity<EntityModel<Account>> accountResponse = new ResponseEntity<>(
-                    new EntityModel<>(new Account(email, "firstName", "lastName", "password")), HttpStatus.OK);
+                    new EntityModel<>(account), HttpStatus.OK);
             Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");

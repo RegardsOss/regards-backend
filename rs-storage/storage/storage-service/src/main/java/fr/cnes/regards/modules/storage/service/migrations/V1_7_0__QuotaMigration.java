@@ -127,11 +127,14 @@ public class V1_7_0__QuotaMigration extends BaseJavaMigration {
                 if (projectUser == null) {
                     throw new FlywayException(error);
                 }
-                projectUser.setMaxQuota(maxQuota);
-                projectUser.setMetadata(List.ofAll(projectUser.getMetadata()).distinctBy(MetaData::getId).asJava());
-                ResponseEntity<EntityModel<ProjectUser>> updateResponse = projectUsersClient.updateProjectUser(projectUser.getId(), projectUser);
-                if (updateResponse == null || !updateResponse.getStatusCode().is2xxSuccessful()) {
-                    throw new FlywayException(error);
+                // Add null check for default regards admin account
+                if (projectUser.getId() != null) {
+                    projectUser.setMaxQuota(maxQuota);
+                    projectUser.setMetadata(List.ofAll(projectUser.getMetadata()).distinctBy(MetaData::getId).asJava());
+                    ResponseEntity<EntityModel<ProjectUser>> updateResponse = projectUsersClient.updateProjectUser(projectUser.getId(), projectUser);
+                    if (updateResponse == null || !updateResponse.getStatusCode().is2xxSuccessful()) {
+                        throw new FlywayException(error);
+                    }
                 }
             }
 

@@ -408,4 +408,12 @@ public class ProjectUserService implements IProjectUserService {
         return projectUserRepository.getUserCountByAccessGroup();
     }
 
+    @Override
+    public void updateOrigin(String email, String origin) throws EntityNotFoundException {
+        ProjectUser projectUser = retrieveOneByEmail(email);
+        if (StringUtils.isNotBlank(origin)) {
+            projectUser.setOrigin(origin);
+        }
+    }
+
 }

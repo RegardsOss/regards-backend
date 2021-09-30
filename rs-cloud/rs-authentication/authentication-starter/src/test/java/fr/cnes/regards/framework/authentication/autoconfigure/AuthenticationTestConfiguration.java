@@ -18,17 +18,6 @@
  */
 package fr.cnes.regards.framework.authentication.autoconfigure;
 
-import java.util.ArrayList;
-
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -40,6 +29,16 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
 
 /**
  * Class AuthenticationTestConfiguration
@@ -98,6 +97,7 @@ public class AuthenticationTestConfiguration {
         final IAccountsClient mock = Mockito.mock(IAccountsClient.class);
         final Account account = new Account("email@test.fr", "name", "lastname", "password");
         account.setStatus(AccountStatus.ACTIVE);
+        account.setOrigin(Account.REGARDS_ORIGIN);
         final EntityModel<Account> resource = HateoasUtils.wrap(account);
         final ResponseEntity<EntityModel<Account>> response = ResponseEntity.ok(resource);
 
