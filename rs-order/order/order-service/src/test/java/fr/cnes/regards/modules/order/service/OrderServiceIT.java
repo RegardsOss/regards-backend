@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import feign.form.multipart.ManyFilesWriter;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -40,7 +39,12 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.FilesTask;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
@@ -49,11 +53,26 @@ import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import org.junit.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -70,20 +89,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MimeType;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-
-import static org.mockito.ArgumentMatchers.any;
 
 /**
  * @author oroussel
@@ -189,7 +194,7 @@ public class OrderServiceIT {
     }
 
     @Test
-    public void testCreateNOKLabelTooLong() throws Exception {
+    public void testCreateNOKLabelTooLong() {
         Basket basket = OrderTestUtils.getBasketSingleSelection("testCreateNOKLabelTooLong");
         basket = basketRepos.save(basket);
         try {
@@ -230,7 +235,7 @@ public class OrderServiceIT {
         ds1OrderTask.setDatasetIpid(DS1_IP_ID.toString());
         ds1OrderTask.setDatasetLabel("DS1");
         ds1OrderTask.setFilesCount(1);
-        ds1OrderTask.setFilesSize(1_000_000l);
+        ds1OrderTask.setFilesSize(1_000_000L);
         ds1OrderTask.setObjectsCount(1);
         ds1OrderTask.addSelectionRequest(OrderTestUtils.createBasketSelectionRequest("all:ds1"));
         order.addDatasetOrderTask(ds1OrderTask);
@@ -243,7 +248,7 @@ public class OrderServiceIT {
         dataFile1.setDataType(DataType.RAWDATA);
         dataFile1.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
         dataFile1.setOnline(true);
-        dataFile1.setFilesize(1_000_000l);
+        dataFile1.setFilesize(1_000_000L);
         dataFile1.setFilename("tutu");
         dataFile1.setReference(false);
         OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
@@ -256,7 +261,7 @@ public class OrderServiceIT {
         DataFile dataFile2 = new DataFile();
         dataFile2.setUri(new URI("staff://toto2/titi2/tutu2").toString());
         dataFile2.setOnline(false);
-        dataFile2.setFilesize(1l);
+        dataFile2.setFilesize(1L);
         dataFile2.setFilename("tutu2");
         dataFile2.setReference(false);
         dataFile2.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
@@ -355,7 +360,7 @@ public class OrderServiceIT {
         List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
         Assert.assertEquals(0, files.size());
         order = orderService.loadSimple(order.getId());
-        Assert.assertTrue(order.getStatus() == OrderStatus.EXPIRED);
+        Assert.assertEquals(order.getStatus(), OrderStatus.EXPIRED);
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_140")

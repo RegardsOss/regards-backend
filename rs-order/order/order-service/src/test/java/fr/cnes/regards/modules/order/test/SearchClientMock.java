@@ -91,7 +91,7 @@ public class SearchClientMock implements IComplexSearchClient {
         ds3.setIpId(DS3_IP_ID);
     }
 
-    public static final String QUERY_DS2_DS3 = "tags:(" + DS2_IP_ID.toString() + " OR " + DS3_IP_ID.toString() + ")";
+    public static final String QUERY_DS2_DS3 = "tags:(" + DS2_IP_ID + " OR " + DS3_IP_ID + ")";
 
     public static final Map<UniformResourceName, DatasetFeature> DS_MAP = new ImmutableMap.Builder<UniformResourceName, DatasetFeature>()
             .put(DS1_IP_ID, ds1.getFeature()).put(DS2_IP_ID, ds2.getFeature()).put(DS3_IP_ID, ds3.getFeature()).build();
@@ -112,8 +112,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary rawSummary = new FilesSummary();
         rawSummary.addFilesCount(rawCount);
         rawSummary.addFilesSize(rawSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_!ref", rawSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_!ref", rawSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString(), rawSummary);
         dsSummary.addFilesCount(rawCount);
         dsSummary.addFilesSize(rawSize);
@@ -126,8 +126,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlHdSummary = new FilesSummary();
         qlHdSummary.addFilesCount(qlHdCount);
         qlHdSummary.addFilesSize(qlHdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_!ref", qlHdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_!ref", qlHdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString(), qlHdSummary);
         dsSummary.addFilesCount(qlHdCount);
         dsSummary.addFilesSize(qlHdSize);
@@ -139,8 +139,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlMdSummary = new FilesSummary();
         qlMdSummary.addFilesCount(qlMdCount);
         qlMdSummary.addFilesSize(qlMdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_!ref", qlMdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_!ref", qlMdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString(), qlMdSummary);
         dsSummary.addFilesCount(qlMdCount);
         dsSummary.addFilesSize(qlMdSize);
@@ -152,8 +152,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlSdSummary = new FilesSummary();
         qlSdSummary.addFilesCount(qlSdCount);
         qlSdSummary.addFilesSize(qlSdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_!ref", qlSdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_!ref", qlSdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString(), qlSdSummary);
         dsSummary.addFilesCount(qlSdCount);
         dsSummary.addFilesSize(qlSdSize);
@@ -182,8 +182,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary rawSummary2 = new FilesSummary();
         rawSummary2.addFilesCount(rawCount2);
         rawSummary2.addFilesSize(rawSize2);
-        fileTypesSummaryDs2Map.put(DataType.RAWDATA.toString()+"_ref", new FilesSummary());
-        fileTypesSummaryDs2Map.put(DataType.RAWDATA.toString()+"_!ref", rawSummary2);
+        fileTypesSummaryDs2Map.put(DataType.RAWDATA + "_ref", new FilesSummary());
+        fileTypesSummaryDs2Map.put(DataType.RAWDATA + "_!ref", rawSummary2);
         fileTypesSummaryDs2Map.put(DataType.RAWDATA.toString(), rawSummary2);
         ds2Summary.addFilesCount(rawCount2);
         ds2Summary.addFilesSize(rawSize2);
@@ -195,8 +195,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlHdSummary2 = new FilesSummary();
         qlHdSummary2.addFilesCount(qlHdCount2);
         qlHdSummary2.addFilesSize(qlHdSize2);
-        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_HD.toString()+"_ref", new FilesSummary());
-        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_HD.toString()+"_!ref", qlHdSummary2);
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_HD + "_ref", new FilesSummary());
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_HD + "_!ref", qlHdSummary2);
         fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_HD.toString(), qlHdSummary2);
         ds2Summary.addFilesCount(qlHdCount2);
         ds2Summary.addFilesSize(qlHdSize2);
@@ -208,8 +208,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlMdSummary2 = new FilesSummary();
         qlMdSummary2.addFilesCount(qlMdCount2);
         qlMdSummary2.addFilesSize(qlMdSize2);
-        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_MD.toString()+"_ref", new FilesSummary());
-        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_MD.toString()+"_!ref", qlMdSummary2);
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_MD + "_ref", new FilesSummary());
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_MD + "_!ref", qlMdSummary2);
         fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_MD.toString(), qlMdSummary2);
         ds2Summary.addFilesCount(qlMdCount2);
         ds2Summary.addFilesSize(qlMdSize2);
@@ -221,8 +221,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlSdSummary2 = new FilesSummary();
         qlSdSummary2.addFilesCount(qlSdCount2);
         qlSdSummary2.addFilesSize(qlSdSize2);
-        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD.toString()+"_ref", new FilesSummary());
-        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD.toString()+"_!ref", qlSdSummary2);
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD + "_ref", new FilesSummary());
+        fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD + "_!ref", qlSdSummary2);
         fileTypesSummaryDs2Map.put(DataType.QUICKLOOK_SD.toString(), qlSdSummary2);
         ds2Summary.addFilesCount(qlSdCount2);
         ds2Summary.addFilesSize(qlSdSize2);
@@ -240,8 +240,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary rawSummary3 = new FilesSummary();
         rawSummary3.addFilesCount(rawCount3);
         rawSummary3.addFilesSize(rawSize3);
-        fileTypesSummaryDs3Map.put(DataType.RAWDATA.toString()+"_ref", new FilesSummary());
-        fileTypesSummaryDs3Map.put(DataType.RAWDATA.toString()+"_!ref", rawSummary3);
+        fileTypesSummaryDs3Map.put(DataType.RAWDATA + "_ref", new FilesSummary());
+        fileTypesSummaryDs3Map.put(DataType.RAWDATA + "_!ref", rawSummary3);
         fileTypesSummaryDs3Map.put(DataType.RAWDATA.toString(), rawSummary3);
         ds3Summary.addFilesCount(rawCount3);
         ds3Summary.addFilesSize(rawSize3);
@@ -253,8 +253,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlHdSummary3 = new FilesSummary();
         qlHdSummary3.addFilesCount(qlHdCount3);
         qlHdSummary3.addFilesSize(qlHdSize3);
-        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_HD.toString()+"_ref", new FilesSummary());
-        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_HD.toString()+"_!ref", qlHdSummary3);
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_HD + "_ref", new FilesSummary());
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_HD + "_!ref", qlHdSummary3);
         fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_HD.toString(), qlHdSummary3);
         ds3Summary.addFilesCount(qlHdCount3);
         ds3Summary.addFilesSize(qlHdSize3);
@@ -266,8 +266,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlMdSummary3 = new FilesSummary();
         qlMdSummary3.addFilesCount(qlMdCount3);
         qlMdSummary3.addFilesSize(qlMdSize3);
-        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_MD.toString()+"_ref", new FilesSummary());
-        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_MD.toString()+"_!ref", qlMdSummary3);
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_MD + "_ref", new FilesSummary());
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_MD + "_!ref", qlMdSummary3);
         fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_MD.toString(), qlMdSummary3);
         ds3Summary.addFilesCount(qlMdCount3);
         ds3Summary.addFilesSize(qlMdSize3);
@@ -279,8 +279,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlSdSummary3 = new FilesSummary();
         qlSdSummary3.addFilesCount(qlSdCount3);
         qlSdSummary3.addFilesSize(qlSdSize3);
-        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD.toString()+"_ref", new FilesSummary());
-        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD.toString()+"_!ref", qlSdSummary3);
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD + "_ref", new FilesSummary());
+        fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD + "_!ref", qlSdSummary3);
         fileTypesSummaryDs3Map.put(DataType.QUICKLOOK_SD.toString(), qlSdSummary3);
         ds3Summary.addFilesCount(qlSdCount3);
         ds3Summary.addFilesSize(qlSdSize3);
@@ -308,8 +308,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary rawSummary = new FilesSummary();
         rawSummary.addFilesCount(rawCount);
         rawSummary.addFilesSize(rawSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_!ref", rawSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_!ref", rawSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString(), rawSummary);
         dsSummary.addFilesCount(rawCount);
         dsSummary.addFilesSize(rawSize);
@@ -321,8 +321,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlHdSummary = new FilesSummary();
         qlHdSummary.addFilesCount(qlHdCount);
         qlHdSummary.addFilesSize(qlHdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_!ref", qlHdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_!ref", qlHdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString(), qlHdSummary);
         dsSummary.addFilesCount(qlHdCount);
         dsSummary.addFilesSize(qlHdSize);
@@ -334,8 +334,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlMdSummary = new FilesSummary();
         qlMdSummary.addFilesCount(qlMdCount);
         qlMdSummary.addFilesSize(qlMdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_!ref", qlMdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_!ref", qlMdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString(), qlMdSummary);
         dsSummary.addFilesCount(qlMdCount);
         dsSummary.addFilesSize(qlMdSize);
@@ -347,8 +347,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlSdSummary = new FilesSummary();
         qlSdSummary.addFilesCount(qlSdCount);
         qlSdSummary.addFilesSize(qlSdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_!ref", qlSdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_!ref", qlSdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString(), qlSdSummary);
         dsSummary.addFilesCount(qlSdCount);
         dsSummary.addFilesSize(qlSdSize);
@@ -376,8 +376,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary rawSummary = new FilesSummary();
         rawSummary.addFilesCount(rawCount);
         rawSummary.addFilesSize(rawSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_!ref", rawSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_!ref", rawSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString(), rawSummary);
         dsSummary.addFilesCount(rawCount);
         dsSummary.addFilesSize(rawSize);
@@ -389,8 +389,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlHdSummary = new FilesSummary();
         qlHdSummary.addFilesCount(qlHdCount);
         qlHdSummary.addFilesSize(qlHdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_!ref", qlHdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_!ref", qlHdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString(), qlHdSummary);
         dsSummary.addFilesCount(qlHdCount);
         dsSummary.addFilesSize(qlHdSize);
@@ -402,8 +402,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlMdSummary = new FilesSummary();
         qlMdSummary.addFilesCount(qlMdCount);
         qlMdSummary.addFilesSize(qlMdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_!ref", qlMdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_!ref", qlMdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString(), qlMdSummary);
         dsSummary.addFilesCount(qlMdCount);
         dsSummary.addFilesSize(qlMdSize);
@@ -415,8 +415,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlSdSummary = new FilesSummary();
         qlSdSummary.addFilesCount(qlSdCount);
         qlSdSummary.addFilesSize(qlSdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_!ref", qlSdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_!ref", qlSdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString(), qlSdSummary);
         dsSummary.addFilesCount(qlSdCount);
         dsSummary.addFilesSize(qlSdSize);
@@ -439,8 +439,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary rawSummary = new FilesSummary();
         rawSummary.addFilesCount(rawCount);
         rawSummary.addFilesSize(rawSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_!ref", rawSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_!ref", rawSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString(), rawSummary);
         dsSummary.addFilesCount(rawCount);
         dsSummary.addFilesSize(rawSize);
@@ -452,8 +452,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlHdSummary = new FilesSummary();
         qlHdSummary.addFilesCount(qlHdCount);
         qlHdSummary.addFilesSize(qlHdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_!ref", qlHdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_!ref", qlHdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString(), qlHdSummary);
         dsSummary.addFilesCount(qlHdCount);
         dsSummary.addFilesSize(qlHdSize);
@@ -465,8 +465,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlMdSummary = new FilesSummary();
         qlMdSummary.addFilesCount(qlMdCount);
         qlMdSummary.addFilesSize(qlMdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_!ref", qlMdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_!ref", qlMdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString(), qlMdSummary);
         dsSummary.addFilesCount(qlMdCount);
         dsSummary.addFilesSize(qlMdSize);
@@ -478,8 +478,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlSdSummary = new FilesSummary();
         qlSdSummary.addFilesCount(qlSdCount);
         qlSdSummary.addFilesSize(qlSdSize);
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_ref", new FilesSummary());
-        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_!ref", qlSdSummary);
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_ref", new FilesSummary());
+        dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_!ref", qlSdSummary);
         dsSummary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString(), qlSdSummary);
         dsSummary.addFilesCount(qlSdCount);
         dsSummary.addFilesSize(qlSdSize);
@@ -496,8 +496,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary rawSummary2 = new FilesSummary();
         rawSummary2.addFilesCount(rawCount2);
         rawSummary2.addFilesSize(rawSize2);
-        ds2Summary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_ref", new FilesSummary());
-        ds2Summary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_!ref", rawSummary2);
+        ds2Summary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_ref", new FilesSummary());
+        ds2Summary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_!ref", rawSummary2);
         ds2Summary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString(), rawSummary2);
         ds2Summary.addFilesCount(rawCount2);
         ds2Summary.addFilesSize(rawSize2);
@@ -509,8 +509,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlHdSummary2 = new FilesSummary();
         qlHdSummary2.addFilesCount(qlHdCount2);
         qlHdSummary2.addFilesSize(qlHdSize2);
-        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_ref", new FilesSummary());
-        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_!ref", qlHdSummary2);
+        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_ref", new FilesSummary());
+        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_!ref", qlHdSummary2);
         ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString(), qlHdSummary2);
         ds2Summary.addFilesCount(qlHdCount2);
         ds2Summary.addFilesSize(qlHdSize2);
@@ -522,8 +522,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlMdSummary2 = new FilesSummary();
         qlMdSummary2.addFilesCount(qlMdCount2);
         qlMdSummary2.addFilesSize(qlMdSize2);
-        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_ref", new FilesSummary());
-        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_!ref", qlMdSummary2);
+        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_ref", new FilesSummary());
+        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_!ref", qlMdSummary2);
         ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString(), qlMdSummary2);
         ds2Summary.addFilesCount(qlMdCount2);
         ds2Summary.addFilesSize(qlMdSize2);
@@ -535,8 +535,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlSdSummary2 = new FilesSummary();
         qlSdSummary2.addFilesCount(qlSdCount2);
         qlSdSummary2.addFilesSize(qlSdSize2);
-        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_ref", new FilesSummary());
-        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_!ref", qlSdSummary2);
+        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_ref", new FilesSummary());
+        ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_!ref", qlSdSummary2);
         ds2Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString(), qlSdSummary2);
         ds2Summary.addFilesCount(qlSdCount2);
         ds2Summary.addFilesSize(qlSdSize2);
@@ -553,8 +553,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary rawSummary3 = new FilesSummary();
         rawSummary3.addFilesCount(rawCount3);
         rawSummary3.addFilesSize(rawSize3);
-        ds3Summary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_ref", new FilesSummary());
-        ds3Summary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString()+"_!ref", rawSummary3);
+        ds3Summary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_ref", new FilesSummary());
+        ds3Summary.getFileTypesSummaryMap().put(DataType.RAWDATA + "_!ref", rawSummary3);
         ds3Summary.getFileTypesSummaryMap().put(DataType.RAWDATA.toString(), rawSummary3);
         ds3Summary.addFilesCount(rawCount3);
         ds3Summary.addFilesSize(rawSize3);
@@ -566,8 +566,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlHdSummary3 = new FilesSummary();
         qlHdSummary3.addFilesCount(qlHdCount3);
         qlHdSummary3.addFilesSize(qlHdSize3);
-        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_ref", new FilesSummary());
-        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString()+"_!ref", qlHdSummary3);
+        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_ref", new FilesSummary());
+        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD + "_!ref", qlHdSummary3);
         ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_HD.toString(), qlHdSummary3);
         ds3Summary.addFilesCount(qlHdCount3);
         ds3Summary.addFilesSize(qlHdSize3);
@@ -579,8 +579,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlMdSummary3 = new FilesSummary();
         qlMdSummary3.addFilesCount(qlMdCount3);
         qlMdSummary3.addFilesSize(qlMdSize3);
-        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_ref", new FilesSummary());
-        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString()+"_!ref", qlMdSummary3);
+        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_ref", new FilesSummary());
+        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD + "_!ref", qlMdSummary3);
         ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_MD.toString(), qlMdSummary3);
         ds3Summary.addFilesCount(qlMdCount3);
         ds3Summary.addFilesSize(qlMdSize3);
@@ -592,8 +592,8 @@ public class SearchClientMock implements IComplexSearchClient {
         FilesSummary qlSdSummary3 = new FilesSummary();
         qlSdSummary3.addFilesCount(qlSdCount3);
         qlSdSummary3.addFilesSize(qlSdSize3);
-        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_ref", new FilesSummary());
-        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString()+"_!ref", qlSdSummary3);
+        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_ref", new FilesSummary());
+        ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD + "_!ref", qlSdSummary3);
         ds3Summary.getFileTypesSummaryMap().put(DataType.QUICKLOOK_SD.toString(), qlSdSummary3);
         ds3Summary.addFilesCount(qlSdCount3);
         ds3Summary.addFilesSize(qlSdSize3);
@@ -661,11 +661,11 @@ public class SearchClientMock implements IComplexSearchClient {
 
     protected void registerFilesIn(String path, List<EntityModel<EntityFeature>> list) throws URISyntaxException {
         File testDir = new File(path);
-        for (File dir : testDir.listFiles()) {
+        for (File dir : Objects.requireNonNull(testDir.listFiles())) {
             EntityFeature feature = new DataObjectFeature(UniformResourceName.fromString(dir.getName()),
                     dir.getName(), dir.getName());
             Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
-            for (File file : dir.listFiles()) {
+            for (File file : Objects.requireNonNull(dir.listFiles())) {
                 DataFile dataFile = new DataFile();
                 dataFile.setOnline(false);
                 dataFile.setUri(new URI("file:///test/" + file.getName()).toString());

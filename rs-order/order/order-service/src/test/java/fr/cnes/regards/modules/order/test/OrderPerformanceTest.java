@@ -175,10 +175,10 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid("DS_1");
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000l);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1l);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
 

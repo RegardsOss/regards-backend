@@ -44,7 +44,7 @@ public interface IBasketService {
 
     /**
      * Delete basket
-     * @param user
+     * @param user name used to find the basket to delete
      */
     void deleteIfExists(String user);
 
@@ -67,27 +67,27 @@ public interface IBasketService {
      * Add a selection to a basket through an opensearch request. The selection concerns a priori several datasets.
      * Adding a selection concerns RAWDATA and QUICKLOOKS files. If a process is associated to a selected dataset, a
      * check is done to verify if the number of items to process is less than the limit defined by the process
-     * @param basketId
-     * @param selectionRequest
-     * @return {@link Basket}
-     * @throws EmptySelectionException
-     * @throws TooManyItemsSelectedInBasketException
+     * @param basketId the identifier of the basket on which the selection will be added
+     * @param selectionRequest the selection to add to the basket
+     * @return {@link Basket} the basket updated with the selection
+     * @throws EmptySelectionException if there is no files associated to the order
+     * @throws TooManyItemsSelectedInBasketException if the number of items selected is greater than the limit
      */
     Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest) throws EmptySelectionException, TooManyItemsSelectedInBasketException;
 
     /**
      * Remove specified dataset selection from basket
-     * @param basket
-     * @param datasetId
+     * @param basket basket that contains one or multiple dataset selections
+     * @param datasetId identifier used to delete the corresponding dataset selection
      * @return updated {@link Basket}
      */
     Basket removeDatasetSelection(Basket basket, Long datasetId);
 
     /**
      * Remove specified dated items selection from basket
-     * @param basket
+     * @param basket basket that contains one or multiple dataset selections regrouped by adding date
      * @param datasetId id of dataset selection whom items selection belongs to
-     * @param itemsSelectionDate
+     * @param itemsSelectionDate the referenced date used to remove the corresponding selection
      * @return updated {@link Basket}
      */
     Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate);

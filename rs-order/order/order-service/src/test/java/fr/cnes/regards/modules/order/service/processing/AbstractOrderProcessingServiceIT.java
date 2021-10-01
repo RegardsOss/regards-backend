@@ -168,7 +168,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             orderDownloadService.downloadOrderMetalink(order.getId(), out);
             out.flush();
-            LOGGER.info("Metalink:\n>>>\n{}\n<<<", new String(out.toByteArray()));
+            LOGGER.info("Metalink:\n>>>\n{}\n<<<", out);
         }
     }
 
@@ -226,15 +226,14 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
                                  OrderProcessInfo processInfo) {
         Mockito.reset(processingClient);
 
-        when(processingClient.findByUuid(processBusinessId.toString())).thenAnswer(i -> {
-            return new ResponseEntity<>(new PProcessDTO(
-                    processBusinessId,
-                    "the-process-name",
-                    true,
-                    processInfoMapper.toMap(processInfo),
-                    List.of(new ExecutionParamDTO("the-param-name", ExecutionParameterType.STRING, "The param desc"))
-            ), HttpStatus.OK);
-        });
+        when(processingClient.findByUuid(processBusinessId.toString())).thenAnswer(i -> new ResponseEntity<>(new PProcessDTO(
+                        processBusinessId,
+                        "the-process-name",
+                        true,
+                        processInfoMapper.toMap(processInfo),
+                        List.of(new ExecutionParamDTO("the-param-name", ExecutionParameterType.STRING, "The param desc"))
+                ), HttpStatus.OK)
+        );
 
         when(processingClient.createBatch(any())).thenAnswer(i -> {
             PBatchRequest req = i.getArgument(0);
@@ -269,8 +268,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
 
     protected Basket saveBasket(String tenant, Basket basket) {
         runtimeTenantResolver.forceTenant(tenant);
-        Basket savedBasket = basketRepos.saveAndFlush(basket);
-        return savedBasket;
+        return basketRepos.saveAndFlush(basket);
     }
 
     protected String randomLabel(String prefix) {

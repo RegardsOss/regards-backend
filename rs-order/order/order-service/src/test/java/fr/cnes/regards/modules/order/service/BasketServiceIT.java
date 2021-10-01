@@ -98,13 +98,10 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 
     /**
      * BECAUSE OF OffsetDateTime.now() used by BasketService, THIS TEST CLASS MUST DEFINE ONLY ONE TEST
-     * @throws EmptyBasketException
-     * @throws EmptySelectionException
-     * @throws InterruptedException
      */
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
-    public void test() throws EmptyBasketException, EmptySelectionException, InterruptedException, EntityInvalidException, TooManyItemsSelectedInBasketException {
+    public void test() throws EmptyBasketException, EmptySelectionException, EntityInvalidException, TooManyItemsSelectedInBasketException {
         Basket basket = basketService.findOrCreate(USER_EMAIL);
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));
@@ -131,15 +128,18 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
             if (dsSel.getDatasetIpid().equals(DS1_IP_ID.toString())) {
                 Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(3_003_000l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(3_003_000L,
+                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
             } else if (dsSel.getDatasetIpid().equals(DS2_IP_ID.toString())) {
                 Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(2_020_202l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(2_020_202L,
+                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
             } else if (dsSel.getDatasetIpid().equals(DS3_IP_ID.toString())) {
                 Assert.assertEquals(4, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(1, dsSel.getObjectsCount());
-                Assert.assertEquals(1_010_101l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(1_010_101L,
+                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
             } else {
                 Assert.fail("Unknown Dataset !!!");
             }
@@ -155,7 +155,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
             if (dsSel.getDatasetIpid().equals(DS1_IP_ID.toString())) {
                 Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(3_003_000l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(3_003_000L,
+                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
@@ -166,7 +167,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
             } else if (dsSel.getDatasetIpid().equals(DS2_IP_ID.toString())) {
                 Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(2_020_202l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(2_020_202L,
+                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
@@ -177,7 +179,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
             } else if (dsSel.getDatasetIpid().equals(DS3_IP_ID.toString())) {
                 Assert.assertEquals(4, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(1, dsSel.getObjectsCount());
-                Assert.assertEquals(1_010_101l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(1_010_101L,
+                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
