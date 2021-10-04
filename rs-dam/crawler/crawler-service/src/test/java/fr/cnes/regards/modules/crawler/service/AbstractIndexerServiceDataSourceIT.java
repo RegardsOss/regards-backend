@@ -78,10 +78,7 @@ import java.util.Set;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
 @ActiveProfiles("noscheduler") // Disable scheduling, this will activate IngesterService during all tests
-@TestPropertySource(locations = { "classpath:test.properties" },
- properties = {
-        //"regards.elasticsearch.deserialize.hits.strategy=GSON"
- })
+@TestPropertySource(locations = { "classpath:test.properties" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 public abstract class AbstractIndexerServiceDataSourceIT {
 
@@ -273,6 +270,7 @@ public abstract class AbstractIndexerServiceDataSourceIT {
 
             List<AttributeModel> attributes = attributeModelService.getAttributes(null, null, null);
             gsonAttributeFactory.refresh(tenant, attributes);
+            jsoniterAttributeFactoryHandler.refresh(tenant,attributes);
         } catch (final IOException e) {
             String errorMessage = "Cannot import " + pFilename;
             throw new AssertionError(errorMessage);
