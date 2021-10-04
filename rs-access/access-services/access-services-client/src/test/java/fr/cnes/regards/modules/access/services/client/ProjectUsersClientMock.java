@@ -90,4 +90,9 @@ public class ProjectUsersClientMock implements IProjectUsersClient {
         return null;
     }
 
+    @Override
+    public ResponseEntity<Void> sendVerificationEmail(String email) {
+        return null;
+    }
+
 }

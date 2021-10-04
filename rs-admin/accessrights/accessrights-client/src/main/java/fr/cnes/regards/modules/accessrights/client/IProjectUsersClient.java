@@ -162,4 +162,7 @@ public interface IProjectUsersClient {
     @PutMapping("/email/{email}/origin/{origin}")
     ResponseEntity<Void> updateOrigin(@PathVariable("email") String email, @PathVariable("origin") String origin);
 
+    @GetMapping("/email/{email}/verification/resend")
+    ResponseEntity<Void> sendVerificationEmail(@PathVariable("email") String email);
+
 }

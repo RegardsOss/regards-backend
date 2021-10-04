@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -36,7 +27,17 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessReposit
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * @author Marc Sordi
@@ -55,6 +56,9 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IRoleService roleService;
+
+    @MockBean
+    private QuotaHelperService quotaHelperService;
 
     /**
      * Get all role resources

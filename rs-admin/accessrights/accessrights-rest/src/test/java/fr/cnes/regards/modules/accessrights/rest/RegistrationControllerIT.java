@@ -34,10 +34,12 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -104,6 +106,9 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IProjectUserRepository projectUserRepository;
+
+    @MockBean
+    private QuotaHelperService quotaHelperService;
 
     /**
      * Root access request endpoint

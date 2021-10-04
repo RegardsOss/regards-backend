@@ -56,6 +56,9 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     @EntityGraph(value = "graph.user.metadata")
     Optional<ProjectUser> findOneByEmail(String pEmail);
 
+    @EntityGraph(value = "graph.user.metadata")
+    Optional<ProjectUser> findById(Long id);
+
     /**
      * Find all {@link ProjectUser}s with passed <code>status</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.

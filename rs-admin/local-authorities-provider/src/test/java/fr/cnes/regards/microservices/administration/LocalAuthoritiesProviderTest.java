@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -85,6 +86,9 @@ public class LocalAuthoritiesProviderTest {
 
     @MockBean
     private IExternalAuthenticationClient externalAuthenticationClient;
+
+    @MockBean
+    private IStorageSettingClient storageSettingClient;
 
     @BeforeTransaction
     public void beforeTransaction() {

@@ -36,10 +36,12 @@ public class AccessRightsEmailService {
 
         String message;
         String name = wrapper.getProjectUser().getFirstName();
+        String email = wrapper.getProjectUser().getEmail();
         if (StringUtils.isBlank(name)) {
-            name = getNameFromAccount(wrapper.getProjectUser().getEmail());
+            name = getNameFromAccount(email);
         }
         wrapper.getData().put("name", name);
+        wrapper.getData().put("email", email);
         wrapper.getData().put("project", runtimeTenantResolver.getTenant());
 
         try {

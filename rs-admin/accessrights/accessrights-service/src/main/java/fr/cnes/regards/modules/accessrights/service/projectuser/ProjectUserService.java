@@ -88,11 +88,11 @@ public class ProjectUserService implements IProjectUserService {
     private final AccountUtilsService accountUtilsService;
     private final AccessRightsEmailService accessRightsEmailService;
     private final ProjectUserGroupService projectUserGroupService;
-
+    private final QuotaHelperService quotaHelperService;
 
     public ProjectUserService(IAuthenticationResolver authenticationResolver, IProjectUserRepository projectUserRepository, IRoleService roleService,
             ApplicationEventPublisher eventPublisher, AccessSettingsService accessSettingsService, AccountUtilsService accountUtilsService,
-            AccessRightsEmailService accessRightsEmailService, ProjectUserGroupService projectUserGroupService
+            AccessRightsEmailService accessRightsEmailService, ProjectUserGroupService projectUserGroupService, QuotaHelperService quotaHelperService
     ) {
         this.authenticationResolver = authenticationResolver;
         this.projectUserRepository = projectUserRepository;
@@ -102,7 +102,9 @@ public class ProjectUserService implements IProjectUserService {
         this.accountUtilsService = accountUtilsService;
         this.accessRightsEmailService = accessRightsEmailService;
         this.projectUserGroupService = projectUserGroupService;
+        this.quotaHelperService = quotaHelperService;
     }
+
 
     @Override
     public Page<ProjectUser> retrieveUserList(ProjectUserSearchParameters parameters, Pageable pageable) {
@@ -308,13 +310,15 @@ public class ProjectUserService implements IProjectUserService {
             accessGroups.addAll(inputAccessGroups);
         }
 
+        Long maxQuota = accessRequestDto.getMaxQuota() != null ? accessRequestDto.getMaxQuota() : quotaHelperService.getDefaultQuota();
+
         ProjectUser projectUser = new ProjectUser()
                 .setEmail(email)
                 .setLastName(account.getLastName())
                 .setFirstName(account.getFirstName())
                 .setRole(role)
                 .setAccessGroups(accessGroups)
-                .setMaxQuota(accessRequestDto.getMaxQuota());
+                .setMaxQuota(maxQuota);
 
         if (accessRequestDto.getMetadata() != null) {
             projectUser.setMetadata(accessRequestDto.getMetadata());

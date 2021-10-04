@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -33,6 +27,13 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessReposit
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Class ResourceControllerIT
@@ -65,6 +66,9 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IRoleRepository roleRepository;
+
+    @MockBean
+    private QuotaHelperService quotaHelperService;
 
     /**
      * Security token for PUBLIC

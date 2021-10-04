@@ -36,11 +36,13 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserExportService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
@@ -88,6 +90,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @MockBean
     private IAccessGroupClient accessGroupClient;
 
+    @MockBean
+    private QuotaHelperService quotaHelperService;
+
     private ProjectUser projectUser;
     private ProjectUser otherUser;
 
@@ -101,10 +106,14 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         projectUserRepository.deleteAll();
 
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
-        otherUser = projectUserRepository
-                .save(new ProjectUser("foo@bar.com", publicRole, new ArrayList<>(), new ArrayList<>()));
+
+        projectUser = new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>());
+        projectUser.setAccessGroups(new HashSet<>(Collections.singletonList("group1")));
+        projectUser = projectUserRepository.save(projectUser);
+
+        otherUser = new ProjectUser("foo@bar.com", publicRole, new ArrayList<>(), new ArrayList<>());
+        otherUser.setAccessGroups(new HashSet<>(Collections.singletonList("group2")));
+        otherUser = projectUserRepository.save(otherUser);
 
         // Insert some authorizations
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACCEPT_ACCESS_RELATIVE_PATH,
@@ -137,6 +146,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         resourcesAccess.add(bResourcesAccess);
         aNewRole.setPermissions(resourcesAccess);
         roleTest = roleRepository.save(aNewRole);
+
+        Mockito.when(quotaHelperService.getDefaultQuota()).thenReturn(-1L);
     }
 
     @Override
@@ -379,7 +390,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         // Then
         ResultActions results = performDefaultGet(path, customizer, "error");
         String content = results.andReturn().getResponse().getContentAsString();
-        assertEquals("{\"public\":1,\"group1\":1}", content);
+        assertEquals("{\"public\":1,\"group2\":1,\"group1\":1}", content);
     }
 
     @Test
@@ -398,6 +409,18 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         String content = results.andReturn().getResponse().getContentAsString();
         assertTrue(content.contains(otherUser.getEmail()));
         assertFalse(content.contains(projectUser.getEmail()));
+    }
+
+
+    @Test
+    public void testReadOneById() {
+
+        // When
+        String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+
+        // Then
+        ResultActions results = performDefaultGet(path, customizer, "error", projectUser.getId());
     }
 
 }

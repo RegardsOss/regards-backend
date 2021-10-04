@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.AccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserGroupService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccountUtilsService;
@@ -112,6 +113,8 @@ public class ProjectUserServiceTest {
     private AccessRightsEmailService accessRightsEmailService;
     @Mock
     private ProjectUserGroupService projectUserGroupService;
+    @Mock
+    private QuotaHelperService quotaHelperService;
 
     @Before
     public void init() throws EntityException {
@@ -124,6 +127,7 @@ public class ProjectUserServiceTest {
         when(accessSettingsService.userCreationMailRecipients()).thenReturn(Collections.singleton("admin@regards.fr"));
         when(roleService.retrieveRole(DEFAULT_ROLE_NAME)).thenReturn(new RoleFactory().doNotAutoCreateParents().createRegisteredUser());
         when(projectUserGroupService.getPublicGroups()).thenReturn(Collections.singleton("public"));
+        when(quotaHelperService.getDefaultQuota()).thenReturn(42L);
 
         projectUser = new ProjectUser()
                 .setId(ID)

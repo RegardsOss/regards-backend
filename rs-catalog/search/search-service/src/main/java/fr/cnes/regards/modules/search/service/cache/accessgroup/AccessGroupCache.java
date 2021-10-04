@@ -60,7 +60,9 @@ public class AccessGroupCache implements IAccessGroupCache {
         try {
             FeignSecurityManager.asSystem();
             ProjectUser projectUser = HateoasUtils.unwrap(projectUsersClient.retrieveProjectUserByEmail(email).getBody());
-            projectUser.getAccessGroups().forEach(accessGroup -> accessGroups.add(HateoasUtils.unwrap(accessGroupClient.retrieveAccessGroup(accessGroup).getBody())));
+            if (projectUser != null) {
+                projectUser.getAccessGroups().forEach(accessGroup -> accessGroups.add(HateoasUtils.unwrap(accessGroupClient.retrieveAccessGroup(accessGroup).getBody())));
+            }
         } finally {
             FeignSecurityManager.reset();
         }

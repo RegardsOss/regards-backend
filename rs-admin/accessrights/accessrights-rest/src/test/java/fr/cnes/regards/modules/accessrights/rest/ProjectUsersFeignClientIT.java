@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -40,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -85,6 +87,9 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
 
     @Autowired
     private Gson gson;
+
+    @MockBean
+    private QuotaHelperService quotaHelperService;
 
     @Before
     public void init() {
