@@ -76,6 +76,7 @@
 		<regards.notifier.version>${regards.version}</regards.notifier.version>
 		<regards.order.version>${regards.version}</regards.order.version>
 		<regards.storage.version>${regards.version}</regards.storage.version>
+		<regards.workermanager.version>${regards.version}</regards.workermanager.version>
 		<regards.starters.version>${regards.version}</regards.starters.version>
 
 		<!-- Framework starters -->
@@ -128,6 +129,7 @@
 		<notifier.bootstrap.version>${regards.version}</notifier.bootstrap.version>
 		<fem.bootstrap.version>${regards.version}</fem.bootstrap.version>
 		<frontend.bootstrap.version>${regards.version}</frontend.bootstrap.version>
+		<workermanager.bootstrap.version>${regards.version}</workermanager.bootstrap.version>
 
 		<!-- TESTS -->
 		<regards.test.version>${regards.version}</regards.test.version>
@@ -185,6 +187,7 @@
 		<modules.processing.version>${regards.version}</modules.processing.version>
 		<modules.authentication.version>${regards.version}</modules.authentication.version>
 		<modules.toponyms.version>${regards.version}</modules.toponyms.version>
+		<modules.workermanager.version>${regards.version}</modules.workermanager.version>
 
 		<!-- FRONTEND -->
 		<fr.cnes.regards.frontend-webapp.version>${regards.version}</fr.cnes.regards.frontend-webapp.version>
@@ -325,7 +328,8 @@
 		<module>rs-order</module>
 		<module>rs-processing</module>
 		<module>rs-storage</module>
-    </modules>
+        <module>rs-worker-manager</module>
+	</modules>
 
 	<dependencies>
 		<!-- logging -->
@@ -1571,6 +1575,27 @@
 				<groupId>fr.cnes.regards.modules.processing</groupId>
 				<artifactId>processing-order-commons</artifactId>
 				<version>${modules.processing.version}</version>
+			</dependency>
+			<!--WorkerManager -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.workermanager</groupId>
+				<artifactId>worker-manager-domain</artifactId>
+				<version>${modules.workermanager.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.workermanager</groupId>
+				<artifactId>worker-manager-dao</artifactId>
+				<version>${modules.workermanager.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.workermanager</groupId>
+				<artifactId>worker-manager-service</artifactId>
+				<version>${modules.workermanager.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.workermanager</groupId>
+				<artifactId>worker-manager-rest</artifactId>
+				<version>${modules.workermanager.version}</version>
 			</dependency>
 			<!-- CNES REMOTE STORAGES -->
 			<dependency>
