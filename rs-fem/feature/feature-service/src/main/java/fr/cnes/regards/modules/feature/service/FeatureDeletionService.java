@@ -331,7 +331,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             this.deletionRepo.deleteInBatch(successfulRequests.keySet());
         }
 
-        // Delete all features without files, related requests will be deleted once we know notifier has successfully sent the notification about it
+        // Delete features, related requests will be deleted once we know notifier has successfully sent the notification about it
         this.creationRepo.deleteByFeatureEntityIn(successfulRequests.values());
         this.featureRepo.deleteAll(successfulRequests.values());
     }
@@ -465,7 +465,6 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                                                       FeatureSessionProperty.REFERENCED_PRODUCTS);
             }
         });
-        featureRepo.deleteAllByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet()));
     }
 
     @Override
