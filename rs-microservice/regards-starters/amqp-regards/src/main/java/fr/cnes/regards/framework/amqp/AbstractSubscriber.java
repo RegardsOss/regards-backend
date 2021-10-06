@@ -177,14 +177,20 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     @Override
     public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver) {
-        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
-                    EventUtils.getTargetRestriction(eventType), false);
+        subscribeTo(eventType,
+                    receiver,
+                    EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType),
+                    false);
     }
 
     @Override
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
-        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
-                    EventUtils.getTargetRestriction(eventType), purgeQueue);
+        subscribeTo(eventType,
+                    receiver,
+                    EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType),
+                    purgeQueue);
     }
 
     @Override
@@ -257,7 +263,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             String virtualHost = resolveVirtualHost(tenant);
             try {
                 virtualHostAdmin.bind(virtualHost);
-                Queue queue = amqpAdmin.declareQueue(tenant, eventType, EventUtils.getWorkerMode(eventType),
+                Queue queue = amqpAdmin.declareQueue(tenant,
+                                                     eventType,
+                                                     EventUtils.getWorkerMode(eventType),
                                                      EventUtils.getTargetRestriction(eventType),
                                                      Optional.of(handlerType));
                 amqpAdmin.purgeQueue(queue.getName(), false);
@@ -341,7 +349,18 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             if (handler != null) {
                 handlerType = Optional.of(handler.getType());
             }
-            queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, handlerType);
+
+            if (handler instanceof IBatchHandler) {
+                IBatchHandler<?> batchHandler = (IBatchHandler<?>) handler;
+                queue = amqpAdmin.declareQueue(tenant,
+                                               eventType,
+                                               workerMode,
+                                               target,
+                                               handlerType,
+                                               batchHandler.isDedicatedDLQEnabled());
+            } else {
+                queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, handlerType);
+            }
             if (purgeQueue) {
                 amqpAdmin.purgeQueue(queue.getName(), false);
             }
@@ -410,8 +429,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             container.setBatchSize(batchHandler.getBatchSize());
             container.setPrefetchCount(batchHandler.getBatchSize());
             container.setReceiveTimeout(batchHandler.getReceiveTimeout());
-            MessageListener batchListener = new RabbitBatchMessageListener(microserviceName, instancePublisher,
-                    publisher, runtimeTenantResolver, tenantResolver, messageConverter, batchHandler);
+            MessageListener batchListener = new RabbitBatchMessageListener(amqpAdmin, microserviceName,
+                    instancePublisher, publisher, runtimeTenantResolver, tenantResolver, messageConverter,
+                    batchHandler);
             container.setMessageListener(batchListener);
         } else {
             container.setChannelTransacted(true);

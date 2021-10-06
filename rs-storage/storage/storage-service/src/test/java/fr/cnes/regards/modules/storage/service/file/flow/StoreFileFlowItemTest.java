@@ -18,17 +18,26 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
+import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
+import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,23 +49,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
-import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+import java.util.*;
 
 /**
  * Test class
@@ -114,7 +107,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                        UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
-        storeHandler.handleBatch(getDefaultTenant(), items);
+        storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
@@ -177,7 +170,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item1);
         items.add(item2);
-        storeHandler.handleBatch(getDefaultTenant(), items);
+        storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
@@ -248,7 +241,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
 
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
-        storeHandler.handleBatch(getDefaultTenant(), items);
+        storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Check file is not referenced yet
@@ -299,7 +292,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                        UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
-        storeHandler.handleBatch(getDefaultTenant(), items);
+        storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertFalse("File should not be referenced",
@@ -338,7 +331,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                                      UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
-        storeHandler.handleBatch(getDefaultTenant(), items);
+        storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertFalse("File should not be referenced",
@@ -369,7 +362,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                             stoReqService.search(ONLINE_CONF_LABEL, checksum).stream().findFirst().get().getStatus());
 
         // Retry same storage request
-        storeHandler.handleBatch(getDefaultTenant(), items);
+        storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // There should be one storage request. Same as previous error one but updated to to_do thanks to new request
@@ -399,7 +392,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
-        storeHandler.handleBatch(getDefaultTenant(), items);
+        storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check request in error
         Page<FileStorageRequest> requests = fileStorageRequestRepo
@@ -446,7 +439,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
         List<StorageFlowItem> items = new ArrayList<>();
         items.add(item);
-        storeHandler.handleBatch(getDefaultTenant(), items);
+        storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check request in error
         Page<FileStorageRequest> requests = fileStorageRequestRepo

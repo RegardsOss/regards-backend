@@ -1,33 +1,29 @@
 package fr.cnes.regards.modules.feature.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-public class FeatureRequestEventHandler implements ApplicationListener<ApplicationReadyEvent>,
-        IBatchHandler<FeatureRequestEvent> {
+public class FeatureRequestEventHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FeatureRequestEvent> {
 
     @Autowired
     private ISubscriber subscriber;
 
     @Autowired(required = false)
     private IFeatureRequestEventListener featureRequestEventListener;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
@@ -39,23 +35,17 @@ public class FeatureRequestEventHandler implements ApplicationListener<Applicati
     }
 
     @Override
-    public boolean validate(String tenant, FeatureRequestEvent message) {
-        return true;
+    public Errors validate(FeatureRequestEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FeatureRequestEvent> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceUpdateEventHandler...", messages.size());
-            long start = System.currentTimeMillis();
-            handle(messages);
-            LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceUpdateEventHandler handled in {} ms",
-                         messages.size(),
-                         System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<FeatureRequestEvent> messages) {
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceUpdateEventHandler...", messages.size());
+        long start = System.currentTimeMillis();
+        handle(messages);
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceUpdateEventHandler handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
     }
 
     private void handle(List<FeatureRequestEvent> events) {
@@ -83,7 +73,7 @@ public class FeatureRequestEventHandler implements ApplicationListener<Applicati
             }
         }
         // now manage message in right order
-        if(!denied.isEmpty()) {
+        if (!denied.isEmpty()) {
             manageDenied(denied);
         }
         if (!granted.isEmpty()) {

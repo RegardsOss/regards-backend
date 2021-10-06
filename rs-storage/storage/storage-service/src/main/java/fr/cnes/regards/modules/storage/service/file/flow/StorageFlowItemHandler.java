@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +30,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
-import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import java.util.List;
 
 /**
  * Handler to handle {@link ReferenceFlowItem} AMQP messages.<br>
@@ -56,9 +55,6 @@ public class StorageFlowItemHandler
     private int BULK_SIZE;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private ISubscriber subscriber;
 
     @Autowired
@@ -70,22 +66,17 @@ public class StorageFlowItemHandler
     }
 
     @Override
-    public void handleBatch(String tenant, List<StorageFlowItem> messages) {
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", messages.size());
-            long start = System.currentTimeMillis();
-            fileStorageReqService.store(messages);
-            LOGGER.info("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", messages.size(),
-                        System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<StorageFlowItem> messages) {
+        LOGGER.debug("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", messages.size());
+        long start = System.currentTimeMillis();
+        fileStorageReqService.store(messages);
+        LOGGER.info("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", messages.size(),
+                    System.currentTimeMillis() - start);
     }
 
     @Override
-    public boolean validate(String tenant, StorageFlowItem message) {
-        return true;
+    public Errors validate(StorageFlowItem message) {
+        return null;
     }
 
     @Override

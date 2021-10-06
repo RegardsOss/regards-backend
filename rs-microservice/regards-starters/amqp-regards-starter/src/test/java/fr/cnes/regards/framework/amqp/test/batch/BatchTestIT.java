@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.test.batch;
 
-import java.util.List;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,10 +26,9 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -42,6 +39,7 @@ import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -66,6 +64,8 @@ public class BatchTestIT {
 
     private static final Integer MESSAGE_NB_PROJECT1 = 5;
 
+    public static final String FAKE_TENANT = "FAKE";
+
     @Autowired
     private IPublisher publisher;
 
@@ -77,48 +77,71 @@ public class BatchTestIT {
 
     private BatchHandler batchHandler;
 
+    private BatchHandlerBis batchHandlerBis;
+
     @Autowired
     private IAmqpAdmin amqpAdmin;
 
     @Autowired
     private IRabbitVirtualHostAdmin vhostAdmin;
 
-    @Autowired(required = false)
-    private List<HealthIndicator> indicators;
+    //    @Autowired(required = false)
+    //    private List<HealthIndicator> indicators;
 
     @Before
     public void before() {
         // New instance for each test
-        batchHandler = new BatchHandler();
+        batchHandler = new BatchHandler(tenantResolver);
+        batchHandlerBis = new BatchHandlerBis(tenantResolver);
         // Subscribe to message
-        subscriber.subscribeTo(BatchMessage.class, batchHandler);
+        subscriber.subscribeTo(BatchedMessage.class, batchHandler);
+        subscriber.subscribeTo(BatchedMessage.class, batchHandlerBis);
     }
 
     @After
     public void after() {
         // Unsubscribe
-        subscriber.unsubscribeFrom(BatchMessage.class);
+        subscriber.unsubscribeFrom(BatchedMessage.class);
 
         // Purge queue
         cleanAMQPQueues(BatchHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 
+    //    @TestprocessConversionException
+    //    public void healthTest() {
+    //        if (indicators != null) {
+    //            for (HealthIndicator indicator : indicators) {
+    //                Health health = indicator.health();
+    //                LOGGER.debug("{} : {}", indicator.getClass(), health.getStatus());
+    //            }
+    //        }
+    //    }
+
     @Test
-    public void healthTest() {
-        if (indicators != null) {
-            for (HealthIndicator indicator : indicators) {
-                Health health = indicator.health();
-                LOGGER.debug("{} : {}", indicator.getClass(), health.getStatus());
-            }
-        }
+    public void processConversionException() throws InterruptedException {
+
+        // Publish message in default project
+        String body = "Unparseable";
+        Message message = new Message(body.getBytes(), new MessageProperties());
+        message.getMessageProperties().setHeader(AmqpConstants.REGARDS_CONVERTER_HEADER, JsonMessageConverter.GSON);
+        message.getMessageProperties().setHeader(AmqpConstants.REGARDS_TENANT_HEADER, PROJECT);
+
+        String exchange = amqpAdmin.getBroadcastExchangeName(BatchedMessage.class.getName(),
+                                                             Target.ONE_PER_MICROSERVICE_TYPE);
+        publisher.basicPublish(PROJECT, exchange, "", message);
+
+        Thread.sleep(5000);
+        Assert.assertTrue(batchHandler.getCountByTenant(PROJECT) == 0);
+        Assert.assertTrue(batchHandler.getCalls() == 0);
+        Assert.assertTrue(batchHandler.getInvalidByTenant(PROJECT) == 0);
     }
 
     @Test
-    public void processBatch() throws InterruptedException {
+    public void processValidBatch() throws InterruptedException {
 
         // Publish message in default project
         for (int i = 1; i <= MESSAGE_NB_PROJECT; i++) {
-            BatchMessage m = BatchMessage.build(String.format("%s_batch_0%02d", PROJECT, i));
+            BatchedMessage m = BatchedMessage.build(BatchHandler.VALID);
             m.setMessageProperties(new MessageProperties());
             m.setHeader("header", "value");
             publisher.publish(m);
@@ -128,7 +151,7 @@ public class BatchTestIT {
         try {
             tenantResolver.forceTenant(PROJECT1);
             for (int i = 1; i <= MESSAGE_NB_PROJECT1; i++) {
-                publisher.publish(BatchMessage.build(String.format("%s_batch_1%02d", PROJECT1, i)));
+                publisher.publish(BatchedMessage.build(BatchHandler.VALID));
             }
         } finally {
             tenantResolver.clearTenant();
@@ -141,39 +164,75 @@ public class BatchTestIT {
     }
 
     @Test
+    public void processInvalidMessage() throws InterruptedException {
+
+        // Publish message in default project
+        BatchedMessage m = BatchedMessage.build(BatchHandler.INVALID);
+        m.setMessageProperties(new MessageProperties());
+        m.setHeader("header", "value");
+        publisher.publish(m);
+
+        Thread.sleep(5000);
+        Assert.assertTrue(batchHandler.getCountByTenant(PROJECT) == 0);
+        Assert.assertTrue(batchHandler.getCalls() == 0);
+        Assert.assertTrue(batchHandler.getInvalidByTenant(PROJECT) == 1);
+    }
+
+    @Test
+    public void processInvalidAndValidMessages() throws InterruptedException {
+
+        // Publish INVALID message in default project
+        BatchedMessage m = BatchedMessage.build(BatchHandler.INVALID);
+        m.setMessageProperties(new MessageProperties());
+        m.setHeader("header", "value");
+        publisher.publish(m);
+
+        // Publish VALID message in default project
+        BatchedMessage valid = BatchedMessage.build(BatchHandler.VALID);
+        publisher.publish(valid);
+
+        Thread.sleep(5000);
+        Assert.assertTrue(batchHandler.getCountByTenant(PROJECT) == 1);
+        Assert.assertTrue(batchHandler.getCalls() == 1);
+        Assert.assertTrue(batchHandler.getInvalidByTenant(PROJECT) == 1);
+    }
+
+    @Test
+    public void processBatchException() throws InterruptedException {
+
+        // Publish message in default project
+        BatchedMessage m = BatchedMessage.build(BatchHandler.THROW_EXCEPTION);
+        m.setMessageProperties(new MessageProperties());
+        m.setHeader("header", "value");
+        publisher.publish(m);
+
+        Thread.sleep(5000);
+        Assert.assertTrue(batchHandler.getCountByTenant(PROJECT) == 0);
+        Assert.assertTrue(batchHandler.getCalls() == 1);
+        Assert.assertTrue(batchHandler.getInvalidByTenant(PROJECT) == 0);
+        Assert.assertTrue(batchHandler.getFailsByTenant(PROJECT) == 1);
+    }
+
+    @Test
     public void processUnknownTenant() throws InterruptedException {
 
         try {
-            tenantResolver.forceTenant(BatchHandler.FAKE_TENANT);
-            publisher.publish(BatchMessage.build(String.format("%s_batch", BatchHandler.FAKE_TENANT)));
+            tenantResolver.forceTenant(FAKE_TENANT);
+            publisher.publish(BatchedMessage.build(BatchHandler.VALID));
         } finally {
             tenantResolver.clearTenant();
         }
 
         try {
             tenantResolver.forceTenant(PROJECT);
-            publisher.publish(BatchMessage.build(String.format("%s_batch", PROJECT)));
+            publisher.publish(BatchedMessage.build(BatchHandler.VALID));
         } finally {
             tenantResolver.clearTenant();
         }
 
         Thread.sleep(5000);
-        Assert.assertTrue(batchHandler.getCountByTenant(BatchHandler.FAKE_TENANT) == 0);
+        Assert.assertTrue(batchHandler.getCountByTenant(FAKE_TENANT) == 0);
         Assert.assertTrue(batchHandler.getCountByTenant(PROJECT) == 1);
-    }
-
-    @Test
-    public void processingFailureTest() throws InterruptedException {
-        try {
-            tenantResolver.forceTenant(BatchHandler.FAIL_TENANT);
-            publisher.publish(BatchMessage.build(String.format("%s_batch", BatchHandler.FAIL_TENANT)));
-        } finally {
-            tenantResolver.clearTenant();
-        }
-
-        Thread.sleep(5000);
-        Assert.assertTrue(batchHandler.getFailsByTenant(BatchHandler.FAIL_TENANT) == 0);
-        Assert.assertTrue(batchHandler.getCountByTenant(BatchHandler.FAIL_TENANT) == 0);
     }
 
     /**

@@ -18,32 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow.performance;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storage.dao.FileReferenceSpecification;
@@ -64,6 +40,23 @@ import fr.cnes.regards.modules.storage.service.file.flow.AvailabilityFlowItemHan
 import fr.cnes.regards.modules.storage.service.file.flow.DeletionFlowHandler;
 import fr.cnes.regards.modules.storage.service.file.flow.ReferenceFlowItemHandler;
 import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.*;
 
 /**
  * Performances tests for creating and store new file references.
@@ -172,7 +165,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                                                        newOwner, "storage", "file://storage/location/file1",
                                                        sessionOwner, session));
             items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
-            referenceFlowHandler.handleBatch(getDefaultTenant(), items);
+            referenceFlowHandler.handleBatch(items);
         }
 
     }
@@ -207,12 +200,12 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                                                        sessionOwner, session));
             items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
             if (items.size() >= referenceFlowHandler.getBatchSize()) {
-                referenceFlowHandler.handleBatch(getDefaultTenant(), items);
+                referenceFlowHandler.handleBatch(items);
                 items.clear();
             }
         }
         if (items.size() > 0) {
-            referenceFlowHandler.handleBatch(getDefaultTenant(), items);
+            referenceFlowHandler.handleBatch(items);
             items.clear();
         }
 
@@ -244,11 +237,11 @@ public class FlowPerformanceTest extends AbstractStorageTest {
 
             // Publish request
             if (items.size() > storeFlowHandler.getBatchSize()) {
-                storeFlowHandler.handleBatch(getDefaultTenant(), items);
+                storeFlowHandler.handleBatch(items);
                 items.clear();
             }
         }
-        storeFlowHandler.handleBatch(getDefaultTenant(), items);
+        storeFlowHandler.handleBatch(items);
 
         Assert.assertEquals("There should be 5000 file storage request created", 5000, stoReqService
                 .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
@@ -285,11 +278,11 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                                                         SESSION_OWNER, SESSION, false),
                            UUID.randomUUID().toString()));
             if (items.size() > deleteHandler.getBatchSize()) {
-                deleteHandler.handleBatch(getDefaultTenant(), items);
+                deleteHandler.handleBatch(items);
                 items.clear();
             }
         }
-        deleteHandler.handleBatch(getDefaultTenant(), items);
+        deleteHandler.handleBatch(items);
 
         page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
 
@@ -310,11 +303,11 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                                                         SESSION_OWNER, SESSION, false),
                            UUID.randomUUID().toString()));
             if (items.size() > deleteHandler.getBatchSize()) {
-                deleteHandler.handleBatch(getDefaultTenant(), items);
+                deleteHandler.handleBatch(items);
                 items.clear();
             }
         }
-        deleteHandler.handleBatch(getDefaultTenant(), items);
+        deleteHandler.handleBatch(items);
         LOGGER.info("Waiting ....");
         int loops = 0;
         Page<FileDeletionRequest> pageDel = null;
@@ -337,7 +330,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
                                                                UUID.randomUUID().toString());
         List<AvailabilityFlowItem> items = new ArrayList<>();
         items.add(item);
-        availabilityHandler.handleBatch(getDefaultTenant(), items);
+        availabilityHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Assert.assertEquals("Invalid count of cache file request", nlChecksums.size(), fileCacheReqRepo.count());
     }

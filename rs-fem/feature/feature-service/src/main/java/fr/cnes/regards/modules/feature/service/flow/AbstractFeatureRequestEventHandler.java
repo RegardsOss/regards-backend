@@ -18,20 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.service.flow;
 
-import org.springframework.amqp.core.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import org.springframework.amqp.core.Message;
 
 /**
  * @author Marc SORDI
  */
 public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHandler<M> {
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     private final Class<M> type;
 
@@ -45,13 +39,8 @@ public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHan
     }
 
     @Override
-    public boolean handleConversionError(String tenant, Message message, String errorMessage) {
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            return getFeatureService().denyMessage(message, errorMessage);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public boolean handleConversionError(Message message, String errorMessage) {
+        return getFeatureService().denyMessage(message, errorMessage);
     }
 
     public abstract IRequestDeniedService getFeatureService();

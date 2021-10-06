@@ -21,11 +21,12 @@ package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.validation.Errors;
+
+import java.util.List;
 
 /**
  * Handler for new {@link StepPropertyUpdateRequestEvent}s
@@ -34,9 +35,6 @@ import org.springframework.context.ApplicationListener;
  **/
 public class SessionAgentEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StepPropertyUpdateRequestEvent> {
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private ISubscriber subscriber;
@@ -50,21 +48,16 @@ public class SessionAgentEventHandler
     }
 
     @Override
-    public boolean validate(String tenant, StepPropertyUpdateRequestEvent message) {
-        return true;
+    public Errors validate(StepPropertyUpdateRequestEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<StepPropertyUpdateRequestEvent> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            LOGGER.trace("[STEP EVENT HANDLER] Handling {} StepEvents...", messages.size());
-            long start = System.currentTimeMillis();
-            sessionAgentHandlerService.createStepRequests(messages);
-            LOGGER.trace("[STEP EVENT HANDLER] {} StepEvents handled in {} ms", messages.size(),
-                        System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<StepPropertyUpdateRequestEvent> messages) {
+        LOGGER.trace("[STEP EVENT HANDLER] Handling {} StepEvents...", messages.size());
+        long start = System.currentTimeMillis();
+        sessionAgentHandlerService.createStepRequests(messages);
+        LOGGER.trace("[STEP EVENT HANDLER] {} StepEvents handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
     }
 }

@@ -605,7 +605,6 @@ public class DownloadQuotaServiceTest {
 
         // when
         quotaService.handleBatch(
-            TENANT,
             Lists.newArrayList(
                 new ProjectUserEvent(userEmail, ProjectUserAction.DELETE))
         );

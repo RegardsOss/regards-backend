@@ -18,8 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.service.flow;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import fr.cnes.regards.modules.feature.dto.RequestInfo;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
+import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,23 +33,14 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.feature.dto.RequestInfo;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
-import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
+import java.util.List;
 
 /**
  * This handler absorbs the incoming deletion request flow
  *
  * @author Kevin Marchois
- *
  */
 @Component
 @Profile("!noFemHandler")
@@ -51,9 +48,6 @@ public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEv
         implements IBatchHandler<FeatureDeletionRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionRequestEventHandler.class);
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private FeatureConfigurationProperties confProperties;
@@ -74,23 +68,18 @@ public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEv
     }
 
     @Override
-    public boolean validate(String tenant, FeatureDeletionRequestEvent message) {
+    public Errors validate(FeatureDeletionRequestEvent message) {
         // FIXME
-        return true;
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FeatureDeletionRequestEvent> messages) {
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            long start = System.currentTimeMillis();
-            RequestInfo<FeatureUniformResourceName> requestInfo = featureService.registerRequests(messages);
-            LOGGER.info("{} granted request(s) and {} denied request(s) registered in {} ms",
-                        requestInfo.getGranted().size(), requestInfo.getDenied().keySet().size(),
-                        System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<FeatureDeletionRequestEvent> messages) {
+        long start = System.currentTimeMillis();
+        RequestInfo<FeatureUniformResourceName> requestInfo = featureService.registerRequests(messages);
+        LOGGER.info("{} granted request(s) and {} denied request(s) registered in {} ms",
+                    requestInfo.getGranted().size(), requestInfo.getDenied().keySet().size(),
+                    System.currentTimeMillis() - start);
     }
 
     @Override

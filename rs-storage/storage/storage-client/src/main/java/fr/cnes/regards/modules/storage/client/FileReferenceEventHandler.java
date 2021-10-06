@@ -18,24 +18,24 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handle Bus messages {@link FileReferenceEvent}
+ *
  * @author Sébastien Binda
  */
 @Profile("!test")
@@ -45,9 +45,6 @@ public class FileReferenceEventHandler
 
     @Autowired(required = false)
     private IStorageFileListener listener;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private ISubscriber subscriber;
@@ -62,27 +59,22 @@ public class FileReferenceEventHandler
     }
 
     @Override
-    public boolean validate(String tenant, FileReferenceEvent message) {
-        return true;
+    public Errors validate(FileReferenceEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FileReferenceEvent> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceEvent...", messages.size());
-            long start = System.currentTimeMillis();
-            handle(messages);
-            LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceEvent handled in {} ms",
-                         messages.size(),
-                         System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<FileReferenceEvent> messages) {
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceEvent...", messages.size());
+        long start = System.currentTimeMillis();
+        handle(messages);
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceEvent handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
     }
 
     /**
      * Handle event by calling the listener method associated to the event type.
+     *
      * @param events {@link FileReferenceEvent}s
      */
     private void handle(List<FileReferenceEvent> events) {

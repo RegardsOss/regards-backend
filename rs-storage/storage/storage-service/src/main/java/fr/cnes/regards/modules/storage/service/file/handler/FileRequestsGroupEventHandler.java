@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -30,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
 import java.util.List;
 
@@ -43,9 +43,6 @@ public class FileRequestsGroupEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileRequestsGroupEvent> {
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private ISubscriber subscriber;
 
     @Autowired
@@ -57,18 +54,13 @@ public class FileRequestsGroupEventHandler
     }
 
     @Override
-    public boolean validate(String tenant, FileRequestsGroupEvent message) {
-        return true;
+    public Errors validate(FileRequestsGroupEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FileRequestsGroupEvent> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            messages.forEach(this::handle);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<FileRequestsGroupEvent> messages) {
+        messages.forEach(this::handle);
     }
 
     public void handle(FileRequestsGroupEvent event) {

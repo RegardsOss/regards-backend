@@ -22,17 +22,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
 
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author Marc SORDI
  *
  */
-public class BatchHandler implements IBatchHandler<BatchMessage> {
+public class BatchHandler implements IBatchHandler<BatchedMessage> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchHandler.class);
 
@@ -40,42 +42,60 @@ public class BatchHandler implements IBatchHandler<BatchMessage> {
 
     private final Map<String, Integer> failByTenants = new HashMap<>();
 
+    private final Map<String, Integer> invalidByTenants = new HashMap<>();
+
     private Integer calls = 0;
 
-    public static final String FAKE_TENANT = "FAKE";
+    public static final String FIELD = "message.content";
 
-    public static final String FAIL_TENANT = "FAIL";
+    // Message content managing batch behavior
 
-    @Override
-    public Class<BatchMessage> getMType() {
-        return BatchMessage.class;
+    public static final String VALID = "ThisIsValid";
+
+    public static final String INVALID = "ThisIsInvalid";
+
+    public static final String THROW_EXCEPTION = "ThrowIt";
+
+    private final IRuntimeTenantResolver tenantResolver;
+
+    public BatchHandler(final IRuntimeTenantResolver tenantResolver) {
+        this.tenantResolver = tenantResolver;
     }
 
     @Override
-    public boolean validate(String tenant, BatchMessage message) {
-        if (FAKE_TENANT.equals(tenant)) {
-            return false;
-        }
-        return true;
+    public Class<BatchedMessage> getMType() {
+        return BatchedMessage.class;
     }
 
     @Override
-    public void handleBatch(String tenant, List<BatchMessage> messages) {
+    public Errors validate(BatchedMessage message) {
 
-        if (FAKE_TENANT.equals(tenant)) {
-            throw new IllegalArgumentException("Unknown tenant");
-        }
+        Map<String, String> toValidate = new HashMap<>();
+        toValidate.put(FIELD, INVALID);
 
-        if (FAIL_TENANT.equals(tenant)) {
-            incrementFails(tenant);
-            throw new IllegalArgumentException("Fail tenant");
+        Errors errors = new MapBindingResult(toValidate, message.getClass().getName());
+
+        if (INVALID.equals(message.getMessage())) {
+            errors.rejectValue(FIELD, "message.content.error", "Default message");
+            incrementInvalid(tenantResolver.getTenant());
         }
+        return errors;
+    }
+
+    @Override
+    public void handleBatch(List<BatchedMessage> messages) {
 
         calls++;
-        for (BatchMessage message : messages) {
-            Assert.assertTrue("Bad tenant", message.getMessage().startsWith(tenant));
+        for (BatchedMessage message : messages) {
             LOGGER.info(message.getMessage());
-            incrementCount(tenant);
+            if (VALID.equals(message.getMessage())) {
+                incrementCount(tenantResolver.getTenant());
+            } else {
+                incrementFails(tenantResolver.getTenant());
+                throw new IllegalArgumentException(
+                        String.format("One message processing throws exception and breaks the batch processing : %s",
+                                      message.getMessage()));
+            }
         }
     }
 
@@ -109,7 +129,27 @@ public class BatchHandler implements IBatchHandler<BatchMessage> {
         return 0;
     }
 
+    private void incrementInvalid(String tenant) {
+        if (invalidByTenants.containsKey(tenant)) {
+            invalidByTenants.put(tenant, invalidByTenants.get(tenant) + 1);
+        } else {
+            invalidByTenants.put(tenant, 1);
+        }
+    }
+
+    public Integer getInvalidByTenant(String tenant) {
+        if (invalidByTenants.containsKey(tenant)) {
+            return invalidByTenants.get(tenant);
+        }
+        return 0;
+    }
+
     public Integer getCalls() {
         return calls;
+    }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
     }
 }

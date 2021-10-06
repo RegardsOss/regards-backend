@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +29,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
+import java.util.List;
 
 /**
  * Handler to handle {@link ReferenceFlowItem} AMQP messages.<br>
@@ -54,9 +53,6 @@ public class ReferenceFlowItemHandler
     private int BULK_SIZE;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private ISubscriber subscriber;
 
     @Autowired
@@ -68,22 +64,17 @@ public class ReferenceFlowItemHandler
     }
 
     @Override
-    public void handleBatch(String tenant, List<ReferenceFlowItem> messages) {
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.info("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", messages.size());
-            long start = System.currentTimeMillis();
-            fileRefReqService.reference(messages);
-            LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", messages.size(),
-                        System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<ReferenceFlowItem> messages) {
+        LOGGER.info("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", messages.size());
+        long start = System.currentTimeMillis();
+        fileRefReqService.reference(messages);
+        LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", messages.size(),
+                    System.currentTimeMillis() - start);
     }
 
     @Override
-    public boolean validate(String tenant, ReferenceFlowItem message) {
-        return true;
+    public Errors validate(ReferenceFlowItem message) {
+        return null;
     }
 
     @Override

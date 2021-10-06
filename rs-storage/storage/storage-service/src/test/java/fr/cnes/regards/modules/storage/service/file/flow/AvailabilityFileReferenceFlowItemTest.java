@@ -18,20 +18,25 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
+import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
+import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
+import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
+import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,25 +50,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.storage.domain.StorageSetting;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
-import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
-import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Test class
@@ -141,7 +132,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
         List<AvailabilityFlowItem> items = new ArrayList<>();
         items.add(request);
-        handler.handleBatch(getDefaultTenant(), items);
+        handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         // There should be 5 cache request for the 3 files only in near line and 2 files offline.
@@ -208,7 +199,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
                                                                   UUID.randomUUID().toString());
         List<AvailabilityFlowItem> items = new ArrayList<>();
         items.add(request);
-        handler.handleBatch(getDefaultTenant(), items);
+        handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
@@ -242,7 +233,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
         List<AvailabilityFlowItem> items = new ArrayList<>();
         items.add(request);
-        handler.handleBatch(getDefaultTenant(), items);
+        handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         Assert.assertEquals("There should be 4 cache requests created", 4,

@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
+
+import java.util.List;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class NotificationEventListener implements IBatchHandler<FeatureNotificationRequestEvent> {
 
@@ -38,12 +36,12 @@ public class NotificationEventListener implements IBatchHandler<FeatureNotificat
     private long numberOfRequests = 0L;
 
     @Override
-    public boolean validate(String tenant, FeatureNotificationRequestEvent message) {
-        return true;
+    public Errors validate(FeatureNotificationRequestEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FeatureNotificationRequestEvent> messages) {
+    public void handleBatch(List<FeatureNotificationRequestEvent> messages) {
         LOGGER.info("TEST ------> handling {} notification messages", messages.size());
         numberOfRequests = getNumberOfRequests() + messages.size();
     }

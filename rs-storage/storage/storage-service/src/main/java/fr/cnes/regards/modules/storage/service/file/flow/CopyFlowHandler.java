@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
+import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +29,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
-import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
+import java.util.List;
 
 /**
  * Handler to handle {@link CopyFlowItem} AMQP messages.<br>
@@ -50,9 +49,6 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
     private int BULK_SIZE;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private ISubscriber subscriber;
 
     @Autowired
@@ -64,22 +60,17 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
     }
 
     @Override
-    public void handleBatch(String tenant, List<CopyFlowItem> messages) {
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", messages.size());
-            long start = System.currentTimeMillis();
-            fileCopyReqService.copy(messages);
-            LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", messages.size(),
-                         System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<CopyFlowItem> messages) {
+        LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", messages.size());
+        long start = System.currentTimeMillis();
+        fileCopyReqService.copy(messages);
+        LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
     }
 
     @Override
-    public boolean validate(String tenant, CopyFlowItem message) {
-        return true;
+    public Errors validate(CopyFlowItem message) {
+        return null;
     }
 
     @Override

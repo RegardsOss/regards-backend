@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +29,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * Listen to {@link IngestRequestEvent} and call back the client on each one.
  *
  * @author Marc SORDI
@@ -58,9 +55,6 @@ public class IngestRequestEventHandler
     private IIngestClientListener listener;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private ISubscriber subscriber;
 
     @Override
@@ -73,61 +67,56 @@ public class IngestRequestEventHandler
     }
 
     @Override
-    public void handleBatch(String tenant, List<IngestRequestEvent> events) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            long start = System.currentTimeMillis();
-            LOGGER.info("[INGEST RESPONSES HANDLER] Handling {} IngestRequestEvent...", events.size());
-            Set<RequestInfo> success = Sets.newHashSet();
-            Set<RequestInfo> errors = Sets.newHashSet();
-            Set<RequestInfo> granted = Sets.newHashSet();
-            Set<RequestInfo> denied = Sets.newHashSet();
-            for (IngestRequestEvent event : events) {
-                RequestInfo info = RequestInfo.build(event.getRequestId(), event.getProviderId(), event.getSipId(),
-                                                     event.getErrors());
-                switch (event.getState()) {
-                    case SUCCESS:
-                        success.add(info);
-                        break;
-                    case ERROR:
-                        errors.add(info);
-                        break;
-                    case GRANTED:
-                        granted.add(info);
-                        break;
-                    case DENIED:
-                        denied.add(info);
-                        break;
-                    default:
-                        break;
-                }
+    public void handleBatch(List<IngestRequestEvent> events) {
+        long start = System.currentTimeMillis();
+        LOGGER.info("[INGEST RESPONSES HANDLER] Handling {} IngestRequestEvent...", events.size());
+        Set<RequestInfo> success = Sets.newHashSet();
+        Set<RequestInfo> errors = Sets.newHashSet();
+        Set<RequestInfo> granted = Sets.newHashSet();
+        Set<RequestInfo> denied = Sets.newHashSet();
+        for (IngestRequestEvent event : events) {
+            RequestInfo info = RequestInfo
+                    .build(event.getRequestId(), event.getProviderId(), event.getSipId(), event.getErrors());
+            switch (event.getState()) {
+                case SUCCESS:
+                    success.add(info);
+                    break;
+                case ERROR:
+                    errors.add(info);
+                    break;
+                case GRANTED:
+                    granted.add(info);
+                    break;
+                case DENIED:
+                    denied.add(info);
+                    break;
+                default:
+                    break;
             }
-            if (!denied.isEmpty()) {
-                listener.onDenied(denied);
-                denied.clear();
-            }
-            if (!granted.isEmpty()) {
-                listener.onGranted(granted);
-                granted.clear();
-            }
-            if (!errors.isEmpty()) {
-                listener.onError(errors);
-                errors.clear();
-            }
-            if (!success.isEmpty()) {
-                listener.onSuccess(success);
-                success.clear();
-            }
-            LOGGER.info("[INGEST RESPONSES HANDLER] {} IngestRequestEvent handled in {} ms", events.size(),
-                        System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
         }
+        if (!denied.isEmpty()) {
+            listener.onDenied(denied);
+            denied.clear();
+        }
+        if (!granted.isEmpty()) {
+            listener.onGranted(granted);
+            granted.clear();
+        }
+        if (!errors.isEmpty()) {
+            listener.onError(errors);
+            errors.clear();
+        }
+        if (!success.isEmpty()) {
+            listener.onSuccess(success);
+            success.clear();
+        }
+        LOGGER.info("[INGEST RESPONSES HANDLER] {} IngestRequestEvent handled in {} ms", events.size(),
+                    System.currentTimeMillis() - start);
     }
 
     @Override
-    public boolean validate(String tenant, IngestRequestEvent message) {
-        return true;
+    public Errors validate(IngestRequestEvent message) {
+        return null;
     }
 
     @Override

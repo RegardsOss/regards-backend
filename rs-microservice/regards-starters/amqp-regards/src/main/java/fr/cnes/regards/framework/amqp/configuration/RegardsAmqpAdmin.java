@@ -18,33 +18,22 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.ExchangeBuilder;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
+import javax.annotation.PostConstruct;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * This class manage tenant AMQP administration. Each tenant is hosted in an AMQP virtual host.<br/>
@@ -75,9 +64,13 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdmin.class);
 
-    public static final String REGARDS_DLX = "regards.DLX";
+    public static final String DLX_SUFFIX = ".DLX";
 
-    public static final String REGARDS_DLQ = "regards.DLQ";
+    public static final String DLQ_SUFFIX = ".DLQ";
+
+    private static final String REGARDS_DLX = "regards" + DLX_SUFFIX;
+
+    private static final String REGARDS_DLQ = "regards" + DLQ_SUFFIX;
 
     /**
      * Bean allowing us to declare queue, exchange, binding
@@ -179,40 +172,69 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
     @Override
     public void declareDeadLetter() {
-        // Create DLX(Dead Letter Exchange)
+        Exchange dlx = declareDeadLetterDefaultExchange();
+        //create DLQ(Dead Letter Queue)
+        Queue dlq = QueueBuilder.durable(REGARDS_DLQ).maxPriority(MAX_PRIORITY).build();
+        rabbitAdmin.declareQueue(dlq);
+        Binding binding = BindingBuilder.bind(dlq).to(dlx).with(REGARDS_DLQ).noargs();
+        rabbitAdmin.declareBinding(binding);
+    }
+
+    private Exchange declareDeadLetterDefaultExchange() {
+        // Create DLX (Dead Letter eXchange)
         // DLX is a fanout so it doesn't require any binding and message in error can be recovered by multiple
         // consumers at same time if needed
         Exchange dlx = ExchangeBuilder.topicExchange(REGARDS_DLX).durable(true).build();
         rabbitAdmin.declareExchange(dlx);
-        //create DLQ(Dead Letter Queue)
-        Queue dlq = QueueBuilder.durable(REGARDS_DLQ).withArgument("x-max-priority", MAX_PRIORITY).build();
-        rabbitAdmin.declareQueue(dlq);
-        Binding binding = BindingBuilder.bind(dlq).to(dlx).with(REGARDS_DLQ).noargs();
+        return dlx;
+    }
+
+    private void declareDedicatedDeadLetter(String dlq, String dlrk) {
+        Exchange dlx = declareDeadLetterDefaultExchange();
+        // Create dedicated DLQ (Dead Letter Queue)
+        Queue queue = QueueBuilder.durable(dlq).maxPriority(MAX_PRIORITY).build();
+        rabbitAdmin.declareQueue(queue);
+        // Bind
+        Binding binding = BindingBuilder.bind(queue).to(dlx).with(dlrk).noargs();
         rabbitAdmin.declareBinding(binding);
     }
 
     @Override
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
             Optional<Class<? extends IHandler<?>>> handlerType) {
+        return declareQueue(tenant, eventType, workerMode, target, handlerType, false);
+    }
 
-        Map<String, Object> args = new ConcurrentHashMap<>();
-        args.put("x-max-priority", MAX_PRIORITY);
-        args.put("x-dead-letter-exchange", REGARDS_DLX);
-        args.put("x-dead-letter-routing-key", REGARDS_DLQ);
+    @Override
+    public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
+            Optional<Class<? extends IHandler<?>>> handlerType, boolean isDedicatedDLQEnabled) {
+
+        // Default DLQ values
+        String dlx = REGARDS_DLX;
+        String dlrk = REGARDS_DLQ;
 
         Queue queue;
         switch (workerMode) {
             case UNICAST:
                 // Useful for publishing unicast event and subscribe to a unicast exchange
-                queue = QueueBuilder.durable(getUnicastQueueName(tenant, eventType, target)).withArguments(args)
-                        .build();
+                queue = QueueBuilder.durable(getUnicastQueueName(tenant, eventType, target)).deadLetterExchange(dlx)
+                        .deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY).build();
                 break;
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
                 if (handlerType.isPresent()) {
-                    QueueBuilder qb = QueueBuilder.durable(getSubscriptionQueueName(handlerType.get(), target))
-                            .withArguments(args);
-                    // FIXME test does not work with auto deletion queues
+
+                    String queueName = getSubscriptionQueueName(handlerType.get(), target);
+
+                    // Dedicated DLQ creation
+                    if (isDedicatedDLQEnabled) {
+                        dlrk = getDedicatedDLRKFromQueueName(queueName);
+                        declareDedicatedDeadLetter(getDedicatedDLQFromQueueName(queueName), dlrk);
+                    }
+
+                    QueueBuilder qb = QueueBuilder.durable(queueName).deadLetterExchange(dlx).deadLetterRoutingKey(dlrk)
+                            .maxPriority(MAX_PRIORITY);
+                    // NOTE : test does not work with auto deletion queues
                     // queue = isAutoDeleteSubscriptionQueue(target) ? qb.autoDelete().build() : qb.build();
                     queue = qb.build();
                 } else {
@@ -222,7 +244,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
         }
-
         rabbitAdmin.declareQueue(queue);
         return queue;
     }
@@ -240,7 +261,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     @Override
     public String getUnicastQueueName(String tenant, Class<?> eventType, Target target) {
         if (Target.ONE_PER_MICROSERVICE_TYPE.equals(target)) {
-            throw new IllegalArgumentException(String.format("Target %s not supported", target.toString()));
+            throw new IllegalArgumentException(String.format("Target %s not supported", target));
         }
 
         StringBuilder builder = new StringBuilder();
@@ -276,6 +297,16 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         builder.append(DOT);
         builder.append(handlerType.getName());
         return builder.toString();
+    }
+
+    @Override
+    public String getDedicatedDLQFromQueueName(String queueName) {
+        return queueName + DLQ_SUFFIX;
+    }
+
+    @Override
+    public String getDedicatedDLRKFromQueueName(String queueName) {
+        return getDedicatedDLQFromQueueName(queueName);
     }
 
     public boolean isAutoDeleteSubscriptionQueue(Target target) {
@@ -354,5 +385,13 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      */
     public void setMicroserviceInstanceId(String microserviceInstanceId) {
         this.microserviceInstanceId = microserviceInstanceId;
+    }
+
+    public String getDefaultDLXName() {
+        return REGARDS_DLX;
+    }
+
+    public String getDefaultDLQName() {
+        return REGARDS_DLQ;
     }
 }

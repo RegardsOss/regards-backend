@@ -18,18 +18,17 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.util.Optional;
-import java.util.Properties;
-
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.Queue;
-
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.Queue;
+
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * @author Marc Sordi
@@ -57,20 +56,37 @@ public interface IAmqpAdmin {
     void declareDeadLetter();
 
     /**
-     * Declare a queue that can handle priority
+     * Declare a queue that can handle priority with default DLQ
      * @param tenant tenant for which the queue is created
      * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}
      * @param workerMode worker mode
-     * @param target targer
+     * @param target target
      * @param handlerType optional event handler type
      * @return declared {@link Queue}
      */
     Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
             Optional<Class<? extends IHandler<?>>> handlerType);
 
+    /**
+     * Declare a queue that can handle priority with custom Dead Letter Exchange and custom Dead Letter Routing Key
+     * @param tenant tenant for which the queue is created
+     * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}
+     * @param workerMode worker mode
+     * @param target target
+     * @param handlerType optional event handler type
+     * @param isDedicatedDLQEnabled enable creation of a dedicated DLQ
+     * @return declared {@link Queue}
+     */
+    Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
+            Optional<Class<? extends IHandler<?>>> handlerType, boolean isDedicatedDLQEnabled);
+
     String getUnicastQueueName(String tenant, Class<?> eventType, Target target);
 
     String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target);
+
+    String getDedicatedDLQFromQueueName(String queueName);
+
+    String getDedicatedDLRKFromQueueName(String queueName);
 
     /**
      * Declare binding to link {@link Queue} and {@link Exchange} with an optional routing key
@@ -114,4 +130,14 @@ public interface IAmqpAdmin {
      * @param empty true if the queue should be deleted only if not in use
      */
     void deleteQueue(String queueName, boolean unused, boolean empty);
+
+    /**
+     * @return default dead letter exchange name
+     */
+    String getDefaultDLXName();
+
+    /**
+     * @return default dead letter queue name
+     */
+    String getDefaultDLQName();
 }

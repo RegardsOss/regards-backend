@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.amqp.batch;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import java.util.List;
 
 /**
  * @param <M> Type of messages you are handling
@@ -41,14 +41,14 @@ public interface IBatchHandler<M> extends IHandler<M> {
      */
     Logger LOGGER = LoggerFactory.getLogger(IBatchHandler.class);
 
-    default void handleBatchAndLog(String tenant, List<M> messages) {
+    default void handleBatchAndLog(List<M> messages) {
         if (LOGGER.isTraceEnabled()) {
             for (M message : messages) {
-                LOGGER.trace("Received {}, From {}", message.getClass().getSimpleName(), tenant);
+                LOGGER.trace("Received {}", message.getClass().getSimpleName());
                 LOGGER.trace("Event received: {}", message.toString());
             }
         }
-        handleBatch(tenant, messages);
+        handleBatch(messages);
     }
 
     /**
@@ -64,36 +64,35 @@ public interface IBatchHandler<M> extends IHandler<M> {
      * So system may manage business behavior programmatically.
      *
      * If not, return <code>false</code> so the default behavior will be applied (e.g. project or instance notification).
-     * @param tenant related message tenant
      * @param message the message
      * @param errorMessage the message conversion error
      * @return <code>true</code> or <code>false</code> to respectively enable or disable the sending of default notifications.
      */
-    default boolean handleConversionError(String tenant, Message message, String errorMessage) {
+    default boolean handleConversionError(Message message, String errorMessage) {
         return false;
     }
 
     /**
      * This method is called for each message<br/>
      * Invalid message is negatively acknowledged (and so routed to DLQ.)<br/>
-     * Valid message is processed using {@link #handleBatch(String, List)} method.<br/>
-     * If an error occurs, these valid messages are re-queued for re-processing.<br/>
-     * A valid message is delivered over and over again and can lead to an infinite loop if
-     * this message can never be processed so validate method has to be as efficient as possible.
-     * @param tenant related message tenant
+     * Valid message is processed using {@link #handleBatch(List)} method.<br/>
+     * If an error occurs during batch processing, all valid messages are negatively acknowledged
+     * even if only single message causes the error.<br/>
+     * Consequently, validation must be as efficient as possible to avoid this behavior
+     * and guarantee the processing of valid messages as much as possible.
+     *
      * @param message messages to manage
-     * @return <code>true</code> is message is valid.
+     * @return list of errors. If this list is null or empty, the message is considered valid.
      */
-    boolean validate(String tenant, M message);
+    Errors validate(M message);
 
     /**
      * This method is called once for each tenant with messages in the current batch.<br/>
      * Indeed, a batch is composed of the n first messages in the queue without consideration of the tenant.
      * So the batch listener dispatches them by tenant under the hood to make a contextual call per tenant.
-     * @param tenant related message tenant
      * @param messages messages to manage
      */
-    void handleBatch(String tenant, List<M> messages);
+    void handleBatch(List<M> messages);
 
     /**
      * @return batch size. Look at {@link SimpleMessageListenerContainer#setBatchSize(int)} for better understanding.
@@ -107,6 +106,14 @@ public interface IBatchHandler<M> extends IHandler<M> {
      */
     default long getReceiveTimeout() {
         return 1000;
+    }
+
+    /**
+     * @return <code>true</code> to enable a dedicated DLQ for this handler. In this case, error messages will be routed to this DLQ.
+     * By default, message are routed to global system DLQ.
+     */
+    default boolean isDedicatedDLQEnabled() {
+        return false;
     }
 
     @Override

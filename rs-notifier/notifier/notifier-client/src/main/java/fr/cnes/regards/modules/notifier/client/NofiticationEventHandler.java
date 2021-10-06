@@ -1,17 +1,16 @@
 package fr.cnes.regards.modules.notifier.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -26,9 +25,6 @@ public class NofiticationEventHandler
     @Autowired(required = false)
     private INotifierRequestListener notifierRequestListener;
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         if (notifierRequestListener != null) {
@@ -39,23 +35,17 @@ public class NofiticationEventHandler
     }
 
     @Override
-    public boolean validate(String tenant, NotifierEvent message) {
-        return true;
+    public Errors validate(NotifierEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<NotifierEvent> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            LOGGER.debug("[NOTIFIER RESPONSES HANDLER] Handling {} NotifierEvent...", messages.size());
-            long start = System.currentTimeMillis();
-            handle(messages);
-            LOGGER.debug("[NOTIFIER RESPONSES HANDLER] {} NotifierEvent handled in {} ms",
-                         messages.size(),
-                         System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<NotifierEvent> messages) {
+        LOGGER.debug("[NOTIFIER RESPONSES HANDLER] Handling {} NotifierEvent...", messages.size());
+        long start = System.currentTimeMillis();
+        handle(messages);
+        LOGGER.debug("[NOTIFIER RESPONSES HANDLER] {} NotifierEvent handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
     }
 
     private void handle(List<NotifierEvent> events) {

@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -40,14 +39,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
-import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +48,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Test class
@@ -168,7 +163,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
 
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        fileRefEventHandler.handleBatch(getDefaultTenant(), Lists.newArrayList(event));
+        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // A new storage request should be created
@@ -218,7 +213,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         // Simulate file stored event
         event = getFileReferenceEvent(argumentCaptor.getAllValues());
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        fileRefEventHandler.handleBatch(getDefaultTenant(), Lists.newArrayList(event));
+        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a copy request anymore", oReq.isPresent());
@@ -301,7 +296,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
 
-        fileRefEventHandler.handleBatch(getDefaultTenant(), Lists.newArrayList(event));
+        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // A new storage request should be created
@@ -331,7 +326,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         // Simulate file  stored event
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         event = getFileReferenceEvent(argumentCaptor.getAllValues());
-        fileRefEventHandler.handleBatch(getDefaultTenant(), Lists.newArrayList(event));
+        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
@@ -377,7 +372,7 @@ public class FileCopyRequestServiceTest extends AbstractStorageTest {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
-        fileRefEventHandler.handleBatch(getDefaultTenant(), Lists.newArrayList(event));
+        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Copy request should be updated in ERROR

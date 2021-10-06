@@ -18,24 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -53,6 +37,19 @@ import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionJobProgressManager;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestJob;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Test class
@@ -134,7 +131,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
                 fileEventPublisher, new FileDeletionRequestJob());
         manager.deletionSucceed(fdr);
-        fileRefEventHandler.handleBatch(runtimeTenantResolver.getTenant(), Lists.newArrayList(FileReferenceEvent
+        fileRefEventHandler.handleBatch(Lists.newArrayList(FileReferenceEvent
                 .build(fileRefChecksum, fileRefStorage, FileReferenceEventType.FULLY_DELETED, null, "Deletion succeed",
                        oFileRef.get().getLocation(), oFileRef.get().getMetaInfo(), Sets.newHashSet(deletionReqId))));
         // Has the handler clear the tenant we have to force it here for tests.

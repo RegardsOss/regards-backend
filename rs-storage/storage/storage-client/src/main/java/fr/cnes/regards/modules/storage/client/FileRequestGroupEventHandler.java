@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
+import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,17 +30,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handle {@link FileRequestsGroupEvent} events.
+ *
  * @author Sébastien Binda
  */
 @Component("clientRequestEventHandler")
@@ -54,9 +53,6 @@ public class FileRequestGroupEventHandler
 
     @Autowired(required = false)
     private IStorageRequestListener listener;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private ISubscriber subscriber;
@@ -79,17 +75,12 @@ public class FileRequestGroupEventHandler
      * Bulk save queued items every second.
      */
     @Override
-    public void handleBatch(String tenant, List<FileRequestsGroupEvent> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", messages.size());
-            long start = System.currentTimeMillis();
-            handle(messages);
-            LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms", messages.size(),
-                         System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<FileRequestsGroupEvent> messages) {
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", messages.size());
+        long start = System.currentTimeMillis();
+        handle(messages);
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
     }
 
     private void handle(Collection<FileRequestsGroupEvent> events) {
@@ -112,8 +103,9 @@ public class FileRequestGroupEventHandler
                     break;
             }
         }
-        LOGGER.trace("[STORAGE RESPONSES HANDLER] handling {} FileRequestsGroupEvent(s) dispatch by {} dones, {} granted, {} denied",
-                     events.size(), dones.size(), granted.size(), denied.size());
+        LOGGER.trace(
+                "[STORAGE RESPONSES HANDLER] handling {} FileRequestsGroupEvent(s) dispatch by {} dones, {} granted, {} denied",
+                events.size(), dones.size(), granted.size(), denied.size());
         handleDone(dones);
         handleGranted(granted);
         handleDenied(denied);
@@ -121,17 +113,17 @@ public class FileRequestGroupEventHandler
 
     private void handleDenied(Set<FileRequestsGroupEvent> denied) {
         if ((denied != null) && !denied.isEmpty()) {
-            listener.onRequestDenied(denied.stream()
-                    .map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
-                    .collect(Collectors.toSet()));
+            listener.onRequestDenied(
+                    denied.stream().map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
+                            .collect(Collectors.toSet()));
         }
     }
 
     private void handleGranted(Set<FileRequestsGroupEvent> granted) {
         if ((granted != null) && !granted.isEmpty()) {
-            listener.onRequestGranted(granted.stream()
-                    .map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
-                    .collect(Collectors.toSet()));
+            listener.onRequestGranted(
+                    granted.stream().map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
+                            .collect(Collectors.toSet()));
         }
 
     }
@@ -224,7 +216,7 @@ public class FileRequestGroupEventHandler
     }
 
     @Override
-    public boolean validate(String tenant, FileRequestsGroupEvent message) {
-        return true;
+    public Errors validate(FileRequestsGroupEvent message) {
+        return null;
     }
 }

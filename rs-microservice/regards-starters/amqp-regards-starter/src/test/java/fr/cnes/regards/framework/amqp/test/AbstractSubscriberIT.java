@@ -18,9 +18,21 @@
  */
 package fr.cnes.regards.framework.amqp.test;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import fr.cnes.regards.framework.amqp.AbstractSubscriber;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.configuration.*;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.test.event.*;
+import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
+import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
+import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
+import fr.cnes.regards.framework.amqp.test.handler.GsonInfoNoWrapperHandler;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -33,30 +45,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.amqp.AbstractSubscriber;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
-import fr.cnes.regards.framework.amqp.test.event.ErrorEvent;
-import fr.cnes.regards.framework.amqp.test.event.GsonInfo;
-import fr.cnes.regards.framework.amqp.test.event.Info;
-import fr.cnes.regards.framework.amqp.test.event.MicroserviceInfo;
-import fr.cnes.regards.framework.amqp.test.event.OnePerMicroserviceInfo;
-import fr.cnes.regards.framework.amqp.test.event.UnicastInfo;
-import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
-import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
-import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
-import fr.cnes.regards.framework.amqp.test.handler.GsonInfoNoWrapperHandler;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Common subscriber tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
@@ -264,7 +254,7 @@ public abstract class AbstractSubscriberIT {
         try {
             rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
             // Purge DLQ before doing anything
-            amqpAdmin.purgeQueue(RegardsAmqpAdmin.REGARDS_DLQ, true);
+            amqpAdmin.purgeQueue(amqpAdmin.getDefaultDLQName(), true);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
@@ -293,7 +283,7 @@ public abstract class AbstractSubscriberIT {
             rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
             // Check that the message ended up in DLQ
             // To do so we have to poll on DLQ one message that is the right one
-            Object fromDlq = rabbitTemplate.receiveAndConvert(RegardsAmqpAdmin.REGARDS_DLQ, 0);
+            Object fromDlq = rabbitTemplate.receiveAndConvert(amqpAdmin.getDefaultDLQName(), 0);
             if (fromDlq == null) {
                 Assert.fail("There should be a message into DLQ.");
                 return;

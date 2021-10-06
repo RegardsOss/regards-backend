@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.notifier.service.flow;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,18 +30,14 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
+import java.util.List;
 
 /**
  * Handler to handle {@link NotificationEvent} events
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Component
 @Profile("!nohandler")
@@ -47,9 +46,6 @@ public class NotificationRequestEventHandler
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestEventHandler.class);
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private ISubscriber subscriber;
@@ -68,18 +64,13 @@ public class NotificationRequestEventHandler
     }
 
     @Override
-    public boolean validate(String tenant, NotificationRequestEvent message) {
-        return true;
+    public Errors validate(NotificationRequestEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<NotificationRequestEvent> messages) {
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            notificationService.registerNotificationRequests(messages);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<NotificationRequestEvent> messages) {
+        notificationService.registerNotificationRequests(messages);
     }
 
 }

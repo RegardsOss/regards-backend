@@ -32,16 +32,16 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
  *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class BatchMessage implements ISubscribable, IMessagePropertiesAware {
+public class BatchedMessage implements ISubscribable, IMessagePropertiesAware {
 
-    String message;
+    private String message;
 
     // Prevent GSON converter from serializing this field
     @GsonIgnore
     protected MessageProperties messageProperties;
 
-    public static BatchMessage build(String message) {
-        BatchMessage m = new BatchMessage();
+    public static BatchedMessage build(String message) {
+        BatchedMessage m = new BatchedMessage();
         m.setMessage(message);
         return m;
     }

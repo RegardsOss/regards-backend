@@ -21,21 +21,19 @@ package fr.cnes.regards.framework.modules.session.commons.service.jobs;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.validation.Errors;
+
+import java.util.List;
 
 /**
  * Listen to JobEvent Completion to update {@link fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess}
  *
  * @author Iliana Ghazali
  **/
-public class SnapshotJobEventHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<JobEvent>  {
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+public class SnapshotJobEventHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<JobEvent> {
 
     @Autowired
     private ISubscriber subscriber;
@@ -49,24 +47,17 @@ public class SnapshotJobEventHandler implements ApplicationListener<ApplicationR
     }
 
     @Override
-    public boolean validate(String tenant, JobEvent message) {
-        return true;
+    public Errors validate(JobEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<JobEvent> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            LOGGER.trace("[AGENT SNAPSHOT JOB EVENT HANDLER] Handling {} JobEvents...", messages.size());
-            long start = System.currentTimeMillis();
-            // sort job
-            snapshotJobEventService.updateSnapshotProcess(messages);
-            LOGGER.trace("[AGENT SNAPSHOT JOB EVENT HANDLER] {} JobEvents handled in {} ms", messages.size(),
-                        System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<JobEvent> messages) {
+        LOGGER.trace("[AGENT SNAPSHOT JOB EVENT HANDLER] Handling {} JobEvents...", messages.size());
+        long start = System.currentTimeMillis();
+        // sort job
+        snapshotJobEventService.updateSnapshotProcess(messages);
+        LOGGER.trace("[AGENT SNAPSHOT JOB EVENT HANDLER] {} JobEvents handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
     }
-
-
 }

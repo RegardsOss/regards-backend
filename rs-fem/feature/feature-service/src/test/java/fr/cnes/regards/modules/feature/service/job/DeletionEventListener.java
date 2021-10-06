@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
+
+import java.util.List;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class DeletionEventListener implements IBatchHandler<FeatureDeletionRequestEvent> {
 
@@ -38,12 +36,12 @@ public class DeletionEventListener implements IBatchHandler<FeatureDeletionReque
     private long numberOfRequests = 0L;
 
     @Override
-    public boolean validate(String tenant, FeatureDeletionRequestEvent message) {
-        return true;
+    public Errors validate(FeatureDeletionRequestEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FeatureDeletionRequestEvent> messages) {
+    public void handleBatch(List<FeatureDeletionRequestEvent> messages) {
         LOGGER.info("TEST ------> handling {} deletion messages", messages.size());
         numberOfRequests = getNumberOfRequests() + messages.size();
     }

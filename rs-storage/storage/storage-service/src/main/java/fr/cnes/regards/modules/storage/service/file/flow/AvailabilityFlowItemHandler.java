@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
+import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
-import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
+import java.util.List;
 
 /**
  * Handler of bus message events {@link AvailabilityFlowItem}s.<br>
@@ -46,9 +45,6 @@ public class AvailabilityFlowItemHandler
     private static final int BULK_SIZE = 1000;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private FileCacheRequestService fileCacheReqService;
 
     @Autowired
@@ -60,22 +56,17 @@ public class AvailabilityFlowItemHandler
     }
 
     @Override
-    public void handleBatch(String tenant, List<AvailabilityFlowItem> messages) {
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...", messages.size());
-            long start = System.currentTimeMillis();
-            fileCacheReqService.makeAvailable(messages);
-            LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms", messages.size(),
-                         System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<AvailabilityFlowItem> messages) {
+        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...", messages.size());
+        long start = System.currentTimeMillis();
+        fileCacheReqService.makeAvailable(messages);
+        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
     }
 
     @Override
-    public boolean validate(String tenant, AvailabilityFlowItem message) {
-        return true;
+    public Errors validate(AvailabilityFlowItem message) {
+        return null;
     }
 
     @Override

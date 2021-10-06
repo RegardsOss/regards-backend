@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.amqp.core.Message;
 import org.springframework.boot.actuate.health.Health.Builder;
 
 import fr.cnes.regards.framework.amqp.event.IPollable;
@@ -114,4 +115,13 @@ public interface IPublisherContract {
      */
     void broadcastAll(String exchangeName, Optional<String> queueName, int priority, Collection<?> messages,
             Map<String, Object> headers);
+
+    /**
+     * Publish message to already existing exchange
+     * @param tenant tenant to publish to
+     * @param exchange exchange to publish to
+     * @param routingKey routing key to use
+     * @param message message to send
+     */
+    void basicPublish(String tenant, String exchange, String routingKey, Message message);
 }

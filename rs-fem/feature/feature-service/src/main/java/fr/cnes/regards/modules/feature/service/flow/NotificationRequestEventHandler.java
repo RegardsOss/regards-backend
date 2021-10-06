@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.service.flow;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
+import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
+import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,19 +31,14 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
-import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
-import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
+import java.util.List;
 
 /**
  * This handler handle {@link FeatureNotificationRequestEvent}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Component
 @Profile("!noFemHandler")
@@ -47,9 +46,6 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
         implements IBatchHandler<FeatureNotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestEventHandler.class);
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private FeatureConfigurationProperties confProperties;
@@ -70,21 +66,16 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
     }
 
     @Override
-    public boolean validate(String tenant, FeatureNotificationRequestEvent message) {
+    public Errors validate(FeatureNotificationRequestEvent message) {
         // FIXME
-        return true;
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FeatureNotificationRequestEvent> messages) {
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            long start = System.currentTimeMillis();
-            LOGGER.info("{} notifications registred in {} ms", notificationService.registerRequests(messages),
-                        System.currentTimeMillis() - start);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<FeatureNotificationRequestEvent> messages) {
+        long start = System.currentTimeMillis();
+        LOGGER.info("{} notifications registred in {} ms", notificationService.registerRequests(messages),
+                    System.currentTimeMillis() - start);
     }
 
     @Override
@@ -101,6 +92,5 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
     public IRequestDeniedService getFeatureService() {
         return notificationService;
     }
-
 
 }

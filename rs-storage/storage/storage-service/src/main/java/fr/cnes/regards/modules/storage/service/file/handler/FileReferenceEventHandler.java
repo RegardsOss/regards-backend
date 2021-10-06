@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -41,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
 import java.util.Collection;
 import java.util.List;
@@ -77,9 +77,6 @@ public class FileReferenceEventHandler
     private RequestsGroupService reqGrpService;
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private ISubscriber subscriber;
 
     @Autowired(required = false)
@@ -94,18 +91,13 @@ public class FileReferenceEventHandler
     }
 
     @Override
-    public boolean validate(String tenant, FileReferenceEvent message) {
-        return true;
+    public Errors validate(FileReferenceEvent message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FileReferenceEvent> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            messages.forEach(this::handle);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+    public void handleBatch(List<FileReferenceEvent> messages) {
+        messages.forEach(this::handle);
     }
 
     public void handle(FileReferenceEvent event) {

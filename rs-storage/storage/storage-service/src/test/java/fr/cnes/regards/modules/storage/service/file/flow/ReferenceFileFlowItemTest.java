@@ -18,15 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
+import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
 import org.apache.commons.compress.utils.Lists;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,15 +42,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
-import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Test class
@@ -95,7 +94,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         List<ReferenceFlowItem> items = new ArrayList<>();
         items.add(item);
         long start = System.currentTimeMillis();
-        handler.handleBatch(getDefaultTenant(), items);
+        handler.handleBatch(items);
         long finish = System.currentTimeMillis();
         LOGGER.info("Add file reference duration {}ms", finish - start);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -149,7 +148,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         items.add(item2);
 
         // Publish request
-        handler.handleBatch(getDefaultTenant(), items);
+        handler.handleBatch(items);
         Thread.sleep(5_000L);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
@@ -173,7 +172,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         items.add(item);
 
         // Publish request
-        handler.handleBatch(getDefaultTenant(), items);
+        handler.handleBatch(items);
         Thread.sleep(5_000L);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
@@ -218,7 +217,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                                                          UUID.randomUUID().toString());
         List<ReferenceFlowItem> items = new ArrayList<>();
         items.add(item);
-        handler.handleBatch(getDefaultTenant(), items);
+        handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
@@ -272,7 +271,7 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                                                          UUID.randomUUID().toString());
         List<ReferenceFlowItem> items = new ArrayList<>();
         items.add(item);
-        handler.handleBatch(getDefaultTenant(), items);
+        handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());

@@ -18,44 +18,35 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
+
+import java.util.List;
 
 /**
  * Common handler behaviour
+ *
  * @author Marc SORDI
  */
 public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implements IBatchHandler<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestFlowHandler.class);
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
     @Override
-    public boolean validate(String tenant, T message) {
-        return true;
+    public Errors validate(T message) {
+        return null;
     }
 
     @Override
-    public void handleBatch(String tenant, List<T> messages) {
-        runtimeTenantResolver.forceTenant(tenant);
-        try {
-            LOGGER.trace("Processing bulk of {} items", messages.size());
-            long start = System.currentTimeMillis();
-            processBulk(messages);
-            if (!messages.isEmpty()) {
-                LOGGER.debug("{} items registered in {} ms", messages.size(), System.currentTimeMillis() - start);
-            }
-        } finally {
-            runtimeTenantResolver.clearTenant();
+    public void handleBatch(List<T> messages) {
+        LOGGER.trace("Processing bulk of {} items", messages.size());
+        long start = System.currentTimeMillis();
+        processBulk(messages);
+        if (!messages.isEmpty()) {
+            LOGGER.debug("{} items registered in {} ms", messages.size(), System.currentTimeMillis() - start);
         }
     }
 
