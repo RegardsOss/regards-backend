@@ -1,19 +1,19 @@
 {
-	"home":{
-		"title":{
-			"en":"Home page",
-			"fr":"Page d'accueil"
+	"home": {
+		"title": {
+			"en": "Home page",
+			"fr": "Page d'accueil"
 		},
-		"icon":{
-			"type":"DEFAULT_HOME_ICON"
+		"icon": {
+			"type": "DEFAULT_HOME_ICON"
 		}
 	},
-	"displayAuthentication":true,
-	"displayCartSelector":true,
-	"displayNotificationsSelector":true,
-	"displayLocaleSelector":true,
-	"displayThemeSelector":true,
-	"navigation":[],
-	"contacts":"regards@no-reply.com",
-	"projectAboutPage":"https://github.com/RegardsOss"
+	"displayAuthentication": true,
+	"displayCartSelector": true,
+	"displayNotificationsSelector": true,
+	"displayLocaleSelector": true,
+	"displayThemeSelector": true,
+	"navigation": [],
+	"contacts": "regards@no-reply.com",
+	"projectAboutPage": "https://regardsoss.github.io/"
 }
