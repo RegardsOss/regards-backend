@@ -271,7 +271,8 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser createProjectUser(AccessRequestDto accessRequestDto) throws EntityException {
-        return create(accessRequestDto, false, UserStatus.ACCESS_GRANTED, AccountStatus.ACTIVE);
+        boolean isExternal = StringUtils.isNotBlank(accessRequestDto.getOrigin()) && !ProjectUser.REGARDS_ORIGIN.equals(accessRequestDto.getOrigin());
+        return create(accessRequestDto, isExternal, UserStatus.ACCESS_GRANTED, AccountStatus.ACTIVE);
     }
 
     @Override

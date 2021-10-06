@@ -321,14 +321,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @GetMapping(value = EXPORT, produces = "text/csv")
     @ResourceAccess(description = "Generate a CSV file with all project users", role = DefaultRole.EXPLOIT)
-    public void exportAsCSV(
-            @PageableDefault(sort = "email", direction = Sort.Direction.ASC) Pageable pageable,
-            ProjectUserSearchParameters parameters,
-            HttpServletResponse response
-    ) throws IOException {
+    public void exportAsCSV(ProjectUserSearchParameters parameters, HttpServletResponse response) throws IOException {
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=users.csv");
         response.setContentType("text/csv");
-        projectUserExportService.export(new BufferedWriter(response.getWriter()), parameters, pageable);
+        projectUserExportService.export(new BufferedWriter(response.getWriter()), parameters);
     }
 
     @GetMapping(COUNT_BY_ACCESS_GROUP)

@@ -59,10 +59,10 @@ public class ProjectUserExportService {
         this.projectUserService = projectUserService;
     }
 
-    public void export(BufferedWriter writer, ProjectUserSearchParameters parameters, Pageable pageable) throws IOException {
+    public void export(BufferedWriter writer, ProjectUserSearchParameters parameters) throws IOException {
         writer.append(HEADER);
         writer.newLine();
-        for (ProjectUser projectUser : projectUserService.retrieveUserList(parameters, pageable)) {
+        for (ProjectUser projectUser : projectUserService.retrieveUserList(parameters, Pageable.unpaged())) {
             writeLine(writer, projectUser);
         }
         writer.close();
