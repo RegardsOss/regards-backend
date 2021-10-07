@@ -41,6 +41,7 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Test class for {@link ProjectUser} DAO module
@@ -83,7 +84,7 @@ public class ProjectUserDaoTest {
 
         final RoleFactory factory = new RoleFactory();
         final Role role = roleRepository.save(factory.createPublic());
-        final ProjectUser user = new ProjectUser("email@test.com", role, new ArrayList<>(), new ArrayList<>());
+        final ProjectUser user = new ProjectUser("email@test.com", role, new ArrayList<>(), new HashSet<>());
 
         // Init with a past date (2 days ago)
         final OffsetDateTime initial = OffsetDateTime.now().minusDays(2);
@@ -103,10 +104,10 @@ public class ProjectUserDaoTest {
         Assert.assertEquals("repository should be empty", 0, projectUserRepository.findAll().size());
         RoleFactory factory = new RoleFactory();
         Role role = roleRepository.save(factory.createPublic());
-        ProjectUser user = new ProjectUser("user@test.com", role, new ArrayList<>(), new ArrayList<>());
-        ProjectUser user2 = new ProjectUser("user2@test.com", role, new ArrayList<>(), new ArrayList<>());
-        ProjectUser user3 = new ProjectUser("user3@test.com", role, new ArrayList<>(), new ArrayList<>());
-        ProjectUser user4 = new ProjectUser("user4@test.com", role, new ArrayList<>(), new ArrayList<>());
+        ProjectUser user = new ProjectUser("user@test.com", role, new ArrayList<>(), new HashSet<>());
+        ProjectUser user2 = new ProjectUser("user2@test.com", role, new ArrayList<>(), new HashSet<>());
+        ProjectUser user3 = new ProjectUser("user3@test.com", role, new ArrayList<>(), new HashSet<>());
+        ProjectUser user4 = new ProjectUser("user4@test.com", role, new ArrayList<>(), new HashSet<>());
 
         projectUserRepository.save(user);
         projectUserRepository.save(user2);

@@ -120,7 +120,7 @@ public class ProjectUserService implements IProjectUserService {
         }
         // Filter out hidden meta data
         ProjectUser user = userOpt.get();
-        user.setMetadata(user.getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toList()));
+        user.setMetadata(user.getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toSet()));
         return user;
     }
 
@@ -138,7 +138,7 @@ public class ProjectUserService implements IProjectUserService {
             user = projectUserRepository.findOneByEmail(userEmail);
             // Filter out hidden meta data
             if (user.isPresent()) {
-                List<MetaData> visibleMetadata = user.get().getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toList());
+                Set<MetaData> visibleMetadata = user.get().getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toSet());
                 user.get().setMetadata(visibleMetadata);
             }
         }
@@ -224,21 +224,21 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public List<MetaData> retrieveUserMetaData(Long userId) throws EntityNotFoundException {
         ProjectUser user = retrieveUser(userId);
-        return user.getMetadata();
+        return new ArrayList<>(user.getMetadata());
     }
 
     @Override
     public List<MetaData> updateUserMetaData(Long userId, List<MetaData> updatedUserMetaData) throws EntityNotFoundException {
         ProjectUser user = retrieveUser(userId);
-        user.setMetadata(updatedUserMetaData);
+        user.setMetadata(new HashSet<>(updatedUserMetaData));
         ProjectUser savedUser = save(user);
-        return savedUser.getMetadata();
+        return new ArrayList<>(savedUser.getMetadata());
     }
 
     @Override
     public void removeUserMetaData(Long userId) throws EntityNotFoundException {
         ProjectUser user = retrieveUser(userId);
-        user.setMetadata(new ArrayList<>());
+        user.setMetadata(new HashSet<>());
         save(user);
     }
 
@@ -322,7 +322,7 @@ public class ProjectUserService implements IProjectUserService {
                 .setMaxQuota(maxQuota);
 
         if (accessRequestDto.getMetadata() != null) {
-            projectUser.setMetadata(accessRequestDto.getMetadata());
+            projectUser.setMetadata(new HashSet<>(accessRequestDto.getMetadata()));
         }
 
         if (isExternal) {

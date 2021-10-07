@@ -35,6 +35,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -113,7 +114,7 @@ public class ProjectUser implements IIdentifiable<Long> {
     @OneToMany
     @Cascade(value = {CascadeType.ALL})
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_user_metadata"))
-    private List<MetaData> metadata;
+    private Set<MetaData> metadata;
 
     @Valid
     @ManyToOne
@@ -131,11 +132,11 @@ public class ProjectUser implements IIdentifiable<Long> {
 
     public ProjectUser() {
         permissions = new ArrayList<>();
-        metadata = new ArrayList<>();
+        metadata = new HashSet<>();
         status = UserStatus.WAITING_ACCOUNT_ACTIVE;
     }
 
-    public ProjectUser(String email, Role role, List<ResourcesAccess> permissions, List<MetaData> metaData) {
+    public ProjectUser(String email, Role role, List<ResourcesAccess> permissions, Set<MetaData> metaData) {
         this.email = email;
         this.role = role;
         this.permissions = permissions;
@@ -252,11 +253,11 @@ public class ProjectUser implements IIdentifiable<Long> {
         return this;
     }
 
-    public List<MetaData> getMetadata() {
+    public Set<MetaData> getMetadata() {
         return metadata;
     }
 
-    public ProjectUser setMetadata(List<MetaData> metadata) {
+    public ProjectUser setMetadata(Set<MetaData> metadata) {
         this.metadata = metadata;
         return this;
     }

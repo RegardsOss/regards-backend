@@ -107,11 +107,14 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
 
-        projectUser = new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>());
+        HashSet<MetaData> metaData = new HashSet<>(Arrays.asList(
+                new MetaData("key1", "value1", UserVisibility.READABLE),
+                new MetaData("key2", "value2", UserVisibility.READABLE)));
+        projectUser = new ProjectUser(EMAIL, publicRole, new ArrayList<>(), metaData);
         projectUser.setAccessGroups(new HashSet<>(Collections.singletonList("group1")));
         projectUser = projectUserRepository.save(projectUser);
 
-        otherUser = new ProjectUser("foo@bar.com", publicRole, new ArrayList<>(), new ArrayList<>());
+        otherUser = new ProjectUser("foo@bar.com", publicRole, new ArrayList<>(), new HashSet<>());
         otherUser.setAccessGroups(new HashSet<>(Collections.singletonList("group2")));
         otherUser = projectUserRepository.save(otherUser);
 
@@ -173,8 +176,18 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(apiUserEmail, customizer().expectStatusOk(), ERROR_MESSAGE, EMAIL);
     }
 
+    @Test
+    public void getUserById() {
+        String apiUserEmail = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
+
+        performDefaultGet(apiUserEmail, customizer().expectStatusNotFound(), ERROR_MESSAGE, 133);
+
+        performDefaultGet(apiUserEmail, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
+    }
+
     /**
      * Check that the system allows a user to connect using a hierarchically inferior role.
+     *
      * @throws EntityNotFoundException not found
      */
     @Test
@@ -349,11 +362,11 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         testUser.setFirstName("John");
         testUser.setLastName("Doe");
         testUser.setAccessGroups(new HashSet<>(Arrays.asList("group1", "public")));
-        testUser.setMetadata(Arrays.asList(
+        testUser.setMetadata(new HashSet<>(Arrays.asList(
                 new MetaData("visible1", "foo", UserVisibility.READABLE),
                 new MetaData("visible2", "bar", UserVisibility.READABLE),
                 new MetaData("hidden", "nope", UserVisibility.HIDDEN)
-        ));
+        )));
 
         // When
         String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.EXPORT;

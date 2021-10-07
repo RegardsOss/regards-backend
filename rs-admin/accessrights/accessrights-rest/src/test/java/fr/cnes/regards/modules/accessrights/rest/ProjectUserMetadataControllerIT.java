@@ -19,6 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -50,7 +51,7 @@ public class ProjectUserMetadataControllerIT extends AbstractRegardsTransactiona
     public void setUp() {
         Role publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).orElse(null);
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
     }
 
     @Test

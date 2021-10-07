@@ -58,6 +58,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -421,7 +422,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                 .setFirstName(updatedProjectUser.getFirstName())
                 .setLastName(updatedProjectUser.getLastName())
                 .setPermissions(updatedProjectUser.getPermissions())
-                .setMetadata(updatedProjectUser.getMetadata())
+                .setMetadata(new HashSet<>(updatedProjectUser.getMetadata()))
                 .setRole(updatedProjectUser.getRole())
                 .setAccessGroups(updatedProjectUser.getAccessGroups())
                 .setMaxQuota(updatedProjectUser.getMaxQuota());

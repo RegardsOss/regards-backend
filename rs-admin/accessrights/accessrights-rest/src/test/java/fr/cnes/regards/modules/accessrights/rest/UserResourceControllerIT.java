@@ -38,6 +38,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * @author Marc Sordi
@@ -66,7 +67,7 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Create user
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         ProjectUser user = projectUserRepository
-                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new HashSet<>()));
 
         // Create a new resource
         ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",
@@ -86,7 +87,7 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Create another user
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         ProjectUser user = projectUserRepository
-                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new HashSet<>()));
 
         // Create a new resource
         ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",
