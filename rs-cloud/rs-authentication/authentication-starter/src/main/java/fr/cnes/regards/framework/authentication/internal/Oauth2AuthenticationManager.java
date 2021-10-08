@@ -58,6 +58,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -424,6 +425,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                         .retrieveProjectUserByEmail(email);
                 if (response.getStatusCode() == HttpStatus.OK) {
                     ProjectUser projectUser = response.getBody().getContent();
+                    projectUser.setLastConnection(OffsetDateTime.now());
+                    // update last connection date
+                    projectUsersClient.updateProjectUser(projectUser.getId(), projectUser);
                     // In regards system login is same as email
                     user = new UserDetails(scope, projectUser.getEmail(), login, projectUser.getRole().getName());
                 } else {

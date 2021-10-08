@@ -187,10 +187,19 @@ public class ProjectUserService implements IProjectUserService {
         if (newRole != null && newRole.getId() == null && StringUtils.isNotBlank(newRole.getName())) {
             newRole = roleService.retrieveRole(updatedProjectUser.getRole().getName());
         }
-        projectUser.setRole(newRole);
+        if(newRole != null) {
+            projectUser.setRole(newRole);
+        }
         projectUser.setMetadata(updatedProjectUser.getMetadata());
         projectUser.setPermissions(updatedProjectUser.getPermissions());
-        projectUser.setMaxQuota(updatedProjectUser.getMaxQuota());
+
+        Long newMaxQuota = updatedProjectUser.getMaxQuota();
+        if(newMaxQuota != null && newMaxQuota > -2) {
+            projectUser.setMaxQuota(newMaxQuota);
+        }
+        if(updatedProjectUser.getLastConnection() != null) {
+            projectUser.setLastConnection(updatedProjectUser.getLastConnection());
+        }
 
         // Check that no public group is removed or added
         Set<String> accessGroups = updatedProjectUser.getAccessGroups();
