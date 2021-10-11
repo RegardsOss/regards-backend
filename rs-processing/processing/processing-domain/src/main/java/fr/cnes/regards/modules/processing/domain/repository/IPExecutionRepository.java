@@ -66,4 +66,5 @@ public interface IPExecutionRepository {
 
     Mono<Integer> countByProcessBusinessIdAndStatusIn(UUID processBusinessId, Seq<ExecutionStatus> nonFinalStatusList);
 
+    void deleteAll();
 }

@@ -45,6 +45,7 @@ import io.vavr.Function1;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import org.jetbrains.annotations.NotNull;
+import org.junit.After;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -84,6 +85,12 @@ public class AbstractProcessingServiceTest extends AbstractProcessingTest {
     protected void configureProcessUpdater(Function1<PProcess.ConcretePProcess, PProcess.ConcretePProcess> fn) {
         Mockito.reset(processUpdater);
         when(processUpdater.update(any())).thenAnswer(i -> fn.apply(i.getArgument(0)));
+    }
+
+    @After
+    public void cleanUp() {
+        batchRepo.deleteAll();
+        execRepo.deleteAll();
     }
 
     public interface ProcessUpdater {
