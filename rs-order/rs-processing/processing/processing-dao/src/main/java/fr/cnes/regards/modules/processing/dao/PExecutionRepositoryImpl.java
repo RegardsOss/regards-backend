@@ -101,6 +101,12 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     }
 
     @Override
+    public void deleteAll() {
+        entityExecRepo.deleteAll();
+        cache.invalidateAll();
+    }
+
+    @Override
     public Mono<PExecution> update(PExecution exec) {
         return entityExecRepo
             .save(mapper.toEntity(exec))

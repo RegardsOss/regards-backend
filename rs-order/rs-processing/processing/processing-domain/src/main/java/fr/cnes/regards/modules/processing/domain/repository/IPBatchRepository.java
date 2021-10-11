@@ -37,4 +37,6 @@ public interface IPBatchRepository {
     Mono<Void> deleteAllFinishedForMoreThan(long batchRipeForDeleteAgeMs);
 
     Mono<Void> deleteByProcessBusinessId(UUID processBusinessId);
+
+    void deleteAll();
 }

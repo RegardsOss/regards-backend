@@ -95,6 +95,12 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
         return delegate.deleteAll(delegate.findByProcessBusinessId(processBusinessId));
     }
 
+    @Override
+    public void deleteAll() {
+        delegate.deleteAll();
+        cache.invalidateAll();
+    }
+
     public static final class BatchNotFoundException extends ProcessingException {
         public BatchNotFoundException(UUID batchId) {
             super(ProcessingExceptionType.BATCH_NOT_FOUND_EXCEPTION, String.format("Batch uuid not found: %s", batchId));
