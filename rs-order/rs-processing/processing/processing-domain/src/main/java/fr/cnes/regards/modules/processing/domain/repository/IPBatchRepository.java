@@ -17,6 +17,7 @@
 */
 package fr.cnes.regards.modules.processing.domain.repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import reactor.core.publisher.Mono;
 
@@ -38,5 +39,6 @@ public interface IPBatchRepository {
 
     Mono<Void> deleteByProcessBusinessId(UUID processBusinessId);
 
-    void deleteAll();
+    @VisibleForTesting
+    Mono<Void> deleteAll();
 }

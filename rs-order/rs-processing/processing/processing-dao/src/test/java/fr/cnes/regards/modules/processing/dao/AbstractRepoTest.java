@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepositor
 import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.utils.random.RandomUtils;
+import org.junit.After;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,11 @@ public abstract class AbstractRepoTest extends AbstractProcessingTest implements
     @Autowired protected IOutputFileEntityRepository entityOutputFilesRepo;
 
 
+    @After
+    public void cleanUp() {
+        domainExecRepo.deleteAll().block();
+        domainBatchRepo.deleteAll().block();
+    }
     protected Mono<PBatch> saveBatch(int i, PBatch pBatch) {
         return domainBatchRepo.save(pBatch)
                 .doOnNext(b -> LOGGER.info("ATTEMPT {}, Saved batch {}", i, b));

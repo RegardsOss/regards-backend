@@ -29,9 +29,7 @@ import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.ReactiveTransactionManager;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -96,9 +94,8 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
     }
 
     @Override
-    public void deleteAll() {
-        delegate.deleteAll();
-        cache.invalidateAll();
+    public Mono<Void> deleteAll() {
+        return delegate.deleteAll().doOnTerminate(() -> {cache.invalidateAll();cache.cleanUp();});
     }
 
     public static final class BatchNotFoundException extends ProcessingException {

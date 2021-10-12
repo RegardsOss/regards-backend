@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,11 @@ public class IRightsPluginConfigurationRepositoryTest extends AbstractProcessing
     @Before
     public void setup() {
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
+    }
+
+    @After
+    public void cleanUp() {
+        rightsRepo.deleteAll();
     }
 
     @MultitenantTransactional
