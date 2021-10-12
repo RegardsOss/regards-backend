@@ -37,7 +37,7 @@ public class JsonConverter {
         FineOrNot init = tryIt(() -> key == null ? base.startObject() : base.startObject(key));
 
         return obj.entrySet().stream().reduce(init, this::addObjectField, this::neverCalled)
-                .thenTry(builder -> builder.endObject());
+                .thenTry(XContentBuilder::endObject);
 
     }
 
@@ -48,7 +48,7 @@ public class JsonConverter {
     private FineOrNot addObjectField(FineOrNot acc, String key, JsonElement value, XContentBuilder builder) {
         if (value.isJsonPrimitive()) {
             return withPrimitive(value.getAsJsonPrimitive(), bool -> builder.field(key, bool),
-                                 num -> builder.field(key, num), str -> builder.field(key, str));
+                                 aLong -> builder.field(key, aLong), aDouble -> builder.field(key, aDouble), str -> builder.field(key, str));
         } else if (value.isJsonArray()) {
             return toXContentBuilder(key, value.getAsJsonArray(), builder);
         } else if (value.isJsonObject()) {
@@ -73,7 +73,7 @@ public class JsonConverter {
 
     private FineOrNot addArrayValue(FineOrNot acc, JsonElement element, XContentBuilder builder) {
         if (element.isJsonPrimitive()) {
-            return withPrimitive(element.getAsJsonPrimitive(), builder::value, builder::value, builder::value);
+            return withPrimitive(element.getAsJsonPrimitive(), builder::value, builder::value, builder::value, builder::value);
         } else if (element.isJsonArray()) {
             return toXContentBuilder(null, element.getAsJsonArray(), builder);
         } else if (element.isJsonObject()) {
@@ -98,14 +98,18 @@ public class JsonConverter {
     }
 
     public FineOrNot withPrimitive(JsonPrimitive primitive,
-            CheckedFunction<Boolean, XContentBuilder, IOException> asBoolean,
-            CheckedFunction<Long, XContentBuilder, IOException> asNumber,
-            CheckedFunction<String, XContentBuilder, IOException> asString) {
+                                   CheckedFunction<Boolean, XContentBuilder, IOException> asBoolean,
+                                   CheckedFunction<Long, XContentBuilder, IOException> asLong,
+                                   CheckedFunction<Double, XContentBuilder, IOException> asDouble, CheckedFunction<String, XContentBuilder, IOException> asString) {
         return tryIt(() -> {
             if (primitive.isBoolean()) {
                 return asBoolean.apply(primitive.getAsBoolean());
             } else if (primitive.isNumber()) {
-                return asNumber.apply(primitive.getAsLong());
+                if(primitive.getAsString().contains(".")) {
+                    return asDouble.apply(primitive.getAsDouble());
+                } else {
+                    return asLong.apply(primitive.getAsLong());
+                }
             } else {
                 return asString.apply(primitive.getAsString());
             }
