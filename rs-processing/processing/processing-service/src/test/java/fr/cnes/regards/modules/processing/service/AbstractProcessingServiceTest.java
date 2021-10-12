@@ -24,6 +24,7 @@
  */
 package fr.cnes.regards.modules.processing.service;
 
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
 import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
 import fr.cnes.regards.modules.processing.domain.PBatch;
@@ -76,6 +77,7 @@ public class AbstractProcessingServiceTest extends AbstractProcessingTest {
     @Autowired protected ExecutionServiceImpl executionService;
     @Autowired protected IPExecutionRepository execRepo;
     @Autowired protected IExecutionEntityRepository execEntityRepo;
+    @Autowired protected ITenantResolver tenantResolver;
 
     @PostConstruct
     public void init() {
@@ -89,8 +91,8 @@ public class AbstractProcessingServiceTest extends AbstractProcessingTest {
 
     @After
     public void cleanUp() {
-        batchRepo.deleteAll();
-        execRepo.deleteAll();
+            execRepo.deleteAll().block();
+            batchRepo.deleteAll().block();
     }
 
     public interface ProcessUpdater {

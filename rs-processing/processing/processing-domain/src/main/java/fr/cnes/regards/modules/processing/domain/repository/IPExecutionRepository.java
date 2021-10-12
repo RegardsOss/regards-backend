@@ -17,6 +17,7 @@
 */
 package fr.cnes.regards.modules.processing.domain.repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import io.vavr.collection.Seq;
@@ -66,5 +67,6 @@ public interface IPExecutionRepository {
 
     Mono<Integer> countByProcessBusinessIdAndStatusIn(UUID processBusinessId, Seq<ExecutionStatus> nonFinalStatusList);
 
-    void deleteAll();
+    @VisibleForTesting
+    Mono<Void> deleteAll();
 }

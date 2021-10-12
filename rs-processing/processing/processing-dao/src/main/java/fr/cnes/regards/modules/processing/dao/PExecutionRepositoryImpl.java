@@ -101,9 +101,8 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     }
 
     @Override
-    public void deleteAll() {
-        entityExecRepo.deleteAll();
-        cache.invalidateAll();
+    public Mono<Void> deleteAll() {
+        return entityExecRepo.deleteAll().doOnTerminate(() -> {cache.invalidateAll();cache.cleanUp();});
     }
 
     @Override

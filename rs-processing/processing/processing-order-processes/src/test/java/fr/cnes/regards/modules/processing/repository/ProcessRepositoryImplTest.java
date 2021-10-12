@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.processing.repository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.domain.PExecution;
@@ -31,6 +32,7 @@ import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepos
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import org.junit.After;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,16 @@ public class ProcessRepositoryImplTest extends AbstractProcessingTest {
     @Autowired IRightsPluginConfigurationRepository rpcRepo;
     @Autowired IPluginConfigurationRepository pluginConfRepo;
     @Autowired IWorkloadEngineRepository engineRepo;
+    @Autowired ITenantResolver tenantResolver;
+
+    @After
+    public void cleanUp() {
+        for(String tenant : tenantResolver.getAllTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            rpcRepo.deleteAll();
+            pluginConfRepo.deleteAll();
+        }
+    }
 
     @Test public void batch_save_then_getOne_byId() {
         // GIVEN
