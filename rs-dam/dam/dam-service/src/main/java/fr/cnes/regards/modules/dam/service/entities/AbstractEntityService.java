@@ -93,6 +93,7 @@ import java.util.stream.Collectors;
 
 /**
  * Abstract parameterized entity service
+ *
  * @param <U> Entity type
  * @author oroussel
  */
@@ -249,6 +250,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Check if model is loaded else load it then set it on entity.
+     *
      * @param entity concerned entity
      */
     @Override
@@ -263,14 +265,15 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Compute available validators
+     *
      * @param modelAttribute {@link ModelAttrAssoc}
-     * @param attributeKey attribute key
-     * @param mode manage update or not
+     * @param attributeKey   attribute key
+     * @param mode           manage update or not
      * @return {@link Validator} list
      */
     @Override
     protected List<Validator> getValidators(ModelAttrAssoc modelAttribute, String attributeKey, ValidationMode mode,
-            F feature) {
+                                            F feature) {
 
         List<Validator> validators = super.getValidators(modelAttribute, attributeKey, mode, feature);
 
@@ -298,8 +301,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Build real attribute map extracting namespace from {@link ObjectProperty} (i.e. fragment name)
-     * @param attMap Map to build
-     * @param namespace namespace context
+     *
+     * @param attMap     Map to build
+     * @param namespace  namespace context
      * @param attributes {@link AbstractProperty} list to analyze
      */
     protected void buildAttributeMap(Map<String, IProperty<?>> attMap, String namespace, Set<IProperty<?>> attributes) {
@@ -315,7 +319,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                     if (!namespace.equals(Fragment.getDefaultName())) {
                         key = namespace.concat(".").concat(key);
                     }
-                    LOGGER.debug(String.format("Key \"%s\" -> \"%s\".", key, att.toString()));
+                    LOGGER.debug(String.format("Key \"%s\" -> \"%s\".", key, att));
                     attMap.put(key, att);
                 }
             }
@@ -324,8 +328,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Associate a list of {@link String} tags to the given existing entity.
+     *
      * @param entityId an AbstractEntity identifier
-     * @param tagList UniformResourceName Set representing AbstractEntity to be associated to pCollection
+     * @param tagList  UniformResourceName Set representing AbstractEntity to be associated to pCollection
      */
     @Override
     public void associate(Long entityId, Set<String> tagList) throws EntityNotFoundException {
@@ -336,7 +341,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Adding new tags to detached entity
         U entity = entityOpt.get();
         em.detach(entity);
-        tagList.forEach(ipId -> entity.addTags(ipId.toString()));
+        tagList.forEach(entity::addTags);
         U entityInDb = repository.findById(entityId).get();
         // And detach it because it is the other one that will be persisted
         em.detach(entityInDb);
@@ -363,9 +368,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         entity.setCreationDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
         this.manageGroups(entity, updatedIpIds);
 
-        entity = repository.save(entity);
-        updatedIpIds.add(entity.getIpId());
-
         if (damSettingsService.isStoreFiles()) {
             // call storage
             try {
@@ -379,7 +381,14 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             } catch (NotAvailablePluginConfigurationException e) {
                 LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
             }
+        } else {
+            String tenant = runtimeTenantResolver.getTenant();
+            final U finalEntity = entity;
+            entity.getFiles().values().forEach(dataFile -> dataFile.setUri(getDownloadUrl(finalEntity.getIpId(), dataFile.getChecksum(), tenant, true)));
         }
+
+        entity = repository.save(entity);
+        updatedIpIds.add(entity.getIpId());
 
         // AMQP event publishing
         publishEvents(EventType.CREATE, updatedIpIds);
@@ -420,6 +429,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     /**
      * If entity is a collection or a dataset, recursively follow tags to add entity groups, then, if entity is a
      * collection, retrieve and add all groups from collections and datasets tagging this entity
+     *
      * @param entity entity to manage the add of groups
      */
     private <T extends AbstractEntity<?>> void manageGroups(T entity, Set<UniformResourceName> updatedIpIds) {
@@ -464,6 +474,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     /**
      * checks if the entity requested exists and that it is modified according to one of it's former version( pEntity's
      * id is pEntityId)
+     *
      * @return current entity
      * @throws ModuleException thrown if the entity cannot be found or if entities' id do not match
      */
@@ -506,7 +517,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * Really do the update of entities
-     * @param entity updated entity to be saved
+     *
+     * @param entity     updated entity to be saved
      * @param entityInDb only there for comparison for group management
      * @return updated entity with group set correclty
      */
@@ -535,13 +547,13 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             for (String group : groupsToRemove) {
                 List<Collection> collectionsWithGroup = collectionRepository.findByGroups(group);
                 collectionsWithGroup.forEach(c -> c.getGroups().remove(group));
-                collectionsWithGroup.forEach(collectionRepository::save);
+                collectionRepository.saveAll(collectionsWithGroup);
                 // Add collections to IpIds to be published on AMQP
                 collectionsWithGroup.forEach(c -> updatedIpIds.add(c.getIpId()));
                 // ... then manage concerned groups on all datasets containing them
                 List<Dataset> datasetsWithGroup = datasetRepository.findByGroups(group);
                 datasetsWithGroup.forEach(ds -> this.manageGroups(ds, updatedIpIds));
-                datasetsWithGroup.forEach(datasetRepository::save);
+                datasetRepository.saveAll(datasetsWithGroup);
                 // Add datasets to IpIds to be published on AMQP
                 datasetsWithGroup.forEach(ds -> updatedIpIds.add(ds.getIpId()));
             }
@@ -561,6 +573,11 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             } catch (NotAvailablePluginConfigurationException e) {
                 LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
             }
+        } else {
+            String tenant = runtimeTenantResolver.getTenant();
+            final U finalUpdated = updated;
+            updated.getFiles().values().forEach(dataFile -> dataFile.setUri(getDownloadUrl(finalUpdated.getIpId(), dataFile.getChecksum(), tenant, true)));
+            repository.save(updated);
         }
 
         // AMQP event publishing
@@ -590,7 +607,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Manage tags
         for (AbstractEntity<?> taggingEntity : taggingEntities) {
             // remove tag to ipId
-            taggingEntity.removeTags(Arrays.asList(urn.toString()));
+            taggingEntity.removeTags(Collections.singletonList(urn.toString()));
         }
         // Save all these tagging entities
         entityRepository.saveAll(taggingEntities);
@@ -600,7 +617,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         Set<Dataset> datasets = new HashSet<>();
         // If entity contains groups => update all entities tagging this entity (recursively)
         // Need to manage groups one by one
-        for (String group : ((AbstractEntity<?>) toDelete).getGroups()) {
+        for (String group : toDelete.getGroups()) {
             // Find all collections containing group.
             List<Collection> collectionsWithGroup = collectionRepository.findByGroups(group);
             // Remove group from collections groups
@@ -639,12 +656,11 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * @param pSource Set of UniformResourceName
-     * @param pOther Set of UniformResourceName to remove from pSource
+     * @param pOther  Set of UniformResourceName to remove from pSource
      * @return a new Set of UniformResourceName containing only the elements present into pSource and not in pOther
      */
     private Set<UniformResourceName> getDiff(Set<UniformResourceName> pSource, Set<UniformResourceName> pOther) {
-        Set<UniformResourceName> result = new HashSet<>();
-        result.addAll(pSource);
+        Set<UniformResourceName> result = new HashSet<>(pSource);
         result.removeAll(pOther);
         return result;
     }
@@ -675,12 +691,12 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Override
     public U attachFiles(UniformResourceName urn, DataType dataType, MultipartFile[] attachments, List<DataFile> refs,
-            String fileUriTemplate) throws ModuleException {
+                         String fileUriTemplate) throws ModuleException {
 
         U entity = loadWithRelations(urn);
         // Store files locally
         java.util.Collection<DataFile> files = localStorageService.attachFiles(entity, dataType, attachments,
-                                                                               fileUriTemplate);
+                fileUriTemplate);
         // Merge previous files with new ones
         if (entity.getFiles().get(dataType) != null) {
             entity.getFiles().get(dataType).addAll(files);
@@ -696,10 +712,10 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                 // Compute checksum on URI for removal
                 try {
                     ref.setChecksum(ChecksumUtils.computeHexChecksum(ref.getUri(),
-                                                                     LocalStorageService.DIGEST_ALGORITHM));
+                            LocalStorageService.DIGEST_ALGORITHM));
                     ref.setDigestAlgorithm(LocalStorageService.DIGEST_ALGORITHM);
                 } catch (NoSuchAlgorithmException | IOException e) {
-                    String message = String.format("Error while computing checksum");
+                    String message = "Error while computing checksum";
                     LOGGER.error(message, e);
                     throw new ModuleException(message, e);
                 }
@@ -726,8 +742,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             }
         }
 
-        String message = String.format("Data file with checksum \"%s\" in entity \"\" not found", checksum,
-                                       urn.toString());
+        String message = String.format("Data file with checksum \"%s\" in entity \"%s\" not found", checksum,
+                urn.toString());
         LOGGER.error(message);
         throw new EntityNotFoundException(message);
     }
@@ -761,7 +777,6 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     /**
      * @return a {@link Plugin} implementation of {@link IStorageService}
-     * @throws NotAvailablePluginConfigurationException
      */
     private IStorageService getStorageService() throws NotAvailablePluginConfigurationException {
 
@@ -810,7 +825,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                             if (file.getChecksum().equals(request.getResultFile().getMetaInfo().getChecksum())) {
                                 updated = true;
                                 file.setUri(getDownloadUrl(current.getUrn(), file.getChecksum(),
-                                                           runtimeTenantResolver.getTenant()));
+                                        runtimeTenantResolver.getTenant(), false));
                                 treatedRequests.add(current);
                             }
                         }
@@ -830,7 +845,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         this.abstractEntityRequestRepo.deleteAll(treatedRequests);
         this.entityRepository.saveAll(entityByUrn.values());
         this.publishEvents(EventType.UPDATE,
-                           treatedRequests.stream().map(AbstractEntityRequest::getUrn).collect(Collectors.toSet()));
+                treatedRequests.stream().map(AbstractEntityRequest::getUrn).collect(Collectors.toSet()));
     }
 
     @Override
@@ -853,7 +868,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         if (!treatedRequests.isEmpty()) {
             buf.append("</ul>");
             this.notificationClient.notify(buf.toString(), "Data-management storage failed", NotificationLevel.ERROR,
-                                           MimeTypeUtils.TEXT_HTML, DefaultRole.PROJECT_ADMIN);
+                    MimeTypeUtils.TEXT_HTML, DefaultRole.PROJECT_ADMIN);
             // delete treated requests
             this.abstractEntityRequestRepo.deleteAll(treatedRequests);
         }
@@ -862,10 +877,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     /**
      * Generate URL to access file from REGARDS system thanks to is checksum
      *
-     * @param checksum
-     * @return
      */
-    private String getDownloadUrl(UniformResourceName uniformResourceName, String checksum, String tenant) {
+    private String getDownloadUrl(UniformResourceName uniformResourceName, String checksum, String tenant, boolean locallyStored) {
         Project project = projects.get(tenant);
         if (project == null) {
             FeignSecurityManager.asSystem();
@@ -873,8 +886,12 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             projects.put(tenant, project);
             FeignSecurityManager.reset();
         }
-        return project.getHost() + urlPrefix + "/" + encode4Uri("rs-catalog") + CATALOG_DOWNLOAD_PATH
+        String proxyfiedUrl = project.getHost() + urlPrefix + "/" + encode4Uri("rs-catalog") + CATALOG_DOWNLOAD_PATH
                 .replace("{aip_id}", uniformResourceName.toString()).replace("{checksum}", checksum);
+        if (locallyStored) {
+            proxyfiedUrl += "/dam";
+        }
+        return proxyfiedUrl;
     }
 
     private static String encode4Uri(String str) {

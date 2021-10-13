@@ -20,8 +20,10 @@ package fr.cnes.regards.modules.search.rest;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 import javax.servlet.http.HttpServletResponse;
 
+import static org.springframework.http.MediaType.ALL_VALUE;
+
 /**
  * REST Controller handling operations on downloads.
  *
@@ -56,7 +60,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Kevin Marchois
  */
 @RestController
-@RequestMapping(CatalogDownloadController.PATH_DOWNLOAD)
+@RequestMapping(path = CatalogDownloadController.PATH_DOWNLOAD)
 public class CatalogDownloadController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogDownloadController.class);
@@ -64,6 +68,8 @@ public class CatalogDownloadController {
     public static final String PATH_DOWNLOAD = "/downloads";
 
     public static final String DOWNLOAD_AIP_FILE = "/{aip_id}/files/{checksum}";
+
+    public static final String DOWNLOAD_DAM_FILE = DOWNLOAD_AIP_FILE + "/dam";
 
     /**
      * AIP ID path parameter
@@ -78,6 +84,9 @@ public class CatalogDownloadController {
     @Autowired
     private IStorageRestClient storageRestClient;
 
+    @Autowired
+    private IAttachmentClient attachmentClient;
+
     /**
      * Business search service
      */
@@ -87,15 +96,58 @@ public class CatalogDownloadController {
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    @RequestMapping(path = DOWNLOAD_DAM_FILE, method = RequestMethod.GET, produces = ALL_VALUE)
+    @ResourceAccess(description = "Proxy download for dam locally stored files", role = DefaultRole.PUBLIC)
+    public ResponseEntity<InputStreamResource> downloadDamFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
+                                                               @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
+                                                               @RequestParam(name = "origin", required = false) String origin,
+                                                               @RequestParam(name="isContentInline", required=false) Boolean isContentInline,
+                                                               HttpServletResponse response) throws IOException {
+        FeignSecurityManager.asSystem();
+        try {
+            Response damResp = attachmentClient.getFile(aipId, checksum, origin, isContentInline);
+            return getInputStreamResourceResponseEntity(checksum, response, damResp);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
+                            e.getMessage()),
+                    e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            FeignSecurityManager.reset();
+        }
+    }
+
+    private ResponseEntity<InputStreamResource> getInputStreamResourceResponseEntity(String checksum, HttpServletResponse response, Response fileDownloadResponse) throws IOException {
+        InputStreamResource isr = null;
+        HttpHeaders headers = new HttpHeaders();
+        // Add all headers from storage microservice fileDownloadResponse except for cache control ones.
+        // This download endpoints must not activate cache control. Cache control is handled by CustomCacheControlHeaderWriter
+        for (Entry<String, Collection<String>> h : fileDownloadResponse.headers().entrySet()) {
+            if ((!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.CACHE_CONTROL))
+                    && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.EXPIRES))
+                    && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.PRAGMA))) {
+                h.getValue().forEach(v -> response.setHeader(h.getKey(), v));
+            }
+        }
+        if (fileDownloadResponse.status() == HttpStatus.OK.value()) {
+            isr = new InputStreamResource(new ResponseStreamProxy(fileDownloadResponse));
+        } else {
+            LOGGER.error("Error downloading file {} from storage", checksum);
+            // if body is not null, forward the error content too
+            if (fileDownloadResponse.body() != null) {
+                isr = new InputStreamResource(new ResponseStreamProxy(fileDownloadResponse));
+            }
+        }
+        return ResponseEntity.status(fileDownloadResponse.status()).headers(headers).body(isr);
+    }
+
     /**
      * Download a file that user has right to
      * @param aipId aip id where is the file
      * @param checksum checksum on the file
      * @return the file to download
-     * @throws ModuleException
-     * @throws IOException
      */
-    @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
+    @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET, produces = ALL_VALUE)
     @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
             @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
@@ -106,40 +158,19 @@ public class CatalogDownloadController {
             // To download through storage client we must be authenticate as user in order to
             // impact the download quotas, but we upgrade the privileges so that the request passes.
             FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
-            Response storageResp = null;
             try {
-                storageResp = storageRestClient.downloadFile(checksum, isContentInline);
-                InputStreamResource isr = null;
-                HttpHeaders headers = new HttpHeaders();
-                // Add all headers from storage microservice storageResp except for cache control ones.
-                // This download endpoints must not activate cache control. Cache control is handled by CustomCacheControlHeaderWriter
-                for (Entry<String, Collection<String>> h : storageResp.headers().entrySet()) {
-                    if ((!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.CACHE_CONTROL))
-                            && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.EXPIRES))
-                            && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.PRAGMA))) {
-                        h.getValue().forEach(v -> response.setHeader(h.getKey(), v));
-                    }
-                }
-                if (storageResp.status() == HttpStatus.OK.value()) {
-                    isr = new InputStreamResource(new ResponseStreamProxy(storageResp));
-                } else {
-                    LOGGER.error("Error downloading file {} from storage", checksum);
-                    // if body is not null, forward the error content too
-                    if (storageResp.body() != null) {
-                        isr = new InputStreamResource(new ResponseStreamProxy(storageResp));
-                    }
-                }
-                return ResponseEntity.status(storageResp.status()).headers(headers).body(isr);
+                Response storageResp = storageRestClient.downloadFile(checksum, isContentInline);
+                return getInputStreamResourceResponseEntity(checksum, response, storageResp);
             } catch (HttpClientErrorException | HttpServerErrorException e) {
                 LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
                                            e.getMessage()),
                              e);
-                return new ResponseEntity<InputStreamResource>(HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             } finally {
                 FeignSecurityManager.reset();
             }
         }
-        return new ResponseEntity<InputStreamResource>(HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
     }
 }

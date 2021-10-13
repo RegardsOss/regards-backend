@@ -92,6 +92,10 @@
 			<artifactId>storage-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>catalog-services-domain</artifactId>
 		</dependency>
