@@ -18,24 +18,22 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
+import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractModuleManagerWithTenantSettings;
+import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
-import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
-import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Module to allow import/export storage microservice configuration
@@ -43,55 +41,43 @@ import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigura
  * @author Sébastien Binda
  */
 @Component
-public class StorageModuleManager extends AbstractModuleManager<Void> {
+public class StorageModuleManager extends AbstractModuleManagerWithTenantSettings<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageModuleManager.class);
 
     @Autowired
     private StorageLocationConfigurationService storageConfService;
 
-    @Autowired
-    private IDynamicTenantSettingService dynamicTenantSettingService;
-
     @Override
-    public ModuleConfiguration exportConfiguration() throws ModuleException {
-        List<ModuleConfigurationItem<?>> configuration = new ArrayList<>();
+    public ModuleConfiguration exportConfiguration(List<ModuleConfigurationItem<?>> configuration) {
         for (StorageLocationConfiguration conf : storageConfService.searchAll()) {
             configuration.add(ModuleConfigurationItem.build(conf));
         }
-        dynamicTenantSettingService.readAll()
-                .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
         return ModuleConfiguration.build(info, configuration);
     }
 
     @Override
-    protected Set<String> importConfiguration(ModuleConfiguration configuration) {
-        Set<String> importErrors = new HashSet<>();
-        for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
-            if (StorageLocationConfiguration.class.isAssignableFrom(item.getKey())) {
-                StorageLocationConfiguration conf = item.getTypedValue();
-                if (storageConfService.search(conf.getName()).isPresent()) {
-                    importErrors.add(String.format("Storage location %s is already defined.", conf.getName()));
-                } else {
-                    try {
-                        storageConfService
-                                .create(conf.getName(), conf.getPluginConfiguration(), conf.getAllocatedSizeInKo());
-                    } catch (ModuleException e) {
-                        importErrors.add(String.format("Skipping import of StorageLocationConfiguration %s: %s",
-                                                       conf.getName(),
-                                                       e.getMessage()));
-                        LOGGER.error(e.getMessage(), e);
-                    }
-                }
-            }
-            if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
-                DynamicTenantSetting conf = item.getTypedValue();
+    protected Set<String> importConfiguration(ModuleConfiguration configuration, Set<String> importErrors) {
+        Set<StorageLocationConfiguration> storageLocationConfigs = getStorageLocationConfigs(
+                configuration.getConfiguration());
+
+        importErrors.addAll(importStorageLocationConfigs(storageLocationConfigs));
+        return importErrors;
+    }
+
+    private Set<String> importStorageLocationConfigs(Set<StorageLocationConfiguration> storageLocationConfigs) {
+        Set<String> importErrors = Sets.newHashSet();
+        for (StorageLocationConfiguration conf : storageLocationConfigs) {
+            if (storageConfService.search(conf.getName()).isPresent()) {
+                importErrors.add(String.format("Storage location %s is already defined.", conf.getName()));
+            } else {
                 try {
-                    dynamicTenantSettingService.update(conf.getName(), conf.getValue());
+                    storageConfService.create(conf.getName(), conf.getPluginConfiguration(),
+                                              conf.getAllocatedSizeInKo());
                 } catch (ModuleException e) {
-                    importErrors.add(String.format("Skipping import of DynamicTenantSetting %s: %s",
-                                                   conf.getName(),
-                                                   e.getMessage()));
+                    importErrors.add(
+                            String.format("Skipping import of StorageLocationConfiguration %s: %s", conf.getName(),
+                                          e.getMessage()));
                     LOGGER.error(e.getMessage(), e);
                 }
             }
@@ -99,4 +85,8 @@ public class StorageModuleManager extends AbstractModuleManager<Void> {
         return importErrors;
     }
 
+    private Set<StorageLocationConfiguration> getStorageLocationConfigs(Collection<ModuleConfigurationItem<?>> items) {
+        return items.stream().filter(i -> StorageLocationConfiguration.class.isAssignableFrom(i.getKey()))
+                .map(i -> (StorageLocationConfiguration) i.getTypedValue()).collect(Collectors.toSet());
+    }
 }

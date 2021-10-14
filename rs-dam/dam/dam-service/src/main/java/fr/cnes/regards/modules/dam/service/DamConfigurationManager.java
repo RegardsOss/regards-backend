@@ -20,8 +20,8 @@
  */
 package fr.cnes.regards.modules.dam.service;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
-import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -29,8 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractModuleManagerWithTenantSettings;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IConnectionPlugin;
@@ -49,7 +48,6 @@ import org.springframework.validation.Validator;
 import org.springframework.web.util.UriUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * DAM configuration manager. Exports model & connection plugin configurations & datasource plugin configurations.
@@ -60,7 +58,7 @@ import java.util.stream.Collectors;
  * @since V1.6.0 import/export datasets
  */
 @Component
-public class DamConfigurationManager extends AbstractModuleManager<Void> {
+public class DamConfigurationManager extends AbstractModuleManagerWithTenantSettings<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DamConfigurationManager.class);
 
@@ -76,52 +74,46 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
 
     private final IPluginService pluginService;
 
-    private final DynamicTenantSettingService dynamicTenantSettingService;
-
     public DamConfigurationManager(Validator validator, IRuntimeTenantResolver runtimeTenantResolver,
             IDatasetService datasetService, IDatasetRepository datasetRepository, IModelService modelService,
-            IPluginService pluginService, DynamicTenantSettingService dynamicTenantSettingService) {
+            IPluginService pluginService) {
         this.validator = validator;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.datasetService = datasetService;
         this.datasetRepository = datasetRepository;
         this.modelService = modelService;
         this.pluginService = pluginService;
-        this.dynamicTenantSettingService = dynamicTenantSettingService;
     }
 
     @Override
-    protected Set<String> importConfiguration(ModuleConfiguration configuration) {
+    protected Set<String> importConfiguration(ModuleConfiguration configuration, Set<String> importErrors) {
+        Set<PluginConfiguration> pluginConfigurations = getConfigurationSettingsByClass(configuration, PluginConfiguration.class);
+        Set<DatasetConfiguration> datasetConfigurations = getConfigurationSettingsByClass(configuration, DatasetConfiguration.class);
 
-        Set<String> importErrors = new HashSet<>();
-
-        // First create connections
-        for (PluginConfiguration plgConf : getPluginConfigurations(configuration)) {
-            try {
-                pluginService.savePluginConfiguration(plgConf);
-            } catch (EntityInvalidException | EncryptionException | EntityNotFoundException e) {
-                importErrors.add(e.getMessage());
-            }
-        }
-
-        for (DynamicTenantSetting setting : getSettings(configuration)) {
-            try {
-                dynamicTenantSettingService.update(setting.getName(), setting.getValue());
-            } catch (ModuleException e) {
-                importErrors.add(String.format("Configuration item not imported : Invalid Tenant Setting %s", setting));
-                LOGGER.error("Configuration item not imported : Invalid Tenant Setting {}", setting);
-            }
-        }
+        // First create connections and datasources
+        importErrors.addAll(importPluginConfigurations(pluginConfigurations));
 
         // Import datasets link to a previously configured datasource
-        importErrors.addAll(importDatasets(configuration.getConfiguration()));
+        importErrors.addAll(importDatasets(datasetConfigurations));
 
         return importErrors;
     }
 
+    private Set<String> importPluginConfigurations(Set<PluginConfiguration> pluginConfigurations) {
+        Set<String> errors = Sets.newHashSet();
+
+        for (PluginConfiguration plgConf : pluginConfigurations) {
+            try {
+                pluginService.savePluginConfiguration(plgConf);
+            } catch (EntityInvalidException | EncryptionException | EntityNotFoundException e) {
+                errors.add(e.getMessage());
+            }
+        }
+        return errors;
+    }
+
     @Override
-    public ModuleConfiguration exportConfiguration() {
-        List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
+    public ModuleConfiguration exportConfiguration(List<ModuleConfigurationItem<?>> configurations) {
 
         // export connections
         for (PluginConfiguration connection : pluginService.getPluginConfigurationsByType(IConnectionPlugin.class)) {
@@ -134,9 +126,6 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
         for (PluginConfiguration dataSource : pluginService.getPluginConfigurationsByType(IDataSourcePlugin.class)) {
             configurations.add(ModuleConfigurationItem.build(pluginService.prepareForExport(dataSource)));
         }
-        // export settings
-        dynamicTenantSettingService.readAll()
-                .forEach(setting -> configurations.add(ModuleConfigurationItem.build(setting)));
 
         // export datasets
         configurations.addAll(exportDatasets());
@@ -144,31 +133,10 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
         return ModuleConfiguration.build(info, configurations);
     }
 
-    /**
-     * Get all {@link PluginConfiguration}s of the {@link ModuleConfigurationItem}s
-     *
-     * @param configuration {@link ModuleConfiguration}s
-     * @return {@link PluginConfiguration}s
-     */
-    private Set<PluginConfiguration> getPluginConfigurations(ModuleConfiguration configuration) {
-        return configuration.getConfiguration().stream()
-                .filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
-                .map(i -> (PluginConfiguration) i.getTypedValue()).collect(Collectors.toSet());
-    }
-
-    private Set<DynamicTenantSetting> getSettings(ModuleConfiguration configuration) {
-        return configuration.getConfiguration().stream()
-                .filter(i -> DynamicTenantSetting.class.isAssignableFrom(i.getKey()))
-                .map(i -> (DynamicTenantSetting) i.getTypedValue()).collect(Collectors.toSet());
-    }
-
-    private Set<String> importDatasets(List<ModuleConfigurationItem<?>> items) {
+    private Set<String> importDatasets(Set<DatasetConfiguration> datasetConfigurations) {
         Set<String> errors = new HashSet<>();
-        List<DatasetConfiguration> confs = items.stream()
-                .filter(i -> DatasetConfiguration.class.isAssignableFrom(i.getKey()))
-                .map(i -> (DatasetConfiguration) i.getTypedValue()).collect(Collectors.toList());
 
-        for (DatasetConfiguration conf : confs) {
+        for (DatasetConfiguration conf : datasetConfigurations) {
             try {
                 // Validate conf
                 Errors validationErrors = new MapBindingResult(new HashMap<>(), Dataset.class.getName());
@@ -182,7 +150,8 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
                 // Retrieve datasource
                 PluginConfiguration datasource = pluginService.getPluginConfiguration(conf.getDatasource());
                 // Validate subsetting clause
-                if (!datasetService.validateOpenSearchSubsettingClause(UriUtils.encode(conf.getSubsetting(), "UTF-8"))) {
+                if (!datasetService.validateOpenSearchSubsettingClause(
+                        UriUtils.encode(conf.getSubsetting(), "UTF-8"))) {
                     String message = String.format("Cannot import dataset %s cause to an invalid subsetting clause %s",
                                                    conf.getFeature().getId(), conf.getSubsetting());
                     errors.add(message);
@@ -193,8 +162,8 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
                 createOrUpdateDataset(model, datasource, conf, validationErrors);
             } catch (ModuleException mex) {
                 LOGGER.error("Dataset import throw an exception", mex);
-                String message = String
-                        .format("Cannot import dataset %s : %s", conf.getFeature().getId(), mex.getMessage());
+                String message = String.format("Cannot import dataset %s : %s", conf.getFeature().getId(),
+                                               mex.getMessage());
                 errors.add(message);
             }
         }
@@ -218,9 +187,9 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
             Set<Dataset> datasets = datasetService.findAllByProviderId(conf.getFeature().getProviderId());
             if (!datasets.isEmpty()) {
                 if (datasets.size() > 1) {
-                    String message = String
-                            .format("Multiple datasets exist with this provider id : %s. Import cannot select right one! Please fulfil the id to precisely select it!",
-                                    conf.getFeature().getProviderId());
+                    String message = String.format(
+                            "Multiple datasets exist with this provider id : %s. Import cannot select right one! Please fulfil the id to precisely select it!",
+                            conf.getFeature().getProviderId());
                     throw new ModuleException(message);
                 } else {
                     existingOne = datasets.stream().findFirst();
@@ -266,4 +235,5 @@ public class DamConfigurationManager extends AbstractModuleManager<Void> {
         }
         return exportedDatasets;
     }
+
 }

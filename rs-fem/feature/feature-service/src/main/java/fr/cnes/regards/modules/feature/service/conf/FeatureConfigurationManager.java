@@ -18,18 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.service.conf;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractModuleManagerWithTenantSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,31 +35,14 @@ import java.util.Set;
  * @author Marc Sordi
  */
 @Component
-public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
+public class FeatureConfigurationManager extends AbstractModuleManagerWithTenantSettings<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureConfigurationManager.class);
 
-    private final DynamicTenantSettingService dynamicTenantSettingService;
-
-    public FeatureConfigurationManager(DynamicTenantSettingService dynamicTenantSettingService) {
-        this.dynamicTenantSettingService = dynamicTenantSettingService;
-    }
-
     @Override
-    protected Set<String> importConfiguration(ModuleConfiguration configuration) {
-
-        Set<String> importErrors = new HashSet<>();
-
+    protected Set<String> importConfiguration(ModuleConfiguration configuration, Set<String> importErrors) {
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
-            if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
-                DynamicTenantSetting setting = item.getTypedValue();
-                try {
-                    dynamicTenantSettingService.update(setting.getName(), setting.getValue());
-                } catch (ModuleException e) {
-                    importErrors.add(String.format("Configuration item not imported : Invalid Tenant Setting %s", setting));
-                    LOGGER.error("Configuration item not imported : Invalid Tenant Setting {}", setting);
-                }
-            } else {
+            if (!DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
                 String message = String.format(
                         "Configuration item of type %s has been ignored while import because it cannot be handled by %s. Module %s",
                         item.getKey(),
@@ -78,26 +57,8 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
     }
 
     @Override
-    public ModuleConfiguration exportConfiguration() {
-        List<ModuleConfigurationItem<?>> configuration = new ArrayList<>();
-        dynamicTenantSettingService.readAll()
-                .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
+    public ModuleConfiguration exportConfiguration(List<ModuleConfigurationItem<?>> configuration) {
         return ModuleConfiguration.build(info, true, configuration);
-    }
-
-    @Override
-    public Set<String> resetConfiguration() {
-        Set<String> errors = new HashSet<>();
-        try {
-            for (DynamicTenantSetting dynamicTenantSetting : dynamicTenantSettingService.readAll()) {
-                dynamicTenantSettingService.reset(dynamicTenantSetting.getName());
-            }
-        } catch (Exception e) {
-            String error = "Error occurred while resetting settings.";
-            LOGGER.error(error, e);
-            errors.add(error);
-        }
-        return errors;
     }
 
 }

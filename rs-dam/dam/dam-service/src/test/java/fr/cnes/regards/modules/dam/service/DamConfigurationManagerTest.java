@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -164,12 +165,12 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
         // Import configuration
         ModuleConfiguration conf = ModuleConfiguration
                 .build(configurationManager.getModuleInformation(), Lists.newArrayList(item));
-        Set<String> errors = configurationManager.importConfiguration(conf);
+        Set<String> errors = configurationManager.importConfiguration(conf, Sets.newHashSet());
         errors.forEach(error -> LOGGER.error(error));
         Assert.assertTrue("Error detected", errors.isEmpty());
 
         // Re-entrant import
-        errors = configurationManager.importConfiguration(conf);
+        errors = configurationManager.importConfiguration(conf, Sets.newHashSet());
         errors.forEach(error -> LOGGER.error(error));
         Assert.assertTrue("Error detected", errors.isEmpty());
 

@@ -18,15 +18,8 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +27,14 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Common module configuration manager
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
@@ -55,6 +51,19 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
 
     @Autowired
     private Validator validator;
+
+    /**
+     * Filter the list of {@link ModuleConfigurationItem} contained by {@link ModuleConfiguration}
+     * and returns all elements matching provided type
+     *
+     * @param configuration a {@link ModuleConfiguration}
+     * @param requiredType the class you look for
+     * @return a set containing only element matching type T
+     */
+    public <T> Set<T> getConfigurationSettingsByClass(ModuleConfiguration configuration, Class<T> requiredType) {
+        return configuration.getConfiguration().stream().filter(i -> requiredType.isAssignableFrom(i.getKey()))
+                .map(i -> requiredType.cast(i.getTypedValue())).collect(Collectors.toSet());
+    }
 
     @PostConstruct
     protected void init() throws ModuleException {
@@ -115,11 +124,12 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
             logger.warn(importError);
         }
         return new ModuleImportReport(info, importErrors,
-                importErrors.size() == configuration.getConfiguration().size());
+                                      importErrors.size() == configuration.getConfiguration().size());
     }
 
     /**
      * This method being called by {@link #importConfigurationAndLog(ModuleConfiguration)}, you do not need to logs import errors.
+     *
      * @return Errors for each configuration element that could not be imported
      */
     protected abstract Set<String> importConfiguration(ModuleConfiguration configuration);

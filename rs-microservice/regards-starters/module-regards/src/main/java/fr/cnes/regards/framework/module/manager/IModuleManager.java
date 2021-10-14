@@ -87,8 +87,6 @@ public interface IModuleManager<S> {
 
     /**
      * Reset current module configuration
-     * @param module
-     * @return
      */
     default Set<String> resetConfiguration() {
         return Sets.newHashSet();
