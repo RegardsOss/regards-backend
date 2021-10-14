@@ -20,12 +20,14 @@ package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
@@ -33,13 +35,18 @@ import fr.cnes.regards.modules.order.test.SearchClientMock;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,6 +85,12 @@ public class BasketServiceIT {
     @Autowired
     private IProjectsClient projectsClient;
 
+    @Autowired
+    private IOrderRepository orderRepository;
+
+    @Autowired
+    private ApplicationEventPublisher springPublisher;
+
     @MockBean
     private IProjectUsersClient projectUsersClient;
 
@@ -85,6 +98,7 @@ public class BasketServiceIT {
 
     @Before
     public void setUp() {
+        springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
         basketRepository.deleteAll();
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Mockito.when(authResolver.getUser()).thenReturn(USER_EMAIL);
@@ -101,6 +115,12 @@ public class BasketServiceIT {
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
     }
 
+    @After
+    public void cleanUp() {
+        orderRepository.deleteAll();
+        basketRepository.deleteAll();
+    }
+
     private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setEngineType("engine");
@@ -113,9 +133,6 @@ public class BasketServiceIT {
 
     /**
      * BECAUSE OF OffsetDateTime.now() used by BasketService, THIS TEST CLASS MUST DEFINE ONLY ONE TEST
-     * @throws EmptyBasketException
-     * @throws EmptySelectionException
-     * @throws InterruptedException
      */
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
@@ -146,15 +163,15 @@ public class BasketServiceIT {
             if (dsSel.getDatasetIpid().equals(DS1_IP_ID.toString())) {
                 Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(3_003_000l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(3_003_000L, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
             } else if (dsSel.getDatasetIpid().equals(DS2_IP_ID.toString())) {
                 Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(2_020_202l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(2_020_202L, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
             } else if (dsSel.getDatasetIpid().equals(DS3_IP_ID.toString())) {
                 Assert.assertEquals(4, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(1, dsSel.getObjectsCount());
-                Assert.assertEquals(1_010_101l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(1_010_101L, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
             } else {
                 Assert.fail("Unknown Dataset !!!");
             }
@@ -170,7 +187,7 @@ public class BasketServiceIT {
             if (dsSel.getDatasetIpid().equals(DS1_IP_ID.toString())) {
                 Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(3_003_000l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(3_003_000L, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
@@ -181,7 +198,7 @@ public class BasketServiceIT {
             } else if (dsSel.getDatasetIpid().equals(DS2_IP_ID.toString())) {
                 Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
-                Assert.assertEquals(2_020_202l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(2_020_202L, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
@@ -192,7 +209,7 @@ public class BasketServiceIT {
             } else if (dsSel.getDatasetIpid().equals(DS3_IP_ID.toString())) {
                 Assert.assertEquals(4, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
                 Assert.assertEquals(1, dsSel.getObjectsCount());
-                Assert.assertEquals(1_010_101l, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                Assert.assertEquals(1_010_101L, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)

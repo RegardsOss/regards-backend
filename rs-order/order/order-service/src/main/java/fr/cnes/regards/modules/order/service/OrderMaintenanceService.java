@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.settings.UserOrderParameters;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
@@ -144,7 +145,9 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
     @Override
     public void sendTenantPeriodicNotifications() {
 
-        List<Order> asideOrders = orderRepository.findAsideOrders(orderSettingsService.getUserOrderParameters().getDelayBeforeEmailNotification());
+        UserOrderParameters userOrderParameters = orderSettingsService.getUserOrderParameters();
+        int delayBeforeEmailNotification = userOrderParameters.getDelayBeforeEmailNotification();
+        List<Order> asideOrders = orderRepository.findAsideOrders(delayBeforeEmailNotification);
 
         Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
         asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
