@@ -149,12 +149,6 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
     @Autowired
     private StorageClientMock storageClient;
 
-    @Override
-    protected void doAfter() throws Exception {
-        // WARNING : clean context manually because Spring doesn't do it between tests
-        subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
-    }
-
     public void initData() {
         LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
         storageClient.setBehavior(true, true);

@@ -51,13 +51,16 @@ public interface ISubscriberContract {
      * Unsubscribe from this {@link ISubscribable} event.
      * @param <T> {@link ISubscribable} event
      * @param eventType {@link ISubscribable} event
+     * @param fast When true, do not wait for proper rabbit consumer stop. Only for test
      */
-    <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType);
+    <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType, boolean fast);
 
     /**
      * Unsubscribe handler from all events already subscribed
+     *
+     * @param fast When true, do not wait for proper rabbit consumer stop. Only for test
      */
-    void unsubscribeFromAll();
+    void unsubscribeFromAll(boolean fast);
 
     /**
      * Purge all queues based on registered handlers

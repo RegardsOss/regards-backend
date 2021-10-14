@@ -101,12 +101,6 @@ public class AIPServiceIT extends IngestMultitenantServiceTest {
     @Autowired
     private StorageClientMock storageClient;
 
-    @Override
-    protected void doAfter() throws Exception {
-        // WARNING : clean context manually because Spring doesn't do it between tests
-        subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
-    }
-
     @Test
     @Requirement("REGARDS_DSL_STO_AIP_110")
     @Requirement("REGARDS_DSL_STO_AIP_130")

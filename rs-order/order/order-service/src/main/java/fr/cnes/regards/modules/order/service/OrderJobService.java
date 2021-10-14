@@ -84,7 +84,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
 
     @PreDestroy
     public void beforeDestroy() {
-        subscriber.unsubscribeFrom(JobEvent.class);
+        subscriber.unsubscribeFrom(JobEvent.class, false);
     }
 
     @Override

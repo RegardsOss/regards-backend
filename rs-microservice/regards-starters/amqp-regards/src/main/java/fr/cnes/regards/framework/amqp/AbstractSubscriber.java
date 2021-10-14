@@ -135,7 +135,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     @Override
-    public void unsubscribeFromAll() {
+    public void unsubscribeFromAll(boolean fast) {
         LOGGER.info("Stopping all {} amqp listeners ...", handlerInstances.size());
         for (Map.Entry<Class<?>, Class<? extends ISubscribable>> handleEvent : handledEvents.entrySet()) {
             // Retrieve handler managing event to unsubscribe
@@ -147,14 +147,19 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             if (tenantContainers != null) {
                 // Stop listeners
                 for (SimpleMessageListenerContainer container : tenantContainers.values()) {
+                    if (fast) {
+                        // Force fast dying consumer, as they do not matter anymore
+                        container.setShutdownTimeout(5 / 1000);
+                    }
                     container.stop();
                 }
             }
+            LOGGER.info("END AMQP Subscriber : Unsubscribe from {}",handlerClass.getName());
         }
     }
 
     @Override
-    public <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType) {
+    public <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType, boolean fast) {
 
         LOGGER.info("Stopping all listeners for event {}", eventType.getName());
 
@@ -168,6 +173,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 if (tenantContainers != null) {
                     // Stop listeners
                     for (SimpleMessageListenerContainer container : tenantContainers.values()) {
+                        if (fast) {
+                            // Force fast dying consumer, as they do not matter anymore
+                            container.setShutdownTimeout(5/1000);
+                        }
                         container.stop();
                     }
                 }
@@ -197,9 +206,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     public void purgeAllQueues(String tenant) {
         if (virtualHostAdmin != null) {
             LOGGER.info("Purging queues for {} handlers", handlerInstances.size());
-            for (IHandler<?> handler : handlerInstances.values()) {
-                cleanAMQPQueue(handler, tenant);
-            }
+            handlerInstances.values().parallelStream()
+                    .forEach(handler -> cleanAMQPQueue(handler, tenant));
+            LOGGER.info("End purging queues for {} handlers", handlerInstances.size());
         }
     }
 
@@ -243,7 +252,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 queueName = amqpAdmin.getSubscriptionQueueName((Class<? extends IHandler<?>>) handler.getClass(), target);
             } else {
                 queueName = amqpAdmin.getUnicastQueueName(tenant, event, target);
-
             }
             LOGGER.info("Purging queue {} --> for {},{},{}", queueName, event.getName(),
                         target.toString(), mode.toString());

@@ -159,7 +159,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
      */
     private <E extends ISubscribable> void subOrNot(Class<E> eventType, IHandler<E> handler) {
         subscriber.subscribeTo(eventType, handler);
-        subscriber.unsubscribeFrom(eventType);
+        subscriber.unsubscribeFrom(eventType, true);
     }
 
     @Test

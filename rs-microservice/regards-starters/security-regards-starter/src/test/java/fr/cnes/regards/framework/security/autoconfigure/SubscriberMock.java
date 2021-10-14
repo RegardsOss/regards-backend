@@ -36,12 +36,12 @@ public class SubscriberMock implements ISubscriber {
     }
 
     @Override
-    public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
+    public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent, boolean fast) {
         // Nothing to do
     }
 
     @Override
-    public void unsubscribeFromAll() {
+    public void unsubscribeFromAll(boolean fast) {
         // Nothing to do
     }
 

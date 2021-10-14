@@ -167,7 +167,6 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
 
     @After
     public void after() throws Exception {
-        clearQueues();
         doAfter();
     }
 
@@ -184,16 +183,6 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
     //     AMQP
     // -------------
 
-    private void clearQueues() throws InterruptedException {
-        subscriber.unsubscribeFrom(SessionStepEvent.class);
-        subscriber.unsubscribeFrom(SessionDeleteEvent.class);
-        subscriber.unsubscribeFrom(SourceDeleteEvent.class);
-
-        cleanAMQPQueues(SessionManagerHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(SourceDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(SessionDeleteEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        Thread.sleep(5000L);
-    }
 
     /**
      * Internal method to clean AMQP queues, if actives

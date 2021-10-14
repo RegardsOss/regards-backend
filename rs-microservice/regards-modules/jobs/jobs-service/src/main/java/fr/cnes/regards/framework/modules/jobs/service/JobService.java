@@ -117,7 +117,7 @@ public class JobService implements IJobService {
      */
     @PreDestroy
     public void preDestroy() {
-        subscriber.unsubscribeFrom(StopJobEvent.class);
+        subscriber.unsubscribeFrom(StopJobEvent.class, false);
         LOGGER.info("Shutting down job thread pool...");
         // Avoid pulling new jobs
         canManage = false;

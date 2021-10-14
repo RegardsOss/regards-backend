@@ -94,7 +94,7 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
 
     @After
     public void afterMultitenantServiceTest() {
-        subscriber.unsubscribeFromAll();
+        subscriber.unsubscribeFromAll(true);
         subscriber.purgeAllQueues(getDefaultTenant());
     }
 

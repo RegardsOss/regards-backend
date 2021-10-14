@@ -28,11 +28,6 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +38,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test if the store workflow handles the creation of many files with the same checksum properly.
@@ -82,9 +83,6 @@ public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageTest {
     @Before
     public void initialize() throws ModuleException {
         LOGGER.info("----- Tests initialization -----");
-        // clean queues
-        subscriber.unsubscribeFromAll();
-        subscriber.purgeAllQueues(getDefaultTenant());
 
         // init
         super.init();

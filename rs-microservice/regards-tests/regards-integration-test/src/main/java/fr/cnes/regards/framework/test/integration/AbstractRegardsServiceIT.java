@@ -111,7 +111,7 @@ public abstract class AbstractRegardsServiceIT {
     @After
     public void afterITTest() {
         subscriber.purgeAllQueues(getDefaultTenant());
-        subscriber.unsubscribeFromAll();
+        subscriber.unsubscribeFromAll(true);
     }
 
     /**

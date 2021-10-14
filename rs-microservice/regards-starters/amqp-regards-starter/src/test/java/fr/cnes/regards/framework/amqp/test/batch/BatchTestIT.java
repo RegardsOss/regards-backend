@@ -101,7 +101,7 @@ public class BatchTestIT {
     @After
     public void after() {
         // Unsubscribe
-        subscriber.unsubscribeFrom(BatchedMessage.class);
+        subscriber.unsubscribeFrom(BatchedMessage.class, true);
 
         // Purge queue
         cleanAMQPQueues(BatchHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
