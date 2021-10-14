@@ -112,6 +112,13 @@ public interface IAmqpAdmin {
     void purgeQueue(String queueName, boolean noWait);
 
     /**
+     * Check if a queue has messages on it
+     * @param queueName the name of the queue
+     * @return true when the queue is empty
+     */
+    boolean isQueueEmpty(String queueName);
+
+    /**
      * Get queue properties
      * @param queueName queue name
      * @return properties

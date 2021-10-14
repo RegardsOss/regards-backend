@@ -358,6 +358,13 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         rabbitAdmin.purgeQueue(queueName, noWait);
     }
 
+
+    @Override
+    public boolean isQueueEmpty(String queueName) {
+        QueueInformation queueInfo = rabbitAdmin.getQueueInfo(queueName);
+        return queueInfo.getMessageCount() == 0;
+    }
+
     @Override
     public Properties getQueueProperties(String queueName) {
         return rabbitAdmin.getQueueProperties(queueName);
