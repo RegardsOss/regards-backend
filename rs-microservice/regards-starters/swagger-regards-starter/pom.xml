@@ -23,12 +23,12 @@
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>${regards.starters.version}</version>
+        <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>swagger-regards-starter</artifactId>
-    <version>${swagger.starter.version}</version>
+    <version>${revision}</version>
     <description>REGARDS Swagger starter</description>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

@@ -49,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>model</artifactId>
-		<version>${modules.model.version}</version>
+		<version>${revision}</version>
 	</parent>
 	
 	<dependencies>

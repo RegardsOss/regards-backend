@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>emails</artifactId>
-	<version>${modules.emails.version}</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module for sending emails through the system</description>
@@ -51,7 +51,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-oss-backend</artifactId>
-		<version>${regards.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -69,32 +69,32 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.emails</groupId>
 				<artifactId>emails-dao</artifactId>
-				<version>${modules.emails.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.emails</groupId>
 				<artifactId>emails-domain</artifactId>
-				<version>${modules.emails.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.emails</groupId>
 				<artifactId>emails-rest</artifactId>
-				<version>${modules.emails.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.emails</groupId>
 				<artifactId>emails-service</artifactId>
-				<version>${modules.emails.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.emails</groupId>
 				<artifactId>emails-client</artifactId>
-				<version>${modules.emails.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.emails</groupId>
 				<artifactId>emails-test</artifactId>
-				<version>${modules.emails.version}</version>
+				<version>${revision}</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>

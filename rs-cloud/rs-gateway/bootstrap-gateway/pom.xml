@@ -23,14 +23,14 @@
 
     <groupId>fr.cnes.regards.cloud</groupId>
     <artifactId>bootstrap-gateway</artifactId>
-    <version>${gateway.bootstrap.version}</version>
+    <version>${revision}</version>
 
     <description>REGARDS Cloud - Gateway server</description>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-boot-parent</artifactId>
-        <version>${regards.boot.parent.version}</version>
+        <version>${revision}</version>
         <relativePath>../../../rs-bom/regards-boot-parent</relativePath>
     </parent>
 

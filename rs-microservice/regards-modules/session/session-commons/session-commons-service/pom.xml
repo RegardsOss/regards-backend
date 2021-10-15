@@ -9,7 +9,7 @@
     <parent>
         <groupId>fr.cnes.regards.framework.modules.session</groupId>
         <artifactId>session-commons</artifactId>
-        <version>${framework.modules.session.version}</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

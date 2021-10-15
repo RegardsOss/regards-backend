@@ -22,7 +22,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>access-services</artifactId>
-	<version>${modules.access-services.version}</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module managing the UI plugins</description>
@@ -50,7 +50,7 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-oss-backend</artifactId>
-        <version>${regards.version}</version>
+        <version>${revision}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -60,32 +60,32 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>access-services-dao</artifactId>
-	            <version>${modules.access-services.version}</version>
+	            <version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>access-services-domain</artifactId>
-	            <version>${modules.access-services.version}</version>
+	            <version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>access-services-rest</artifactId>
-	            <version>${modules.access-services.version}</version>
+	            <version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>access-services-service</artifactId>
-	            <version>${modules.access-services.version}</version>
+	            <version>${revision}</version>
 			</dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules</groupId>
                 <artifactId>access-services-client</artifactId>
-	            <version>${modules.access-services.version}</version>
+	            <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights</groupId>
                 <artifactId>accessrights-client</artifactId>
-	            <version>${modules.access-services.version}</version>
+	            <version>${revision}</version>
             </dependency>
 		</dependencies>
 	</dependencyManagement>

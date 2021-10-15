@@ -24,13 +24,13 @@
     <groupId>fr.cnes.regards.framework.modules.session</groupId>
     <artifactId>session-manager</artifactId>
     <description>Session management module for the dashboard</description>
-    <version>${framework.modules.session.version}</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards.framework.modules</groupId>
         <artifactId>session</artifactId>
-        <version>${framework.modules.session.version}</version>
+        <version>${revision}</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -60,27 +60,27 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-manager-dao</artifactId>
-                <version>${framework.modules.session.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-manager-domain</artifactId>
-                <version>${framework.modules.session.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-manager-rest</artifactId>
-                <version>${framework.modules.session.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-manager-service</artifactId>
-                <version>${framework.modules.session.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-manager-client</artifactId>
-                <version>${framework.modules.session.version}</version>
+                <version>${revision}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

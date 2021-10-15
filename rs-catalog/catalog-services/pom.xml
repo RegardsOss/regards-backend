@@ -4,7 +4,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>catalog-services</artifactId>
-	<version>${modules.catalog-services.version}</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module managing the plugins/services applicable to the entities</description>
@@ -32,7 +32,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-oss-backend</artifactId>
-		<version>${regards.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -42,37 +42,37 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-dao</artifactId>
-				<version>${modules.catalog-services.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-domain</artifactId>
-				<version>${modules.catalog-services.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-rest</artifactId>
-				<version>${modules.catalog-services.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-service</artifactId>
-				<version>${modules.catalog-services.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-client</artifactId>
-				<version>${modules.catalog-services.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-plugin</artifactId>
-				<version>${modules.catalog-services.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-helper</artifactId>
-				<version>${modules.catalog-services.version}</version>
+				<version>${revision}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

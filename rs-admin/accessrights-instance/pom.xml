@@ -23,13 +23,13 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>accessrights-instance</artifactId>
-    <version>${modules.accessrights-instance.version}</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-oss-backend</artifactId>
-        <version>${regards.version}</version>
+        <version>${revision}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -60,27 +60,27 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-dao</artifactId>
-                <version>${modules.accessrights-instance.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-domain</artifactId>
-                <version>${modules.accessrights-instance.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-rest</artifactId>
-                <version>${modules.accessrights-instance.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-service</artifactId>
-                <version>${modules.accessrights-instance.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-client</artifactId>
-                <version>${modules.accessrights-instance.version}</version>
+                <version>${revision}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

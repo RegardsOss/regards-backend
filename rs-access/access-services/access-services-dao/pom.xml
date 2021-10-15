@@ -48,7 +48,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>access-services</artifactId>
-        <version>${modules.access-services.version}</version>
+        <version>${revision}</version>
 	</parent>
 
 	<dependencies>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
             <artifactId>uiconfiguration-dao</artifactId>
-            <version>${modules.uiconfiguration.version}</version>
+            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
 	</dependencies>

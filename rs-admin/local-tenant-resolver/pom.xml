@@ -23,12 +23,12 @@
 
 	<groupId>fr.cnes.regards.microservices.administration</groupId>
 	<artifactId>local-tenant-resolver</artifactId>
-	<version>${fr.cnes.regards.microservices.administration.local-tenant-resolver.version}</version>
+	<version>${revision}</version>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-oss-backend</artifactId>
-		<version>${regards.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -36,7 +36,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-service</artifactId>
-			<version>${modules.project.version}</version>
+			<version>${revision}</version>
 		</dependency>
 	</dependencies>
 

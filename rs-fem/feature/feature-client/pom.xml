@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>feature</artifactId>
-        <version>${modules.feature.version}</version>
+        <version>${revision}</version>
 	</parent>
 	<artifactId>feature-client</artifactId>
 	<groupId>fr.cnes.regards.modules.feature</groupId>

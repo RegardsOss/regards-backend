@@ -22,7 +22,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>regards-frontend-parent</artifactId>
-	<version>${regards.frontend.parent.version}</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Aggregates the frontend webapp</description>
@@ -50,7 +50,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-oss-backend</artifactId>
-		<version>${regards.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 

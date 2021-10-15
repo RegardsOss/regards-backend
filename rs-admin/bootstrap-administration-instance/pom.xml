@@ -23,12 +23,12 @@
 
 	<groupId>fr.cnes.regards.microservices.administration</groupId>
 	<artifactId>bootstrap-administration-instance</artifactId>
-	<version>${admin.instance.bootstrap.version}</version>
+	<version>${revision}</version>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>${regards.boot.parent.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../rs-bom/regards-boot-parent</relativePath>
 	</parent>
 

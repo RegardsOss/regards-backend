@@ -23,13 +23,13 @@
 
     <groupId>fr.cnes.regards.framework.modules</groupId>
     <artifactId>workspace</artifactId>
-    <version>${framework.modules.workspace.version}</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-oss-backend</artifactId>
-        <version>${regards.version}</version>
+        <version>${revision}</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
@@ -60,17 +60,17 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.workspace</groupId>
                 <artifactId>workspace-domain</artifactId>
-                <version>${framework.modules.workspace.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.workspace</groupId>
                 <artifactId>workspace-rest</artifactId>
-                <version>${framework.modules.workspace.version}</version>
+                <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.workspace</groupId>
                 <artifactId>workspace-service</artifactId>
-                <version>${framework.modules.workspace.version}</version>
+                <version>${revision}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

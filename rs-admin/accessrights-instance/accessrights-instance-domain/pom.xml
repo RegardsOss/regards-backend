@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>accessrights-instance</artifactId>
-		<version>${modules.accessrights-instance.version}</version>
+		<version>${revision}</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-domain</artifactId>
-			<version>${modules.project.version}</version>
+			<version>${revision}</version>
 		</dependency>
 		<!-- Test -->
 		<dependency>

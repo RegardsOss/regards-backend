@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>notification-instance</artifactId>
-	<version>${modules.notification-instance.version}</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -31,7 +31,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-oss-backend</artifactId>
-		<version>${regards.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -46,12 +46,12 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notification-instance</groupId>
 				<artifactId>notification-instance-rest</artifactId>
-				<version>${modules.notification-instance.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notification-instance</groupId>
 				<artifactId>notification-instance-service</artifactId>
-				<version>${modules.notification-instance.version}</version>
+				<version>${revision}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

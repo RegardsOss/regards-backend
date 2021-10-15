@@ -23,13 +23,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>proxy-starter</artifactId>
-	<version>${proxy.starter.version}</version>
+	<version>${revision}</version>
 	<description>REGARDS Proxy starter</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>${regards.starters.version}</version>
+		<version>${revision}</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

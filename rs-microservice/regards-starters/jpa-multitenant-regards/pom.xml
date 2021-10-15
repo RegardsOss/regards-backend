@@ -22,13 +22,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jpa-multitenant-regards</artifactId>
-    <version>${jpa.multitenant.starter.version}</version>
+    <version>${revision}</version>
     <description>REGARDS JPA multi tenant</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>${regards.starters.version}</version>
+        <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

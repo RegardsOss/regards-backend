@@ -28,7 +28,7 @@
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
         <artifactId>authentication</artifactId>
-        <version>${modules.authentication.version}</version>
+        <version>${revision}</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

@@ -23,12 +23,12 @@
 
     <groupId>fr.cnes.regards.framework.test</groupId>
     <artifactId>regards-integration-test</artifactId>
-    <version>${regards.integration.test.version}</version>
+    <version>${revision}</version>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-oss-backend</artifactId>
-        <version>${regards.version}</version>
+        <version>${revision}</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 

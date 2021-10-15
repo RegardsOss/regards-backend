@@ -14,12 +14,12 @@
 
     <groupId>${groupId}</groupId>
     <artifactId>${artifactId}</artifactId>
-    <version>$${${artifactId}.bootstrap.version}</version>
+    <version>$${revision}</version>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-boot-parent</artifactId>
-        <version>$${regards.boot.parent.version}</version>
+        <version>$${revision}</version>
         <relativePath>../../rs-bom/regards-boot-parent</relativePath>
     </parent>
 

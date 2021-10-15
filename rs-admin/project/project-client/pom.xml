@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>project</artifactId>
-		<version>${modules.project.version}</version>
+		<version>${revision}</version>
 	</parent>
 
 	<description>Client (Feign) layer of Project module</description>

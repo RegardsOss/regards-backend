@@ -22,7 +22,7 @@
 
     <groupId>fr.cnes.regards.microservices</groupId>
     <artifactId>worker-manager</artifactId>
-    <version>${regards.workermanager.version}</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <description>Microservice to dispatch amqp requests to workers by their content-type and available workers</description>
@@ -50,7 +50,7 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>${regards.aggregator.parent.version}</version>
+        <version>${revision}</version>
         <relativePath>../rs-bom/regards-aggregator-parent</relativePath>
     </parent>
 

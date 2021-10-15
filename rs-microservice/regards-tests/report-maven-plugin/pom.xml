@@ -24,7 +24,7 @@
 
 	<artifactId>report-maven-plugin</artifactId>
 	<groupId>fr.cnes.regards.microservices</groupId>
-	<version>${regards.report.plugin.version}</version>
+	<version>${revision}</version>
 
 	<packaging>maven-plugin</packaging>
 	<description>Maven plugin to aggregate all requirement reports</description>
@@ -32,7 +32,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-oss-backend</artifactId>
-		<version>${regards.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../../pom.xml</relativePath>
 	</parent>
 

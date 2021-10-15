@@ -28,7 +28,7 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>${regards.aggregator.parent.version}</version>
+        <version>${revision}</version>
         <relativePath>../../rs-bom/regards-aggregator-parent</relativePath>
     </parent>
 

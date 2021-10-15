@@ -22,14 +22,14 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-oss-backend</artifactId>
-        <version>${regards.version}</version>
+        <version>${revision}</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.framework.utils</groupId>
     <artifactId>spring-utils</artifactId>
-    <version>${spring.utils.version}</version>
+    <version>${revision}</version>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>

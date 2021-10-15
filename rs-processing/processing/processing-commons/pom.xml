@@ -7,7 +7,7 @@
     <parent>
         <artifactId>processing</artifactId>
         <groupId>fr.cnes.regards.modules</groupId>
-        <version>${modules.processing.version}</version>
+        <version>${revision}</version>
     </parent>
 
     <groupId>fr.cnes.regards.modules.processing</groupId>
@@ -18,6 +18,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${org.apache.maven.plugins.maven-enforcer-plugin.version}</version>
                 <configuration>
                     <rules>
                         <dependencyConvergence/>

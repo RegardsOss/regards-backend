@@ -23,14 +23,14 @@
 
     <groupId>fr.cnes.regards.microservices.authentication</groupId>
     <artifactId>bootstrap-authentication</artifactId>
-    <version>${authentication.bootstrap.version}</version>
+    <version>${revision}</version>
 
     <description>REGARDS Authentication bootstrap</description>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-boot-parent</artifactId>
-        <version>${regards.boot.parent.version}</version>
+        <version>${revision}</version>
         <relativePath>../../../rs-bom/regards-boot-parent</relativePath>
     </parent>
 

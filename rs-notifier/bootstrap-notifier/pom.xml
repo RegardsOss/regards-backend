@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices.notifier</groupId>
 	<artifactId>bootstrap-notifier</artifactId>
-	<version>${notifier.bootstrap.version}</version>
+	<version>${revision}</version>
 
 	<description>Boots the notifier microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -50,7 +50,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>${regards.boot.parent.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../rs-bom/regards-boot-parent</relativePath>
 	</parent>
 

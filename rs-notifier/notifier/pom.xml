@@ -15,7 +15,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>notifier</artifactId>
-	<version>${modules.notifier.version}</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Notification management module</description>
@@ -43,7 +43,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-oss-backend</artifactId>
-		<version>${regards.version}</version>
+		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
@@ -61,32 +61,32 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notifier</groupId>
 				<artifactId>notifier-dto</artifactId>
-				<version>${modules.notifier.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notifier</groupId>
 				<artifactId>notifier-domain</artifactId>
-				<version>${modules.notifier.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notifier</groupId>
 				<artifactId>notifier-service</artifactId>
-				<version>${modules.notifier.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
                 <groupId>fr.cnes.regards.modules.notifier</groupId>
                 <artifactId>notifier-rest</artifactId>
-				<version>${modules.notifier.version}</version>
+				<version>${revision}</version>
             </dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notifier</groupId>
 				<artifactId>notifier-dao</artifactId>
-				<version>${modules.notifier.version}</version>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notifier</groupId>
 				<artifactId>notifier-client</artifactId>
-				<version>${modules.notifier.version}</version>
+				<version>${revision}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

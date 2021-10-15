@@ -8,13 +8,13 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>${regards.aggregator.parent.version}</version>
+        <version>${revision}</version>
         <relativePath>../rs-bom/regards-aggregator-parent</relativePath>
     </parent>
 
     <groupId>fr.cnes.regards.microservices</groupId>
     <artifactId>rs-processing</artifactId>
-    <version>${modules.processing.version}</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <modules>

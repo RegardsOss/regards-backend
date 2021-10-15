@@ -48,7 +48,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>catalog-services</artifactId>
-		<version>${modules.catalog-services.version}</version>
+		<version>${revision}</version>
 	</parent>
 
 	<dependencies>

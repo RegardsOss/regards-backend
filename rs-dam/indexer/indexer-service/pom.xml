@@ -49,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>indexer</artifactId>
-		<version>${modules.indexer.version}</version>
+		<version>${revision}</version>
 	</parent>
 
 	<dependencies>

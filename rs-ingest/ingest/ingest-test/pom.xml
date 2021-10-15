@@ -27,7 +27,7 @@
 <parent>
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>ingest</artifactId>
-    <version>${modules.ingest.version}</version>
+    <version>${revision}</version>
 </parent>
 
 <dependencies>

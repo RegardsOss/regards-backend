@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>processing</artifactId>
-		<version>${modules.processing.version}</version>
+		<version>${revision}</version>
 	</parent>
 
 	<dependencies>

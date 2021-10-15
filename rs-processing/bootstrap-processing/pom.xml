@@ -23,12 +23,12 @@
 
     <groupId>fr.cnes.regards.microservices.processing</groupId>
     <artifactId>bootstrap-processing</artifactId>
-    <version>${processing.bootstrap.version}</version>
+    <version>${revision}</version>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-boot-parent</artifactId>
-        <version>${regards.boot.parent.version}</version>
+        <version>${revision}</version>
         <relativePath>../../rs-bom/regards-boot-parent/pom.xml</relativePath>
     </parent>
 
@@ -58,27 +58,27 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-spring-config</artifactId>
-            <version>${modules.processing.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-rest</artifactId>
-            <version>${modules.processing.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-order-processes</artifactId>
-            <version>${modules.processing.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-dao</artifactId>
-            <version>${modules.processing.version}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-engine-jobs</artifactId>
-            <version>${modules.processing.version}</version>
+            <version>${revision}</version>
         </dependency>
 
         <!-- Regards -->
@@ -123,7 +123,7 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-test</artifactId>
-            <version>${modules.processing.version}</version>
+            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -134,7 +134,7 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-client</artifactId>
-            <version>${modules.processing.version}</version>
+            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
 

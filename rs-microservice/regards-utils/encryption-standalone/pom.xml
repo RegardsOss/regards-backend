@@ -23,13 +23,13 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-oss-backend</artifactId>
-        <version>${regards.version}</version>
+        <version>${revision}</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <groupId>fr.cnes.regards.framework.utils</groupId>
     <artifactId>encryption-standalone</artifactId>
-    <version>${encryption.standalone.version}</version>
+    <version>${revision}</version>
     <description>executable tools to encrypt data using the microservices logic</description>
 
     <name>encryption-standalone</name>

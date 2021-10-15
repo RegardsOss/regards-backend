@@ -7,7 +7,7 @@
     <parent>
         <artifactId>processing</artifactId>
         <groupId>fr.cnes.regards.modules</groupId>
-        <version>${modules.processing.version}</version>
+        <version>${revision}</version>
     </parent>
 
     <groupId>fr.cnes.regards.modules.processing</groupId>

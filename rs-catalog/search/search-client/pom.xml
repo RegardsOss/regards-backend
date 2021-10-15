@@ -41,7 +41,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>search</artifactId>
-		<version>${modules.search.version}</version>
+		<version>${revision}</version>
 	</parent>
 
 	<dependencies>
