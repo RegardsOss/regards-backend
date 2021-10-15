@@ -250,33 +250,35 @@ public class BasketService implements IBasketService {
                     orderProcessInfoMapper.fromMap(processResponse.getBody().getProcessInfo()).getOrElseThrow(() -> new OrderProcessingService.UnparsableProcessInfoException(
                             String.format("Unparsable description info from process plugin with id %s", processBusinessId)));
 
-            // check if the number of items in the basket does not exceed maximum number of items configured
-            // by the process. The numberOfElementsToCheck is init to 0 by default in case there is no limit
-            // configured in the process
-            long numberOfElementsToCheck = 0L;
-            SortedSet<BasketDatedItemsSelection> selectedItemsInOrder = basketSelection.getItemsSelections();
-            SizeLimit sizeLimit = processInfo.getSizeLimit();
-            switch (sizeLimit.getType()) {
-                case FEATURES:
-                    numberOfElementsToCheck = selectedItemsInOrder.stream().map(BasketDatedItemsSelection::getObjectsCount).reduce(0, Integer::sum);
-                    break;
-                case FILES:
-                    numberOfElementsToCheck =
-                            selectedItemsInOrder.stream().map(item -> item.getFileTypesCount().values().stream().reduce(0L, Long::sum)).reduce(0L, Long::sum);
-                    break;
-                case BYTES:
-                    numberOfElementsToCheck =
-                            selectedItemsInOrder.stream().map(item -> item.getFileTypesSizes().values().stream().reduce(0L, Long::sum)).reduce(0L, Long::sum);
-                    break;
-                default:
-                    break;
-            }
-            if (numberOfElementsToCheck > processInfo.getSizeLimit().getLimit()) {
-                throw new TooManyItemsSelectedInBasketException(String.format("The number of selected \"%s\" in " +
-                                "the basket [%d] exceeds the maximum number of \"%s\" allowed [%d]. Please, decrease the " +
-                                "number of selected items or contact the administrator for more information.",
-                        sizeLimit.getType(), numberOfElementsToCheck, sizeLimit.getType(),
-                        processInfo.getSizeLimit().getLimit()));
+            // limit the number of items ordered only if forbidSplitInSuborders is active
+            if(processInfo.getForbidSplitInSuborders()) {
+                // check if the number of items in the basket does not exceed maximum number of items configured
+                // by the process. The numberOfElementsToCheck is init to 0 by default in case there is no limit
+                // configured in the process
+                long numberOfElementsToCheck = 0L;
+                SortedSet<BasketDatedItemsSelection> selectedItemsInOrder = basketSelection.getItemsSelections();
+                SizeLimit sizeLimit = processInfo.getSizeLimit();
+                switch (sizeLimit.getType()) {
+                    case FEATURES:
+                        numberOfElementsToCheck = selectedItemsInOrder.stream().map(BasketDatedItemsSelection::getObjectsCount).reduce(0, Integer::sum);
+                        break;
+                    case FILES:
+                        numberOfElementsToCheck =
+                                selectedItemsInOrder.stream().map(item -> item.getFileTypesCount().values().stream().reduce(0L, Long::sum)).reduce(0L, Long::sum);
+                        break;
+                    case BYTES:
+                        numberOfElementsToCheck =
+                                selectedItemsInOrder.stream().map(item -> item.getFileTypesSizes().values().stream().reduce(0L, Long::sum)).reduce(0L, Long::sum);
+                        break;
+                    default:
+                        break;
+                }
+                if (numberOfElementsToCheck > processInfo.getSizeLimit().getLimit()) {
+                    throw new TooManyItemsSelectedInBasketException(String.format("The number of selected \"%s\" in " +
+                                                                                          "the basket [%d] exceeds the maximum number of \"%s\" allowed [%d]. Please, decrease the " +
+                                                                                          "number of selected items or contact the administrator for more information.",
+                                                                                  sizeLimit.getType(), numberOfElementsToCheck, sizeLimit.getType(), processInfo.getSizeLimit().getLimit()));
+                }
             }
         }
     }

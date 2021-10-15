@@ -102,49 +102,49 @@ public class ProcessingClientMock implements IProcessingRestClient {
                         Cardinality.ONE_PER_EXECUTION,
                         List.of(DataType.RAWDATA),
                         new SizeLimit(SizeLimit.Type.FEATURES, 2L),
-                        new MultiplierResultSizeForecast(1d), Boolean.FALSE
+                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
                 )),
                 createProcessDTO(PROCESS_ID_FEATURES_5L, new OrderProcessInfo(
                         Scope.SUBORDER,
                         Cardinality.ONE_PER_EXECUTION,
                         List.of(DataType.RAWDATA),
                         new SizeLimit(SizeLimit.Type.FEATURES, 5L),
-                        new MultiplierResultSizeForecast(1d), Boolean.FALSE
+                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
                 )),
                 createProcessDTO(PROCESS_ID_BYTES_150L, new OrderProcessInfo(
                         Scope.SUBORDER,
                         Cardinality.ONE_PER_EXECUTION,
                         List.of(DataType.RAWDATA),
                         new SizeLimit(SizeLimit.Type.BYTES, 150L),
-                        new MultiplierResultSizeForecast(1d), Boolean.FALSE
+                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
                 )),
                 createProcessDTO(PROCESS_ID_BYTES_300000L, new OrderProcessInfo(
                         Scope.SUBORDER,
                         Cardinality.ONE_PER_EXECUTION,
                         List.of(DataType.RAWDATA),
                         new SizeLimit(SizeLimit.Type.BYTES, 300000L),
-                        new MultiplierResultSizeForecast(1d), Boolean.FALSE
+                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
                 )),
                 createProcessDTO(PROCESS_ID_FILES_10L, new OrderProcessInfo(
                         Scope.SUBORDER,
                         Cardinality.ONE_PER_EXECUTION,
                         List.of(DataType.RAWDATA),
                         new SizeLimit(SizeLimit.Type.FILES, 10L),
-                        new MultiplierResultSizeForecast(1d), Boolean.FALSE
+                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
                 )),
                 createProcessDTO(PROCESS_ID_FILES_20L, new OrderProcessInfo(
                         Scope.SUBORDER,
                         Cardinality.ONE_PER_EXECUTION,
                         List.of(DataType.RAWDATA),
                         new SizeLimit(SizeLimit.Type.FILES, 20L),
-                        new MultiplierResultSizeForecast(1d), Boolean.FALSE
+                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
                 )),
                 createProcessDTO(PROCESS_ID_NO_LIMIT, new OrderProcessInfo(
                         Scope.SUBORDER,
                         Cardinality.ONE_PER_EXECUTION,
                         List.of(DataType.RAWDATA),
                         new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
-                        new MultiplierResultSizeForecast(1d), Boolean.FALSE
+                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
                 )));
     }
 

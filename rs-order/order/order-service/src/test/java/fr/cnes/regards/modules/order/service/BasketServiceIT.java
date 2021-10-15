@@ -199,8 +199,6 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
        orderMaintenanceService.sendPeriodicNotifications();
     }
 
-
-
     @Test
     @Purpose("Test if the selection is in error when too many features are added")
     public void addOversizedSelectionTestForFeatures() throws EmptyBasketException, EmptySelectionException {
@@ -209,7 +207,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
                 Cardinality.ONE_PER_INPUT_FILE,
                 List.of(DataType.RAWDATA),
                 new SizeLimit(SizeLimit.Type.FEATURES, 2L),
-                new MultiplierResultSizeForecast(1d), Boolean.FALSE);
+                new MultiplierResultSizeForecast(1d), Boolean.TRUE);
         testSelectionOverProcessSizeLimit(orderProcessInfo, true);
     }
 
@@ -221,7 +219,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
                 Cardinality.ONE_PER_INPUT_FILE,
                 List.of(DataType.RAWDATA),
                 new SizeLimit(SizeLimit.Type.FILES, 16L),
-                new MultiplierResultSizeForecast(1d), Boolean.FALSE);
+                new MultiplierResultSizeForecast(1d), Boolean.TRUE);
         testSelectionOverProcessSizeLimit(orderProcessInfo, true);
     }
 
@@ -233,7 +231,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
                 Cardinality.ONE_PER_INPUT_FILE,
                 List.of(DataType.RAWDATA),
                 new SizeLimit(SizeLimit.Type.BYTES, 4040404L),
-                new MultiplierResultSizeForecast(1d), Boolean.FALSE);
+                new MultiplierResultSizeForecast(1d), Boolean.TRUE);
         testSelectionOverProcessSizeLimit(orderProcessInfo, true);
     }
 
@@ -246,7 +244,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
                 Cardinality.ONE_PER_INPUT_FILE,
                 List.of(DataType.RAWDATA),
                 new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
-                new MultiplierResultSizeForecast(1d), Boolean.FALSE);
+                new MultiplierResultSizeForecast(1d), Boolean.TRUE);
         testSelectionOverProcessSizeLimit(orderProcessInfo, false);
     }
 

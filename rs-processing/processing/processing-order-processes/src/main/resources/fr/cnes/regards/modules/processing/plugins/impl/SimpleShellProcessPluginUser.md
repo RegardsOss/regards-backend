@@ -23,7 +23,7 @@ However, the shell scripts must conform to the following conventions:
 ## Output to Input mapping policy
 
 If the cardinality parameter is set to "ONE_PER_EXECUTION", this plugin maps all the single output file to all the
-inputs. In this case, there is no constraint on the name of the output file.
+inputs. In this case, there is no constraints on the name of the output file.
 
 If the cardinality parameter is set to "ONE_PER_FEATURE", the single output file per feature must be present in a folder
 named `output/{featureIpId}` (corresponding to the input folder for this feature, which is named `input/{featureIpId}`).
@@ -31,7 +31,7 @@ named `output/{featureIpId}` (corresponding to the input folder for this feature
 If the cardinality parameter is set to "ONE_PER_INPUT_FILE", this plugin attempts to map all the output files to input
 files having the same name (except for the extension).
 
-## Forbid split in suborders
+### Maximum number of items in the basket
 
-If this parameter is active, the order will not be split into multiple suborders. Therefore, the maximum number
-"FEATURES" must be carefully calibrated to avoid a memory overload.
+If the "maximum number of items" and "forbid split into suborders" parameters are configured, the plugin will block the
+addition of products to the cart beyond the configured limit.
