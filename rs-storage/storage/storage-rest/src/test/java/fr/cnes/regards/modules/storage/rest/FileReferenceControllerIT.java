@@ -201,8 +201,9 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
 
     @After
     public void teardown() {
-        notificationEvents.set(0);
         subscriber.unsubscribeFrom(NotificationEvent.class, true);
+        subscriber.purgeQueue(NotificationEvent.class, FileReferenceControllerIT.class);
+        notificationEvents.set(0);
     }
 
     @Test
