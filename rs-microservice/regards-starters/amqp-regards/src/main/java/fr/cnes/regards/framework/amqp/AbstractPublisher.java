@@ -75,6 +75,8 @@ public abstract class AbstractPublisher implements IPublisherContract {
      */
     private final ConcurrentMap<String, ConcurrentMap<String, ExchangeAndRoutingKey>> exchangesAndRoutingKeysByEventPerTenant = new ConcurrentHashMap<>();
 
+    private final ConcurrentMap<String, ConcurrentMap<String, Boolean>> broadcastExchangesPerTenant = new ConcurrentHashMap<>();
+
     public AbstractPublisher(RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
         this.rabbitTemplate = rabbitTemplate;
@@ -181,37 +183,42 @@ public abstract class AbstractPublisher implements IPublisherContract {
                      priority,
                      queueName.orElse("None"));
 
-        String tenant = resolveTenant();
-        if (tenant == null) {
-            String errorMessage = String.format(NO_TENANT_MESSAGE_FORMAT, message.getClass(), tenant);
+        String currentTenant = resolveTenant();
+        if (currentTenant == null) {
+            String errorMessage = String.format(NO_TENANT_MESSAGE_FORMAT, message.getClass(), currentTenant);
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
 
         try {
             // Bind the connection to the right vhost
-            rabbitVirtualHostAdmin.bind(resolveVirtualHost(tenant));
+            rabbitVirtualHostAdmin.bind(resolveVirtualHost(currentTenant));
 
-            // Declare AMQP elements
+            ConcurrentMap<String, Boolean> exchanges = broadcastExchangesPerTenant.computeIfAbsent(currentTenant,
+                                                                                                newTenant -> new ConcurrentHashMap<>());
+            exchanges.computeIfAbsent(exchangeName , newExchangeName -> {
+                // Declare AMQP elements
 
-            // Declare exchange
-            Exchange exchange = ExchangeBuilder.fanoutExchange(exchangeName).durable(true).build();
-            rabbitAdmin.declareExchange(exchange);
+                // Declare exchange
+                Exchange exchange = ExchangeBuilder.fanoutExchange(newExchangeName).durable(true).build();
+                rabbitAdmin.declareExchange(exchange);
 
-            // Queue
-            if (queueName.isPresent()) {
-                Queue queue = QueueBuilder.durable(queueName.get()).maxPriority(RegardsAmqpAdmin.MAX_PRIORITY)
-                        .deadLetterExchange(amqpAdmin.getDefaultDLXName())
-                        .deadLetterRoutingKey(amqpAdmin.getDefaultDLQName()).build();
-                rabbitAdmin.declareQueue(queue);
+                // Queue
+                if (queueName.isPresent()) {
+                    Queue queue = QueueBuilder.durable(queueName.get()).maxPriority(RegardsAmqpAdmin.MAX_PRIORITY)
+                            .deadLetterExchange(amqpAdmin.getDefaultDLXName())
+                            .deadLetterRoutingKey(amqpAdmin.getDefaultDLQName()).build();
+                    rabbitAdmin.declareQueue(queue);
 
-                // Bind queue
-                Binding binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
-                rabbitAdmin.declareBinding(binding);
-            }
+                    // Bind queue
+                    Binding binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
+                    rabbitAdmin.declareBinding(binding);
+                }
+                return Boolean.TRUE;
+            });
 
             // Send message
-            publishMessageByTenant(tenant,
+            publishMessageByTenant(currentTenant,
                                    exchangeName,
                                    RegardsAmqpAdmin.DEFAULT_ROUTING_KEY,
                                    message,
