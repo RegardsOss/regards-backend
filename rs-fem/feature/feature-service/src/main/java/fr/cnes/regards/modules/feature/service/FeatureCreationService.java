@@ -143,7 +143,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         List<FeatureCreationRequest> grantedRequests = new ArrayList<>();
         RequestInfo<String> requestInfo = new RequestInfo<>();
-        Set<String> existingRequestIds = this.featureCreationRequestRepo.findRequestId();
+        // Only retrieve from database requestIds matching the events to check if requests already exists.
+        Set<String> existingRequestIds = this.featureCreationRequestRepo.findRequestIdByRequestIdIn(
+                events.stream().map(FeatureCreationRequestEvent::getRequestId).collect(Collectors.toList()));
 
         events.forEach(item -> prepareFeatureCreationRequest(item, grantedRequests, requestInfo, existingRequestIds));
         LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(), System.currentTimeMillis() - registrationStart);

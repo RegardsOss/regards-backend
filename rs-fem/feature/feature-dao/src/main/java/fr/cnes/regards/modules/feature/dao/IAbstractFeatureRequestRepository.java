@@ -29,6 +29,8 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     @Query("select distinct afr.requestId from AbstractFeatureRequest afr")
     Set<String> findRequestId();
 
+    Set<String> findRequestIdByRequestIdIn(List<String> requestIds);
+
     @Query("select f.urn as urn, f.providerId as providerId from FeatureEntity f, AbstractFeatureRequest r where r.urn in :urns and r.urn=f.urn")
     List<IProviderIdByUrn> findFeatureProviderIdFromRequestUrns(@Param("urns") List<FeatureUniformResourceName> urns);
 
