@@ -173,10 +173,16 @@ public final class PluginParameterUtils {
                                                   pluginParameter.unconfigurable(), pluginParameter.sensitive(),
                                                   pluginType);
 
-            // Manage markdown description
+            // Manage markdown description for administrators
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
             if ((markdown != null) && !markdown.isEmpty()) {
                 result.setMarkdown(markdown);
+            }
+
+            // Manage markdown description for users
+            String userMarkdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.userMarkdown());
+            if ((userMarkdown != null) && !userMarkdown.isEmpty()) {
+                result.setUserMarkdown(userMarkdown);
             }
 
             // Manage default value

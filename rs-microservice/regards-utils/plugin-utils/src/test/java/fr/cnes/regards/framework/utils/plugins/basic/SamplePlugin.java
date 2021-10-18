@@ -27,14 +27,17 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SamplePlugin
+ *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", markdown = "suffix.md", id = "aSamplePlugin", version = "0.0.1",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(description = "Sample plugin test", markdown = "suffix.md", userMarkdown = "suffixUser.md",
+        id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
+        owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SamplePlugin implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";
+
+    public static final String FIELD_NAME_SUFFIX_USER = "suffixUser";
 
     public static final String FIELD_NAME_COEF = "coef";
 
@@ -89,7 +92,7 @@ public class SamplePlugin implements ISamplePlugin {
     @PluginInit
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                + "|coeff:" + coef);
+                            + "|coeff:" + coef);
     }
 
 }

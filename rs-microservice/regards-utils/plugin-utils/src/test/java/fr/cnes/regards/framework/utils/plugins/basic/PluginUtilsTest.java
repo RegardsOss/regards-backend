@@ -93,6 +93,9 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
             if (SamplePlugin.FIELD_NAME_SUFFIX.equals(ptype.getName())) {
                 Assert.assertTrue(ptype.getMarkdown() != null && !ptype.getMarkdown().isEmpty());
             }
+            if (SamplePlugin.FIELD_NAME_SUFFIX_USER.equals(ptype.getName())) {
+                Assert.assertTrue(ptype.getUserMarkdown() != null && !ptype.getUserMarkdown().isEmpty());
+            }
         }
     }
 

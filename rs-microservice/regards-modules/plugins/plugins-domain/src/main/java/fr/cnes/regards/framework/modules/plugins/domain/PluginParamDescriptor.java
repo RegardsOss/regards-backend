@@ -55,9 +55,14 @@ public class PluginParamDescriptor {
     private String description;
 
     /**
-     * The parameter markdown description, an optional detailed human readable description.
+     * The parameter markdown description for REGARDS administrators, an optional detailed human readable description.
      */
     private String markdown;
+
+    /**
+     * The parameter markdown description for REGARDS users, an optional detailed human readable description.
+     */
+    private String userMarkdown;
 
     /**
      * Argument parameter types for parameterized types
@@ -117,18 +122,19 @@ public class PluginParamDescriptor {
         PluginParamDescriptor ppt = new PluginParamDescriptor();
 
         // Validate and set
-        Assert.hasText(name, "Name is required");
+        Assert.hasText(name, "One of the plugin parameter does not have a valid name attribute within its annotation.");
         ppt.setName(name);
 
-        Assert.hasText(label, "Label is required");
+        String errorMsg = "The plugin parameter with name \"%s\" does not have a valid attribute \"%s\" within its "
+                + "annotation";
+        Assert.hasText(label, String.format(errorMsg, name, "label"));
         ppt.setLabel(label);
-
         ppt.setDescription(description);
 
-        Assert.notNull(paramType, "Parameter type is required");
+        Assert.notNull(paramType,  String.format(errorMsg, name, "type"));
         ppt.setType(paramType);
 
-        Assert.notNull(optional, "Optional value is required");
+        Assert.notNull(optional,  String.format(errorMsg, name, "optional"));
         ppt.setOptional(optional);
 
         ppt.setUnconfigurable(onlyDynamic);
@@ -227,6 +233,14 @@ public class PluginParamDescriptor {
 
     public void setMarkdown(String markdown) {
         this.markdown = markdown;
+    }
+
+    public String getUserMarkdown() {
+        return userMarkdown;
+    }
+
+    public void setUserMarkdown(String userMarkdown) {
+        this.userMarkdown = userMarkdown;
     }
 
     public void setUnconfigurable(Boolean unconfigurable) {

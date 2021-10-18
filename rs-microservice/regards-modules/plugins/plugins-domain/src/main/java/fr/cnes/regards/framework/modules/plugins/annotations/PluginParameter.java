@@ -77,11 +77,20 @@ public @interface PluginParameter {
 
     /**
      * Markdown file reference ending with .md extension. If not, information is skipped! If set, file must be available
-     * in the
-     * same package as the plugin.<br/>
+     * in the same package as the plugin.<br/>
      * The system uses {@link Class#getResourceAsStream(String)} to load the file.
+     * The markdown is written for REGARDS administrators.
      */
     String markdown() default "";
+
+    /**
+     * Complementary markdown file reference ending with .md extension. The same way as markdown, if the file is not
+     * available information is skipped! If set, file must be available
+     * in the same package as the plugin.<br/>
+     * The system uses {@link Class#getResourceAsStream(String)} to load the file.
+     * The markdown is written for REGARDS users.
+     */
+    String userMarkdown() default "";
 
     /**
      * Plugin parameter default value.

@@ -209,9 +209,13 @@ public final class PluginUtils {
         // Init plugin metadata
         PluginMetaData pluginMetaData = new PluginMetaData(plugin);
 
-        // Manage markdown description
+        // Manage markdown description for admin
         String markdown = AnnotationUtils.loadMarkdown(pluginClass, plugin.markdown());
         pluginMetaData.setMarkdown(markdown);
+
+        // Manage markdown description for users
+        String userMarkdown = AnnotationUtils.loadMarkdown(pluginClass, plugin.userMarkdown());
+        pluginMetaData.setUserMarkdown(userMarkdown);
 
         pluginMetaData.setPluginClassName(pluginClass.getCanonicalName());
 

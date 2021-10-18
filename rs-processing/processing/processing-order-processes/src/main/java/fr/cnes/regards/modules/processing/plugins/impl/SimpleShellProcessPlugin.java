@@ -73,7 +73,7 @@ import static io.vavr.collection.List.ofAll;
 @Plugin(id = SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN, version = "1.0.0-SNAPSHOT",
         description = "Launch a shell script", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CSSI", url = "https://github.com/RegardsOss", markdown = "SimpleShellProcessPlugin.md",
-        markdownUser =  "SimpleShellProcessPluginUser.md")
+        userMarkdown =  "SimpleShellProcessPluginUser.md")
 public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAwareProcessPlugin {
 
     public static final String SIMPLE_SHELL_PROCESS_PLUGIN = "SimpleShellProcessPlugin";

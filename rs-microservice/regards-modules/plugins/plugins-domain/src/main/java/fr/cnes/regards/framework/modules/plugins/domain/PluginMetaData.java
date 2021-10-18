@@ -65,8 +65,14 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * The plugin markdown description, an optional detailed human readable description.
+     * This description is written for REGARDS administrators
      */
     private String markdown;
+
+    /**
+     * An optional complementary plugin description written for REGARDS users
+     */
+    private String userMarkdown;
 
     /**
      * An URL link to the web site of the plugin.
@@ -257,6 +263,14 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     public void setMarkdown(String markdown) {
         this.markdown = markdown;
+    }
+
+    public String getUserMarkdown() {
+        return userMarkdown;
+    }
+
+    public void setUserMarkdown(String userMarkdown) {
+        this.userMarkdown = userMarkdown;
     }
 
     @Override
