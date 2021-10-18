@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>accessrights-instance</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -53,37 +52,6 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
-                <artifactId>accessrights-instance-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
-                <artifactId>accessrights-instance-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
-                <artifactId>accessrights-instance-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
-                <artifactId>accessrights-instance-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
-                <artifactId>accessrights-instance-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <modules>
         <module>accessrights-instance-domain</module>

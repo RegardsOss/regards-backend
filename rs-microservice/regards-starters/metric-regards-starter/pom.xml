@@ -30,7 +30,6 @@
 	</parent>
 
 	<artifactId>metric-regards-starter</artifactId>
-	<version>${revision}</version>
 	<description>REGARDS metric starter</description>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

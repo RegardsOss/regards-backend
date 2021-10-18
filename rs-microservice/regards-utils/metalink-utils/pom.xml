@@ -20,7 +20,6 @@
 
     <groupId>fr.cnes.regards.framework.utils</groupId>
     <artifactId>metalink-utils</artifactId>
-    <version>${revision}</version>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2020</inceptionYear>

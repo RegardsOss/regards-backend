@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>indexer</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 	
 	<description>Module managing the indexation of data</description>
@@ -60,26 +59,5 @@
 		<module>indexer-dao</module>
 		<module>indexer-domain</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.indexer</groupId>
-				<artifactId>indexer-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.indexer</groupId>
-				<artifactId>indexer-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.indexer</groupId>
-				<artifactId>indexer-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	
 </project>

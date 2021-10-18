@@ -24,7 +24,6 @@
 
 	<artifactId>report-maven-plugin</artifactId>
 	<groupId>fr.cnes.regards.microservices</groupId>
-	<version>${revision}</version>
 
 	<packaging>maven-plugin</packaging>
 	<description>Maven plugin to aggregate all requirement reports</description>

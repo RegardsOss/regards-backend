@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.dam</groupId>
 	<artifactId>bootstrap-dam</artifactId>
-	<version>${revision}</version>
 
 	<description>Boots the DAM microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

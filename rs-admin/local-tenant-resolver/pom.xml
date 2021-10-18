@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.administration</groupId>
 	<artifactId>local-tenant-resolver</artifactId>
-	<version>${revision}</version>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
@@ -36,7 +35,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-service</artifactId>
-			<version>${revision}</version>
 		</dependency>
 	</dependencies>
 

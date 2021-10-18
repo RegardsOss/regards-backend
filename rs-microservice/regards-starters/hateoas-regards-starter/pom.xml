@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hateoas-regards-starter</artifactId>
-    <version>${revision}</version>
     <description>REGARDS HATEOAS starter</description>
 
     <parent>

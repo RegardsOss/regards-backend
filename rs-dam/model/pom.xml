@@ -24,7 +24,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>model</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Feature management module</description>
@@ -55,56 +54,6 @@
 		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-dto</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-gson</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-gson-helper</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.model</groupId>
-				<artifactId>model-validation</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<modules>
 		<module>model-dto</module>

@@ -24,7 +24,6 @@
     <groupId>fr.cnes.regards.framework.modules.session</groupId>
     <artifactId>session-commons</artifactId>
     <description>Commons module</description>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -53,22 +52,6 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
-                <artifactId>session-commons-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
-                <artifactId>session-commons-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <modules>
         <module>session-commons-domain</module>

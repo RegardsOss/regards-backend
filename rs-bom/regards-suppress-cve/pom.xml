@@ -30,7 +30,6 @@
 
 	<artifactId>regards-suppress-cve</artifactId>
 	<name>regards-suppress-cve</name>
-	<version>${revision}</version>
 
 	<description>Declares CVE suppression file for automatic check</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

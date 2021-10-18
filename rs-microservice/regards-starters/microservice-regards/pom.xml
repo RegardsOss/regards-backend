@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>microservice-regards</artifactId>
-    <version>${revision}</version>
     <description>REGARDS microservice</description>
 
     <parent>

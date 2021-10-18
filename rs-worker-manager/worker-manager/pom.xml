@@ -21,7 +21,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>worker-manager</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -56,32 +55,6 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>worker-manager-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>worker-manager-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>worker-manager-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>worker-manager-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
   <modules>
       <module>worker-manager-domain</module>

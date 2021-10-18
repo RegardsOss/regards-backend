@@ -22,7 +22,6 @@
 
     <groupId>fr.cnes.regards.microservices</groupId>
     <artifactId>worker-manager</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <description>Microservice to dispatch amqp requests to workers by their content-type and available workers</description>

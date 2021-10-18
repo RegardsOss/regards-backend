@@ -28,7 +28,6 @@
     </parent>
 
     <artifactId>security-regards-starter</artifactId>
-    <version>${revision}</version>
     <description>REGARDS security starter</description>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

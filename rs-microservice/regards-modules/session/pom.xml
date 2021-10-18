@@ -6,7 +6,6 @@
 
     <groupId>fr.cnes.regards.framework.modules</groupId>
     <artifactId>session</artifactId>
-    <version>${revision}</version>
     <description>Session agent and session management</description>
     <packaging>pom</packaging>
 
@@ -16,22 +15,6 @@
         <version>${revision}</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session</groupId>
-                <artifactId>session-agent</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session</groupId>
-                <artifactId>session-commons</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <modules>
         <module>session-agent</module>

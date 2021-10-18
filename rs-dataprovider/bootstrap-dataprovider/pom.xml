@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.dataprovider</groupId>
 	<artifactId>bootstrap-dataprovider</artifactId>
-	<version>${revision}</version>
 
 	<description>Boots the Data Provider microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

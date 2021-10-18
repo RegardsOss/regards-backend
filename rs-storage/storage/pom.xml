@@ -21,7 +21,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>storage</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -59,33 +58,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>storage-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>storage-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>storage-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>storage-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>storage-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
             <!-- Libraries -->
             <dependency>
                 <groupId>io.vavr</groupId>

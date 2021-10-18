@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.access</groupId>
 	<artifactId>bootstrap-access-instance-light</artifactId>
-    <version>${revision}</version>
 
 	<description>Boots the Access microservice with cross-tenant features without the toponyms server</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

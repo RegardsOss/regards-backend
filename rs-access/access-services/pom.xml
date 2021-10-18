@@ -22,7 +22,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>access-services</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module managing the UI plugins</description>
@@ -53,42 +52,6 @@
         <version>${revision}</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>access-services-dao</artifactId>
-	            <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>access-services-domain</artifactId>
-	            <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>access-services-rest</artifactId>
-	            <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules</groupId>
-				<artifactId>access-services-service</artifactId>
-	            <version>${revision}</version>
-			</dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules</groupId>
-                <artifactId>access-services-client</artifactId>
-	            <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.accessrights</groupId>
-                <artifactId>accessrights-client</artifactId>
-	            <version>${revision}</version>
-            </dependency>
-		</dependencies>
-	</dependencyManagement>
 
   <modules>
     <module>access-services-domain</module>

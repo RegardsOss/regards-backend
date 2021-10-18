@@ -21,7 +21,6 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>catalog</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Microservice providing data to the users through a searchable catalog</description>

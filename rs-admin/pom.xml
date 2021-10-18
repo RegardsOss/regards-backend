@@ -21,7 +21,6 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>administration</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Aggregator project for system's administration features</description>

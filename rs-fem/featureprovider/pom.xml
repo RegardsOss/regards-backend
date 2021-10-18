@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>featureprovider</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -53,37 +52,6 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.featureprovider</groupId>
-                <artifactId>featureprovider-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.featureprovider</groupId>
-                <artifactId>featureprovider-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.featureprovider</groupId>
-                <artifactId>featureprovider-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.featureprovider</groupId>
-                <artifactId>featureprovider-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.featureprovider</groupId>
-                <artifactId>featureprovider-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <modules>
         <module>featureprovider-domain</module>

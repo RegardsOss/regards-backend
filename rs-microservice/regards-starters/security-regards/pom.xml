@@ -27,9 +27,9 @@
 		<version>${revision}</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-
+	
+	<groupId>fr.cnes.regards.framework</groupId>
 	<artifactId>security-regards</artifactId>
-	<version>${revision}</version>
 	<description>REGARDS Security</description>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

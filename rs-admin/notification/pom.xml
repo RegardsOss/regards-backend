@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>notification</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module providing notifications from the system to the users</description>
@@ -61,25 +60,4 @@
 		<module>notification-rest</module>
 		<module>notification-service</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notification</groupId>
-				<artifactId>notification-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notification</groupId>
-				<artifactId>notification-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notification</groupId>
-				<artifactId>notification-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>

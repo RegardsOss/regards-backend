@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.framework.modules</groupId>
     <artifactId>plugins</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -61,35 +60,4 @@
         <module>plugins-rest</module>
         <module>plugins-service</module>
     </modules>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-                <artifactId>plugins-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-                <artifactId>plugins-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-                <artifactId>plugins-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-                <artifactId>plugins-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-                <artifactId>plugins-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 </project>

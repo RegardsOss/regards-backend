@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>authentication-regards-starter</artifactId>
-    <version>${revision}</version>
     <description>REGARDS authentication starter</description>
 
     <parent>

@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>geojson-docs</artifactId>
-    <version>${revision}</version>
     <description>GeoJson docs</description>
 
     <parent>

@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>processing</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -77,81 +76,6 @@
                 <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-commons</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-storage</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-domain-data</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-engine-core</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-engine-jobs</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-spring-config</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-order-commons</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-order-processes</artifactId>
-                <version>${revision}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-test</artifactId>
-                <version>${revision}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- Libraries -->

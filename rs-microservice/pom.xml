@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.microservices</groupId>
     <artifactId>rs-microservice</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>

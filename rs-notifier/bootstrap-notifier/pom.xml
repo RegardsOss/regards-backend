@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.notifier</groupId>
 	<artifactId>bootstrap-notifier</artifactId>
-	<version>${revision}</version>
 
 	<description>Boots the notifier microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

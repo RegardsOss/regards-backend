@@ -4,7 +4,6 @@
 
     <groupId>fr.cnes.regards.microservices.administration</groupId>
     <artifactId>remote-authorities-provider</artifactId>
-    <version>${revision}</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -25,7 +24,6 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>cloud-regards-starter</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -35,18 +33,15 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-regards</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>feign-regards-starter</artifactId>
-            <version>${revision}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.accessrights</groupId>
             <artifactId>accessrights-client</artifactId>
-            <version>${revision}</version>
         </dependency>
     </dependencies>
 </project>

@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>search</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module providing search features on the entities catalog</description>
@@ -62,36 +61,5 @@
 		<module>search-rest</module>
 		<module>search-service</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.search</groupId>
-				<artifactId>search-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.search</groupId>
-				<artifactId>search-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.search</groupId>
-				<artifactId>search-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.search</groupId>
-				<artifactId>search-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.search</groupId>
-				<artifactId>search-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 </project>

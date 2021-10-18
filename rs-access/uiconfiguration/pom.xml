@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>uiconfiguration</artifactId>
-    <version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module managing the configuration of UI, like application's theme or layout</description>
@@ -61,31 +60,6 @@
 		<module>uiconfiguration-service</module>
 		<module>uiconfiguration-rest</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>uiconfiguration-domain</artifactId>
-                <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>uiconfiguration-service</artifactId>
-                <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>uiconfiguration-dao</artifactId>
-                <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>uiconfiguration-rest</artifactId>
-                <version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<build>
 		<plugins>

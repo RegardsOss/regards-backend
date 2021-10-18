@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.fem</groupId>
 	<artifactId>bootstrap-fem</artifactId>
-	<version>${revision}</version>
 
 	<description>Boots the FEM microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

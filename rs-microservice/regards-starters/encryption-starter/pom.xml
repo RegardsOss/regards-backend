@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>encryption-starter</artifactId>
-    <version>${revision}</version>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

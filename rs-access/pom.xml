@@ -14,7 +14,6 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>access</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Microservice managing the UI of the system</description>

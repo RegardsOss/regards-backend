@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>authentication</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -42,38 +41,4 @@
         <module>authentication-service</module>
     </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.authentication</groupId>
-                <artifactId>authentication-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.authentication</groupId>
-                <artifactId>authentication-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.authentication</groupId>
-                <artifactId>authentication-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.authentication</groupId>
-                <artifactId>authentication-plugins</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.authentication</groupId>
-                <artifactId>authentication-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.authentication</groupId>
-                <artifactId>authentication-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 </project>

@@ -22,7 +22,6 @@
 
 	<groupId>fr.cnes.regards.microservices.order</groupId>
 	<artifactId>bootstrap-order</artifactId>
-	<version>${revision}</version>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>

@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>dam</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Microservice managing the systems's indexed data</description>

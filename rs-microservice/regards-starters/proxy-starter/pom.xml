@@ -23,7 +23,6 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>proxy-starter</artifactId>
-	<version>${revision}</version>
 	<description>REGARDS Proxy starter</description>
 
 	<parent>

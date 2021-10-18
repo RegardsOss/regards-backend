@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>toponyms</artifactId>
-    <version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module managing the geographical toponyms server</description>
@@ -62,31 +61,6 @@
 		<module>toponyms-rest</module>
 		<module>toponyms-client</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>topopnymes-domain</artifactId>
-                <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>topopnymes-service</artifactId>
-                <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>topopnymes-dao</artifactId>
-                <version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>topopnymes-rest</artifactId>
-                <version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<build>
 		<plugins>

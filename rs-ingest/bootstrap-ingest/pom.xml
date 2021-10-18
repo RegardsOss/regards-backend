@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.ingestion</groupId>
 	<artifactId>bootstrap-ingest</artifactId>
-	<version>${revision}</version>
 
 	<description>Boots the microservice Ingest</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

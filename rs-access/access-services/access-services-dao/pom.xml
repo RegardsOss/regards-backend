@@ -48,7 +48,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>access-services</artifactId>
-        <version>${revision}</version>
+		<version>${revision}</version>
 	</parent>
 
 	<dependencies>
@@ -68,11 +68,10 @@
 			<artifactId>jpa-multitenant-regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-            <artifactId>uiconfiguration-dao</artifactId>
-            <version>${revision}</version>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+				<artifactId>uiconfiguration-dao</artifactId>
+				<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

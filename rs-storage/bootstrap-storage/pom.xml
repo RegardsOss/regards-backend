@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.storage</groupId>
 	<artifactId>bootstrap-storage</artifactId>
-	<version>${revision}</version>
 
 	<description>Boots the STORAGE microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

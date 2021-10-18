@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.microservices.authentication</groupId>
     <artifactId>bootstrap-authentication</artifactId>
-    <version>${revision}</version>
 
     <description>REGARDS Authentication bootstrap</description>
 

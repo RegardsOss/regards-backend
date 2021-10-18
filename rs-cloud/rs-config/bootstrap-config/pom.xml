@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.cloud</groupId>
     <artifactId>bootstrap-config</artifactId>
-    <version>${revision}</version>
 
     <description>REGARDS Cloud - Configuration server</description>
 

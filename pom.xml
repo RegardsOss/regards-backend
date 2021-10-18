@@ -228,6 +228,16 @@
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
+				<groupId>fr.cnes.regards.framework.utils</groupId>
+				<artifactId>encryption-standalone</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.utils</groupId>
+				<artifactId>metalink-utils</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>feign-regards</artifactId>
 				<version>${revision}</version>
@@ -446,6 +456,16 @@
 				<artifactId>urn-regards-starter</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>microservice-regards-test</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>regards-test-aggregation</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- Test dependencies -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.test</groupId>
@@ -604,6 +624,11 @@
 				<artifactId>templates-dao</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+					<groupId>fr.cnes.regards.modules.templates</groupId>
+					<artifactId>templates-domain</artifactId>
+					<version>${revision}</version>
+			</dependency>
 			<!-- Tenant Setting -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
@@ -732,6 +757,16 @@
 				<artifactId>project-client</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.project</groupId>
+				<artifactId>project-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.project</groupId>
+				<artifactId>project-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
 
 			<!-- Datasource plugins -->
 			<dependency>
@@ -827,6 +862,11 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-plugins</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-client-it</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<!-- Model -->
@@ -943,6 +983,16 @@
 				<artifactId>crawler-rest</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.crawler</groupId>
+				<artifactId>crawler-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.crawler</groupId>
+				<artifactId>crawler-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
 
 			<!-- Indexer -->
 			<dependency>
@@ -1027,13 +1077,29 @@
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
+				<groupId>fr.cnes.regards.modules.access</groupId>
+				<artifactId>access-signature</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<!-- Access UI configuration -->
+			<dependency>
 				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>uiconfiguration-rest</artifactId>
+				<artifactId>uiconfiguration-domain</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
-				<groupId>fr.cnes.regards.modules.access</groupId>
-				<artifactId>access-signature</artifactId>
+				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+				<artifactId>uiconfiguration-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+				<artifactId>uiconfiguration-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+				<artifactId>uiconfiguration-rest</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<!-- Access - Access Services -->
@@ -1156,6 +1222,26 @@
 				<artifactId>toponyms-dao</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+				<artifactId>topopnymes-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+				<artifactId>topopnymes-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+				<artifactId>topopnymes-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
+				<artifactId>topopnymes-rest</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- Data provider -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.acquisition</groupId>
@@ -1175,6 +1261,11 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-plugins-ssalto</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.acquisition</groupId>
+				<artifactId>acquisition-dao</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
@@ -1227,9 +1318,20 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.emails</groupId>
+				<artifactId>emails-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.emails</groupId>
+				<artifactId>emails-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.emails</groupId>
 				<artifactId>emails-test</artifactId>
 				<version>${revision}</version>
 				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<!-- Metrics -->
 			<dependency>
@@ -1259,6 +1361,11 @@
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
+				<groupId>fr.cnes.regards.modules.notification</groupId>
+				<artifactId>notification-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>notification-regards-starter</artifactId>
 				<version>${revision}</version>
@@ -1272,6 +1379,11 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notifier</groupId>
 				<artifactId>notifier-rest</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.notifier</groupId>
+				<artifactId>notifier-service</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
@@ -1295,6 +1407,11 @@
 				<artifactId>notification-instance-rest</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.notification-instance</groupId>
+				<artifactId>notification-instance-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- Search -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.search</groupId>
@@ -1314,6 +1431,11 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.search</groupId>
 				<artifactId>search-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.search</groupId>
+				<artifactId>search-dao</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<!-- Catalog - Catalog Services -->
@@ -1342,6 +1464,16 @@
 				<artifactId>catalog-services-helper</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>catalog-services-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>catalog-services-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- OpenSearch -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.opensearch</groupId>
@@ -1364,6 +1496,21 @@
 				<artifactId>order-rest</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.order</groupId>
+				<artifactId>order-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.order</groupId>
+				<artifactId>order-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.order</groupId>
+				<artifactId>order-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- Ingest -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.ingest</groupId>
@@ -1383,6 +1530,16 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.ingest</groupId>
 				<artifactId>ingest-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ingest</groupId>
+				<artifactId>ingest-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ingest</groupId>
+				<artifactId>ingest-test</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<!-- Ingest AIP generation plugin -->
@@ -1413,6 +1570,72 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.processing</groupId>
 				<artifactId>processing-order-commons</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-commons</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-test</artifactId>
+				<version>${revision}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-storage</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-rest</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-engine-core</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-engine-jobs</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-engine-springbatch</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-spring-config</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-order-processes</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.processing</groupId>
+				<artifactId>processing-demo</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<!--WorkerManager -->
@@ -1851,6 +2074,26 @@
 			<dependency>
 				<groupId>fr.cnes.regards.microservices.ingestion</groupId>
 				<artifactId>bootstrap-ingest</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.microservices.ingestion</groupId>
+				<artifactId>bootstrap-fem</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.microservices.notifier</groupId>
+				<artifactId>bootstrap-notifier</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.microservices.processing</groupId>
+    		<artifactId>bootstrap-processing</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.microservices.workermanager</groupId>
+				<artifactId>bootstrap-worker-manager</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<dependency>

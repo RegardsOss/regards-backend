@@ -13,7 +13,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jsoniter-regards-starter</artifactId>
-    <version>${revision}</version>
 
     <dependencies>
         <dependency>

@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>acquisition</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module detecting data files, extracting meta data from them and generating SIP from them in order to passing them to ingest.</description>
@@ -54,37 +53,6 @@
 		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.acquisition</groupId>
-				<artifactId>acquisition-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.acquisition</groupId>
-				<artifactId>acquisition-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.acquisition</groupId>
-				<artifactId>acquisition-plugins-ssalto</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.acquisition</groupId>
-				<artifactId>acquisition-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.acquisition</groupId>
-				<artifactId>acquisition-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<modules>
 		<module>acquisition-domain</module>

@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.microservices.processing</groupId>
     <artifactId>bootstrap-processing</artifactId>
-    <version>${revision}</version>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
@@ -58,27 +57,22 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-spring-config</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-rest</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-order-processes</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-dao</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-engine-jobs</artifactId>
-            <version>${revision}</version>
         </dependency>
 
         <!-- Regards -->
@@ -123,7 +117,6 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-test</artifactId>
-            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -134,7 +127,6 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-client</artifactId>
-            <version>${revision}</version>
             <scope>test</scope>
         </dependency>
 

@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>crawler</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module crawling external datasources for data aspiration</description>
@@ -61,31 +60,5 @@
 		<module>crawler-dao</module>
 		<module>crawler-rest</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.crawler</groupId>
-				<artifactId>crawler-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.crawler</groupId>
-				<artifactId>crawler-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.crawler</groupId>
-				<artifactId>crawler-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.crawler</groupId>
-				<artifactId>crawler-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	
 </project>

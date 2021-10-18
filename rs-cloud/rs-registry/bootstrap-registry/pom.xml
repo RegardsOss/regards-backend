@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.cloud</groupId>
     <artifactId>bootstrap-registry</artifactId>
-    <version>${revision}</version>
 
     <description>REGARDS Cloud - Registry</description>
 

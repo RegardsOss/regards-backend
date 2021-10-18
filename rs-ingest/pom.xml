@@ -21,7 +21,6 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>ingest</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>OAIS submission (SIP) and archival (AIP) information package manager</description>

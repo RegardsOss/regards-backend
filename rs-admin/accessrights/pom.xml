@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>accessrights</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module for managing access right features</description>
@@ -62,35 +61,4 @@
 		<module>accessrights-service</module>
 		<module>accessrights-client</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.accessrights</groupId>
-				<artifactId>accessrights-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.accessrights</groupId>
-				<artifactId>accessrights-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.accessrights</groupId>
-				<artifactId>accessrights-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.accessrights</groupId>
-				<artifactId>accessrights-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.accessrights</groupId>
-				<artifactId>accessrights-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>

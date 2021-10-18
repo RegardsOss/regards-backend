@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>templates</artifactId>
-    <version>${revision}</version>
     <description>Module providing template features for mailing</description>
     <packaging>pom</packaging>
 
@@ -61,35 +60,4 @@
         <module>templates-rest</module>
         <module>templates-service</module>
     </modules>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.templates</groupId>
-                <artifactId>templates-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.templates</groupId>
-                <artifactId>templates-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.jobtemplatess</groupId>
-                <artifactId>templates-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.templates</groupId>
-                <artifactId>templates-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.templates</groupId>
-                <artifactId>templates-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 </project>

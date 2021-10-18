@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>project</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Module for managing the different projects/tenants of the system</description>
@@ -63,34 +62,4 @@
 		<module>project-service</module>
 	</modules>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.project</groupId>
-				<artifactId>project-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.project</groupId>
-				<artifactId>project-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.project</groupId>
-				<artifactId>project-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.project</groupId>
-				<artifactId>project-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.project</groupId>
-				<artifactId>project-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>

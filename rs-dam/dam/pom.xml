@@ -24,7 +24,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>dam</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Data management module</description>
@@ -70,45 +69,5 @@
 		<module>dam-accessrights-client</module>
 		<module>dam-client-it</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.dam</groupId>
-				<artifactId>dam-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.dam</groupId>
-				<artifactId>dam-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.dam</groupId>
-				<artifactId>dam-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.dam</groupId>
-				<artifactId>dam-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.dam</groupId>
-				<artifactId>dam-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.dam</groupId>
-				<artifactId>dam-gson</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.dam</groupId>
-				<artifactId>dam-plugins</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 </project>

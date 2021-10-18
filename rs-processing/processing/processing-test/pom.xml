@@ -50,7 +50,6 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>authentication-starter</artifactId>
-            <version>${revision}</version>
         </dependency>
 
 

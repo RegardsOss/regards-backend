@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.cloud</groupId>
     <artifactId>rs-cloud</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <properties>

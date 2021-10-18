@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>multitenant-regards-starter</artifactId>
-    <version>${revision}</version>
     <description>REGARDS multitenant starter</description>
 
     <parent>

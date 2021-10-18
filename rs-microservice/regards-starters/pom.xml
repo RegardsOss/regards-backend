@@ -22,7 +22,6 @@
 
     <groupId>fr.cnes.regards.framework</groupId>
     <artifactId>regards-starters</artifactId>
-    <version>${revision}</version>
     <description>REGARDS starters</description>
     <packaging>pom</packaging>
 

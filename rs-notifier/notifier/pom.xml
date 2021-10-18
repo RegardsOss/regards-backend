@@ -15,7 +15,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>notifier</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Notification management module</description>
@@ -55,41 +54,6 @@
 		<module>notifier-rest</module>
 		<module>notifier-client</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notifier</groupId>
-				<artifactId>notifier-dto</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notifier</groupId>
-				<artifactId>notifier-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notifier</groupId>
-				<artifactId>notifier-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-                <groupId>fr.cnes.regards.modules.notifier</groupId>
-                <artifactId>notifier-rest</artifactId>
-				<version>${revision}</version>
-            </dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notifier</groupId>
-				<artifactId>notifier-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.notifier</groupId>
-				<artifactId>notifier-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 </project>
 	

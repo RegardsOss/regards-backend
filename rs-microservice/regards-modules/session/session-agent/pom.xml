@@ -24,7 +24,6 @@
     <groupId>fr.cnes.regards.framework.modules.session</groupId>
     <artifactId>session-agent</artifactId>
     <description>Session agent for the dashboard</description>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -53,37 +52,6 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
-                <artifactId>session-agent-dao</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
-                <artifactId>session-agent-domain</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
-                <artifactId>session-agent-rest</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
-                <artifactId>session-agent-service</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
-                <artifactId>session-agent-client</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <modules>
         <module>session-agent-domain</module>

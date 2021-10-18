@@ -24,7 +24,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>feature</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<description>Feature management module</description>
@@ -64,41 +63,6 @@
 		<module>feature-rest</module>
 		<module>feature-client</module>
 	</modules>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.feature</groupId>
-				<artifactId>feature-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.feature</groupId>
-				<artifactId>feature-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.feature</groupId>
-				<artifactId>feature-dto</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.feature</groupId>
-				<artifactId>feature-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.feature</groupId>
-				<artifactId>feature-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.feature</groupId>
-				<artifactId>feature-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 </project>
 	

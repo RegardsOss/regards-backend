@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.microservices.workermanager</groupId>
 	<artifactId>bootstrap-worker-manager</artifactId>
-	<version>${revision}</version>
 
 	<description>Boots the STORAGE microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

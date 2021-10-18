@@ -69,7 +69,6 @@
         <dependency>
             <groupId>${groupId}</groupId>
             <artifactId>${rootArtifactId}-service</artifactId>
-            <version>$${revision}</version>
         </dependency>
         <!-- Test -->
         <dependency>

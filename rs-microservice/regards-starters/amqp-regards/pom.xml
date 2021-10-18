@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>amqp-regards</artifactId>
-    <version>${revision}</version>
     <description>REGARDS AMQP business module</description>
 
     <parent>

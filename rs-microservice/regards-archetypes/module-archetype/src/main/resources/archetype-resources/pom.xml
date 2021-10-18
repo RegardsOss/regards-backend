@@ -54,35 +54,4 @@
         </developer>
     </developers>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Module layers -->
-            <dependency>
-                <groupId>${groupId}</groupId>
-                <artifactId>${rootArtifactId}-dao</artifactId>
-                <version>$${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>${groupId}</groupId>
-                <artifactId>${rootArtifactId}-domain</artifactId>
-                <version>$${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>${groupId}</groupId>
-                <artifactId>${rootArtifactId}-rest</artifactId>
-                <version>$${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>${groupId}</groupId>
-                <artifactId>${rootArtifactId}-service</artifactId>
-                <version>$${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>${groupId}</groupId>
-                <artifactId>${rootArtifactId}-client</artifactId>
-                <version>$${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 </project>

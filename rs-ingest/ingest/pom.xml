@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>ingest</artifactId>
-	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -32,42 +31,6 @@
 		<version>${revision}</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.ingest</groupId>
-				<artifactId>ingest-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.ingest</groupId>
-				<artifactId>ingest-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.ingest</groupId>
-				<artifactId>ingest-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.ingest</groupId>
-				<artifactId>ingest-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.ingest</groupId>
-				<artifactId>ingest-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.ingest</groupId>
-				<artifactId>ingest-test</artifactId>
-				<version>${revision}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<modules>
 		<module>ingest-domain</module>

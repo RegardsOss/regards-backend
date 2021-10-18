@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jpa-data-regards</artifactId>
-    <version>${revision}</version>
     <description>REGARDS JPA data</description>
 
     <parent>

@@ -22,7 +22,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jpa-multitenant-regards-starter</artifactId>
-    <version>${revision}</version>
     <description>REGARDS Swagger starter</description>
 
     <parent>

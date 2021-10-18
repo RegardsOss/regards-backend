@@ -14,7 +14,6 @@
 
     <groupId>fr.cnes.regards.microservices</groupId>
     <artifactId>rs-processing</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <modules>
