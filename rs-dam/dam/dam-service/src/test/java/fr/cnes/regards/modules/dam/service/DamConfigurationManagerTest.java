@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -94,6 +95,9 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
     private MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
 
     @Autowired
+    protected JsoniterAttributeModelPropertyTypeFinder jsoniterAttributeFactory;
+
+    @Autowired
     private IDatasetRepository datasetRepository;
 
     @Autowired
@@ -126,6 +130,7 @@ public class DamConfigurationManagerTest extends AbstractMultitenantServiceTest 
         // Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
+        jsoniterAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // Import datasource
         datasourceConfiguration = PluginConfiguration.build("FakeDatasourcePlugin", "Test datasource", IPluginParam

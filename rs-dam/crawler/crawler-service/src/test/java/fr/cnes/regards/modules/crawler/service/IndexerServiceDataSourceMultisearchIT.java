@@ -66,6 +66,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServiceDataSourceIT {
 
@@ -122,8 +123,9 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         dsService.create(dataset3);
 
         crawlerService.waitForEndOfWork();
-        Thread.sleep(20_000);
-        // indexerService.refresh(tenant);
+        waitComputation(dataset1.getIpId(), "vcount", 30, TimeUnit.SECONDS, tenant);
+        waitComputation(dataset2.getIpId(), "vcount", 30, TimeUnit.SECONDS, tenant);
+        waitComputation(dataset3.getIpId(), "vcount", 30, TimeUnit.SECONDS, tenant);
 
         // Retrieve dataset1 from ES
         dataset1 = searchService.get(dataset1.getIpId());

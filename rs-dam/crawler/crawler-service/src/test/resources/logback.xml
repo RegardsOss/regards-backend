@@ -28,9 +28,7 @@
 		</encoder>
 	</appender>
 
-<!-- 	<logger name="org.springframework" level="INFO" />
-	<logger name="org.hibernate" level="INFO" />
- -->
+	<logger name="fr.cnes.regards.framework" level="INFO" />
 	<logger name="fr.cnes.regards.modules.dam" level="debug" />
 	<logger name="fr.cnes.regards.modules.crawler.service" level="INFO"/>
 	<logger name="fr.cnes.regards.modules.indexer" level="trace" />

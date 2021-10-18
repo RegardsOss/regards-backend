@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import org.assertj.core.util.Sets;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -114,6 +115,9 @@ public class DatasetControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
+
+    @Autowired
+    protected JsoniterAttributeModelPropertyTypeFinder jsoniterAttributeFactory;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -366,6 +370,7 @@ public class DatasetControllerIT extends AbstractRegardsIT {
             modelService.importModel(input);
             final List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
             gsonAttributeFactory.refresh(getDefaultTenant(), atts);
+            jsoniterAttributeFactory.refresh(getDefaultTenant(), atts);
         } catch (final IOException e) {
             final String errorMessage = "Cannot import " + pFilename;
             throw new AssertionError(errorMessage);

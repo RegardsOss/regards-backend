@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -83,6 +84,9 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
      */
     @Autowired
     private MultitenantFlattenedAttributeAdapterFactory attributeAdapterFactory;
+
+    @Autowired
+    protected JsoniterAttributeModelPropertyTypeFinder jsoniterAttributeFactory;
 
     /**
      * {@link IAttributeModelService} service
@@ -166,6 +170,7 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
 
         final List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         attributeAdapterFactory.refresh(getDefaultTenant(), atts);
+        jsoniterAttributeFactory.refresh(getDefaultTenant(), atts);
     }
 
     @Before

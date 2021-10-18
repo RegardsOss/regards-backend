@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePlugin;
@@ -52,6 +53,7 @@ import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFa
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactoryEventHandler;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -68,12 +70,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
@@ -248,6 +252,18 @@ public abstract class AbstractIndexerServiceDataSourceIT {
         attrModelRepo.deleteAll();
         modelRepository.deleteAll();
         fragRepo.deleteAll();
+    }
+
+    protected void waitComputation(final UniformResourceName entityId, final String propertyName, long timeout, TimeUnit unit,String tenant) {
+        Awaitility.await().atMost(timeout, unit)
+                .until(() -> {
+                    runtimeTenantResolver.forceTenant(tenant);
+                    Dataset entity = searchService.get(entityId);
+                    return entity != null
+                        && entity.getProperties() != null
+                        && !entity.getProperties().isEmpty()
+                        && entity.getProperties().stream().filter(p -> p.getName().equals(propertyName)).findAny().isPresent();
+                });
     }
 
     private PluginConfiguration getPostgresDataSource() {

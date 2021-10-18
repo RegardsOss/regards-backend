@@ -155,6 +155,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         // - Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
+        jsoniterAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
         List<EntityModel<AttributeModel>> resAtts = new ArrayList<>();

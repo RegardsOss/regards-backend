@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -76,6 +77,10 @@ public class CollectionValidationIT extends AbstractRegardsTransactionalIT {
     private MultitenantFlattenedAttributeAdapterFactory attributeAdapterFactory;
 
     @Autowired
+    protected JsoniterAttributeModelPropertyTypeFinder jsoniterAttributeFactory;
+
+
+    @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
     /**
@@ -96,6 +101,7 @@ public class CollectionValidationIT extends AbstractRegardsTransactionalIT {
 
         final List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         attributeAdapterFactory.refresh(getDefaultTenant(), atts);
+        jsoniterAttributeFactory.refresh(getDefaultTenant(), atts);
     }
 
     /**

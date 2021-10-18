@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.dam.service.entities.gson.feature;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,6 +83,9 @@ public class EntityFeatureSerializationTests extends AbstractMultitenantServiceT
     protected MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
 
     @Autowired
+    protected JsoniterAttributeModelPropertyTypeFinder jsoniterAttributeFactory;
+
+    @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
@@ -99,6 +103,7 @@ public class EntityFeatureSerializationTests extends AbstractMultitenantServiceT
         // - Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
+        jsoniterAttributeFactory.refresh(getDefaultTenant(), atts);
     }
 
     @Test
