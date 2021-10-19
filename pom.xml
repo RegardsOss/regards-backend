@@ -388,6 +388,11 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.utils</groupId>
+				<artifactId>attribute-factory</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.utils</groupId>
 				<artifactId>spring-utils</artifactId>
 				<version>${revision}</version>
 			</dependency>

@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.model;
+package fr.cnes.regards.framework.utils.model;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Cette interface permet d'abstraire la relation d'une entite avec la valeur d'un attribut qui la compose.
@@ -78,11 +78,11 @@ public class Attribute {
     /**
      * Ajoute une valeur a l'attribut. La classe de l'objet en entree doit correspondre avec la classe de l'attribut.
      *
-     * @param pValue
+     * @param value
      *            La nouvelle valeur de l'attribut.
      */
-    public void addValue(Object pValue) {
-        valueList.add(pValue);
+    public void addValue(Object value) {
+        valueList.add(value);
     }
 
     /**
@@ -93,23 +93,23 @@ public class Attribute {
     }
 
     /**
-     * @param pAttribute positionne
+     * @param attribute positionne
      *            le méta attribut
      */
-    public void setMetaAttribute(MetaAttribute pAttribute) {
-        metaAttribute = pAttribute;
+    public void setMetaAttribute(MetaAttribute attribute) {
+        metaAttribute = attribute;
     }
 
     /**
      * Cette methode permet de ajouter le nom du meta-attribut definissant l'attribut non-standard. La methode est
      * utilisee lors de l'ingestion. Cette methode ne fonctionnera pas sur un plate-forme Windows.
      *
-     * @param pString
+     * @param string
      *            Le chemin xml contenant le nom de l'attribut non-standard.
      */
-    public void setMetaAttribute(String pString) {
+    public void setMetaAttribute(String string) {
         // processing path "XXXXX/XXXXX/XXXXX/FINAL" to get only final name "FINAL"
-        File file = new File(pString);
+        File file = new File(string);
         metaAttribute.setName(file.getName());
     }
 
@@ -117,19 +117,19 @@ public class Attribute {
      * Cette methode permet de mettre a jour le nom du meta-attribut definissant l'objet attribut. Cette methode est
      * utilisee lors de la lecture des fichiers descriptor.
      *
-     * @param pString
+     * @param string
      *            Le nom du meta-attribut.
      */
-    public void setMetaAttributeName(String pString) {
-        metaAttribute.setName(pString);
+    public void setMetaAttributeName(String string) {
+        metaAttribute.setName(string);
     }
 
     public CompositeAttribute getCompositeAttribute() {
         return this.compositeAttribute;
     }
 
-    public void setCompositeAttribute(CompositeAttribute pCompositeAttribute) {
-        this.compositeAttribute = pCompositeAttribute;
+    public void setCompositeAttribute(CompositeAttribute compositeAttribute) {
+        this.compositeAttribute = compositeAttribute;
     }
 
     /**
@@ -182,11 +182,11 @@ public class Attribute {
     /**
      * Set method.
      *
-     * @param pValueList
+     * @param valueList
      *            the valueList to set
      */
     @SuppressWarnings("unchecked")
-    public void setValueList(List<?> pValueList) {
-        valueList = (List<Object>) pValueList;
+    public void setValueList(List<?> valueList) {
+        this.valueList = (List<Object>) valueList;
     }
 }

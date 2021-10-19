@@ -16,37 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.model;
+package fr.cnes.regards.framework.utils.model;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.Date;
-
-import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
- * Cette classe represente une date dont la precision est a la milliseconde
+ * Cette classe represente un attribut de type chaine de caracteres
  * 
  * @author Christophe Mertz
  *
  */
-public class DateTimeAttribute extends Attribute {
+public class StringAttribute extends Attribute {
 
     /**
      * Constructor
      */
-    public DateTimeAttribute() {
-        super(new MetaAttribute(AttributeTypeEnum.TYPE_DATE_TIME));
-    }
-
-    /**
-     * Ajoute une valeur a l'attribut La classe de l'objet en entree doit correspondre avec la classe de l'attribut
-     * 
-     * @param value
-     *            La nouvelle valeur de l'attribut
-     */
-    public void addValue(Long value) {
-        Date date = new Date(value);
-        super.addValue(OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")));
+    public StringAttribute() {
+        super(new MetaAttribute(AttributeTypeEnum.TYPE_STRING));
     }
 }

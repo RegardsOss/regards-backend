@@ -26,6 +26,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
+import fr.cnes.regards.framework.utils.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +38,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
-import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
-import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.domain.model.DateTimeAttribute;
-import fr.cnes.regards.modules.acquisition.domain.model.GeoAttribute;
-import fr.cnes.regards.modules.acquisition.domain.model.LongAttribute;
-import fr.cnes.regards.modules.acquisition.domain.model.StringAttribute;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 

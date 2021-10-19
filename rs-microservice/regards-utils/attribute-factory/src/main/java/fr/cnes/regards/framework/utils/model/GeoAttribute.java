@@ -16,9 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.model;
+package fr.cnes.regards.framework.utils.model;
 
-import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Classe de gestion des attributs de type geographiques

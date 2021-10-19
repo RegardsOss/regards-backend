@@ -23,8 +23,8 @@ import java.util.SortedMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.utils.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
 
 /**
  * This plugin is used for generating product SIP on a legacy context (SIPAD-NG SSALTO feature)

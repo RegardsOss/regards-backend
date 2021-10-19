@@ -16,22 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.model;
+package fr.cnes.regards.framework.utils.exceptions;
 
-import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
+public class AttributeFactoryException extends Exception {
 
-/**
- * Cette classe represente un attribut de type chaine de caracteres
- * 
- * @author Christophe Mertz
- *
- */
-public class StringAttribute extends Attribute {
-
-    /**
-     * Constructor
-     */
-    public StringAttribute() {
-        super(new MetaAttribute(AttributeTypeEnum.TYPE_STRING));
-    }
 }

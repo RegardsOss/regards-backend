@@ -16,14 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.metamodel;
+package fr.cnes.regards.framework.utils.metamodel;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.acquisition.domain.model.Attribute;
-import fr.cnes.regards.modules.acquisition.domain.model.AttributeTypeEnum;
-import fr.cnes.regards.modules.acquisition.exception.DomainMetaModelException;
-import fr.cnes.regards.modules.acquisition.exception.DomainModelException;
+import fr.cnes.regards.framework.utils.exceptions.AttributeFactoryException;
+import fr.cnes.regards.framework.utils.model.Attribute;
+import fr.cnes.regards.framework.utils.model.AttributeTypeEnum;
 
 /**
  * Cette classe modelise la notion de MetaAttribut. Un MetaAttribut correspond a une definition de type d'attribut.
@@ -70,24 +69,24 @@ public class MetaAttribute {
     /**
      * Constructor
      * 
-     * @param pType
+     * @param type
      *            le type du meta attribut
      */
-    public MetaAttribute(AttributeTypeEnum pType) {
-        valueType = pType;
+    public MetaAttribute(AttributeTypeEnum type) {
+        valueType = type;
     }
 
     /**
      * Constructor
      * 
-     * @param pName
+     * @param name
      *            Nom ou identifiant du meta-attribut.
-     * @param pType
+     * @param type
      *            Classe de la valeur du meta-attribut.
      */
-    public MetaAttribute(String pName, AttributeTypeEnum pType) {
-        name = pName;
-        valueType = pType;
+    public MetaAttribute(String name, AttributeTypeEnum type) {
+        this.name = name;
+        valueType = type;
     }
 
     public String getName() {
@@ -98,23 +97,23 @@ public class MetaAttribute {
         return valueType;
     }
 
-    public void setName(String pString) {
-        name = pString;
+    public void setName(String string) {
+        name = string;
     }
 
-    public void setValueType(AttributeTypeEnum pEnum) {
-        valueType = pEnum;
+    public void setValueType(AttributeTypeEnum valueType) {
+        this.valueType = valueType;
     }
 
-    public void setValueType(String pEnum) throws DomainModelException {
-        valueType = AttributeTypeEnum.parse(pEnum);
+    public void setValueType(String valueType) {
+        this.valueType = AttributeTypeEnum.parse(valueType);
     }
 
     public CalculationFunctionTypeEnum getComputationRule() {
         return computationRule;
     }
 
-    public void setComputationRule(String strCalculation) throws DomainMetaModelException {
+    public void setComputationRule(String strCalculation) {
         computationRule = CalculationFunctionTypeEnum.fromString(strCalculation);
     }
 
@@ -122,15 +121,15 @@ public class MetaAttribute {
         return distinctValues;
     }
 
-    public void setDistinctValues(List<Attribute> pDistinctValues) {
-        distinctValues = pDistinctValues;
+    public void setDistinctValues(List<Attribute> distinctValues) {
+        this.distinctValues = distinctValues;
     }
 
     @Override
-    public boolean equals(Object pToBeCompared) {
+    public boolean equals(Object toBeCompared) {
         boolean ret = false;
-        if (pToBeCompared instanceof MetaAttribute) {
-            MetaAttribute att2 = (MetaAttribute) pToBeCompared;
+        if (toBeCompared instanceof MetaAttribute) {
+            MetaAttribute att2 = (MetaAttribute) toBeCompared;
             if (att2.getName().equals(getName()) && (att2.getValueType() == getValueType())) {
                 ret = true;
             }

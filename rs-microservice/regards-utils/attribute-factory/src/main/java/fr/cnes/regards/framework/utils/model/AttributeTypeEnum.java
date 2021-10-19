@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.model;
+package fr.cnes.regards.framework.utils.model;
 
 /**
  *
@@ -46,18 +46,18 @@ public enum AttributeTypeEnum {
      *
      * Constructeur
      *
-     * @param pTypeName
+     * @param typeName
      *            le nom du type
      */
-    private AttributeTypeEnum(String pTypeName) {
-        typeName = pTypeName;
+    private AttributeTypeEnum(String typeName) {
+        this.typeName = typeName;
     }
 
-    public static AttributeTypeEnum parse(String pTypeName) {
+    public static AttributeTypeEnum parse(String typeName) {
         AttributeTypeEnum type = TYPE_UNKNOWN;
         AttributeTypeEnum[] vals = AttributeTypeEnum.values();
         for (int i = 0; i < vals.length && type.equals(TYPE_UNKNOWN); i++) {
-            if (pTypeName.equals(vals[i].getTypeName())) {
+            if (typeName.equals(vals[i].getTypeName())) {
                 type = vals[i];
             }
         }

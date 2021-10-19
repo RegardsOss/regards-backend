@@ -16,22 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.model;
+package fr.cnes.regards.framework.utils.model;
 
-import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
- * Cette classe represente un attribut de type Entier.
+ * Cette classe permet de gerer les attributs de type CLOB, et LONG_STRING
  * 
  * @author Christophe Mertz
- *
  */
-public class LongAttribute extends Attribute {
+
+public class ClobAttribute extends Attribute {
 
     /**
-     * Constructor
+     * Constructeur.
      */
-    public LongAttribute() {
-        super(new MetaAttribute(AttributeTypeEnum.TYPE_INTEGER));
+    public ClobAttribute() {
+        super(new MetaAttribute(AttributeTypeEnum.TYPE_LONG_STRING));
     }
 }

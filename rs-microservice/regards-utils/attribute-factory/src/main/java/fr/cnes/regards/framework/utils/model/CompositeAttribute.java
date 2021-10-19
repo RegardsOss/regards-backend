@@ -16,12 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.domain.model;
+package fr.cnes.regards.framework.utils.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Cette classe represente un bloc d'attributs: c'est à dire une instance d'atribut compose. Un attribut compose peut
@@ -60,26 +60,26 @@ public class CompositeAttribute extends Attribute {
         return this.attributeList;
     }
 
-    public void setAttributeList(List<Attribute> pAttributeList) {
-        this.attributeList = pAttributeList;
+    public void setAttributeList(List<Attribute> attributeList) {
+        this.attributeList = attributeList;
     }
 
     public int getCompAttId() {
         return this.compAttId;
     }
 
-    public void setCompAttId(int pInstanciationId) {
-        this.compAttId = pInstanciationId;
+    public void setCompAttId(int instanciationId) {
+        this.compAttId = instanciationId;
     }
 
     /**
      * Ajoute un attribut a la liste d'attribut de l'attribut compose
      * 
-     * @param pAttribute
+     * @param attribute
      *            l'attribut a ajouter
      */
-    public void addAttribute(Attribute pAttribute) {
-        attributeList.add(pAttribute);
+    public void addAttribute(Attribute attribute) {
+        attributeList.add(attribute);
     }
 
     public String getName() {
