@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.HashMap;
-
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.model.service.validation.AbstractValidationService;
+import fr.cnes.regards.modules.model.service.validation.IModelFinder;
+import fr.cnes.regards.modules.model.service.validation.IValidationService;
+import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,31 +33,21 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import fr.cnes.regards.framework.module.validation.ErrorTranslator;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.model.service.validation.AbstractValidationService;
-import fr.cnes.regards.modules.model.service.validation.IModelFinder;
-import fr.cnes.regards.modules.model.service.validation.IValidationService;
-import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import java.util.HashMap;
 
 /**
  * Validate incoming features
  *
  * @author Marc SORDI
- *
  */
 @Service
-public class FeatureValidationService extends AbstractValidationService<Feature>
-        implements IFeatureValidationService, IValidationService<Feature> {
+public class FeatureValidationService extends AbstractValidationService<Feature> implements IFeatureValidationService, IValidationService<Feature> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureValidationService.class);
 
     private static final String FEATURE = "self";
-
     private static final String URN_FIELD = "urn";
-
     private static final String ID_FIELD = "id";
-
     private static final Integer ID_LENGTH = 100;
 
     /**
@@ -71,7 +66,6 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         String objectName = Feature.class.getName();
         Errors errors = new MapBindingResult(new HashMap<>(), objectName);
 
-        // Null check
         if (feature == null) {
             // Error might be detected before and so might be reported twice
             errors.rejectValue(FEATURE, "feature.null.error.message", "Feature must not be null");
@@ -81,28 +75,28 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         // Validate feature
         validator.validate(feature, errors);
 
-        if ((feature.getId() == null) && (mode != ValidationMode.PATCH)) {
+        String featureId = feature.getId();
+        FeatureUniformResourceName urn = feature.getUrn();
+
+        if ((featureId == null) && (mode != ValidationMode.PATCH)) {
             errors.rejectValue(ID_FIELD, "feature.id.null.error.message", "Feature id must not be null");
         } else {
-            if ((feature.getId() != null) && (feature.getId().length() > ID_LENGTH)) {
-                errors.rejectValue(ID_FIELD, "feature.id.length.error.message",
-                                   String.format("Feature id must not exceed %s characters", ID_LENGTH));
+            if ((featureId != null) && (featureId.length() > ID_LENGTH)) {
+                errors.rejectValue(ID_FIELD, "feature.id.length.error.message", String.format("Feature id must not exceed %s characters", ID_LENGTH));
             }
         }
 
         // Programmatic validation according to the context
         switch (mode) {
             case CREATION:
-                if (feature.getUrn() != null) {
-                    errors.rejectValue(URN_FIELD, "feature.urn.unexpected.error.message",
-                                       "Unexpected URN in feature creation");
+                if (urn != null) {
+                    validator.validate(urn, errors);
                 }
                 break;
             case UPDATE:
             case PATCH:
-                if (feature.getUrn() == null) {
-                    errors.rejectValue(URN_FIELD, "feature.urn.required.error.message",
-                                       "URN is required in feature update");
+                if (urn == null) {
+                    errors.rejectValue(URN_FIELD, "feature.urn.required.error.message", "URN is required in feature update");
                 }
                 break;
             default:
@@ -115,10 +109,10 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         }
 
         if (errors.hasErrors()) {
-            LOGGER.error("Error validating feature \"{}\" : {}", feature.getId(),
-                         ErrorTranslator.getErrorsAsString(errors));
+            LOGGER.error("Error validating feature \"{}\" : {}", featureId, ErrorTranslator.getErrorsAsString(errors));
         }
 
         return errors;
     }
+
 }

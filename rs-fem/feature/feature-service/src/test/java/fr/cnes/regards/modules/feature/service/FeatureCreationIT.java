@@ -21,12 +21,6 @@ package fr.cnes.regards.modules.feature.service;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
-import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -39,39 +33,36 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
-import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 @TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true"},
         locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
@@ -105,30 +96,16 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
 
-
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(maxBulkSize, true);
         // clear file to test notifications without files
         events.forEach(request -> request.getFeature().getFiles().clear());
-        this.featureCreationService.registerRequests(events);
+        featureCreationService.registerRequests(events);
 
         assertEquals(maxBulkSize, this.featureCreationRequestRepo.count());
 
-        this.featureCreationService.scheduleRequests();
+        featureCreationService.scheduleRequests();
 
-        int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != maxBulkSize));
-
-        assertEquals(maxBulkSize, this.featureRepo.count());
-
-        // in that case all features hasn't been saved
-        if (cpt == 100) {
-            fail("Doesn't have all features at the end of time");
-        }
+        waitForFeatures(maxBulkSize);
 
         if (initDefaultNotificationSettings()) {
             testNotification();
@@ -339,16 +316,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         this.featureCreationService.scheduleRequests();
 
-        int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != 1));
-
-        // only 1 feature should be created
-        assertEquals(1, this.featureRepo.count());
+        waitForFeatures(1);
     }
 
     /**
@@ -370,20 +338,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         featureCreationService.scheduleRequests();
 
-        int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != (properties.getMaxBulkSize() - 1)));
-
-        assertEquals(properties.getMaxBulkSize() - 1, this.featureRepo.count());
-
-        // in that case all features hasn't been saved
-        if (cpt == 100) {
-            fail("Doesn't have all features at the end of time");
-        }
+        waitForFeatures(properties.getMaxBulkSize() - 1);
     }
 
     @Test
@@ -467,333 +422,86 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         assertEquals(properties.getMaxBulkSize().intValue(), highPriorityNumber + otherPriorityNumber);
         assertEquals(highPriorityNumber, otherPriorityNumber);
 
-        // wait for first job to be done
+        waitForFeatures(properties.getMaxBulkSize());
+    }
+
+    @Test
+    public void testCreationWithURN() throws InterruptedException {
+        // Given
+        FeatureCreationRequestEvent featureCreationRequestEvent = createFeatureCreationRequestEvent("ùlajzlke", 1);
+        // When
+        RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(featureCreationRequestEvent));
+        featureCreationService.scheduleRequests();
+        // Then
+        assertEquals(1, requestInfo.getGranted().size());
+        assertEquals(0, requestInfo.getDenied().size());
+        waitForFeatures(1);
+    }
+
+    @Test
+    public void testCreationWithExistingURN() throws InterruptedException {
+        // Given
+        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1);
+        featureCreationService.registerRequests(Collections.singletonList(event1));
+        featureCreationService.scheduleRequests();
+        waitForFeatures(1);
+        // When
+        FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent("ùlajzlke", 1);
+        event2.setRequestId("request2");
+        event2.getFeature().setUrn(event1.getFeature().getUrn());
+        RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(event2));
+        featureCreationService.scheduleRequests();
+        // Then
+        assertEquals(0, requestInfo.getGranted().size());
+        assertEquals(1, requestInfo.getDenied().size());
+        waitForFeatures(1);
+    }
+
+    @Test
+    public void testCreationWithURNAndBadVersion() throws InterruptedException {
+        // Given
+        FeatureCreationRequestEvent event2_1 = createFeatureCreationRequestEvent("ùlajzlke", 2);
+        event2_1.setRequestId("event2_1");
+        featureCreationService.registerRequests(Collections.singletonList(event2_1));
+        featureCreationService.scheduleRequests();
+        waitForFeatures(1);
+
+        // When
+        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1);
+        event1.setRequestId("event1");
+        RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(event1));
+        featureCreationService.scheduleRequests();
+        // Then
+        assertEquals(0, requestInfo.getGranted().size());
+        assertEquals(1, requestInfo.getDenied().size());
+        waitForFeatures(1);
+
+        // When
+        FeatureCreationRequestEvent event2_2 = createFeatureCreationRequestEvent("ùlajzlke", 2);
+        event2_2.setRequestId("event2_2");
+        requestInfo = featureCreationService.registerRequests(Collections.singletonList(event2_2));
+        featureCreationService.scheduleRequests();
+        // Then
+        assertEquals(0, requestInfo.getGranted().size());
+        assertEquals(1, requestInfo.getDenied().size());
+        waitForFeatures(1);
+    }
+
+    private FeatureCreationRequestEvent createFeatureCreationRequestEvent(String tenant, int version) {
+        FeatureCreationRequestEvent featureCreationRequestEvent = initFeatureCreationRequestEvent(1, false).get(0);
+        Feature feature = featureCreationRequestEvent.getFeature();
+        UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
+        FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, feature.getEntityType(), tenant, uuid, version);
+        feature.setUrn(urn);
+        return featureCreationRequestEvent;
+    }
+
+    private void waitForFeatures(int count) throws InterruptedException {
         int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != properties.getMaxBulkSize()));
-
-        assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
-
-        // in that case all features hasn't been saved
-        if (cpt == 100) {
-            fail("Doesn't have all features at the end of time");
+        while (cpt++ < 100 && featureRepo.count() != count) {
+            TimeUnit.SECONDS.sleep(1);
         }
-    }
-
-    @Test
-    public void testSessionNotifierWithNotification() throws InterruptedException {
-        int requestCount = 10;
-        prepareCreationTestData(true, requestCount, true, true);
-        waitCreationRequestDeletion(0, 20000);
-
-        // Compute Session step
-        computeSessionStep(requestCount * 4);
-
-        // Check Session step values
-        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(requestCount * 3, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(requestCount, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(requestCount, property("referencingRequests"), requests);
-        checkRequests(requestCount, property("referencedProducts"), requests);
-        checkRequests(requestCount * 2, property("runningReferencingRequests"), requests);
-        checkRequests(requestCount, inputRelated(), requests);
-        checkRequests(requestCount, outputRelated(), requests);
-
-        // Check Session step
-        SessionStep sessionStep = getSessionStep();
-        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(requestCount, sessionStep.getInputRelated());
-        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(3, sessionStepProperties.size());
-        checkKey(requestCount, "referencingRequests", sessionStepProperties);
-        checkKey(requestCount, "referencedProducts", sessionStepProperties);
-        checkKey(0, "runningReferencingRequests", sessionStepProperties);
-    }
-
-    @Test
-    public void testSessionNotifierWithoutNotification() throws InterruptedException, EntityException {
-
-        setNotificationSetting(false);
-
-        int requestCount = 10;
-        prepareCreationTestData(true, requestCount, false, true);
-        waitCreationRequestDeletion(0, 20000);
-
-        // Compute Session step
-        computeSessionStep(requestCount * 4);
-
-        // Check Session step values
-        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(requestCount * 3, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(requestCount, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(requestCount, property("referencingRequests"), requests);
-        checkRequests(requestCount, property("referencedProducts"), requests);
-        checkRequests(requestCount * 2, property("runningReferencingRequests"), requests);
-        checkRequests(requestCount, inputRelated(), requests);
-        checkRequests(requestCount, outputRelated(), requests);
-
-        // Check Session step
-        SessionStep sessionStep = getSessionStep();
-        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(requestCount, sessionStep.getInputRelated());
-        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(3, sessionStepProperties.size());
-        checkKey(requestCount, "referencingRequests", sessionStepProperties);
-        checkKey(requestCount, "referencedProducts", sessionStepProperties);
-        checkKey(0, "runningReferencingRequests", sessionStepProperties);
-    }
-
-    @Test
-    public void testSessionNotifierWithRetryOnFileError() throws InterruptedException {
-
-        // Init requests
-        int requestCount = 10;
-        createRequestsWithOneFileError(requestCount);
-
-        // Retry request in error
-        featureCreationService.retryRequests(new FeatureRequestsSelectionDTO());
-        featureCreationService.scheduleRequests();
-        TimeUnit.SECONDS.sleep(5);
-        featureRequestService.handleStorageSuccess(featureCreationRequestRepo
-                                                           .findByStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED, PageRequest.of(0, 1))
-                                                           .stream()
-                                                           .map(AbstractFeatureRequest::getGroupId)
-                                                           .collect(Collectors.toSet()));
-        mockNotificationSuccess();
-        // Give it some time
-        waitCreationRequestDeletion(0, 20000);
-
-        // Compute Session step
-        // for each product 4 events : 1request + 1 requestRunning + 1 referencedProduct  -1 requestRunning
-        // for storage error : 1 inErrorReferencingRequest
-        // For retry : +1requestRunning -1 inErrorReferencingRequest -1requestRunning
-        computeSessionStep((requestCount * 4) + 1 + 3);
-
-        // Check Session step values
-        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests((requestCount * 3) + 2, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(requestCount + 2, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(requestCount, property("referencingRequests"), requests);
-        checkRequests(requestCount, property("referencedProducts"), requests);
-        checkRequests((requestCount + 1) * 2, property("runningReferencingRequests"), requests);
-        checkRequests(2, property("inErrorReferencingRequests"), requests);
-        checkRequests(requestCount, inputRelated(), requests);
-        checkRequests(requestCount, outputRelated(), requests);
-
-        // Check Session step
-        SessionStep sessionStep = getSessionStep();
-        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(requestCount, sessionStep.getInputRelated());
-        Assertions.assertEquals(requestCount, sessionStep.getOutputRelated());
-        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(4, sessionStepProperties.size());
-        checkKey(requestCount, "referencingRequests", sessionStepProperties);
-        checkKey(requestCount, "referencedProducts", sessionStepProperties);
-        checkKey(0, "runningReferencingRequests", sessionStepProperties);
-        checkKey(0, "inErrorReferencingRequests", sessionStepProperties);
-    }
-
-    @Test
-    public void testSessionNotifierWithDeleteOnFileError() throws InterruptedException {
-
-        // Init requests
-        int requestCount = 10;
-        createRequestsWithOneFileError(requestCount);
-
-        // Delete request in error
-        featureCreationService.deleteRequests(new FeatureRequestsSelectionDTO());
-        waitCreationRequestDeletion(0, 20000);
-
-        // Compute Session step
-        // for each product 4 events : 1request + 1 requestRunning + 1 referencedProduct  -1 requestRunning
-        // for storage error : 1 inErrorReferencingRequest
-        // for in error delete request : -1 request -1inErrorReferencingRequest
-        computeSessionStep((requestCount * 4) + 1 +2);
-
-        // Check Session step values
-        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests((requestCount * 3) + 1, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(requestCount + 2, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(requestCount + 1, property("referencingRequests"), requests);
-        checkRequests(requestCount , property("referencedProducts"), requests);
-        checkRequests(requestCount * 2, property("runningReferencingRequests"), requests);
-        checkRequests(2, property("inErrorReferencingRequests"), requests);
-        checkRequests(requestCount + 1, inputRelated(), requests);
-        checkRequests(requestCount, outputRelated(), requests);
-
-        // Check Session step
-        SessionStep sessionStep = getSessionStep();
-        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(requestCount - 1 , sessionStep.getInputRelated());
-        Assertions.assertEquals(requestCount, sessionStep.getOutputRelated());
-        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(4, sessionStepProperties.size());
-        checkKey(requestCount - 1, "referencingRequests", sessionStepProperties);
-        checkKey(requestCount, "referencedProducts", sessionStepProperties);
-        checkKey(0, "runningReferencingRequests", sessionStepProperties);
-        checkKey(0, "inErrorReferencingRequests", sessionStepProperties);
-    }
-
-    @Test
-    public void testSessionNotifierWithRetryOnNotificationError() throws InterruptedException {
-
-        // Init requests
-        createOneRequestsWithNotificationError();
-
-        // Retry request in error
-        featureCreationService.retryRequests(new FeatureRequestsSelectionDTO());
-        featureCreationService.scheduleRequests();
-        TimeUnit.SECONDS.sleep(5);
-        mockNotificationSuccess();
-        waitCreationRequestDeletion(0, 20000);
-
-        // Compute Session step
-        computeSessionStep(8);
-
-        // Check Session step values
-        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(5, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(3, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(1, property("referencingRequests"), requests);
-        checkRequests(1, property("referencedProducts"), requests);
-        checkRequests(4, property("runningReferencingRequests"), requests);
-        checkRequests(2, property("inErrorReferencingRequests"), requests);
-        checkRequests(1, inputRelated(), requests);
-        checkRequests(1, outputRelated(), requests);
-
-        // Check Session step
-        SessionStep sessionStep = getSessionStep();
-        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(1, sessionStep.getInputRelated());
-        Assertions.assertEquals(1, sessionStep.getOutputRelated());
-        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(4, sessionStepProperties.size());
-        checkKey(1, "referencingRequests", sessionStepProperties);
-        checkKey(1, "referencedProducts", sessionStepProperties);
-        checkKey(0, "runningReferencingRequests", sessionStepProperties);
-        checkKey(0, "inErrorReferencingRequests", sessionStepProperties);
-    }
-
-    @Test
-    public void testSessionNotifierWithDeleteOnNotificationError() throws InterruptedException {
-
-        // Init requests
-        createOneRequestsWithNotificationError();
-
-        // Delete request in error
-        featureCreationService.deleteRequests(new FeatureRequestsSelectionDTO());
-        waitCreationRequestDeletion(0, 20000);
-
-        // Compute Session step
-        computeSessionStep(7);
-
-        // Check Session step values
-        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(4, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(3, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(2, property("referencingRequests"), requests);
-        checkRequests(2, property("runningReferencingRequests"), requests);
-        checkRequests(2, property("inErrorReferencingRequests"), requests);
-        checkRequests(1, property("referencedProducts"), requests);
-        checkRequests(2, inputRelated(), requests);
-        checkRequests(1, outputRelated(), requests);
-
-        // Check Session step
-        SessionStep sessionStep = getSessionStep();
-        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(0, sessionStep.getInputRelated());
-        Assertions.assertEquals(1, sessionStep.getOutputRelated());
-        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(4, sessionStepProperties.size());
-        checkKey(0, "referencingRequests", sessionStepProperties);
-        checkKey(0, "runningReferencingRequests", sessionStepProperties);
-        checkKey(0, "inErrorReferencingRequests", sessionStepProperties);
-        checkKey(1, "referencedProducts", sessionStepProperties);
-    }
-
-    private void createRequestsWithOneFileError(int requestCount) throws InterruptedException {
-
-        initData(requestCount);
-        mockNotificationSuccess();
-
-        Pageable pageToRequest = PageRequest.of(0, requestCount);
-        Page<FeatureCreationRequest> fcrPage = featureCreationRequestRepo.findByStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED, pageToRequest);
-        List<String> requestIds = fcrPage.stream().map(AbstractFeatureRequest::getGroupId).collect(Collectors.toList());
-        String errorId = requestIds.remove(0);
-        RequestResultInfoDTO requestResultInfoDTO = new RequestResultInfoDTO();
-        ReflectionTestUtils.setField(requestResultInfoDTO, "groupId", errorId);
-        featureRequestService.handleStorageError(Sets.newSet(requestResultInfoDTO));
-        featureRequestService.handleStorageSuccess(new HashSet<>(requestIds));
-        mockNotificationSuccess();
-        // Give it some time
-        waitCreationRequestDeletion(1, 20000);
-        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_STORAGE_ERROR, 1, 20);
-
-        // Compute Session step
-        // for each product : 1request + 1 requestRunning + 1 referencedProduct + 1 requestRunning
-        // for storage error : 1 inErrorReferencingRequest
-        computeSessionStep((requestCount * 4) + 1);
-
-        // Check Session step values
-        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests((requestCount * 3) + 1, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(requestCount, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(requestCount, property("referencingRequests"), requests);
-        checkRequests(requestCount, property("referencedProducts"), requests);
-        checkRequests(requestCount * 2, property("runningReferencingRequests"), requests);
-        checkRequests(1, property("inErrorReferencingRequests"), requests);
-        checkRequests(requestCount, inputRelated(), requests);
-        checkRequests(requestCount, outputRelated(), requests);
-
-        // Check Session step
-        SessionStep sessionStep = getSessionStep();
-        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(requestCount, sessionStep.getInputRelated());
-        Assertions.assertEquals(requestCount, sessionStep.getOutputRelated());
-        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(4, sessionStepProperties.size());
-        checkKey(requestCount, "referencingRequests", sessionStepProperties);
-        checkKey(requestCount, "referencedProducts", sessionStepProperties);
-        checkKey(0, "runningReferencingRequests", sessionStepProperties);
-        checkKey(1, "inErrorReferencingRequests", sessionStepProperties);
-    }
-
-    private void createOneRequestsWithNotificationError() throws InterruptedException {
-
-        prepareCreationTestData(false, 1, false, true);
-        mockNotificationError();
-        waitCreationRequestDeletion(1, 20000);
-        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
-
-        // Compute Session step
-        computeSessionStep(5);
-
-        // Check Session step values
-        List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests(4, type(StepPropertyEventTypeEnum.INC), requests);
-        checkRequests(1, type(StepPropertyEventTypeEnum.DEC), requests);
-        checkRequests(1, property("referencingRequests"), requests);
-        checkRequests(2, property("runningReferencingRequests"), requests);
-        checkRequests(1, property("inErrorReferencingRequests"), requests);
-        checkRequests(1, property("referencedProducts"), requests);
-        checkRequests(1, inputRelated(), requests);
-        checkRequests(1, outputRelated(), requests);
-
-        // Check Session step
-        SessionStep sessionStep = getSessionStep();
-        Assertions.assertEquals(StepTypeEnum.REFERENCING, sessionStep.getType());
-        Assertions.assertEquals(1, sessionStep.getInputRelated());
-        SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(4, sessionStepProperties.size());
-        checkKey(1, "referencingRequests", sessionStepProperties);
-        checkKey(0, "runningReferencingRequests", sessionStepProperties);
-        checkKey(1, "inErrorReferencingRequests", sessionStepProperties);
-        // As error is on notification product is well referenced
-        checkKey(1, "referencedProducts", sessionStepProperties);
+        assertEquals(count, featureRepo.count());
     }
 
 }

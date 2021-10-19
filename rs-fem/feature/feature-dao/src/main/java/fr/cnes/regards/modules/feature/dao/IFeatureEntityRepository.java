@@ -41,6 +41,8 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
 
     FeatureEntity findByUrn(FeatureUniformResourceName urn);
 
+    boolean existsByUrn(FeatureUniformResourceName featureUniformResourceName);
+
     List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
 
     long countByLastUpdateGreaterThan(OffsetDateTime from);

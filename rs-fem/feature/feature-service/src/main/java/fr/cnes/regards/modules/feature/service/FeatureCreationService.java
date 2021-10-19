@@ -70,6 +70,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
@@ -101,7 +102,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     private IJobInfoService jobInfoService;
 
     @Autowired
-    private IFeatureEntityRepository featureRepo;
+    private IFeatureEntityRepository featureEntityRepository;
 
     @Autowired
     private IPublisher publisher;
@@ -188,6 +189,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         String requestId = item.getRequestId();
         String requestOwner = item.getRequestOwner();
         Feature feature = item.getFeature();
+        FeatureUniformResourceName urn = feature.getUrn();
         String featureId = feature != null ? feature.getId() : null;
         FeatureCreationSessionMetadata sessionMetadata = item.getMetadata();
         String sessionOwner = sessionMetadata.getSessionOwner();
@@ -200,9 +202,23 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         // Validate feature according to the data model
         errors.addAllErrors(validationService.validate(feature, ValidationMode.CREATION));
 
+        // Validate provided URN
+        if (urn != null) {
+            // URN should not already exist
+            if (featureEntityRepository.existsByUrn(urn)) {
+                errors.rejectValue("urn", "feature.urn.already.exists.error.message", "URN already exists");
+            } else {
+                // New version should be greater than previous one
+                List<IUrnVersionByProvider> previousVersions = featureEntityRepository.findByProviderIdInOrderByVersionDesc(Collections.singletonList(feature.getId()));
+                if (!previousVersions.isEmpty() && previousVersions.get(0).getVersion() >= urn.getVersion()) {
+                    errors.rejectValue("urn", "feature.urn.version.invalid.error.message", "Version is invalid");
+                }
+            }
+        }
+
         if (errors.hasErrors()) {
 
-            String errorFeatureId = feature != null ? feature.getId() : "UNKNOWN ID";
+            String errorFeatureId = featureId != null ? featureId : "UNKNOWN ID";
             LOGGER.error("Error during feature {} validation the following errors have been found : {}", errorFeatureId, errors);
 
             requestInfo.addDeniedRequest(requestId, ErrorTranslator.getErrors(errors));
@@ -283,72 +299,28 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Override
     public Set<FeatureEntity> processRequests(Set<Long> requestIds, FeatureCreationJob featureCreationJob) {
 
-        List<FeatureCreationRequest> allRequests = featureCreationRequestRepo.findAllByIdIn(requestIds);
-        List<FeatureCreationRequest> requests = allRequests.stream()
-                .filter(fcr -> fcr.getLastExecErrorStep() != FeatureRequestStep.REMOTE_STORAGE_ERROR)
-                .collect(Collectors.toList());
-        List<FeatureCreationRequest> retryRequests = allRequests.stream()
-                .filter(fcr -> fcr.getLastExecErrorStep() == FeatureRequestStep.REMOTE_STORAGE_ERROR)
-                .collect(Collectors.toList());
+        Map<Boolean, List<FeatureCreationRequest>> requestByHasError = featureCreationRequestRepo.findAllByIdIn(requestIds)
+                .stream()
+                .collect(Collectors.partitioningBy(request -> FeatureRequestStep.REMOTE_STORAGE_ERROR.equals(request.getLastExecErrorStep())));
+        List<FeatureCreationRequest> requests = requestByHasError.get(false);
+        List<FeatureCreationRequest> retryRequests = requestByHasError.get(true);
 
         long processStart = System.currentTimeMillis();
-        long subProcessStart;
 
-        // Look for versions
-        List<String> providerIds = new ArrayList<>();
-        requests.forEach(r -> providerIds.add(r.getProviderId()));
-        Map<String, Integer> versionByProviders = new HashMap<>();
-        Map<String, FeatureUniformResourceName> urnByProviders = new HashMap<>();
-        for (IUrnVersionByProvider vbp : featureRepo.findByProviderIdInOrderByVersionDesc(providerIds)) {
-            if (!versionByProviders.containsKey(vbp.getProviderId())) {
-                // Register max version
-                versionByProviders.put(vbp.getProviderId(), vbp.getVersion());
-                urnByProviders.put(vbp.getProviderId(), vbp.getUrn());
-            }
-        }
+        Set<FeatureEntity> entities = createEntities(requests, featureCreationJob);
 
-        // Register features
-        subProcessStart = System.currentTimeMillis();
-        Set<FeatureEntity> entities = requests.stream()
-                .map(request -> initFeatureEntity(request, versionByProviders.get(request.getProviderId()), urnByProviders.get(request.getProviderId()), featureCreationJob))
-                .collect(Collectors.toSet());
-        // get previous versions to set last to false
-        Set<String> previousUrns = entities.stream()
-                .filter(entity -> entity.getPreviousVersionUrn() != null)
-                .map(entity -> entity.getPreviousVersionUrn().toString()).collect(Collectors.toSet());
-
-        // save new features
-        this.featureRepo.saveAll(entities);
-        if (!previousUrns.isEmpty()) {
-            featureCreationRequestRepo.updateLastByUrnIn(false, previousUrns);
-        }
-        LOGGER.trace("------------->>> {} feature saved in {} ms", entities.size(), System.currentTimeMillis() - subProcessStart);
-
-        // Update requests with feature setted for each of them + publish files to storage
-        subProcessStart = System.currentTimeMillis();
-        Set<FeatureCreationRequest> requestWithFiles = requests.stream()
-                .filter(fcr -> (fcr.getFeature().getFiles() != null) && !fcr.getFeature().getFiles().isEmpty())
-                .map(this::handleRequestWithFiles).collect(Collectors.toSet());
-        featureCreationRequestRepo.saveAll(requestWithFiles);
-        LOGGER.trace("------------->>> {} creation requests with files updated in {} ms", requestWithFiles.size(), System.currentTimeMillis() - subProcessStart);
-
-        // Update request for storage retry
-        subProcessStart = System.currentTimeMillis();
-        Set<FeatureCreationRequest> updatedRetryRequest = retryRequests.stream()
-                .filter(fcr -> (fcr.getFeature().getFiles() != null) && !fcr.getFeature().getFiles().isEmpty())
-                .map(this::handleRequestWithFiles).collect(Collectors.toSet());
-        featureCreationRequestRepo.saveAll(updatedRetryRequest);
-        LOGGER.trace("------------->>> {} creation requests with files updated in {} ms", updatedRetryRequest.size(), System.currentTimeMillis() - subProcessStart);
-
-        // Delete requests without files
-        Set<FeatureCreationRequest> requestWithoutFiles = requests.stream()
-                .filter(request -> (request.getFeature().getFiles() == null) || request.getFeature().getFiles().isEmpty())
-                .collect(Collectors.toSet());
+        // Update requests with feature set and publish files to storage
+        updateRequestsWithFiles(requests);
+        // Update requests for storage retry
+        updateRequestsWithFiles(retryRequests);
 
         // Handle session for referenced products
         doOnSuccess(requests);
 
-        // handling of requests without files is already done so they are successful
+        // handling of requests without files is already done, hence they are successful
+        Set<FeatureCreationRequest> requestWithoutFiles = requests.stream()
+                .filter(request -> CollectionUtils.isEmpty(request.getFeature().getFiles()))
+                .collect(Collectors.toSet());
         handleSuccessfulCreation(requestWithoutFiles);
 
         LOGGER.trace("------------->>> {} creation requests processed in {} ms", requests.size(), System.currentTimeMillis() - processStart);
@@ -400,6 +372,109 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms", requests.size(), System.currentTimeMillis() - startSuccessProcess);
     }
 
+    private Set<FeatureEntity> createEntities(List<FeatureCreationRequest> requests, FeatureCreationJob featureCreationJob) {
+
+        long start = System.currentTimeMillis();
+
+        // Fetch the latest versions and URNs for each provider
+        List<String> providerIds = requests.stream().map(FeatureCreationRequest::getProviderId).collect(Collectors.toList());
+        Map<String, Integer> versionByProviders = new HashMap<>();
+        Map<String, FeatureUniformResourceName> urnByProviders = new HashMap<>();
+        featureEntityRepository.findByProviderIdInOrderByVersionDesc(providerIds).forEach(
+                versionAndUrnByProvider -> {
+                    String providerId = versionAndUrnByProvider.getProviderId();
+                    // Since we fetch by version DESC, the first one is the latest version
+                    if (!versionByProviders.containsKey(providerId)) {
+                        versionByProviders.put(providerId, versionAndUrnByProvider.getVersion());
+                        urnByProviders.put(providerId, versionAndUrnByProvider.getUrn());
+                    }
+                });
+
+        Set<FeatureEntity> entities = requests.stream()
+                .map(request -> {
+                    Integer previousVersion = versionByProviders.get(request.getProviderId());
+                    FeatureUniformResourceName previousUrn = urnByProviders.get(request.getProviderId());
+                    return initFeatureEntity(request, previousVersion, previousUrn, featureCreationJob);
+                })
+                .collect(Collectors.toSet());
+        featureEntityRepository.saveAll(entities);
+
+        LOGGER.trace("------------->>> {} feature saved in {} ms", entities.size(), System.currentTimeMillis() - start);
+
+        // Set 'last' to false for all previous versions
+        Set<String> previousUrns = entities.stream()
+                .map(FeatureEntity::getPreviousVersionUrn)
+                .filter(Objects::nonNull)
+                .map(FeatureUniformResourceName::toString)
+                .collect(Collectors.toSet());
+        if (!previousUrns.isEmpty()) {
+            featureCreationRequestRepo.updateLastByUrnIn(false, previousUrns);
+        }
+
+        return entities;
+    }
+
+    /**
+     * Init a {@link FeatureEntity} from a {@link FeatureCreationRequest} and set it
+     * as feature entity
+     *
+     * @param featureCreationRequest from we will create the {@link FeatureEntity}
+     * @param previousVersion        previous urn for the last version
+     * @param featureCreationJob
+     * @return initialized feature entity
+     */
+    private FeatureEntity initFeatureEntity(FeatureCreationRequest featureCreationRequest, @Nullable Integer previousVersion, FeatureUniformResourceName previousUrn,
+            FeatureCreationJob featureCreationJob
+    ) {
+
+        Feature feature = featureCreationRequest.getFeature();
+        feature.withHistory(featureCreationRequest.getRequestOwner());
+
+        if (feature.getUrn() == null) {
+            UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
+            FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, feature.getEntityType(), runtimeTenantResolver.getTenant(), uuid,
+                    computeNextVersion(previousVersion));
+            feature.setUrn(urn);
+        }
+
+        feature.setLast(true);
+
+        FeatureEntity featureEntity = FeatureEntity.build(
+                featureCreationRequest.getMetadata().getSessionOwner(),
+                featureCreationRequest.getMetadata().getSession(),
+                feature,
+                previousUrn,
+                featureCreationRequest.getFeature().getModel());
+
+        featureCreationRequest.setFeatureEntity(featureEntity);
+        featureCreationRequest.setUrn(featureEntity.getUrn());
+
+        if (featureCreationJob != null) {
+            featureCreationJob.advanceCompletion();
+        }
+        metrics.count(featureCreationRequest.getProviderId(), featureEntity.getUrn(), FeatureCreationState.FEATURE_INITIALIZED);
+
+        return featureEntity;
+    }
+
+    /**
+     * Compute the next version for a specific provider id we will increment the version passed in parameter
+     * a null parameter mean a first version
+     */
+    private int computeNextVersion(Integer previousVersion) {
+        return previousVersion == null ? 1 : previousVersion + 1;
+    }
+
+    private void updateRequestsWithFiles(List<FeatureCreationRequest> requests) {
+        long subProcessStart = System.currentTimeMillis();
+        Set<FeatureCreationRequest> requestWithFiles = requests.stream()
+                .filter(fcr -> !CollectionUtils.isEmpty(fcr.getFeature().getFiles()))
+                .map(this::handleRequestWithFiles)
+                .collect(Collectors.toSet());
+        featureCreationRequestRepo.saveAll(requestWithFiles);
+        LOGGER.trace("------------->>> {} creation requests with files updated in {} ms", requestWithFiles.size(), System.currentTimeMillis() - subProcessStart);
+    }
+
     /**
      * Handle {@link FeatureCreationRequest} with files to be stored or referenced by storage microservice:
      * <ul>
@@ -445,47 +520,6 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         }
         fcr.setStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED);
         return fcr;
-    }
-
-    /**
-     * Init a {@link FeatureEntity} from a {@link FeatureCreationRequest} and set it
-     * as feature entity
-     * @param fcr from we will create the {@link FeatureEntity}
-     * @param previousVersion previous urn for the last version
-     * @param featureCreationJob
-     * @return initialized feature entity
-     */
-    private FeatureEntity initFeatureEntity(FeatureCreationRequest fcr, @Nullable Integer previousVersion,
-            FeatureUniformResourceName previousUrn, FeatureCreationJob featureCreationJob) {
-
-        Feature feature = fcr.getFeature();
-        feature.withHistory(fcr.getRequestOwner());
-
-        UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
-        feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, feature.getEntityType(),
-                                                        runtimeTenantResolver.getTenant(), uuid,
-                                                        computeNextVersion(previousVersion)));
-        // as version compute is previous + 1, this feature is forcibly the last
-        feature.setLast(true);
-        FeatureEntity created = FeatureEntity.build(fcr.getMetadata().getSessionOwner(), fcr.getMetadata().getSession(),
-                                                    feature, previousUrn, fcr.getFeature().getModel());
-        created.setVersion(feature.getUrn().getVersion());
-        fcr.setFeatureEntity(created);
-        fcr.setUrn(created.getUrn());
-        if (featureCreationJob != null) {
-            featureCreationJob.advanceCompletion();
-        }
-        metrics.count(fcr.getProviderId(), created.getUrn(), FeatureCreationState.FEATURE_INITIALIZED);
-
-        return created;
-    }
-
-    /**
-     * Compute the next version for a specific provider id we will increment the version passed in parameter
-     * a null parameter mean a first version
-     */
-    private int computeNextVersion(Integer previousVersion) {
-        return previousVersion == null ? 1 : previousVersion + 1;
     }
 
     @Override
