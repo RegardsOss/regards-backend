@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.notifier.dto.NotificationEvent4;
 
@@ -35,4 +34,15 @@ public class RecipientSender4 extends AbstractRecipientSender<NotificationEvent4
     NotificationEvent4 buildEvent(JsonElement element, JsonElement action) {
         return NotificationEvent4.build(element, action);
     }
+
+    @Override
+    public String getRecipientId() {
+        return "recipientId4";
+    }
+
+    @Override
+    public boolean isAckRequired() {
+        return true;
+    }
+
 }

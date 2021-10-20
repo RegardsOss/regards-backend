@@ -18,21 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service.job;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
-
 import com.google.gson.reflect.TypeToken;
-
-import fr.cnes.regards.framework.amqp.AbstractPublisher;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -43,9 +29,15 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
-import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
-import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
+import fr.cnes.regards.modules.notifier.dto.out.Recipient;
+import fr.cnes.regards.modules.notifier.service.NotificationProcessingService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Job implementation to notify {@link Recipient} according {@link Rule}
@@ -66,22 +58,17 @@ public class NotificationJob extends AbstractJob<Void> {
     private INotificationRequestRepository notificationRequestRepo;
 
     @Autowired
-    private INotificationRuleService notificationService;
+    private NotificationProcessingService notificationProcessingService;
 
     @Autowired
     private IPluginService pluginService;
 
-    @Autowired
-    private IPublisher publisher;
-
     @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        Type type = new TypeToken<Set<Long>>() {
+    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
 
+        Type type = new TypeToken<Set<Long>>() {
         }.getType();
-        notificationRequests = this.notificationRequestRepo.findAllById(getValue(parameters,
-                                                                                 NOTIFICATION_REQUEST_IDS, type));
+        notificationRequests = this.notificationRequestRepo.findAllById(getValue(parameters, NOTIFICATION_REQUEST_IDS, type));
         recipient = this.pluginService.loadPluginConfiguration(getValue(parameters, RECIPIENT_BUSINESS_ID, String.class));
     }
 
@@ -89,7 +76,7 @@ public class NotificationJob extends AbstractJob<Void> {
     public void run() {
         logger.info("[{}] Notification job starts", jobInfoId);
         long start = System.currentTimeMillis();
-        Pair<Integer, Integer> processResult = this.notificationService.processRequest(notificationRequests, recipient);
+        Pair<Integer, Integer> processResult = this.notificationProcessingService.processRequests(notificationRequests, recipient);
         logger.info("[{}]{}{} Notifications sent in {} ms, {} notifications failed", jobInfoId, INFO_TAB,
                     processResult.getFirst(), System.currentTimeMillis() - start, processResult.getSecond());
         // if there are exception we throw an exception to stop the job in error

@@ -18,22 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service.conf;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -43,9 +28,18 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
-import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
 import fr.cnes.regards.modules.notifier.service.IRuleService;
+import fr.cnes.regards.modules.notifier.service.RuleCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Configuration manager for current module
@@ -57,7 +51,7 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationConfigurationManager.class);
 
     @Autowired
-    private INotificationRuleService notifService;
+    private RuleCache ruleCache;
 
     @Autowired
     private IPluginService pluginService;
@@ -106,7 +100,7 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
         Set<RuleRecipientsAssociation> associations = getRulesRecipientsAssoc(configuration.getConfiguration());
 
         // Clear cache
-        notifService.cleanCache();
+        ruleCache.clear();
 
         try {
             // Import configuration into transaction

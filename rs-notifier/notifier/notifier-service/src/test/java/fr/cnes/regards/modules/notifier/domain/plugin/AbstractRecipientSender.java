@@ -18,21 +18,19 @@
  */
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * @author Marc SORDI
@@ -60,4 +58,15 @@ public abstract class AbstractRecipientSender<E extends ISubscribable> implement
         count++;
         LOGGER.debug("{} message(s) received in class {}", count, this.getClass().getName());
     }
+
+    @Override
+    public String getRecipientId() {
+        return "recipientId";
+    }
+
+    @Override
+    public boolean isAckRequired() {
+        return false;
+    }
+
 }

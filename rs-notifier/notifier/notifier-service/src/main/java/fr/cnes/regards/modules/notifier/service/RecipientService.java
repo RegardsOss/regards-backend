@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import javax.validation.Valid;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
+import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
+import fr.cnes.regards.modules.notifier.domain.Rule;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,18 +35,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
-import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
-import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
-import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
-import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import javax.validation.Valid;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of recipient service
@@ -60,13 +57,16 @@ public class RecipientService implements IRecipientService {
     private IPluginService pluginService;
 
     @Autowired
-    private IRuleRepository ruleRepo;
+    private IRuleRepository ruleRepository;
 
     @Autowired
-    private IRecipientErrorRepository recipientErrorRepo;
+    private IRecipientErrorRepository recipientErrorRepository;
 
     @Autowired
-    private INotificationRuleService notifService;
+    private NotificationProcessingService notificationProcessingService;
+
+    @Autowired
+    private RuleCache ruleCache;
 
     @Override
     public Set<PluginConfiguration> getRecipients() {
@@ -101,7 +101,7 @@ public class RecipientService implements IRecipientService {
             result = pluginService.updatePluginConfiguration(recipientPluginConf);
         }
         // Clean cache
-        notifService.cleanCache();
+        ruleCache.clear();
 
         return result;
 
@@ -110,29 +110,29 @@ public class RecipientService implements IRecipientService {
     @Override
     public void deleteRecipient(String id) throws ModuleException {
         // Check  if a rule is associated to the recipient first
-        for (Rule rule : ruleRepo.findByRecipientsBusinessId(id)) {
+        for (Rule rule : ruleRepository.findByRecipientsBusinessId(id)) {
             // Remove  recipient to delete
             rule.setRecipients(rule.getRecipients().stream().filter(c -> !c.getBusinessId().equals(id))
                                        .collect(Collectors.toSet()));
         }
         // Delete associated errors
-        recipientErrorRepo.deleteByRecipientBusinessId(id);
+        recipientErrorRepository.deleteByRecipientBusinessId(id);
         pluginService.deletePluginConfiguration(id);
 
         // Clean cache
-        notifService.cleanCache();
+        ruleCache.clear();
     }
 
     @Override
     public Set<String> deleteAll(Collection<String> deletionErrors) {
         Set<String> pluginToDelete = new HashSet<>();
         for (PluginConfiguration conf : pluginService.getPluginConfigurationsByType(IRecipientNotifier.class)) {
-            recipientErrorRepo.deleteByRecipientBusinessId(conf.getBusinessId());
+            recipientErrorRepository.deleteByRecipientBusinessId(conf.getBusinessId());
             pluginToDelete.add(conf.getBusinessId());
 
         }
         // Clean cache
-        notifService.cleanCache();
+        ruleCache.clear();
         return pluginToDelete;
     }
 
@@ -144,7 +144,7 @@ public class RecipientService implements IRecipientService {
         Set<PluginConfiguration> recipients = getRecipients();
         Set<Long> requestScheduledIds = new HashSet<>();
         for (PluginConfiguration recipient : recipients) {
-            requestScheduledIds.addAll(notifService.scheduleJobForOneRecipient(recipient));
+            requestScheduledIds.addAll(notificationProcessingService.scheduleJobForOneRecipient(recipient));
         }
         return requestScheduledIds.size();
     }

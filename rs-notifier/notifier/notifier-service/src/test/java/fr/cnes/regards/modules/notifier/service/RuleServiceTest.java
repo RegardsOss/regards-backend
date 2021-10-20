@@ -18,17 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -37,6 +27,14 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginPa
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationManager;
 import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Optional;
 
 /**
  * @author sbinda
@@ -76,6 +74,8 @@ public class RuleServiceTest extends AbstractNotificationMultitenantServiceTest 
         recipientPlugin.getParameters().add(param);
         param = IPluginParam.build("queueName", "regards.notifier.queue-tu");
         recipientPlugin.getParameters().add(param);
+        recipientPlugin.getParameters().add(RECIPIENT);
+        recipientPlugin.getParameters().add(ACK_REQUIRED);
         recipientService.createOrUpdateRecipient(recipientPlugin);
         PluginConfiguration recipientPlugin2 = new PluginConfiguration();
         recipientPlugin2.setBusinessId(recipient2bid);
@@ -86,6 +86,8 @@ public class RuleServiceTest extends AbstractNotificationMultitenantServiceTest 
         recipientPlugin2.getParameters().add(param);
         param = IPluginParam.build("queueName", "regards.notifier.queue-tu");
         recipientPlugin2.getParameters().add(param);
+        recipientPlugin2.getParameters().add(RECIPIENT);
+        recipientPlugin2.getParameters().add(ACK_REQUIRED);
         recipientService.createOrUpdateRecipient(recipientPlugin2);
         Assert.assertEquals(1, recipientService.getRecipients(Sets.newHashSet(recipient1bid)).size());
         Assert.assertEquals(1, recipientService.getRecipients(Sets.newHashSet(recipient2bid)).size());

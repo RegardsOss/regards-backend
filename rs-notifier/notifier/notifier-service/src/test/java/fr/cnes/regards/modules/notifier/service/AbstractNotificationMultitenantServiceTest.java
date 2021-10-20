@@ -18,29 +18,11 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import static org.junit.Assert.fail;
-
-import com.google.gson.JsonObject;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Collection;
-
-import org.junit.After;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.AmqpIOException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.google.common.collect.Sets;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
+import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -53,6 +35,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.BooleanPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -61,18 +44,24 @@ import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender10;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender2;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender4;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender5;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender6;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender7;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender8;
-import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender9;
+import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
-import fr.cnes.regards.modules.notifier.service.flow.NotificationRequestEventHandler;
 import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Collection;
+
+import static org.junit.Assert.fail;
 
 public abstract class AbstractNotificationMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
@@ -83,6 +72,9 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected static final int EVENT_TO_RECEIVE = 1_000;
 
     protected static final int EVENT_BULK = 1_000;
+
+    protected static final StringPluginParam RECIPIENT = IPluginParam.build(RabbitMQSender.RECIPIENT_ID_PARAM_NAME, "recipient");
+    protected static final BooleanPluginParam ACK_REQUIRED = IPluginParam.build(RabbitMQSender.ACK_REQUIRED_PARAM_NAME, false);
 
     // used to param if the test Recipient will fail
     public static boolean RECIPIENT_FAIL = true;
@@ -99,7 +91,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected IPluginConfigurationRepository pluginConfRepo;
 
     @Autowired
-    protected INotificationRequestRepository notificationRepo;
+    protected INotificationRequestRepository notificationRequestRepository;
 
     @Autowired
     protected IRecipientErrorRepository recipientErrorRepo;
@@ -108,7 +100,13 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected IJobInfoRepository jobInforepo;
 
     @SpyBean
-    protected NotificationRuleService notificationService;
+    protected NotificationRegistrationService notificationRegistrationService;
+
+    @SpyBean
+    protected NotificationProcessingService notificationProcessingService;
+
+    @SpyBean
+    protected NotificationMatchingService notificationMatchingService;
 
     @Autowired
     protected IRecipientService recipientService;
@@ -125,7 +123,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     @Autowired
     protected NotificationConfigurationProperties configuration;
 
-    @Autowired
+    @SpyBean
     protected IPublisher publisher;
 
     @Autowired
@@ -134,15 +132,21 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     @Autowired
     protected ISubscriber subscriber;
 
+    @Autowired
+    protected RuleCache ruleCache;
+
     @Before
     public void before() throws Exception {
         RECIPIENT_FAIL = true;
-        this.notificationService.cleanTenantCache(runtimeTenantResolver.getTenant());
+        this.ruleCache.clear(runtimeTenantResolver.getTenant());
         this.recipientErrorRepo.deleteAll();
-        this.notificationRepo.deleteAll();
+        this.notificationRequestRepository.deleteAll();
         this.ruleRepo.deleteAll();
         this.pluginConfRepo.deleteAll();
         this.jobInforepo.deleteAll();
+        notificationMatchingService.post();
+        notificationProcessingService.post();
+        notificationRegistrationService.post();
         simulateApplicationReadyEvent();
     }
 

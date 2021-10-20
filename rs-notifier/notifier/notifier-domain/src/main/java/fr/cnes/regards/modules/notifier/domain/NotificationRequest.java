@@ -18,32 +18,17 @@
  */
 package fr.cnes.regards.modules.notifier.domain;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Version;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-
-import org.hibernate.annotations.Type;
-
-import com.google.gson.JsonElement;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 
 /**
  * Entity to store notification action
@@ -90,22 +75,33 @@ public class NotificationRequest {
      * Allows to know which recipient could not be successfully handled. This allows to know which recipient are to retry for a request.
      */
     @ManyToMany
-    @JoinTable(name = "ta_notif_request_recipients_error", joinColumns = @JoinColumn(name = "notification_request_id"),
+    @JoinTable(name = "ta_notif_request_recipients_error",
+            joinColumns = @JoinColumn(name = "notification_request_id"),
             inverseJoinColumns = @JoinColumn(name = "recipient_id"),
             foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_error"),
             inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_error_id"), indexes = {
-            @Index(name = "idx_ta_notif_request_recipients_error_recipient_id", columnList = "recipient_id") })
+            @Index(name = "idx_ta_notif_request_recipients_error_recipient_id", columnList = "recipient_id")})
     private final Set<PluginConfiguration> recipientsInError = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(name = "ta_notif_request_recipients_success",
+            joinColumns = @JoinColumn(name = "notification_request_id"),
+            inverseJoinColumns = @JoinColumn(name = "recipient_id"),
+            foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_success"),
+            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_success_id"), indexes = {
+            @Index(name = "idx_ta_notif_request_recipients_success_recipient_id", columnList = "recipient_id")})
+    private final Set<PluginConfiguration> successRecipients = new HashSet<>();
 
     /**
      * Allows to know which rules are to be matched during matching phase.
      */
     @ManyToMany
-    @JoinTable(name = "ta_notif_request_rules_to_match", joinColumns = @JoinColumn(name = "notification_request_id"),
+    @JoinTable(name = "ta_notif_request_rules_to_match",
+            joinColumns = @JoinColumn(name = "notification_request_id"),
             inverseJoinColumns = @JoinColumn(name = "rule_id"),
             foreignKey = @ForeignKey(name = "fk_notification_request_id_rules_to_match"),
             inverseForeignKey = @ForeignKey(name = "fk_notification_request_rules_to_match_id"),
-            indexes = { @Index(name = "idx_ta_notif_request_rules_to_match_rule_id", columnList = "rule_id") })
+            indexes = {@Index(name = "idx_ta_notif_request_rules_to_match_rule_id", columnList = "rule_id")})
     private final Set<Rule> rulesToMatch = new HashSet<>();
 
     @Id
@@ -216,6 +212,10 @@ public class NotificationRequest {
         return recipientsToSchedule;
     }
 
+    public Set<PluginConfiguration> getSuccessRecipients() {
+        return successRecipients;
+    }
+
     public Set<Rule> getRulesToMatch() {
         return rulesToMatch;
     }
@@ -240,4 +240,5 @@ public class NotificationRequest {
     public String getRequestOwner() {
         return requestOwner;
     }
+
 }

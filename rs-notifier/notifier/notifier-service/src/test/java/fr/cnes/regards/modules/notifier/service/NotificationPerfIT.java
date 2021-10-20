@@ -19,20 +19,19 @@
 package fr.cnes.regards.modules.notifier.service;
 
 import com.google.gson.JsonObject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.gson.JsonElement;
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -65,11 +64,11 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database
-        waitDatabaseCreation(this.notificationRepo, configuration.getMaxBulkSize(), 60);
+        waitDatabaseCreation(this.notificationRequestRepository, configuration.getMaxBulkSize(), 60);
         //        this.notificationService.scheduleRequests();
         //TODO
         // all send should work so we should have 0 NotificationAction left in database
-        waitDatabaseCreation(this.notificationRepo, 0, 60);
+        waitDatabaseCreation(this.notificationRequestRepository, 0, 60);
         assertEquals(0, this.recipientErrorRepo.count());
 
     }
@@ -89,13 +88,13 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database
-        waitDatabaseCreation(this.notificationRepo, configuration.getMaxBulkSize(), 60);
+        waitDatabaseCreation(this.notificationRequestRepository, configuration.getMaxBulkSize(), 60);
         //        this.notificationService.scheduleRequests();
         //TODO
         // we will wait util configuration.getMaxBulkSize() recipient errors are stored in database
         // cause one of the RECIPIENTS_PER_RULE will fail so we will get 1 error per NotificationAction to send
         waitDatabaseCreation(this.recipientErrorRepo, configuration.getMaxBulkSize(), 60);
-        assertEquals(this.notificationRepo.count(), configuration.getMaxBulkSize().intValue());
+        assertEquals(this.notificationRequestRepository.count(), configuration.getMaxBulkSize().intValue());
 
     }
 

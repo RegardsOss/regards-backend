@@ -18,24 +18,25 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Cache for {@link Rule}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
-public abstract class AbstractCacheableRule {
+@Component
+public class RuleCache {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -69,9 +70,18 @@ public abstract class AbstractCacheableRule {
 
     /**
      * Clean all {@link Rule} in cache for a tenant
+     *
      * @param tenant to clean
      */
-    public void cleanTenantCache(String tenant) {
+    public void clear(String tenant) {
         ruleCachePerTenant.invalidate(tenant);
     }
+
+    /**
+     * Clean all {@link Rule} in cache for the current tenant
+     */
+    public void clear() {
+        ruleCachePerTenant.invalidate(runtimeTenantResolver.getTenant());
+    }
+
 }

@@ -16,26 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.domain.plugin;
+package fr.cnes.regards.modules.notifier.dto.out;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
-
-import java.util.Collection;
-
-@PluginInterface(description = "Recipient sender plugin")
-public interface IRecipientNotifier {
-
-    /**
-     * Send notification requests
-     *
-     * @param requestsToSend {@link NotificationRequest} to send
-     * @return notification request that could not be handled i.e. error occurred
-     */
-    Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend);
-
-    String getRecipientId();
-
-    boolean isAckRequired();
-
+public enum RecipientStatus {
+    SUCCESS, ERROR
 }

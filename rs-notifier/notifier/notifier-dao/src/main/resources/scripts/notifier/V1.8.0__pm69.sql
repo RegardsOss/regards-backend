@@ -1,0 +1,6 @@
+
+CREATE TABLE ta_notif_request_recipients_success (notification_request_id int8 not null, recipient_id int8 not null, primary key (notification_request_id, recipient_id));
+ALTER TABLE ta_notif_request_recipients_success ADD CONSTRAINT fk_notification_request_id_recipients_success foreign key (notification_request_id) references t_notification_request;
+ALTER TABLE ta_notif_request_recipients_success ADD CONSTRAINT fk_notification_request_recipients_success_id foreign key (recipient_id) references t_plugin_configuration;
+
+CREATE INDEX idx_ta_notif_request_recipients_success_recipient_id ON ta_notif_request_recipients_success(recipient_id);

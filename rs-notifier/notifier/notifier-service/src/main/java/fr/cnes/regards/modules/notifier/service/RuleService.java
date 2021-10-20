@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-
+import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
+import fr.cnes.regards.modules.notifier.domain.Rule;
+import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +34,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
-import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import javax.validation.Valid;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation for rule service
@@ -68,7 +66,7 @@ public class RuleService implements IRuleService {
     private IPluginService pluginService;
 
     @Autowired
-    private INotificationRuleService notifService;
+    private RuleCache ruleCache;
 
     @Override
     public Page<RuleDTO> getRules(Pageable page) {
@@ -100,7 +98,7 @@ public class RuleService implements IRuleService {
             toSave = Rule.build(pluginConf, recipients);
         }
         // Clean cache
-        notifService.cleanCache();
+        ruleCache.clear();
         return toRuleDTO(ruleRepo.save(toSave));
     }
 
@@ -108,7 +106,7 @@ public class RuleService implements IRuleService {
     public void deleteRule(String businessId) throws ModuleException {
         ruleRepo.deleteByRulePluginBusinessId(businessId);
         pluginService.deletePluginConfiguration(businessId);
-        notifService.cleanCache();
+        ruleCache.clear();
     }
 
     @Override
@@ -120,7 +118,7 @@ public class RuleService implements IRuleService {
         notifRepo.deleteAll();
         ruleRepo.deleteAll();
 
-        notifService.cleanCache();
+        ruleCache.clear();
         return confToDelete;
     }
 

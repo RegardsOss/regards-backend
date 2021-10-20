@@ -22,9 +22,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.cnes.regards.modules.notifier.service.NotificationRegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -41,17 +39,13 @@ import java.util.List;
  */
 @Component
 @Profile("!nohandler")
-public class NotificationRequestEventHandler
-        implements IBatchHandler<NotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
-
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestEventHandler.class);
+public class NotificationRequestEventHandler implements IBatchHandler<NotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
     private ISubscriber subscriber;
 
     @Autowired
-    private INotificationRuleService notificationService;
+    private NotificationRegistrationService notificationRegistrationService;
 
     @Override
     public Class<NotificationRequestEvent> getMType() {
@@ -70,7 +64,7 @@ public class NotificationRequestEventHandler
 
     @Override
     public void handleBatch(List<NotificationRequestEvent> messages) {
-        notificationService.registerNotificationRequests(messages);
+        notificationRegistrationService.registerNotificationRequests(messages);
     }
 
 }

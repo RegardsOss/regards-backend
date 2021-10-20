@@ -18,8 +18,16 @@
  */
 package fr.cnes.regards.modules.notifier.task;
 
-import java.time.Instant;
-
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.notifier.service.IRecipientService;
+import fr.cnes.regards.modules.notifier.service.NotificationMatchingService;
+import fr.cnes.regards.modules.notifier.service.NotificationProcessingService;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,15 +37,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
-import fr.cnes.regards.modules.notifier.service.IRecipientService;
-import net.javacrumbs.shedlock.core.LockAssert;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
+import java.time.Instant;
 
 /**
  * Enable feature task scheduling
@@ -60,7 +60,7 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
 
     private static final String NOTIFICATION_ACTIONS = "NOTIFICATION ACTIONS";
 
-    private static final String NOTIFICATION_CHECK_SUCCESS = "NOTIFICATION CHECK SUCCESS";
+    private static final String NOTIFICATION_CHECK_COMPLETED = "NOTIFICATION CHECK COMPLETED";
 
     private static final String DEFAULT_INITIAL_DELAY = "30000";
 
@@ -75,99 +75,97 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private INotificationRuleService notificationService;
+    private NotificationProcessingService notificationProcessingService;
+
+    @Autowired
+    private NotificationMatchingService notificationMatchingService;
+
+    @Autowired
+    private IRecipientService recipientService;
+
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
 
     private final Task notificationMatchingTask = () -> {
+
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
-        Pair<Integer, Integer> nbNotifNbRecipient = notificationService.matchRequestNRecipient();
+
+        Pair<Integer, Integer> nbNotifNbRecipient = notificationMatchingService.matchRequestNRecipient();
+
         if (nbNotifNbRecipient != null && nbNotifNbRecipient.getFirst() != 0) {
-            LOGGER.info("{} notification requests matched to {} recipients  scheduled in {} ms",
+            LOGGER.info("{} notification requests matched to {} recipients. Scheduled in {} ms.",
                         nbNotifNbRecipient.getFirst(),
                         nbNotifNbRecipient.getSecond(),
                         System.currentTimeMillis() - start);
         }
     };
 
-    @Autowired
-    private IRecipientService recipientService;
-
     private final Task notificationTask = () -> {
+
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
-        int nb = this.recipientService.scheduleNotificationJobs();
+
+        int nb = recipientService.scheduleNotificationJobs();
+
         if (nb != 0) {
             LOGGER.info("{} notification requests scheduled in {} ms", nb, System.currentTimeMillis() - start);
         }
     };
 
-    private final Task notificationCheckSuccessTask = () -> {
+    private final Task notificationCheckCompletedTask = () -> {
+
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
-        int nb = this.notificationService.checkSuccess();
-        if (nb != 0) {
-            LOGGER.info("{} notification request success have been detected in {} ms", nb, System.currentTimeMillis() - start);
+
+        Pair<Integer, Integer> result = notificationProcessingService.checkCompletedRequests();
+
+        long stop = System.currentTimeMillis() - start;
+        int total = result.getFirst() + result.getSecond();
+        if (total != 0) {
+            LOGGER.info("{} completed notification requests have been detected in {} ms. Successes : {} - Errors : {}", total, stop, result.getFirst(), result.getSecond());
         }
     };
 
-    @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
 
     @Override
     protected Logger getLogger() {
         return LOGGER;
     }
 
-    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY
-            + "}", fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleMatchingRequests() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            try {
-                runtimeTenantResolver.forceTenant(tenant);
-                traceScheduling(tenant, NOTIFICATION_MATCHING);
-                lockingTaskExecutors.executeWithLock(notificationMatchingTask,
-                                                     new LockConfiguration(NOTIFICATION_MATCHING_LOCK,
-                                                                           Instant.now().plusSeconds(60)));
-            } catch (Throwable e) {
-                handleSchedulingError(NOTIFICATION_MATCHING, NOTIFICATION_TITLE, e);
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
+
+        schedule(NOTIFICATION_MATCHING, notificationMatchingTask, NOTIFICATION_MATCHING_LOCK);
+
     }
 
-    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY
-            + "}",
+    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleNotificationJobs() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            try {
-                runtimeTenantResolver.forceTenant(tenant);
-                traceScheduling(tenant, NOTIFICATION_ACTIONS);
-                lockingTaskExecutors.executeWithLock(notificationTask,
-                                                     new LockConfiguration(NOTIFICATION_LOCK,
-                                                                           Instant.now().plusSeconds(60)));
-            } catch (Throwable e) {
-                handleSchedulingError(NOTIFICATION_ACTIONS, NOTIFICATION_TITLE, e);
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
+
+        schedule(NOTIFICATION_ACTIONS, notificationTask, NOTIFICATION_LOCK);
+
     }
 
-    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY
-            + "}",
+    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
-    public void scheduleNotificationRequestCheckSuccess() {
+    public void scheduleNotificationRequestCheckCompleted() {
+
+        schedule(NOTIFICATION_CHECK_COMPLETED, notificationCheckCompletedTask, NOTIFICATION_LOCK);
+
+    }
+
+    private void schedule(String type, Task task, String lock) {
+
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                traceScheduling(tenant, NOTIFICATION_CHECK_SUCCESS);
-                lockingTaskExecutors.executeWithLock(notificationCheckSuccessTask,
-                                                     new LockConfiguration(NOTIFICATION_LOCK,
-                                                                           Instant.now().plusSeconds(60)));
+                traceScheduling(tenant, type);
+                lockingTaskExecutors.executeWithLock(task, new LockConfiguration(lock, Instant.now().plusSeconds(60)));
             } catch (Throwable e) {
-                handleSchedulingError(NOTIFICATION_ACTIONS, NOTIFICATION_TITLE, e);
+                handleSchedulingError(type, NOTIFICATION_TITLE, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

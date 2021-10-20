@@ -19,16 +19,7 @@
  */
 package fr.cnes.regards.modules.notifier.service.conf;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -38,6 +29,13 @@ import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
 import fr.cnes.regards.modules.notifier.service.AbstractNotificationMultitenantServiceTest;
 import fr.cnes.regards.modules.notifier.service.plugin.DefaultRuleMatcher;
 import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notifier_conf" })
 public class NotificationConfigurationServiceTest extends AbstractNotificationMultitenantServiceTest {
@@ -106,14 +104,20 @@ public class NotificationConfigurationServiceTest extends AbstractNotificationMu
 
         PluginConfiguration recipient1 = PluginConfiguration
                 .build(RabbitMQSender.PLUGIN_ID, "RECIPIENT1",
-                       IPluginParam.set(IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "exchange.test.name1"),
-                                        IPluginParam.build(RabbitMQSender.QUEUE_PARAM_NAME, "queue.test.name1")));
+                        IPluginParam.set(
+                                IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "exchange.test.name1"),
+                                IPluginParam.build(RabbitMQSender.QUEUE_PARAM_NAME, "queue.test.name1"),
+                                RECIPIENT,
+                                ACK_REQUIRED));
         configurations.add(recipient1);
 
         PluginConfiguration recipient2 = PluginConfiguration
                 .build(RabbitMQSender.PLUGIN_ID, "RECIPIENT2",
-                       IPluginParam.set(IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "exchange.test.name2"),
-                                        IPluginParam.build(RabbitMQSender.QUEUE_PARAM_NAME, "queue.test.name2")));
+                        IPluginParam.set(
+                                IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "exchange.test.name2"),
+                                IPluginParam.build(RabbitMQSender.QUEUE_PARAM_NAME, "queue.test.name2"),
+                                RECIPIENT,
+                                ACK_REQUIRED));
         configurations.add(recipient2);
 
         // Association
