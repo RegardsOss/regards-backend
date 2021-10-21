@@ -47,6 +47,11 @@ public class StringMatchCriterion extends AbstractMatchCriterion<String> {
     }
 
     public StringMatchType getMatchType() {
-        return matchType;
+        if (matchType == null) {
+            // this is to handle migration issues with former criterion in BD
+            return StringMatchType.KEYWORD;
+        } else {
+            return matchType;
+        }
     }
 }
