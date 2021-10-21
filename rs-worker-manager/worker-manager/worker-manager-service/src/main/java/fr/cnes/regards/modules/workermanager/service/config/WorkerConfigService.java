@@ -1,0 +1,152 @@
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.workermanager.service.config;
+
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
+import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Service to handle worker configuration.<br>
+ *
+ * @author Léo Mieulet
+ */
+@Service
+@RegardsTransactional
+public class WorkerConfigService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkerConfigService.class);
+
+    @Autowired
+    private IWorkerConfigRepository workerConfigRepository;
+
+    /**
+     * Search for all worker configuration.
+     */
+    public List<WorkerConfig> searchAll() {
+        return workerConfigRepository.findAll();
+    }
+
+    /**
+     * Search for the configuration of a given worker type.
+     *
+     * @param workerType worker type
+     * @return {@link WorkerConfig}
+     */
+    public Optional<WorkerConfig> search(String workerType) {
+        return workerConfigRepository.findByType(workerType);
+    }
+
+    /**
+     * Save the worker config provided into repo
+     *
+     * @param workerConfig entity to update
+     */
+    public void update(WorkerConfig workerConfig) {
+        LOGGER.info("Updating existing plugin configuration {}", workerConfig.getType());
+        workerConfigRepository.save(workerConfig);
+    }
+
+    public void create(WorkerConfig workerConfig) {
+        LOGGER.info("Creating worker configuration {}", workerConfig.getType());
+        workerConfigRepository.save(workerConfig);
+    }
+
+    /**
+     * Delete provided worker configuration
+     *
+     * @param workerConfig entity to delete
+     */
+    public void delete(WorkerConfig workerConfig) {
+        workerConfigRepository.delete(workerConfig);
+    }
+
+    /**
+     * Create or update WorkerConfig using provided configuration
+     *
+     * @param configuration a list of configuration imported
+     */
+    public Set<String> importConfiguration(Set<WorkerConfigDto> configuration) {
+        Set<String> errors = new HashSet<>();
+        for (WorkerConfigDto workerConfigDto : configuration) {
+            // Check valid conf
+            boolean currentWorkerConfValid = isWorkerConfValid(errors, workerConfigDto);
+            if (currentWorkerConfValid) {
+                Optional<WorkerConfig> workerConfigOpt = search(workerConfigDto.getWorkerType());
+                if (workerConfigOpt.isPresent()) {
+                    // Update entities on base
+                    WorkerConfig workerConfig = workerConfigOpt.get();
+                    workerConfig.setContentTypes(workerConfigDto.getContentTypes());
+                    update(workerConfig);
+                } else {
+                    // Create missing worker config
+                    create(WorkerConfig.build(workerConfigDto.getWorkerType(), workerConfigDto.getContentTypes()));
+                }
+            }
+        }
+        return errors;
+    }
+
+    private boolean isWorkerConfValid(Set<String> errors, WorkerConfigDto workerConfigDto) {
+        boolean currentWorkerConfValid = true;
+        if (workerConfigDto.getWorkerType().isEmpty()) {
+            String errorMessage = "Invalid worker conf with empty name";
+            LOGGER.error(errorMessage);
+            currentWorkerConfValid = false;
+            errors.add(errorMessage);
+        }
+        if (workerConfigDto.getContentTypes().isEmpty()) {
+            String errorMessage = String.format("WorkerConf with type=%s cannot declare empty contentType list",
+                                                workerConfigDto.getWorkerType());
+            LOGGER.error(errorMessage);
+            currentWorkerConfValid = false;
+            errors.add(errorMessage);
+        }
+        // Check if this WorkerConfig use content type already used by another WorkerConfig(s)
+        List<WorkerConfig> workerConfigUsingSameContentTypes = workerConfigRepository.findAllByContentTypesIn(
+                workerConfigDto.getContentTypes());
+        if (workerConfigUsingSameContentTypes.size() > 0) {
+            // Get the list of worker types that conflicts with the current one
+            Set<String> workerTypes = workerConfigUsingSameContentTypes.stream().map(WorkerConfig::getType)
+                    .collect(Collectors.toSet());
+            // Get the list of content types that are conflicting
+            Set<String> commonContentTypes = workerConfigUsingSameContentTypes.stream()
+                    .map(WorkerConfig::getContentTypes).flatMap(Collection::stream)
+                    .filter(contentType -> workerConfigDto.getContentTypes().contains(contentType))
+                    .collect(Collectors.toSet());
+
+            String errorMessage = String.format(
+                    "WorkerConf with type=%s declares contentType %s which are already used by %s",
+                    workerConfigDto.getWorkerType(), commonContentTypes, workerTypes);
+            LOGGER.error(errorMessage);
+            currentWorkerConfValid = false;
+            errors.add(errorMessage);
+        }
+        return currentWorkerConfValid;
+    }
+
+}

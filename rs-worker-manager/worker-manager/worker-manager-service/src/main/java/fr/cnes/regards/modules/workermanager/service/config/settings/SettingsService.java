@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.service.settings;
+package fr.cnes.regards.modules.workermanager.service.config.settings;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSetting
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.workermanager.domain.WorkerManagerSetting;
+import fr.cnes.regards.modules.workermanager.domain.settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,14 +39,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RegardsTransactional
-public class WorkerManagerSettingService extends AbstractSettingService {
+public class SettingsService extends AbstractSettingService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkerManagerSettingService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SettingsService.class);
 
     @Autowired
     private ITenantResolver tenantsResolver;
@@ -55,15 +54,15 @@ public class WorkerManagerSettingService extends AbstractSettingService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private WorkerManagerSettingService self;
+    private SettingsService self;
 
-    protected WorkerManagerSettingService(IDynamicTenantSettingService dynamicTenantSettingService) {
+    protected SettingsService(IDynamicTenantSettingService dynamicTenantSettingService) {
         super(dynamicTenantSettingService);
     }
 
     @Override
     protected List<DynamicTenantSetting> getSettingList() {
-        return WorkerManagerSetting.SETTING_LIST;
+        return Settings.SETTING_LIST;
     }
 
     @EventListener

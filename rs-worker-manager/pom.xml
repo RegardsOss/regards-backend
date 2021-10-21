@@ -56,6 +56,7 @@
     <modules>
         <module>worker-manager</module>
         <module>bootstrap-worker-manager</module>
+        <module>worker-common</module>
     </modules>
 
 </project>

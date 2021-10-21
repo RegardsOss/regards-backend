@@ -1,8 +1,8 @@
-package fr.cnes.regards.modules.workermanager.service.settings;
+package fr.cnes.regards.modules.workermanager.service.config.settings;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
-import fr.cnes.regards.modules.workermanager.domain.WorkerManagerSetting;
+import fr.cnes.regards.modules.workermanager.domain.settings.Settings;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class SkipContentTypeSettingCustomizer implements IDynamicTenantSettingCu
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return Objects.equals(dynamicTenantSetting.getName(), WorkerManagerSetting.SKIP_CONTENT_TYPES_NAME);
+        return Objects.equals(dynamicTenantSetting.getName(), Settings.SKIP_CONTENT_TYPES_NAME);
     }
 
     private boolean isProperValue(Object value) {

@@ -120,6 +120,9 @@ function relativePath {
             storage)
                 moduleDir="rs-storage"
             ;;
+            worker-manager)
+                moduleDir="rs-worker-manager"
+            ;;
             *)
                 moduleDir="$1"
             ;;

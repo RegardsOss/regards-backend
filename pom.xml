@@ -1639,6 +1639,17 @@
 				<version>${revision}</version>
 			</dependency>
 			<!--WorkerManager -->
+			<!-- Worker common DTO -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.worker-common</groupId>
+				<artifactId>worker-common-dto</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.workermanager</groupId>
+				<artifactId>worker-manager-dto</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.workermanager</groupId>
 				<artifactId>worker-manager-domain</artifactId>

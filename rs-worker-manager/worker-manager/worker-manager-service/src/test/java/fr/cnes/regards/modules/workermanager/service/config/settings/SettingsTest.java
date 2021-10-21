@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.service.settings;
+package fr.cnes.regards.modules.workermanager.service.config.settings;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -24,13 +24,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
 import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
-import fr.cnes.regards.modules.workermanager.domain.WorkerManagerSetting;
+import fr.cnes.regards.modules.workermanager.domain.settings.Settings;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Arrays;
@@ -42,7 +40,7 @@ import java.util.List;
 public class SettingsTest extends AbstractMultitenantServiceTest {
 
     @Autowired
-    private WorkerManagerSettingService settingService;
+    private SettingsService settingService;
 
     @Autowired
     private DynamicTenantSettingService tenantSettingService;
@@ -62,10 +60,10 @@ public class SettingsTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testSetting() throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
-        List<String> contentTypesToSkip = settingService.getValue(WorkerManagerSetting.SKIP_CONTENT_TYPES.getName());
+        List<String> contentTypesToSkip = settingService.getValue(Settings.SKIP_CONTENT_TYPES.getName());
         Assert.assertTrue(contentTypesToSkip.isEmpty());
-        tenantSettingService.update(WorkerManagerSetting.SKIP_CONTENT_TYPES.getName(), Arrays.asList("content1","content2"));
-        contentTypesToSkip = settingService.getValue(WorkerManagerSetting.SKIP_CONTENT_TYPES.getName());
+        tenantSettingService.update(Settings.SKIP_CONTENT_TYPES.getName(), Arrays.asList("content1", "content2"));
+        contentTypesToSkip = settingService.getValue(Settings.SKIP_CONTENT_TYPES.getName());
         Assert.assertTrue(contentTypesToSkip.contains("content1"));
         Assert.assertTrue(contentTypesToSkip.contains("content2"));
     }
