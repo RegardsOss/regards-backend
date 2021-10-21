@@ -64,9 +64,7 @@ public class WorkerConfUpdatedEventHandler
 
     @Override
     public void handleBatch(List<WorkerConfUpdatedEvent> messages) {
-        for (WorkerConfUpdatedEvent message : messages) {
-            workerConfigCacheService.cleanCache();
-        }
+        workerConfigCacheService.cleanCache();
     }
 
     @Override
