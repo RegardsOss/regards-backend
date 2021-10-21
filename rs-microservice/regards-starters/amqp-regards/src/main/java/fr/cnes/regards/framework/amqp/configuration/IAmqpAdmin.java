@@ -36,19 +36,34 @@ import java.util.Properties;
 public interface IAmqpAdmin {
 
     /**
-     * Declare an exchange for each event so we use its name to instantiate it.
+     * Declare an exchange.
+     * If exchangeName is provided, the declared exchange is named with it or else the exchange name is computed with :
+     * <ul>
+     *     <li>{@link WorkerMode#UNICAST} : creates a {@link org.springframework.amqp.core.DirectExchange} with {@link IAmqpAdmin#getUnicastExchangeName}</li>
+     *     <li>{@link WorkerMode#BROADCAST} : creates a {@link org.springframework.amqp.core.FanoutExchange} with {@link IAmqpAdmin#getBroadcastExchangeName}</li>
+     * </ul>
      * @param eventType event type
      * @param workerMode {@link WorkerMode}
      * @param target {@link Target}
      * @return a new {@link Exchange} related to current tenant and event
      */
-    Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target);
+    Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target, Optional<String> exchangeName);
 
     /**
      * Broadcast exchange name by event
+     * <ul>
+     *   <li>{@link Target#MICROSERVICE} : regards.broadcast.microserviceType.EventType</li>
+     *   <li>{@link Target#ALL}/{@link Target#ONE_PER_MICROSERVICE_TYPE} : regards.broadcast..EventType</li>
+     * </ul>
      * @return exchange name
      */
     String getBroadcastExchangeName(String eventType, Target target);
+
+    /**
+     * Return common unicast exchange name : regards.unicast
+     * @return
+     */
+    String getUnicastExchangeName();
 
     /**
      * Declare dead letter exchange and queue
@@ -57,31 +72,65 @@ public interface IAmqpAdmin {
 
     /**
      * Declare a queue that can handle priority with default DLQ
+     * If queueName is provided the declared queue is named with it or else the queue name is computed with :
+     * <ul>
+     *     <li>{@link WorkerMode#UNICAST} : {@link IAmqpAdmin#getUnicastQueueName}</li>
+     *     <li>{@link WorkerMode#BROADCAST} : {@link IAmqpAdmin#getSubscriptionQueueName}</li>
+     * </ul>
      * @param tenant tenant for which the queue is created
      * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}
      * @param workerMode worker mode
      * @param target target
      * @param handlerType optional event handler type
+     * @param queueName optional quene name to declare. If not provided queue name is defined by eventType/handlerType/WorkerMode/Target
      * @return declared {@link Queue}
      */
     Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType);
+            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName);
 
     /**
      * Declare a queue that can handle priority with custom Dead Letter Exchange and custom Dead Letter Routing Key
+     * If queueName is provided the declared queue is named with it or else the queue name is computed with :
+     * <ul>
+     *     <li>{@link WorkerMode#UNICAST} : {@link IAmqpAdmin#getUnicastQueueName}</li>
+     *     <li>{@link WorkerMode#BROADCAST} : {@link IAmqpAdmin#getSubscriptionQueueName}</li>
+     * </ul>
      * @param tenant tenant for which the queue is created
      * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}
      * @param workerMode worker mode
      * @param target target
      * @param handlerType optional event handler type
      * @param isDedicatedDLQEnabled enable creation of a dedicated DLQ
+     * @param queueName Name of the queue to declare. If not provided queue name is defined by eventType/handlerType/WorkerMode/Target
      * @return declared {@link Queue}
      */
     Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType, boolean isDedicatedDLQEnabled);
+            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName, boolean isDedicatedDLQEnabled);
 
+    /**
+     * Compute {@link WorkerMode#UNICAST} queue name with :
+     * <ul>
+     *  <li>{@link Target#MICROSERVICE} : regards.unicast.tenant.microserviceType.EventType</li>
+     *  <li>{@link Target#ALL}/{@link Target#MICROSERVICE} : regards.unicast.tenant.EventType</li>
+     *  <li>{@link Target#ONE_PER_MICROSERVICE_TYPE}/{@link Target#MICROSERVICE} : {@link IllegalArgumentException}</li>
+     * </ul>
+     * @param tenant
+     * @param eventType
+     * @param target
+     * @return
+     */
     String getUnicastQueueName(String tenant, Class<?> eventType, Target target);
 
+    /**
+     * Compute {@link WorkerMode#BROADCAST} queue name with :
+     * <ul>
+     *   <li>{@link Target#ONE_PER_MICROSERVICE_TYPE} : regards.broadcast.microserviceType.handlerType</li>
+     *   <li>{@link Target#ALL}/{@link Target#MICROSERVICE} : regards.broadcast.microserviceType.microserviceId.handlerType</li>
+     * </ul>
+     * @param handlerType
+     * @param target
+     * @return
+     */
     String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target);
 
     String getDedicatedDLQFromQueueName(String queueName);

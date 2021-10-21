@@ -41,14 +41,14 @@ public interface IBatchHandler<M> extends IHandler<M> {
      */
     Logger LOGGER = LoggerFactory.getLogger(IBatchHandler.class);
 
-    default void handleBatchAndLog(List<M> messages) {
+    default void handleBatchAndLog(List<M> messages, List<Message> rawMessages) {
         if (LOGGER.isTraceEnabled()) {
             for (M message : messages) {
                 LOGGER.trace("Received {}", message.getClass().getSimpleName());
                 LOGGER.trace("Event received: {}", message.toString());
             }
         }
-        handleBatch(messages);
+        handleBatchWithRaw(messages, rawMessages);
     }
 
     /**
@@ -92,6 +92,10 @@ public interface IBatchHandler<M> extends IHandler<M> {
      * So the batch listener dispatches them by tenant under the hood to make a contextual call per tenant.
      * @param messages messages to manage
      */
+    default void handleBatchWithRaw(List<M> messages, List<Message> rawMessages) {
+        handleBatch(messages);
+    }
+
     void handleBatch(List<M> messages);
 
     /**

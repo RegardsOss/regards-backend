@@ -21,6 +21,8 @@ package fr.cnes.regards.framework.amqp;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
+import java.util.Optional;
+
 /**
  * {@link ISubscriberContract} allows to subscribe to {@link ISubscribable} events. This interface represents the common
  * subscriber contract whether we are in a multitenant or an instance context.
@@ -37,6 +39,22 @@ public interface ISubscriberContract {
      * @param receiver event {@link IHandler}
      */
     <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver);
+
+    /**
+     * Subscribe to the given queueName to listen for {@link ISubscribable} events<br/>
+     * <ul>
+     *     <li>The queue is created if missing</li>
+     *     <li>The exchange is created if missing</li>
+     *     <li>The queue is bind to the exchange with UNICAST(routingKey=queueName) or BROADCAST</li>
+     * </ul>
+     *
+     * @param <E> {@link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
+     * @param receiver event {@link IHandler}
+     * @param queueName Name of the queue to listen for
+     * @param exchangeName Name of the exchange to create and to bind to the newly subscribe queue.
+     */
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName, String exchangeName);
 
     /**
      * Subscribe to this {@link ISubscribable} event
@@ -73,6 +91,18 @@ public interface ISubscriberContract {
      * can be done as well using {@link #subscribeTo(Class, IHandler, boolean)}
      * @param eventType {@link ISubscribable} event type
      * @param handlerType {@link IHandler} type
+     * @param queueName optional queue name to purge. If not provided queue name to purge is defined by the Event/handler provided
      */
-    <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType);
+    <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType,
+            Optional<String> queueName);
+
+    /**
+     * Purge related queues (for all tenant virtual hosts). Useful for testing purpose before publishing events. Purge
+     * can be done as well using {@link #subscribeTo(Class, IHandler, boolean)}
+     * @param eventType {@link ISubscribable} event type
+     * @param handlerType {@link IHandler} type
+     */
+    default <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType) {
+        purgeQueue(eventType, handlerType, Optional.empty());
+    }
 }

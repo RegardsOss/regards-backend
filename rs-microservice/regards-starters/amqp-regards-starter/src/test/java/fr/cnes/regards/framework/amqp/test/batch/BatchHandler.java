@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 public class BatchHandler implements IBatchHandler<BatchedMessage> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BatchHandler.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(BatchHandler.class);
 
     private final Map<String, Integer> countByTenants = new HashMap<>();
 
@@ -87,7 +87,7 @@ public class BatchHandler implements IBatchHandler<BatchedMessage> {
 
         calls++;
         for (BatchedMessage message : messages) {
-            LOGGER.info(message.getMessage());
+            getLogger().info(message.getMessage());
             if (VALID.equals(message.getMessage())) {
                 incrementCount(tenantResolver.getTenant());
             } else {
@@ -146,6 +146,10 @@ public class BatchHandler implements IBatchHandler<BatchedMessage> {
 
     public Integer getCalls() {
         return calls;
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
     @Override

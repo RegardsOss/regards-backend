@@ -129,15 +129,15 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
-    public Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target) {
+    public Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target, Optional<String> exchangeName) {
 
         Exchange exchange;
         switch (workerMode) {
             case UNICAST:
-                exchange = ExchangeBuilder.directExchange(getUnicastExchangeName()).durable(true).build();
+                exchange = ExchangeBuilder.directExchange(exchangeName.orElse(getUnicastExchangeName())).durable(true).build();
                 break;
             case BROADCAST:
-                exchange = ExchangeBuilder.fanoutExchange(getBroadcastExchangeName(eventType.getName(), target))
+                exchange = ExchangeBuilder.fanoutExchange(exchangeName.orElse(getBroadcastExchangeName(eventType.getName(), target)))
                         .durable(true).build();
                 break;
             default:
@@ -148,11 +148,8 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         return exchange;
     }
 
-    /**
-     * Unicast exchange name
-     * @return exchange name
-     */
-    private String getUnicastExchangeName() {
+    @Override
+    public String getUnicastExchangeName() {
         return getUnicastNamespace();
     }
 
@@ -201,13 +198,13 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
     @Override
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType) {
-        return declareQueue(tenant, eventType, workerMode, target, handlerType, false);
+            Optional<Class<? extends IHandler<?>>> handlerType,Optional<String> queueName) {
+        return declareQueue(tenant, eventType, workerMode, target, handlerType, queueName,false);
     }
 
     @Override
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType, boolean isDedicatedDLQEnabled) {
+            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName, boolean isDedicatedDLQEnabled) {
 
         // Default DLQ values
         String dlx = REGARDS_DLX;
@@ -217,22 +214,22 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         switch (workerMode) {
             case UNICAST:
                 // Useful for publishing unicast event and subscribe to a unicast exchange
-                queue = QueueBuilder.durable(getUnicastQueueName(tenant, eventType, target)).deadLetterExchange(dlx)
+                queue = QueueBuilder.durable(queueName.orElse(getUnicastQueueName(tenant, eventType, target))).deadLetterExchange(dlx)
                         .deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY).build();
                 break;
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
                 if (handlerType.isPresent()) {
 
-                    String queueName = getSubscriptionQueueName(handlerType.get(), target);
+                    String qn = queueName.orElse(getSubscriptionQueueName(handlerType.get(), target));
 
                     // Dedicated DLQ creation
                     if (isDedicatedDLQEnabled) {
-                        dlrk = getDedicatedDLRKFromQueueName(queueName);
-                        declareDedicatedDeadLetter(getDedicatedDLQFromQueueName(queueName), dlrk);
+                        dlrk = getDedicatedDLRKFromQueueName(qn);
+                        declareDedicatedDeadLetter(getDedicatedDLQFromQueueName(qn), dlrk);
                     }
 
-                    QueueBuilder qb = QueueBuilder.durable(queueName).deadLetterExchange(dlx).deadLetterRoutingKey(dlrk)
+                    QueueBuilder qb = QueueBuilder.durable(qn).deadLetterExchange(dlx).deadLetterRoutingKey(dlrk)
                             .maxPriority(MAX_PRIORITY);
                     // NOTE : test does not work with auto deletion queues
                     // queue = isAutoDeleteSubscriptionQueue(target) ? qb.autoDelete().build() : qb.build();

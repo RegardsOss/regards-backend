@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
+import java.util.Optional;
+
 /**
  * Class SubscriberMock
  *
@@ -32,6 +34,18 @@ public class SubscriberMock implements ISubscriber {
 
     @Override
     public <T extends ISubscribable> void subscribeTo(Class<T> pEvent, IHandler<T> pReceiver) {
+        // Nothing to do
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName,
+            String exchangeName) {
+    }
+
+
+    @Override
+    public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType,
+            Optional<String> queueName) {
         // Nothing to do
     }
 
@@ -64,10 +78,5 @@ public class SubscriberMock implements ISubscriber {
     @Override
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
         /// Nothing to do
-    }
-
-    @Override
-    public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType) {
-        // Nothing to do
     }
 }

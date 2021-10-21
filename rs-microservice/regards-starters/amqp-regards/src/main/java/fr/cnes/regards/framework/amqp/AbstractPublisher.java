@@ -119,12 +119,32 @@ public abstract class AbstractPublisher implements IPublisherContract {
     }
 
     @Override
-    public void publish(ISubscribable event, int pPriority) {
+    @Transactional
+    public void publish(List<? extends ISubscribable> events,String exchangeName, Optional<String> queueName) {
+        events.forEach(e -> publish(e, exchangeName, queueName));
+    }
+
+    @Override
+    public void publish(ISubscribable event, int priority) {
         Class<?> eventClass = event.getClass();
         publish(event,
                 EventUtils.getWorkerMode(eventClass),
                 EventUtils.getTargetRestriction(eventClass),
-                pPriority,
+                priority,
+                Optional.empty(),
+                Optional.empty(),
+                false);
+    }
+
+    @Override
+    public void publish(ISubscribable event, String exchangeName, Optional<String> queueName) {
+        Class<?> eventClass = event.getClass();
+        publish(event,
+                EventUtils.getWorkerMode(eventClass),
+                EventUtils.getTargetRestriction(eventClass),
+                0,
+                Optional.of(exchangeName),
+                queueName,
                 false);
     }
 
@@ -152,7 +172,8 @@ public abstract class AbstractPublisher implements IPublisherContract {
     @Override
     public void publish(IPollable event, int priority, boolean purgeQueue) {
         Class<?> eventClass = event.getClass();
-        publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), priority, purgeQueue);
+        publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), priority, Optional.empty(),
+                Optional.empty(),purgeQueue);
     }
 
     @Override
@@ -166,6 +187,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
                                                  eventType,
                                                  WorkerMode.UNICAST,
                                                  EventUtils.getTargetRestriction(eventType),
+                                                 Optional.empty(),
                                                  Optional.empty());
             amqpAdmin.purgeQueue(queue.getName(), false);
         } finally {
@@ -264,13 +286,13 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
     protected <T> void publish(final T event, final WorkerMode workerMode, final Target target, final int priority,
-            boolean purgeQueue) {
+            Optional<String> exchangeName, Optional<String> queueName, boolean purgeQueue) {
 
         LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )", event.getClass(), target, workerMode);
 
         String tenant = resolveTenant();
         if (tenant != null) {
-            publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, priority, purgeQueue);
+            publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, priority, exchangeName, queueName, purgeQueue);
         } else {
             String errorMessage = String.format("Unable to publish event %s cause no tenant found.", event.getClass());
             LOGGER.error(errorMessage);
@@ -300,7 +322,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
     protected final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
-            int priority, boolean purgeQueue) {
+            int priority, Optional<String> exchangeName, Optional<String> queueName, boolean purgeQueue) {
 
         final Class<?> eventType = event.getClass();
 
@@ -310,17 +332,17 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
             // Declare AMQP elements for first publication
             ConcurrentMap<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent = exchangesAndRoutingKeysByEventPerTenant.computeIfAbsent(tenant, key -> new ConcurrentHashMap<>());
-            ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(eventType.getName(), key ->
+            ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(exchangeName.orElse(eventType.getName()), key ->
             {
                 amqpAdmin.declareDeadLetter();
 
                 // Declare exchange
-                Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
+                Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, exchangeName);
 
                 if (WorkerMode.UNICAST.equals(workerMode)) {
                     // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
                     // specific routing key
-                    Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty());
+                    Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty(), queueName);
                     if (purgeQueue) {
                         amqpAdmin.purgeQueue(queue.getName(), false);
                     }
@@ -344,6 +366,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
             });
 
             // Publish
+            LOGGER.info("Pubkishing {}/{}",er.exchange, er.routingKey);
             publishMessageByTenant(tenant, er.exchange, er.routingKey, event, priority, null);
         } finally {
             rabbitVirtualHostAdmin.unbind();

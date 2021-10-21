@@ -49,11 +49,47 @@ public interface IPublisherContract {
     void publish(ISubscribable event);
 
     /**
+     * Publish an {@link ISubscribable} event on the given exchange name.<br>
+     * If the queue name is provided : <ul>
+     *     <li>The exchange is created</li>
+     *     <li>The queue is created</li>
+     *     <li>The queue is bind to the exchange with routingKey=queueName</li>
+     *     <li>Event is published with UNICAST(routingKey=queueName) or BROADCAST</li>
+     * </ul>
+     * If the queue name is not provided :<ul>
+     *     <li>The exchange is created</li>
+     *     <li>Event is published with UNICAST(routingKey=EventType) or BROADCAST</li>
+     * </ul>
+     * @param event
+     * @param exchangeName
+     * @param queueName
+     */
+    void publish(ISubscribable event, String exchangeName, Optional<String> queueName);
+
+    /**
      * Publish in batch a list of {@link ISubscribable} events
      *
-     * <br/><br/><b>!!!!! Experimental feature for test only at the moment</b>
      */
     void publish(List<? extends ISubscribable> events);
+
+    /**
+     * Publish {@link ISubscribable} events on the given exchange name.<br>
+     * If the queue name is provided : <ul>
+     *     <li>The exchange is created</li>
+     *     <li>The queue is created</li>
+     *     <li>The queue is bind to the exchange with routingKey=queueName</li>
+     *     <li>Event is published with routingKey=queueName</li>
+     * </ul>
+     * If the queue name is not provided :<ul>
+     *     <li>The exchange is created</li>
+     *     <li>Event is published with routingKey=EventType</li>
+     *     <li>NOTE : The binding between exchange/queue with routing key need to be done by the subscriber</li>
+     * </ul>
+     * @param events
+     * @param exchangeName
+     * @param queueName
+     */
+    void publish(List<? extends ISubscribable> events, String exchangeName, Optional<String> queueName);
 
     /**
      * Publish an {@link ISubscribable} event

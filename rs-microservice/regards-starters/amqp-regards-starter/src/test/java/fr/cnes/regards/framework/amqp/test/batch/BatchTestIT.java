@@ -43,6 +43,11 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * @author Marc SORDI
  *
@@ -79,11 +84,17 @@ public class BatchTestIT {
 
     private BatchHandlerBis batchHandlerBis;
 
+    private BatchHandlerTers batchHandlerTers;
+
     @Autowired
     private IAmqpAdmin amqpAdmin;
 
     @Autowired
     private IRabbitVirtualHostAdmin vhostAdmin;
+
+    private static final String QUEUE_NAME = "test.queue.name";
+
+    private static final String EXCHANGE_NAME = "test.exchange.name";
 
     //    @Autowired(required = false)
     //    private List<HealthIndicator> indicators;
@@ -93,9 +104,11 @@ public class BatchTestIT {
         // New instance for each test
         batchHandler = new BatchHandler(tenantResolver);
         batchHandlerBis = new BatchHandlerBis(tenantResolver);
+        batchHandlerTers = new BatchHandlerTers(tenantResolver);
         // Subscribe to message
         subscriber.subscribeTo(BatchedMessage.class, batchHandler);
         subscriber.subscribeTo(BatchedMessage.class, batchHandlerBis);
+        subscriber.subscribeTo(BatchedMessage.class, batchHandlerTers, QUEUE_NAME, EXCHANGE_NAME);
     }
 
     @After
@@ -105,17 +118,8 @@ public class BatchTestIT {
 
         // Purge queue
         cleanAMQPQueues(BatchHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueue(QUEUE_NAME);
     }
-
-    //    @TestprocessConversionException
-    //    public void healthTest() {
-    //        if (indicators != null) {
-    //            for (HealthIndicator indicator : indicators) {
-    //                Health health = indicator.health();
-    //                LOGGER.debug("{} : {}", indicator.getClass(), health.getStatus());
-    //            }
-    //        }
-    //    }
 
     @Test
     public void processConversionException() throws InterruptedException {
@@ -161,6 +165,45 @@ public class BatchTestIT {
         Assert.assertTrue(batchHandler.getCountByTenant(PROJECT) == MESSAGE_NB_PROJECT);
         Assert.assertTrue(batchHandler.getCountByTenant(PROJECT1) == MESSAGE_NB_PROJECT1);
         Assert.assertTrue(batchHandler.getCalls() == 2);
+    }
+
+    @Test
+    public void processValidBatchOnNamedQueue() throws InterruptedException {
+
+        List<BatchedMessage> messages = new ArrayList<>();
+
+        // Publish message in default project
+        for (int i = 1; i <= MESSAGE_NB_PROJECT; i++) {
+            BatchedMessage m = BatchedMessage.build(BatchHandler.VALID);
+            m.setMessageProperties(new MessageProperties());
+            m.setHeader("header", "value");
+            messages.add(m);
+        }
+        try {
+            tenantResolver.forceTenant(PROJECT);
+            publisher.broadcastAll(EXCHANGE_NAME, Optional.empty(),0,messages,new HashMap<>());
+        } finally {
+            tenantResolver.clearTenant();
+        }
+
+        messages.clear();
+        // Publish message in default project
+        for (int i = 1; i <= MESSAGE_NB_PROJECT1; i++) {
+            BatchedMessage m = BatchedMessage.build(BatchHandler.VALID);
+            m.setMessageProperties(new MessageProperties());
+            m.setHeader("header", "value");
+            messages.add(m);
+        }
+        try {
+            tenantResolver.forceTenant(PROJECT1);
+            publisher.broadcastAll(EXCHANGE_NAME, Optional.empty(),0,messages,new HashMap<>());
+        } finally {
+            tenantResolver.clearTenant();
+        }
+        Thread.sleep(5000);
+        Assert.assertEquals("Invalid number of message received",MESSAGE_NB_PROJECT, batchHandlerTers.getCountByTenant(PROJECT));
+        Assert.assertEquals("Invalid number of message received",MESSAGE_NB_PROJECT1, batchHandlerTers.getCountByTenant(PROJECT1));
+        Assert.assertEquals("Invalid number of calls", 2,batchHandlerTers.getCalls().intValue());
     }
 
     @Test
@@ -246,6 +289,22 @@ public class BatchTestIT {
             try {
                 vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
                 amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
+            } catch (AmqpIOException e) {
+                LOGGER.warn("Failed to clean AMQP queues");
+            } finally {
+                vhostAdmin.unbind();
+            }
+        }
+    }
+
+    private void cleanAMQPQueue(String queueName) {
+        if (vhostAdmin != null) {
+            // Re-set tenant because above simulation clear it!
+
+            // Purge event queue
+            try {
+                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+                amqpAdmin.purgeQueue(queueName, false);
             } catch (AmqpIOException e) {
                 LOGGER.warn("Failed to clean AMQP queues");
             } finally {

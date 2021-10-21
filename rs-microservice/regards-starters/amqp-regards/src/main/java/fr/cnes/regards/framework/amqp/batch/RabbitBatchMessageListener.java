@@ -251,7 +251,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         });
 
         // Invoke main method
-        Object[] arguments = new Object[] { convertedMessages };
+        Object[] arguments = new Object[] { convertedMessages, originalMessages };
 
         try {
             runtimeTenantResolver.forceTenant(tenant);

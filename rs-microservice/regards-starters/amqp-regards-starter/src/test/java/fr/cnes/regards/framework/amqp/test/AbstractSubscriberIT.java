@@ -33,20 +33,20 @@ import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
 import fr.cnes.regards.framework.amqp.test.handler.GsonInfoNoWrapperHandler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.constraints.AssertTrue;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Common subscriber tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
@@ -214,6 +214,54 @@ public abstract class AbstractSubscriberIT {
     }
 
     @Test
+    public void customQueueNameUnicastTest() throws InterruptedException {
+
+        String queueName = "test.queue.customQueueNameUnicastTest";
+        String queueName2 = "test.queue2.customQueueNameUnicastTest";
+        String exchangeName = "test.exchange.customQueueNameUnicastTest";
+
+        AbstractReceiver<UnicastInfo> handler1 = new AbstractReceiver<UnicastInfo>() {
+
+        };
+        subscriber.subscribeTo(UnicastInfo.class, handler1, queueName, exchangeName);
+
+        AbstractReceiver<UnicastInfo> handler2 = new AbstractReceiver<UnicastInfo>() {
+
+        };
+        subscriber.subscribeTo(UnicastInfo.class, handler2, queueName2, exchangeName);
+
+        publisher.publish(new UnicastInfo(), exchangeName, Optional.of(queueName));
+
+        Assert.assertFalse(handler1.checkCount(1) && handler2.checkCount(1));
+        Assert.assertTrue(handler1.checkCount(1) || handler2.checkCount(1));
+    }
+
+    @Test
+    public void customQueueNameBroadcastAllTest() throws InterruptedException {
+        String queueName = "test.queue.customQueueNameBroadcastAllTest";
+        String queueName2 = "test.queue2.customQueueNameBroadcastAllTest";
+        String exchangeName = "test.exchange.customQueueNameBroadcastAllTest";
+
+        AbstractReceiver<Info> receiver = new AbstractReceiver<Info>() {
+
+        };
+
+        AbstractReceiver<Info> receiver2 = new AbstractReceiver<Info>() {
+
+        };
+        subscriber.subscribeTo(Info.class, receiver, queueName, exchangeName);
+        subscriber.subscribeTo(Info.class, receiver2, queueName2, exchangeName);
+        publisher.publish(new Info(), exchangeName, Optional.empty());
+
+        Thread.sleep(5_000);
+
+        LOGGER.info("SEB !!!!! {}/{}",receiver.getCount(),receiver2.getCount());
+
+        Assert.assertEquals("Check 1 invalid",1, receiver.getCount().intValue());
+        Assert.assertEquals("Check 2 invalid",1, receiver2.getCount().intValue());
+    }
+
+    @Test
     public void onePerMicroserviceTypeTest() {
 
         RegardsAmqpAdmin admin = (RegardsAmqpAdmin) amqpAdmin;
@@ -307,6 +355,10 @@ public abstract class AbstractSubscriberIT {
     }
 
     private class Receiver extends AbstractReceiver<Info> {
+
+    }
+
+    private class Receiver2 extends AbstractReceiver<Info> {
 
     }
 
