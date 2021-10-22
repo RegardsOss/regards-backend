@@ -52,6 +52,9 @@ public class AgentCleanSessionStepService {
     @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
 
+    @Autowired
+    private AgentCleanSessionStepService self;
+
     @Value("${regards.session.agent.clean.session.step.limit.store:30}")
     private int limitStoreSessionSteps;
 
@@ -65,11 +68,11 @@ public class AgentCleanSessionStepService {
         boolean interrupted = Thread.currentThread().isInterrupted();
         int nbSessionStepsDeleted = 0;
         Pageable page = PageRequest.of(0, pageSize, Sort.by("lastUpdateDate"));
-        Page<SessionStep> sessionStepsToDelete;
+        int nbSessionStepsDeletedThisTime = 0;
         do {
-            sessionStepsToDelete = deleteOnePage(startClean, page);
-            nbSessionStepsDeleted += sessionStepsToDelete.getNumberOfElements();
-        } while (!interrupted && sessionStepsToDelete.hasNext());
+            nbSessionStepsDeletedThisTime = self.deleteOnePage(startClean, page);
+            nbSessionStepsDeleted += nbSessionStepsDeletedThisTime;
+        } while (!interrupted && nbSessionStepsDeletedThisTime != 0);
 
         // log if thread was interrupted
         if (interrupted) {
@@ -79,13 +82,13 @@ public class AgentCleanSessionStepService {
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    public Page<SessionStep> deleteOnePage(OffsetDateTime startClean, Pageable page) {
+    public int deleteOnePage(OffsetDateTime startClean, Pageable page) {
         // Get all session steps to delete older than startClean
         Page<SessionStep> sessionStepsToDelete = sessionStepRepo.findByLastUpdateDateBefore(startClean, page);
         // Delete all related StepPropertyUpdateRequests
         stepPropertyRepo.deleteBySessionStepIn(sessionStepsToDelete.getContent());
         // Delete SessionSteps
         this.sessionStepRepo.deleteInBatch(sessionStepsToDelete.getContent());
-        return sessionStepsToDelete;
+        return sessionStepsToDelete.getNumberOfElements();
     }
 }
