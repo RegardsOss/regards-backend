@@ -29,7 +29,7 @@ import java.util.Objects;
  *
  * @author Léo Mieulet
  */
-public class CacheWorkerIns {
+public class CacheWorkerInstance {
 
     /**
      * Worker ID
@@ -43,15 +43,15 @@ public class CacheWorkerIns {
 
     private final String workerType;
 
-    public CacheWorkerIns(String id, String workerType, @NotNull OffsetDateTime heartBeatDate) {
+    public CacheWorkerInstance(String id, String workerType, @NotNull OffsetDateTime heartBeatDate) {
         this.id = id;
         this.lastHeartBeatDate = heartBeatDate;
         this.workerType = workerType;
     }
 
-    public static CacheWorkerIns build(WorkerHeartBeatEvent workerHeartBeatEvent) {
-        return new CacheWorkerIns(workerHeartBeatEvent.getId(), workerHeartBeatEvent.getType(),
-                                  workerHeartBeatEvent.getHeartBeatDate());
+    public static CacheWorkerInstance build(WorkerHeartBeatEvent workerHeartBeatEvent) {
+        return new CacheWorkerInstance(workerHeartBeatEvent.getId(), workerHeartBeatEvent.getType(),
+                                       workerHeartBeatEvent.getHeartBeatDate());
     }
 
     public String getId() {
@@ -72,7 +72,7 @@ public class CacheWorkerIns {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        CacheWorkerIns that = (CacheWorkerIns) o;
+        CacheWorkerInstance that = (CacheWorkerInstance) o;
         return Objects.equals(id, that.id);
     }
 

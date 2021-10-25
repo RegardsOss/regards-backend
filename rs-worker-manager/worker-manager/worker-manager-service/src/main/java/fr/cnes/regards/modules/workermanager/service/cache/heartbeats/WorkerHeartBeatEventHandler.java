@@ -3,9 +3,7 @@ package fr.cnes.regards.modules.workermanager.service.cache.heartbeats;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
-import fr.cnes.regards.modules.workermanager.service.cache.IWorkerCacheService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -25,14 +23,11 @@ import java.util.List;
 public class WorkerHeartBeatEventHandler
         implements IBatchHandler<WorkerHeartBeatEvent>, ApplicationListener<ApplicationReadyEvent> {
 
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkerHeartBeatEventHandler.class);
-
     @Autowired
     private ISubscriber subscriber;
 
     @Autowired
-    private IWorkerCacheService workerCacheService;
+    private WorkerCacheService workerCacheService;
 
     @Override
     public Class<WorkerHeartBeatEvent> getMType() {

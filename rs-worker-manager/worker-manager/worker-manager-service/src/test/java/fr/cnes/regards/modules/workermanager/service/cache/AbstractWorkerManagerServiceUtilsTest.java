@@ -99,6 +99,7 @@ public abstract class AbstractWorkerManagerServiceUtilsTest extends AbstractMult
 
     @After
     public void after() throws Exception {
+        cleanRepositories();
         doAfter();
     }
 
@@ -115,6 +116,7 @@ public abstract class AbstractWorkerManagerServiceUtilsTest extends AbstractMult
     //     REPO
     // -------------
     private void cleanRepositories() {
+        LOGGER.info("Clean repository");
         dynamicTenantSettingRepository.deleteAll();
         workerConfigRepository.deleteAll();
     }

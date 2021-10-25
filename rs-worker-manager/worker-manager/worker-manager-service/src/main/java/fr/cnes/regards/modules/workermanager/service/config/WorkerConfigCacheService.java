@@ -35,9 +35,9 @@ import java.util.Optional;
 /**
  * A cache holding values of {@link WorkerConfig}.
  * To improve performances, the cache is structured to be access by tenant then by content type, as this:
- * tenant ->
- *  \--- content type ->
- *  --------\---  worker type
+ * <p>tenant  -></p>
+ * <p>       content type -></p>
+ * <p>                    worker type</p>
  *
  * @author Léo Mieulet
  */
@@ -45,7 +45,7 @@ import java.util.Optional;
 public class WorkerConfigCacheService {
 
     @Autowired
-    private IWorkerConfigRepository workerConfigRepo;
+    private IWorkerConfigRepository workerConfigRepository;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -58,12 +58,12 @@ public class WorkerConfigCacheService {
 
                 @Override
                 public Map<String, String> load(String tenant) {
-                    List<WorkerConfig> workerConfigs = workerConfigRepo.findAll();
+                    List<WorkerConfig> workerConfigs = workerConfigRepository.findAll();
                     // Reorganise worker configs into a Map with content type as key and worker type as value
                     Map<String, String> workerTypeByContentType = new HashMap<>();
                     for (WorkerConfig workerConfig : workerConfigs) {
                         for (String contentType : workerConfig.getContentTypes()) {
-                            workerTypeByContentType.put(contentType, workerConfig.getType());
+                            workerTypeByContentType.put(contentType, workerConfig.getWorkerType());
                         }
                     }
                     return workerTypeByContentType;

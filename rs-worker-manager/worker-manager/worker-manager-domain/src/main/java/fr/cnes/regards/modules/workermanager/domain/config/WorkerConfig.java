@@ -32,11 +32,11 @@ import java.util.Set;
  * @author Léo Mieulet
  */
 @Entity
-@Table(name = "t_worker_conf", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_worker_conf_type", columnNames = { WorkerConfig.TYPE_COLUMN_NAME }) })
+@Table(name = "t_worker_conf", uniqueConstraints = { @UniqueConstraint(name = "uk_worker_conf_worker_type",
+        columnNames = { WorkerConfig.WORKER_TYPE_COLUMN_NAME }) })
 public class WorkerConfig {
 
-    public static final String TYPE_COLUMN_NAME = "type";
+    public static final String WORKER_TYPE_COLUMN_NAME = "worker_type";
 
     public static final String CONTENT_TYPE_NAME = "content_type";
 
@@ -45,8 +45,10 @@ public class WorkerConfig {
      */
     @ElementCollection(fetch = FetchType.EAGER)
     @Column(name = CONTENT_TYPE_NAME)
-    @CollectionTable(name = "ta_worker_conf_content_types", joinColumns = @JoinColumn(name = "worker_conf_id", foreignKey = @ForeignKey(name = "fk_worker_conf_content_type")),
-            uniqueConstraints = @UniqueConstraint(name = "uk_worker_conf_content_type", columnNames = { CONTENT_TYPE_NAME }))
+    @CollectionTable(name = "ta_worker_conf_content_types", joinColumns = @JoinColumn(name = "worker_conf_id",
+            foreignKey = @ForeignKey(name = "fk_worker_conf_content_type")),
+            uniqueConstraints = @UniqueConstraint(name = "uk_worker_conf_content_type",
+                    columnNames = { CONTENT_TYPE_NAME }))
     private final Set<String> contentTypes = Sets.newHashSet();
 
     @Id
@@ -56,16 +58,13 @@ public class WorkerConfig {
     @ConfigIgnore
     private Long id;
 
-    /**
-     * Worker type
-     */
-    @Column(length = 128)
+    @Column(length = 128, name = WORKER_TYPE_COLUMN_NAME)
     @NotNull
-    private String type;
+    private String workerType;
 
     public static WorkerConfig build(String type, Set<String> contentTypes) {
         WorkerConfig workerConfig = new WorkerConfig();
-        workerConfig.type = type;
+        workerConfig.workerType = type;
         workerConfig.contentTypes.addAll(contentTypes);
         return workerConfig;
     }
@@ -78,12 +77,12 @@ public class WorkerConfig {
         this.id = id;
     }
 
-    public String getType() {
-        return type;
+    public String getWorkerType() {
+        return workerType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setWorkerType(String type) {
+        this.workerType = type;
     }
 
     public Set<String> getContentTypes() {
@@ -96,6 +95,6 @@ public class WorkerConfig {
     }
 
     public WorkerConfigDto toDto() {
-        return new WorkerConfigDto(this.type, this.contentTypes);
+        return new WorkerConfigDto(this.workerType, this.contentTypes);
     }
 }

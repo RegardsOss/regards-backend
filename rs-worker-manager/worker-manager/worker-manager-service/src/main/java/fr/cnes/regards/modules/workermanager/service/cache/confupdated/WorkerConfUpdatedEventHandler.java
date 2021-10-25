@@ -43,9 +43,6 @@ import java.util.List;
 public class WorkerConfUpdatedEventHandler
         implements IBatchHandler<WorkerConfUpdatedEvent>, ApplicationListener<ApplicationReadyEvent> {
 
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkerConfUpdatedEventHandler.class);
-
     @Autowired
     private ISubscriber subscriber;
 

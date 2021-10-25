@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.domain.settings;
+package fr.cnes.regards.modules.workermanager.domain.config;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author sbinda
  */
-public class Settings {
+public class WorkerManagerSettings {
 
     public static final String SKIP_CONTENT_TYPES_NAME = "skipContentTypes";
 
@@ -39,6 +39,6 @@ public class Settings {
 
     public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(SKIP_CONTENT_TYPES);
 
-    private Settings() {
+    private WorkerManagerSettings() {
     }
 }

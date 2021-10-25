@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSetting
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.workermanager.domain.settings.Settings;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +43,9 @@ import java.util.List;
 
 @Service
 @RegardsTransactional
-public class SettingsService extends AbstractSettingService {
+public class WorkerManagerSettingsService extends AbstractSettingService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SettingsService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkerManagerSettingsService.class);
 
     @Autowired
     private ITenantResolver tenantsResolver;
@@ -54,15 +54,15 @@ public class SettingsService extends AbstractSettingService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private SettingsService self;
+    private WorkerManagerSettingsService self;
 
-    protected SettingsService(IDynamicTenantSettingService dynamicTenantSettingService) {
+    protected WorkerManagerSettingsService(IDynamicTenantSettingService dynamicTenantSettingService) {
         super(dynamicTenantSettingService);
     }
 
     @Override
     protected List<DynamicTenantSetting> getSettingList() {
-        return Settings.SETTING_LIST;
+        return WorkerManagerSettings.SETTING_LIST;
     }
 
     @EventListener

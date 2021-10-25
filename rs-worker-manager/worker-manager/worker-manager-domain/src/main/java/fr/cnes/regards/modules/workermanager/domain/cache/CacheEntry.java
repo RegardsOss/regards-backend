@@ -22,7 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
- * An entry used by the cache, holds all references to workers {@link CacheWorkerIns} handling a specific content type
+ * An entry used by the cache, holds all references to workers {@link CacheWorkerInstance} handling a specific content type
  *
  * @author Léo Mieulet
  */
@@ -36,15 +36,15 @@ public class CacheEntry {
     /**
      * Set of Worker instances matching the cache key
      */
-    Set<CacheWorkerIns> workerInsList;
+    Set<CacheWorkerInstance> workerInsList;
 
-    public CacheEntry(Set<CacheWorkerIns> workerInsList, long expireInCacheDuration) {
+    public CacheEntry(Set<CacheWorkerInstance> workerInsList, long expireInCacheDuration) {
         this.workerInsList = workerInsList;
         this.expireInCacheDuration = expireInCacheDuration;
         this.removeOutdatedWorkerIns();
     }
 
-    public void addWorkers(Set<CacheWorkerIns> workerInsList) {
+    public void addWorkers(Set<CacheWorkerInstance> workerInsList) {
         this.workerInsList.removeAll(workerInsList);
         this.workerInsList.addAll(workerInsList);
         this.removeOutdatedWorkerIns();
@@ -55,7 +55,7 @@ public class CacheEntry {
      */
     private void removeOutdatedWorkerIns() {
         this.workerInsList.removeIf(
-                cacheWorkerIns -> !isValidHeartBeat(cacheWorkerIns.getLastHeartBeatDate(), expireInCacheDuration));
+                cacheWorkerInstance -> !isValidHeartBeat(cacheWorkerInstance.getLastHeartBeatDate(), expireInCacheDuration));
     }
 
     /**

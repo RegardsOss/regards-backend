@@ -82,8 +82,8 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
         String workerId3 = UUID.randomUUID().toString();
 
         workerCacheService.registerWorkers(
-                Lists.list(WorkerHeartBeatEvent.build(workerId1, workerType1, OffsetDateTime.now()),
-                           WorkerHeartBeatEvent.build(workerId2, workerType2, OffsetDateTime.now().minusDays(1))));
+                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
+                           new WorkerHeartBeatEvent(workerId2, workerType2, OffsetDateTime.now().minusDays(1))));
 
         contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker", Optional.of(workerType1),
                                                                  workerCacheService.getWorkerTypeByContentType(
@@ -97,8 +97,8 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
 
         // Check receive new heartbeat + new instance for same workerType
         workerCacheService.registerWorkers(
-                Lists.list(WorkerHeartBeatEvent.build(workerId1, workerType1, OffsetDateTime.now()),
-                           WorkerHeartBeatEvent.build(workerId3, workerType2, OffsetDateTime.now())));
+                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
+                           new WorkerHeartBeatEvent(workerId3, workerType2, OffsetDateTime.now())));
         contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker", Optional.of(workerType1),
                                                                  workerCacheService.getWorkerTypeByContentType(
                                                                          contentType)));
@@ -115,7 +115,7 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
         String workerId1 = UUID.randomUUID().toString();
 
         workerCacheService.registerWorkers(
-                Lists.list(WorkerHeartBeatEvent.build(workerId1, workerType1, OffsetDateTime.now())));
+                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now())));
 
         contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker", Optional.of(workerType1),
                                                                  workerCacheService.getWorkerTypeByContentType(
@@ -143,8 +143,8 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
         String workerId2 = UUID.randomUUID().toString();
 
         workerCacheService.registerWorkers(
-                Lists.list(WorkerHeartBeatEvent.build(workerId1, workerType1, OffsetDateTime.now()),
-                           WorkerHeartBeatEvent.build(workerId2, workerType2, OffsetDateTime.now().minusDays(1))));
+                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
+                           new WorkerHeartBeatEvent(workerId2, workerType2, OffsetDateTime.now().minusDays(1))));
 
         contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker", Optional.of(workerType1),
                                                                  workerCacheService.getWorkerTypeByContentType(
@@ -153,7 +153,7 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
         // The cache will remove the last heartbeat
         //        Thread.sleep(workerCacheService.EXPIRE_IN_CACHE_DURATION * 1000);
 
-        Awaitility.await().atMost(workerCacheService.EXPIRE_IN_CACHE_DURATION * 2, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(workerCacheService.expireInCacheDuration * 2, TimeUnit.SECONDS).until(() -> {
                                                                                                                runtimeTenantResolver.forceTenant(getDefaultTenant());
                                                                                                                return Optional.empty()
                                                                                                                        .equals(workerCacheService.getWorkerTypeByContentType(contentTypes1.iterator().next()));
@@ -179,9 +179,9 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
         String workerId3 = UUID.randomUUID().toString();
 
         workerCacheService.registerWorkers(
-                Lists.list(WorkerHeartBeatEvent.build(workerId1, workerType1, OffsetDateTime.now()),
-                           WorkerHeartBeatEvent.build(workerId2, workerType2, OffsetDateTime.now()),
-                           WorkerHeartBeatEvent.build(workerId3, workerType3, OffsetDateTime.now())
+                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
+                           new WorkerHeartBeatEvent(workerId2, workerType2, OffsetDateTime.now()),
+                           new WorkerHeartBeatEvent(workerId3, workerType3, OffsetDateTime.now())
                 ));
         List<String> allContentTypeSet = Lists.newArrayList();
         allContentTypeSet.addAll(contentTypes1);

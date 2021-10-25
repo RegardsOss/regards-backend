@@ -30,9 +30,6 @@ import java.util.Set;
  */
 public class WorkerConfigDto {
 
-    /**
-     * Worker type
-     */
     @NotBlank
     private String workerType;
 

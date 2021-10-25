@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.workermanager.service.config;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
+import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,9 @@ public class WorkerConfigService {
     @Autowired
     private IWorkerConfigRepository workerConfigRepository;
 
+    @Autowired
+    private WorkerManagerSettingsService workerManagerSettingsService;
+
     /**
      * Search for all worker configuration.
      */
@@ -58,7 +63,7 @@ public class WorkerConfigService {
      * @return {@link WorkerConfig}
      */
     public Optional<WorkerConfig> search(String workerType) {
-        return workerConfigRepository.findByType(workerType);
+        return workerConfigRepository.findByWorkerType(workerType);
     }
 
     /**
@@ -67,12 +72,12 @@ public class WorkerConfigService {
      * @param workerConfig entity to update
      */
     public void update(WorkerConfig workerConfig) {
-        LOGGER.info("Updating existing plugin configuration {}", workerConfig.getType());
+        LOGGER.info("Updating existing plugin configuration {}", workerConfig.getWorkerType());
         workerConfigRepository.save(workerConfig);
     }
 
     public void create(WorkerConfig workerConfig) {
-        LOGGER.info("Creating worker configuration {}", workerConfig.getType());
+        LOGGER.info("Creating worker configuration {}", workerConfig.getWorkerType());
         workerConfigRepository.save(workerConfig);
     }
 
@@ -131,7 +136,7 @@ public class WorkerConfigService {
                 workerConfigDto.getContentTypes());
         if (workerConfigUsingSameContentTypes.size() > 0) {
             // Get the list of worker types that conflicts with the current one
-            Set<String> workerTypes = workerConfigUsingSameContentTypes.stream().map(WorkerConfig::getType)
+            Set<String> workerTypes = workerConfigUsingSameContentTypes.stream().map(WorkerConfig::getWorkerType)
                     .collect(Collectors.toSet());
             // Get the list of content types that are conflicting
             Set<String> commonContentTypes = workerConfigUsingSameContentTypes.stream()
@@ -142,6 +147,23 @@ public class WorkerConfigService {
             String errorMessage = String.format(
                     "WorkerConf with type=%s declares contentType %s which are already used by %s",
                     workerConfigDto.getWorkerType(), commonContentTypes, workerTypes);
+            LOGGER.error(errorMessage);
+            currentWorkerConfValid = false;
+            errors.add(errorMessage);
+        }
+
+        // Retrieve list of content types configured to be automatically skipped
+        List<String> contentTypesToSkip = workerManagerSettingsService.getValue(
+                WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME);
+        List<String> contentTypesInsideSkipConf = contentTypesToSkip.stream()
+                .filter(contentTypeToSkip -> workerConfigDto.getContentTypes().contains(contentTypeToSkip))
+                .collect(Collectors.toList());
+        if (!contentTypesInsideSkipConf.isEmpty()) {
+
+            String errorMessage = String.format(
+                    "WorkerConf with type=%s declares contentType %s which are already used inside the %s setting",
+                    workerConfigDto.getWorkerType(), contentTypesInsideSkipConf,
+                    WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME);
             LOGGER.error(errorMessage);
             currentWorkerConfValid = false;
             errors.add(errorMessage);

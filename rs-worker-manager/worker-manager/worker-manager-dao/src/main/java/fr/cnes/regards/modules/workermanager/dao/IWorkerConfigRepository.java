@@ -35,7 +35,7 @@ import java.util.Set;
 public interface IWorkerConfigRepository
         extends JpaRepository<WorkerConfig, Long>, JpaSpecificationExecutor<WorkerConfig> {
 
-    Optional<WorkerConfig> findByType(String name);
+    Optional<WorkerConfig> findByWorkerType(String name);
 
     List<WorkerConfig> findAllByContentTypesIn(Set<String> contentTypes);
 }

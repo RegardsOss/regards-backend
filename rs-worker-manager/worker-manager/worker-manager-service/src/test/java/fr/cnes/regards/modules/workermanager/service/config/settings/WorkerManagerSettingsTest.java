@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
 import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
-import fr.cnes.regards.modules.workermanager.domain.settings.Settings;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,22 +37,22 @@ import java.util.List;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=worker_manager_settings" },
         locations = { "classpath:application-test.properties" })
-public class SettingsTest extends AbstractMultitenantServiceTest {
+public class WorkerManagerSettingsTest extends AbstractMultitenantServiceTest {
 
     @Autowired
-    private SettingsService settingService;
+    private WorkerManagerSettingsService settingService;
 
     @Autowired
     private DynamicTenantSettingService tenantSettingService;
 
     @Autowired
-    private IDynamicTenantSettingRepository tenantSettingRepo;
+    private IDynamicTenantSettingRepository tenantSettingRepository;
 
     @Before
     public void init() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        tenantSettingRepo.deleteAll();
+        tenantSettingRepository.deleteAll();
 
         simulateApplicationReadyEvent();
         simulateApplicationStartedEvent();
@@ -60,10 +60,10 @@ public class SettingsTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testSetting() throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
-        List<String> contentTypesToSkip = settingService.getValue(Settings.SKIP_CONTENT_TYPES.getName());
+        List<String> contentTypesToSkip = settingService.getValue(WorkerManagerSettings.SKIP_CONTENT_TYPES.getName());
         Assert.assertTrue(contentTypesToSkip.isEmpty());
-        tenantSettingService.update(Settings.SKIP_CONTENT_TYPES.getName(), Arrays.asList("content1", "content2"));
-        contentTypesToSkip = settingService.getValue(Settings.SKIP_CONTENT_TYPES.getName());
+        tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES.getName(), Arrays.asList("content1", "content2"));
+        contentTypesToSkip = settingService.getValue(WorkerManagerSettings.SKIP_CONTENT_TYPES.getName());
         Assert.assertTrue(contentTypesToSkip.contains("content1"));
         Assert.assertTrue(contentTypesToSkip.contains("content2"));
     }
