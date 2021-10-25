@@ -102,11 +102,13 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsTest
         Set<String> contentTypes2 = Sets.newHashSet(contentType4, contentType5);
         // also contains the contentType1
         Set<String> contentTypes3 = Sets.newHashSet(contentType1, contentType2, contentType4, contentType6);
-        Assert.assertEquals("should return an error when importing conflicting content types", 1,
+        Assert.assertEquals("no error on initial import", 0,
                             workerConfigService.importConfiguration(
                                     Sets.newHashSet(new WorkerConfigDto(workerType, contentTypes1),
-                                                    new WorkerConfigDto(workerType2, contentTypes2),
-                                                    new WorkerConfigDto(workerType3, contentTypes3))).size());
+                                                    new WorkerConfigDto(workerType2, contentTypes2))).size());
+        Assert.assertEquals("should return an error when importing conflicting content types", 1,
+                            workerConfigService.importConfiguration(
+                                    Sets.newHashSet(new WorkerConfigDto(workerType3, contentTypes3))).size());
 
         String contentType7 = "contentType6";
         String workerType4 = "workerType4";
