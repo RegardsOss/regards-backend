@@ -48,7 +48,7 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
                 PROJECT_USER_STUB_EMAIL,
                 ROLE_STUB,
                 Collections.emptyList(),
-                Collections.emptyList()
+                Collections.emptySet()
         );
         PROJECT_USER_STUB.setMaxQuota(StorageRestClientMock.USER_QUOTA_LIMITS_STUB_MAX_QUOTA);
         PROJECT_USER_STUB.setCurrentQuota(StorageRestClientMock.CURRENT_USER_QUOTA_STUB);
@@ -134,6 +134,16 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
 
     @Override
     public ResponseEntity<Void> linkAccessGroups(String email, List<String> groups) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Void> updateOrigin(String email, String origin) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Void> sendVerificationEmail(String email) {
         return null;
     }
 

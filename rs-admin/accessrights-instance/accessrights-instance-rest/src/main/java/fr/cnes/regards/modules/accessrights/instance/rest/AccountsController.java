@@ -95,6 +95,7 @@ public class AccountsController implements IResourceController<Account> {
     public static final String INACTIVE_ACCOUNT_PATH = EMAIL + "/inactive";
     public static final String LINK_ACCOUNT_PATH = EMAIL + "/link" + PROJECT;
     public static final String UNLINK_ACCOUNT_PATH = EMAIL + "/unlink" + PROJECT;
+    public static final String UPDATE_ORIGIN_PATH = EMAIL + "/origin/{origin}";
 
     public static final String ORIGINS_PATH = "/origins";
 
@@ -426,6 +427,13 @@ public class AccountsController implements IResourceController<Account> {
     @ResourceAccess(description = "Link a project to an account", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> unlink(@PathVariable("account_email") String accountEmail, @PathVariable("project") String project) throws EntityException {
         accountService.unlink(accountEmail, project);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(UPDATE_ORIGIN_PATH)
+    @ResourceAccess(description = "Update the origin of an account identified by email", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> updateOrigin(@PathVariable("account_email") String accountEmail, @PathVariable("origin") String origin) throws EntityException {
+        accountService.updateOrigin(accountEmail, origin);
         return ResponseEntity.ok().build();
     }
 

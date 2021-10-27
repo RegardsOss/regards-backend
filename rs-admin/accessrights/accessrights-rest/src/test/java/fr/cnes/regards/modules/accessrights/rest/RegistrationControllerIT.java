@@ -34,19 +34,18 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Integration tests for the accesses functionalities.
@@ -104,6 +103,9 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IProjectUserRepository projectUserRepository;
+
+    @MockBean
+    private QuotaHelperService quotaHelperService;
 
     /**
      * Root access request endpoint
@@ -193,7 +195,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void acceptAccessRequest() {
         // Prepare the test conditions
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
         projectUser.setStatus(UserStatus.ACCESS_DENIED);
         projectUserRepository.save(projectUser);
 
@@ -216,7 +218,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void denyAccessRequest() {
         // Prepare the test conditions
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
         projectUser.setStatus(UserStatus.WAITING_ACCESS);
         projectUserRepository.save(projectUser);
 
@@ -252,7 +254,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteAccessRequest() {
         // Prepare the test
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
 
         // Case not found
         performDefaultDelete(apiAccessId, customizer().expectStatusNotFound(), ERROR_MESSAGE, 12345678L);
@@ -269,7 +271,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void activeAccess() {
         // Prepare the test conditions
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
         projectUser.setStatus(UserStatus.ACCESS_INACTIVE);
         projectUserRepository.save(projectUser);
 
@@ -296,7 +298,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void inactiveAccess() {
         // Prepare the test conditions
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         projectUserRepository.save(projectUser);
 

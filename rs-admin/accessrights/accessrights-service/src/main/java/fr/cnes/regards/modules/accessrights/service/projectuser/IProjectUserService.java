@@ -214,4 +214,6 @@ public interface IProjectUserService {
 
     Map<String, Long> getUserCountByAccessGroup();
 
+    void updateOrigin(String email, String origin) throws EntityNotFoundException;
+
 }

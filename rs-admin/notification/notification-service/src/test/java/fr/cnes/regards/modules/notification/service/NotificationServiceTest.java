@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
@@ -52,10 +31,25 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
+import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.util.MimeType;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Test class for {@link NotificationService}.
@@ -186,7 +180,7 @@ public class NotificationServiceTest {
         projectUser0.setEmail(RECIPIENT_0);
         projectUser0.setLastConnection(OffsetDateTime.now().minusDays(2));
         projectUser0.setLastUpdate(OffsetDateTime.now().minusHours(1));
-        projectUser0.setMetadata(new ArrayList<>());
+        projectUser0.setMetadata(new HashSet<>());
         projectUser0.setPermissions(new ArrayList<>());
         projectUser0.setStatus(UserStatus.ACCESS_GRANTED);
         projectUser0.setRole(role0);
@@ -195,7 +189,7 @@ public class NotificationServiceTest {
         projectUser1.setEmail(RECIPIENT_1);
         projectUser1.setLastConnection(OffsetDateTime.now().minusDays(2));
         projectUser1.setLastUpdate(OffsetDateTime.now().minusHours(1));
-        projectUser1.setMetadata(new ArrayList<>());
+        projectUser1.setMetadata(new HashSet<>());
         projectUser1.setPermissions(new ArrayList<>());
         projectUser1.setStatus(UserStatus.ACCESS_GRANTED);
         projectUser1.setRole(role0);
@@ -204,7 +198,7 @@ public class NotificationServiceTest {
         projectUser2.setEmail(RECIPIENT_2);
         projectUser2.setLastConnection(OffsetDateTime.now().minusDays(2));
         projectUser2.setLastUpdate(OffsetDateTime.now().minusHours(1));
-        projectUser2.setMetadata(new ArrayList<>());
+        projectUser2.setMetadata(new HashSet<>());
         projectUser2.setPermissions(new ArrayList<>());
         projectUser2.setStatus(UserStatus.ACCESS_GRANTED);
         projectUser2.setRole(role1);

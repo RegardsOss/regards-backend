@@ -71,10 +71,9 @@ public class Account implements IIdentifiable<Long> {
     @Column
     private LocalDateTime invalidityDate;
 
-    @NotBlank
     @Length(max = 128)
     @Column(length = 128)
-    private String origin = REGARDS_ORIGIN;
+    private String origin;
 
     @Column(name = "authentication_failed_counter")
     private Long authenticationFailedCounter = 0L;

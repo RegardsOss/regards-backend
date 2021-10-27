@@ -42,11 +42,18 @@ public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
                 return ICriterion.not(criterion.as(ICriterion.class, "criterion"));
             }
             else if (critType.equals(StringMatchCriterion.class)) {
+                Any name = criterion.get("name");
+                Any stringMatchCriterionType = criterion.get("type");
+                Any value = criterion.get(VALUE);
+                Any matchType = criterion.get("matchType");
+                if(isNull(matchType)) {
+                    matchType = Any.wrap(StringMatchType.KEYWORD);
+                }
                 return new StringMatchCriterion(
-                        criterion.toString("name"),
-                        criterion.as(MatchType.class, "type"),
-                        criterion.toString(VALUE),
-                        criterion.as(StringMatchType.class, "matchType")
+                        name.toString(),
+                        stringMatchCriterionType.as(MatchType.class),
+                        value.toString(),
+                        StringMatchType.valueOf(matchType.toString())
                 );
             }
             else if (critType.equals(StringMatchAnyCriterion.class)) {

@@ -204,4 +204,6 @@ public interface IAccountService {
      */
     void unlink(String email, String project) throws EntityException;
 
+    void updateOrigin(String email, String origin) throws EntityException;
+
 }

@@ -18,19 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.ArrayList;
-
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -39,6 +30,15 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * @author Marc Sordi
@@ -56,6 +56,9 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IResourcesAccessRepository resourcesAccessRepository;
 
+    @MockBean
+    private QuotaHelperService quotaHelperService;
+
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to retrieve a user's permissions.")
@@ -64,7 +67,7 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Create user
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         ProjectUser user = projectUserRepository
-                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new HashSet<>()));
 
         // Create a new resource
         ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",
@@ -84,7 +87,7 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Create another user
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         ProjectUser user = projectUserRepository
-                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new HashSet<>()));
 
         // Create a new resource
         ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",

@@ -15,7 +15,17 @@
     "@type@": "fr.cnes.regards.modules.indexer.domain.criterion.AndCriterion",
     "criterions": [
       {
-        "@type@": "fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion"
+        "name":"feature.properties.DatasetName",
+        "type": "CONTAINS",
+        "value": "PARASOL_POLDER3_L2RBDAYBR",
+        "@type@":"fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion"
+      },
+      {
+        "name":"feature.properties.test",
+        "type": "CONTAINS",
+        "value": "PARASOL_POLDER3_L2RBDAYBR",
+        "matchType": "FULL_TEXT_SEARCH",
+        "@type@":"fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion"
       },
       {
         "@type@": "fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion",

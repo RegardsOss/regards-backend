@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -36,6 +27,16 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Marc Sordi
@@ -66,6 +67,9 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
 
     @Autowired
     private IResourcesAccessRepository resourcesAccessRepository;
+
+    @MockBean
+    private QuotaHelperService quotaHelperService;
 
     /**
      * Initialize all datas for this unit tests

@@ -20,11 +20,11 @@ package fr.cnes.regards.modules.search.rest.engine;
 
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
+import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -63,7 +63,7 @@ public class EngineTestConfiguration {
         mockDataset.setIpId(UniformResourceName
                 .fromString("URN:AIP:DATASET:tenant:27de606c-a6cd-411f-a5ba-bd1b2f29c965:V1"));
         Mockito.when(client.retrieveDataset(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<EntityModel<Dataset>>(HateoasUtils.wrap(mockDataset), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(HateoasUtils.wrap(mockDataset), HttpStatus.OK));
         return client;
     }
 
@@ -94,8 +94,7 @@ public class EngineTestConfiguration {
 
     @Bean
     public IAccessRightClient accessClient() {
-        IAccessRightClient accessGroupClient = Mockito.mock(IAccessRightClient.class);
-        return accessGroupClient;
+        return Mockito.mock(IAccessRightClient.class);
     }
 
     @Bean
@@ -109,13 +108,18 @@ public class EngineTestConfiguration {
     }
 
     @Bean
-    public IModelAttrAssocClient modelAttrAssocClient() throws ModuleException {
+    public IModelAttrAssocClient modelAttrAssocClient() {
         return Mockito.mock(IModelAttrAssocClient.class);
     }
 
     @Bean
     public IProjectsClient projectsClient() {
         return Mockito.mock(IProjectsClient.class);
+    }
+
+    @Bean
+    public IAttachmentClient attachmentClient() {
+        return Mockito.mock(IAttachmentClient.class);
     }
 
 }

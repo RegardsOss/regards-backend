@@ -180,9 +180,6 @@ public class DescriptionBuilder {
 
     /**
      * Build metadata of the {@link OpenSearchDescription}
-     *
-     * @param dataset
-     * @return
      */
     private OpenSearchDescription buildMetadata(EngineConfiguration engineConf, Optional<EntityFeature> dataset) {
         OpenSearchDescription desc = new OpenSearchDescription();
@@ -302,9 +299,6 @@ public class DescriptionBuilder {
 
     /**
      * Build a {@link OpenSearchParameter} for a given {@link AttributeModel}
-     *
-     * @param extensions {@link IOpenSearchExtension} opensearch extensions to handle.
-     * @return
      */
     private OpenSearchParameter buildParameter(DescriptionParameter descParameter,
                                                List<IOpenSearchExtension> extensions) {
@@ -386,7 +380,11 @@ public class DescriptionBuilder {
             // Retrieve all AttributeModel for the given searchType and dataset if any
             ResponseEntity<Collection<ModelAttrAssoc>> assocsResponse;
             if (context.getDatasetUrn().isPresent()) {
-                assocsResponse = datasetClient.getModelAttrAssocsForDataInDataset(context.getDatasetUrn().get());
+                if(context.getDatasetUrn().get().isLast()) {
+                    throw new ModuleException("You must use the dataset id(URN) and not the virtualId!");
+                } else {
+                    assocsResponse = datasetClient.getModelAttrAssocsForDataInDataset(context.getDatasetUrn().get());
+                }
             } else {
                 assocsResponse = modelAttrAssocClient.getModelAttrAssocsFor(getEntityType(context.getSearchType()));
             }

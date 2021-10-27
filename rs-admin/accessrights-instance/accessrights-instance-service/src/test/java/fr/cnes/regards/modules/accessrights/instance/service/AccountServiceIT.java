@@ -155,18 +155,21 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
         accountValid.setInvalidityDate(LocalDateTime.now().plusDays(1));
         accountValid.setPasswordUpdateDate(LocalDateTime.now().plusDays(1));
         accountValid.setStatus(AccountStatus.ACTIVE);
+        accountValid.setOrigin(Account.REGARDS_ORIGIN);
         accountRepository.save(accountValid);
 
         Account accountInvalid = new Account("invalid@c-s.fr", "John", "Doe", PASSWORD);
         accountInvalid.setInvalidityDate(LocalDateTime.now().minusDays(1));
         accountInvalid.setPasswordUpdateDate(LocalDateTime.now().plusDays(1));
         accountInvalid.setStatus(AccountStatus.ACTIVE);
+        accountInvalid.setOrigin(Account.REGARDS_ORIGIN);
         accountRepository.save(accountInvalid);
 
         Account accountPasswordInvalid = new Account("passwordInvalid@c-s.fr", "Kylian", "Mbappé", "passWord");
         accountPasswordInvalid.setInvalidityDate(LocalDateTime.now().plusDays(5));
         accountPasswordInvalid.setPasswordUpdateDate(LocalDateTime.now().minusDays(accountPasswordValidityDuration).minusDays(1L));
         accountPasswordInvalid.setStatus(AccountStatus.ACTIVE);
+        accountPasswordInvalid.setOrigin(Account.REGARDS_ORIGIN);
         accountRepository.save(accountPasswordInvalid);
 
         // lets test now that everything is in place
@@ -197,6 +200,7 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
         accountPasswordInvalid
                 .setPasswordUpdateDate(LocalDateTime.now().minusDays(accountPasswordValidityDuration).minusDays(1L));
         accountPasswordInvalid.setStatus(AccountStatus.ACTIVE);
+        accountPasswordInvalid.setOrigin(Account.REGARDS_ORIGIN);
         accountRepository.save(accountPasswordInvalid);
 
         logAccountInfo("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid);

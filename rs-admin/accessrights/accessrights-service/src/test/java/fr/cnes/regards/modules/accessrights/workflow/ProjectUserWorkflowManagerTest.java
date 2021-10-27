@@ -47,7 +47,9 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -67,7 +69,7 @@ public class ProjectUserWorkflowManagerTest {
     /**
      * Stub constant value for a lsit of meta data
      */
-    private static final List<MetaData> META_DATA = new ArrayList<>();
+    private static final Set<MetaData> META_DATA = new HashSet<>();
 
     /**
      * Stub constant value for a list of permissions

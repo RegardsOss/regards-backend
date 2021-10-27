@@ -39,13 +39,6 @@ import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 @Primary
 public class CatalogSearchServiceMock extends CatalogSearchService {
 
-    /**
-     * @param searchService
-     * @param openSearchService
-     * @param accessRightFilter
-     * @param facetConverter
-     * @param pageableConverter
-     */
     public CatalogSearchServiceMock(ISearchService searchService, IOpenSearchService openSearchService,
             IAccessRightFilter accessRightFilter, IFacetConverter facetConverter,
             IPageableConverter pageableConverter) {

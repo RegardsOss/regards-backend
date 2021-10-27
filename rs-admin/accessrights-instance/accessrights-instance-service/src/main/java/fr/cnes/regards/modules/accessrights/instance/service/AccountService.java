@@ -189,6 +189,9 @@ public class AccountService implements IAccountService {
                 throw new EntityInvalidException("Invalid project name : " + project);
             }
         }
+        if (StringUtils.isEmpty(account.getOrigin())) {
+            account.setOrigin(Account.REGARDS_ORIGIN);
+        }
         return accountRepository.save(account);
     }
 
@@ -358,6 +361,14 @@ public class AccountService implements IAccountService {
             account.getProjects().remove(projectService.retrieveProject(project));
         } catch (ModuleException e) {
             throw new EntityInvalidException("Invalid project name : " + project);
+        }
+    }
+
+    @Override
+    public void updateOrigin(String email, String origin) throws EntityException {
+        Account account = retrieveAccountByEmail(email);
+        if (!StringUtils.isEmpty(origin)) {
+            account.setOrigin(origin);
         }
     }
 

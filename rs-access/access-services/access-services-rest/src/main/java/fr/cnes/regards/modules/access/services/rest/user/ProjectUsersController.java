@@ -58,6 +58,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -365,6 +366,13 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         );
     }
 
+    @GetMapping("/email/{email}/verification/resend")
+    @ResourceAccess(description = "Send a new verification email for a user creation", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Void> sendVerificationEmail(@PathVariable("email") String email) {
+        projectUsersClient.sendVerificationEmail(email);
+        return ResponseEntity.ok().build();
+    }
+
     private ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> completeUserPagedResponseWithQuotas(
             Supplier<ResponseEntity<PagedModel<EntityModel<ProjectUser>>>> usersRequest,
             Pageable pageable,
@@ -414,7 +422,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                 .setFirstName(updatedProjectUser.getFirstName())
                 .setLastName(updatedProjectUser.getLastName())
                 .setPermissions(updatedProjectUser.getPermissions())
-                .setMetadata(updatedProjectUser.getMetadata())
+                .setMetadata(new HashSet<>(updatedProjectUser.getMetadata()))
                 .setRole(updatedProjectUser.getRole())
                 .setAccessGroups(updatedProjectUser.getAccessGroups())
                 .setMaxQuota(updatedProjectUser.getMaxQuota());
@@ -507,17 +515,18 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", LinkRelation.of("accept"), idParam);
                 resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest", LinkRelation.of("deny"), idParam);
             }
-
             if (UserStatus.ACCESS_GRANTED.equals(element.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "inactiveAccess", LinkRelation.of("inactive"), idParam);
             }
-
             if (UserStatus.ACCESS_DENIED.equals(element.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", LinkRelation.of("accept"), idParam);
             }
-
             if (UserStatus.ACCESS_INACTIVE.equals(element.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "activeAccess", LinkRelation.of("active"), idParam);
+            }
+            if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(element.getStatus())) {
+                resourceService.addLink(resource, clazz, "sendVerificationEmail", LinkRelation.of("sendVerificationEmail"),
+                        MethodParamFactory.build(String.class, element.getEmail()));
             }
         }
         return resource;

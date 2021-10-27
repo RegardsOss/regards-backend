@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -26,6 +27,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
@@ -48,12 +50,18 @@ import fr.cnes.regards.modules.processing.order.Scope;
 import fr.cnes.regards.modules.processing.order.SizeLimit;
 import io.vavr.collection.List;
 import java.util.UUID;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -84,6 +92,11 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+    }
+
+    @After
+    public void cleanUp() {
+        clean();
     }
 
     private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {

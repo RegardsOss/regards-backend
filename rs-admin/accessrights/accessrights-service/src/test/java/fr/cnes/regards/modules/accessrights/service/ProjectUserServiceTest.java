@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.AccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserGroupService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccountUtilsService;
@@ -76,7 +77,7 @@ public class ProjectUserServiceTest {
     private static final OffsetDateTime LAST_CONNECTION = OffsetDateTime.now().minusDays(2);
     private static final OffsetDateTime LAST_UPDATE = OffsetDateTime.now().minusHours(1);
     private static final UserStatus STATUS = UserStatus.ACCESS_GRANTED;
-    private static final List<MetaData> META_DATA = new ArrayList<>();
+    private static final Set<MetaData> META_DATA = new HashSet<>();
     private static final Role ROLE = new Role(DefaultRole.ADMIN.toString(), null);
     private static final String LASTNAME = "lastName";
     private static final String FIRSTNAME = "firstName";
@@ -112,6 +113,8 @@ public class ProjectUserServiceTest {
     private AccessRightsEmailService accessRightsEmailService;
     @Mock
     private ProjectUserGroupService projectUserGroupService;
+    @Mock
+    private QuotaHelperService quotaHelperService;
 
     @Before
     public void init() throws EntityException {
@@ -124,6 +127,7 @@ public class ProjectUserServiceTest {
         when(accessSettingsService.userCreationMailRecipients()).thenReturn(Collections.singleton("admin@regards.fr"));
         when(roleService.retrieveRole(DEFAULT_ROLE_NAME)).thenReturn(new RoleFactory().doNotAutoCreateParents().createRegisteredUser());
         when(projectUserGroupService.getPublicGroups()).thenReturn(Collections.singleton("public"));
+        when(quotaHelperService.getDefaultQuota()).thenReturn(42L);
 
         projectUser = new ProjectUser()
                 .setId(ID)
@@ -278,18 +282,15 @@ public class ProjectUserServiceTest {
     public void retrieveUser() throws EntityNotFoundException {
 
         // Define user as in db
-        MetaData metaData0 = new MetaData();
-        metaData0.setVisibility(UserVisibility.HIDDEN);
+        MetaData metaData0 = new MetaData("hidden", "", UserVisibility.HIDDEN);
         projectUser.getMetadata().add(metaData0);
-        MetaData metaData1 = new MetaData();
-        metaData1.setVisibility(UserVisibility.READABLE);
+        MetaData metaData1 = new MetaData("readable", "", UserVisibility.READABLE);
         projectUser.getMetadata().add(metaData1);
-        MetaData metaData2 = new MetaData();
-        metaData2.setVisibility(UserVisibility.WRITEABLE);
+        MetaData metaData2 = new MetaData("writeable", "" , UserVisibility.WRITEABLE);
         projectUser.getMetadata().add(metaData2);
 
         // Define user as expected
-        List<MetaData> visibleMetaData = new ArrayList<>();
+        Set<MetaData> visibleMetaData = new HashSet<>();
         visibleMetaData.add(metaData1);
         visibleMetaData.add(metaData2);
         ProjectUser expected = new ProjectUser()

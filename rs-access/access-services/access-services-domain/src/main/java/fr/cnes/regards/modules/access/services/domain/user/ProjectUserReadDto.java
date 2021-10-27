@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 
 public class ProjectUserReadDto extends ProjectUserBaseDto {
 
@@ -47,7 +48,7 @@ public class ProjectUserReadDto extends ProjectUserBaseDto {
         this.lastUpdate = projectUser.getLastUpdate();
         this.created = projectUser.getCreated();
         this.status = projectUser.getStatus();
-        this.metadata = projectUser.getMetadata();
+        this.metadata = new ArrayList<>(projectUser.getMetadata());
         this.role = projectUser.getRole();
         this.permissions = projectUser.getPermissions();
         this.licenseAccepted = projectUser.isLicenseAccepted();

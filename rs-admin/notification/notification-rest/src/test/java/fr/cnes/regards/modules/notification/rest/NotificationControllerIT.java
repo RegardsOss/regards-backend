@@ -18,6 +18,7 @@ import fr.cnes.regards.modules.notification.service.INotificationService;
 import fr.cnes.regards.modules.notification.service.SendingScheduler;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -89,6 +90,9 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
 
     @MockBean
     private IAccessGroupClient accessGroupClient;
+
+    @MockBean
+    private IStorageSettingClient storageSettingClient;
 
     @Override
     protected Logger getLogger() {

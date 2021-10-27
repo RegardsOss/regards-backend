@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import org.junit.Test;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
+import org.junit.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Test {@link LicenseController}
@@ -34,6 +35,9 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=license" })
 public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
+
+    @MockBean
+    private QuotaHelperService quotaHelperService;
 
     @Test
     @Purpose("Check license agreement can be reset by an ADMIN")

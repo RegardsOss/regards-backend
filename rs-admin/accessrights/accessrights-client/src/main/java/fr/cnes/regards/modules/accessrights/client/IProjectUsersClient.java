@@ -159,4 +159,10 @@ public interface IProjectUsersClient {
     @PostMapping("/email/{email}/groups")
     ResponseEntity<Void> linkAccessGroups(@PathVariable("email") String email, @RequestBody List<String> groups);
 
+    @PutMapping("/email/{email}/origin/{origin}")
+    ResponseEntity<Void> updateOrigin(@PathVariable("email") String email, @PathVariable("origin") String origin);
+
+    @GetMapping("/email/{email}/verification/resend")
+    ResponseEntity<Void> sendVerificationEmail(@PathVariable("email") String email);
+
 }

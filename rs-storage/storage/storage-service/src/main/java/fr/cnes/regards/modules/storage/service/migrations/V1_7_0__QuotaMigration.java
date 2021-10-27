@@ -3,10 +3,8 @@ package fr.cnes.regards.modules.storage.service.migrations;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
-import io.vavr.collection.List;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
@@ -82,7 +80,9 @@ public class V1_7_0__QuotaMigration extends BaseJavaMigration {
             } catch (Exception e) {
                 String error = "Unable to contact rs-admin";
                 LOGGER.error(error, e);
-                throw new FlywayException(error);
+                if (attempt >= maxAttempts) {
+                    throw new FlywayException(error);
+                }
             } finally {
                 FeignSecurityManager.reset();
             }
@@ -127,11 +127,13 @@ public class V1_7_0__QuotaMigration extends BaseJavaMigration {
                 if (projectUser == null) {
                     throw new FlywayException(error);
                 }
-                projectUser.setMaxQuota(maxQuota);
-                projectUser.setMetadata(List.ofAll(projectUser.getMetadata()).distinctBy(MetaData::getId).asJava());
-                ResponseEntity<EntityModel<ProjectUser>> updateResponse = projectUsersClient.updateProjectUser(projectUser.getId(), projectUser);
-                if (updateResponse == null || !updateResponse.getStatusCode().is2xxSuccessful()) {
-                    throw new FlywayException(error);
+                // Add null check for default regards admin account
+                if (projectUser.getId() != null) {
+                    projectUser.setMaxQuota(maxQuota);
+                    ResponseEntity<EntityModel<ProjectUser>> updateResponse = projectUsersClient.updateProjectUser(projectUser.getId(), projectUser);
+                    if (updateResponse == null || !updateResponse.getStatusCode().is2xxSuccessful()) {
+                        throw new FlywayException(error);
+                    }
                 }
             }
 

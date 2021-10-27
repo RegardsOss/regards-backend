@@ -110,7 +110,9 @@ public class V1_7_0__GroupMigration extends BaseJavaMigration {
             } catch (Exception e) {
                 String error = "Unable to contact rs-admin";
                 LOGGER.error(error, e);
-                throw new FlywayException(error);
+                if (attempt >= maxAttempts) {
+                    throw new FlywayException(error);
+                }
             } finally {
                 FeignSecurityManager.reset();
             }

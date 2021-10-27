@@ -73,6 +73,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     public static final String EMAIL = "/email/{email}";
     public static final String EMAIL_ADMIN = EMAIL + "/admin";
     public static final String EMAIL_GROUPS = EMAIL + "/groups";
+    public static final String EMAIL_ORIGIN = EMAIL + "/origin/{origin}";
     public static final String EMAIL_VERIFICATION_SEND = EMAIL + "/verification/resend";
     public static final String EXPORT = "/export";
     public static final String COUNT_BY_ACCESS_GROUP = "/count";
@@ -299,8 +300,15 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @PostMapping(EMAIL_GROUPS)
     @ResourceAccess(description = "Link access groups to a project user identified by email", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> linkAccessGroups(@PathVariable("email") String email, @RequestBody List<String> groups) throws EntityNotFoundException, EntityInvalidException {
+    public ResponseEntity<Void> linkAccessGroups(@PathVariable("email") String email, @RequestBody List<String> groups) throws EntityNotFoundException {
         projectUserGroupService.linkAccessGroups(email, groups);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(EMAIL_ORIGIN)
+    @ResourceAccess(description = "Update the origin of a project user identified by email", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> updateOrigin(@PathVariable("email") String email, @PathVariable("origin") String origin) throws EntityNotFoundException {
+        projectUserService.updateOrigin(email, origin);
         return ResponseEntity.ok().build();
     }
 
@@ -313,14 +321,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @GetMapping(value = EXPORT, produces = "text/csv")
     @ResourceAccess(description = "Generate a CSV file with all project users", role = DefaultRole.EXPLOIT)
-    public void exportAsCSV(
-            @PageableDefault(sort = "email", direction = Sort.Direction.ASC) Pageable pageable,
-            ProjectUserSearchParameters parameters,
-            HttpServletResponse response
-    ) throws IOException {
+    public void exportAsCSV(ProjectUserSearchParameters parameters, HttpServletResponse response) throws IOException {
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=users.csv");
         response.setContentType("text/csv");
-        projectUserExportService.export(new BufferedWriter(response.getWriter()), parameters, pageable);
+        projectUserExportService.export(new BufferedWriter(response.getWriter()), parameters);
     }
 
     @GetMapping(COUNT_BY_ACCESS_GROUP)

@@ -1,13 +1,5 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -19,6 +11,16 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -40,13 +42,16 @@ public class ProjectUserMetadataControllerIT extends AbstractRegardsTransactiona
     @Autowired
     private IMetaDataRepository metaDataRepository;
 
+    @MockBean
+    private QuotaHelperService quotaHelperService;
+
     private ProjectUser projectUser;
 
     @Before
     public void setUp() {
         Role publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).orElse(null);
         projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
     }
 
     @Test

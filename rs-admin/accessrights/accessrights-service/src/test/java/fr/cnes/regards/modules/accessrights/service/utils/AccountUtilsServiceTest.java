@@ -166,7 +166,6 @@ class AccountUtilsServiceTest {
     }
 
     private void mockCreation() {
-        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
         Mockito.when(accountsClient.createAccount(any(AccountNPassword.class))).thenAnswer(invocation -> {
             AccountNPassword accountNPassword = invocation.getArgument(0);
             Account account = accountNPassword.getAccount();

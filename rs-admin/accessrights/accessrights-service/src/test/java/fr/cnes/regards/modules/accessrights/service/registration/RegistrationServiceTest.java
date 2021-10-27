@@ -42,10 +42,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -62,7 +59,7 @@ public class RegistrationServiceTest {
     private static final String EMAIL = "email@test.com";
     private static final String FIRST_NAME = "Firstname";
     private static final String LAST_NAME = "Lirstname";
-    private static final List<MetaData> META_DATA = new ArrayList<>();
+    private static final Set<MetaData> META_DATA = new HashSet<>();
     private static final String PASSWORD = "password";
     private static final List<ResourcesAccess> PERMISSIONS = new ArrayList<>();
     private static final Role ROLE = new Role("role name", null);
@@ -90,7 +87,8 @@ public class RegistrationServiceTest {
     @Before
     public void setUp() throws EntityException {
 
-        accessRequestDto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSWORD, ORIGIN_URL, REQUEST_LINK, ORIGIN, ACCESS_GROUPS, 0L);
+        accessRequestDto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), new ArrayList<>(META_DATA), PASSWORD, ORIGIN_URL, REQUEST_LINK, ORIGIN,
+                ACCESS_GROUPS, 0L);
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
         expectedProjectUser = new ProjectUser()
                 .setEmail(EMAIL)

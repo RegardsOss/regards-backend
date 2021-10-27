@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.crawler.service;
 
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeProperty;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,20 +44,20 @@ public class MappingService implements IMappingService {
                         && (RestrictionType.JSON_SCHEMA.equals(attribute.getRestrictionType()) && attribute.getEsMapping() == null)) {
                     JsonSchemaRestriction restriction = (JsonSchemaRestriction) attribute.getRestriction();
                     AbstractAttributeHelper.fromJsonSchema(attribute.getJsonPropertyPath(), restriction.getJsonSchema())
-                            .forEach(a -> {
-                                mappings.add(new AttributeDescription("feature." + a.getJsonPath(), a.getType(),
-                                        a.hasRestriction() ? a.getRestrictionType() : RestrictionType.NO_RESTRICTION,
-                                        a.getProperties().stream()
-                                                .collect(Collectors.toMap(AttributeProperty::getKey,
-                                                                          AttributeProperty::getValue)),
-                                        a.getEsMapping()));
-                            });
+                            .forEach(a -> mappings.add(new AttributeDescription("feature." + a.getJsonPath(), a.getType(),
+                                    a.hasRestriction() ? a.getRestrictionType() : RestrictionType.NO_RESTRICTION,
+                                    a.getProperties().stream()
+                                            .collect(Collectors.toMap(AttributeProperty::getKey,
+                                                                      AttributeProperty::getValue)),
+                                    a.getEsMapping())));
                 } else {
+                    Map<String, String> descriptionProperties = attribute.getProperties().stream()
+                            .collect(Collectors.toMap(AttributeProperty::getKey, AttributeProperty::getValue));
+                    descriptionProperties.put(AttrDescToJsonMapping.ELASTICSEARCH_MAPPING_PROP_NAME, attribute.getEsMapping());
                     mappings.add(new AttributeDescription("feature." + attribute.getJsonPath(), attribute.getType(),
                             attribute.hasRestriction() ? attribute.getRestrictionType()
                                     : RestrictionType.NO_RESTRICTION,
-                            attribute.getProperties().stream()
-                                    .collect(Collectors.toMap(AttributeProperty::getKey, AttributeProperty::getValue)),
+                            descriptionProperties,
                             attribute.getEsMapping()));
                 }
             }

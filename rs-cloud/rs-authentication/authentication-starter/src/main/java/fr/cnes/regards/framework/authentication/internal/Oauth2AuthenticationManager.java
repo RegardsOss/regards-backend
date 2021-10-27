@@ -58,9 +58,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Authentication Manager. This class provides authentication process to check user/password and retrieve user
@@ -86,7 +88,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     private final IRuntimeTenantResolver runTimeTenantResolver;
 
     /**
-     * Static and fixed root login. To know if the user who want to autify is root user.
+     * Static and fixed root login. To know if the user who want to log on is root user.
      */
     private final String staticRootLogin;
 
@@ -169,7 +171,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         // Before returning generating token, check user status.
         AuthenticationStatus status = checkUserStatus(response.getEmail(), scope);
 
-        // If authentication is granted and user does not exists and plugin is not the regards internal authentication.
+        // If authentication is granted and user does not exist and plugin is not the regards internal authentication.
         if (Boolean.TRUE.equals(response.isAccessGranted())
                 && (status.equals(AuthenticationStatus.USER_UNKNOWN) || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
                 && !response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName())
@@ -221,7 +223,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             }
             return pluginResponse;
         } catch (BeansException e) {
-            String message = "Context not initialized, Authentication plugins cannot be retreive";
+            String message = "Context not initialized, Authentication plugins cannot be retrieve";
             LOG.error(message, e);
             throw new BadCredentialsException(message);
         }
@@ -354,7 +356,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     /**
      * Do authentication job with the given authentication plugin
      * @param plugin IAuthenticationPlugin to use for authentication
-     * @param userName user name
+     * @param userName username
      * @param userPassword user password
      * @param scope scope
      * @return AbstractAuthenticationToken
@@ -423,7 +425,13 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient
                         .retrieveProjectUserByEmail(email);
                 if (response.getStatusCode() == HttpStatus.OK) {
+                    // special case to handle root login because it is not a real ProjectUser
                     ProjectUser projectUser = response.getBody().getContent();
+                    if(!Objects.equals(email, staticRootLogin)) {
+                        projectUser.setLastConnection(OffsetDateTime.now());
+                        // update last connection date
+                        projectUsersClient.updateProjectUser(projectUser.getId(), projectUser);
+                    }
                     // In regards system login is same as email
                     user = new UserDetails(scope, projectUser.getEmail(), login, projectUser.getRole().getName());
                 } else {

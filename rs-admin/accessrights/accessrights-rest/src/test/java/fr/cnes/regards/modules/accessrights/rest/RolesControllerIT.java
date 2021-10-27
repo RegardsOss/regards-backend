@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -43,7 +29,18 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessReposit
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Integration tests for Roles REST Controller.
@@ -66,6 +63,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Autowired
     private IRoleRepository roleRepository;
+
+    @MockBean
+    private QuotaHelperService quotaHelperService;
 
     @Rule
     public ExpectedException thrown_ = ExpectedException.none();

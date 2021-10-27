@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.client;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
+import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
@@ -115,5 +116,10 @@ public class SearchClientITConfiguration {
     @Bean
     public ProjectGeoSettings mockProjectGeoSettings() {
         return Mockito.mock(ProjectGeoSettings.class);
+    }
+
+    @Bean
+    public IAttachmentClient attachmentClient() {
+        return Mockito.mock(IAttachmentClient.class);
     }
 }

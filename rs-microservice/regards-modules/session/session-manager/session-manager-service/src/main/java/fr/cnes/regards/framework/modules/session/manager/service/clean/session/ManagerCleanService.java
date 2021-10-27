@@ -66,6 +66,9 @@ public class ManagerCleanService {
     @Autowired
     private ISourceManagerRepository sourceRepo;
 
+    @Autowired
+    private ManagerCleanService self;
+
     @Value("${regards.session.manager.clean.session.limit.store:30}")
     private int limitStoreSessionSteps;
 
@@ -88,13 +91,13 @@ public class ManagerCleanService {
         // init parameters
         int nbSessions = 0;
         Pageable page = PageRequest.of(0, pageSize, Sort.by("id"));
-        Page<Session> sessionPage;
+        int nbSessionsProcessed = 0;
 
         // find all sessions to be deleted and update the source information (they are related to the sessions)
         do {
-            sessionPage = processOnePage(startClean, page);
-            nbSessions += sessionPage.getNumberOfElements();
-        } while (!interrupted && sessionPage.hasNext());
+            nbSessionsProcessed = self.processOnePage(startClean, page);
+            nbSessions += nbSessionsProcessed;
+        } while (!interrupted && nbSessionsProcessed != 0);
 
         // delete source not associated to any sessions
         this.sourceRepo.deleteByNbSessions(0L);
@@ -109,7 +112,7 @@ public class ManagerCleanService {
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    public Page<Session> processOnePage(OffsetDateTime startClean, Pageable page) {
+    public int processOnePage(OffsetDateTime startClean, Pageable page) {
         // Find a list of sessions outdated
         Page<Session> sessionPage = this.sessionRepo.findByLastUpdateDateBefore(startClean, page);
         // Update source aggregation information due to session removal
@@ -118,7 +121,7 @@ public class ManagerCleanService {
         this.sessionRepo.deleteInBatch(sessionPage);
         // Save all changes on sources
         this.sourceRepo.saveAll(updatedSourcesMap.values());
-        return sessionPage;
+        return sessionPage.getNumberOfElements();
     }
 
     /**

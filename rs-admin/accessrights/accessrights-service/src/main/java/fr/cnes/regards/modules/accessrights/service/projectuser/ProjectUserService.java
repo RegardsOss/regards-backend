@@ -88,11 +88,11 @@ public class ProjectUserService implements IProjectUserService {
     private final AccountUtilsService accountUtilsService;
     private final AccessRightsEmailService accessRightsEmailService;
     private final ProjectUserGroupService projectUserGroupService;
-
+    private final QuotaHelperService quotaHelperService;
 
     public ProjectUserService(IAuthenticationResolver authenticationResolver, IProjectUserRepository projectUserRepository, IRoleService roleService,
             ApplicationEventPublisher eventPublisher, AccessSettingsService accessSettingsService, AccountUtilsService accountUtilsService,
-            AccessRightsEmailService accessRightsEmailService, ProjectUserGroupService projectUserGroupService
+            AccessRightsEmailService accessRightsEmailService, ProjectUserGroupService projectUserGroupService, QuotaHelperService quotaHelperService
     ) {
         this.authenticationResolver = authenticationResolver;
         this.projectUserRepository = projectUserRepository;
@@ -102,7 +102,9 @@ public class ProjectUserService implements IProjectUserService {
         this.accountUtilsService = accountUtilsService;
         this.accessRightsEmailService = accessRightsEmailService;
         this.projectUserGroupService = projectUserGroupService;
+        this.quotaHelperService = quotaHelperService;
     }
+
 
     @Override
     public Page<ProjectUser> retrieveUserList(ProjectUserSearchParameters parameters, Pageable pageable) {
@@ -118,7 +120,7 @@ public class ProjectUserService implements IProjectUserService {
         }
         // Filter out hidden meta data
         ProjectUser user = userOpt.get();
-        user.setMetadata(user.getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toList()));
+        user.setMetadata(user.getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toSet()));
         return user;
     }
 
@@ -136,7 +138,7 @@ public class ProjectUserService implements IProjectUserService {
             user = projectUserRepository.findOneByEmail(userEmail);
             // Filter out hidden meta data
             if (user.isPresent()) {
-                List<MetaData> visibleMetadata = user.get().getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toList());
+                Set<MetaData> visibleMetadata = user.get().getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toSet());
                 user.get().setMetadata(visibleMetadata);
             }
         }
@@ -185,10 +187,19 @@ public class ProjectUserService implements IProjectUserService {
         if (newRole != null && newRole.getId() == null && StringUtils.isNotBlank(newRole.getName())) {
             newRole = roleService.retrieveRole(updatedProjectUser.getRole().getName());
         }
-        projectUser.setRole(newRole);
+        if(newRole != null) {
+            projectUser.setRole(newRole);
+        }
         projectUser.setMetadata(updatedProjectUser.getMetadata());
         projectUser.setPermissions(updatedProjectUser.getPermissions());
-        projectUser.setMaxQuota(updatedProjectUser.getMaxQuota());
+
+        Long newMaxQuota = updatedProjectUser.getMaxQuota();
+        if(newMaxQuota != null && newMaxQuota > -2) {
+            projectUser.setMaxQuota(newMaxQuota);
+        }
+        if(updatedProjectUser.getLastConnection() != null) {
+            projectUser.setLastConnection(updatedProjectUser.getLastConnection());
+        }
 
         // Check that no public group is removed or added
         Set<String> accessGroups = updatedProjectUser.getAccessGroups();
@@ -222,21 +233,21 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public List<MetaData> retrieveUserMetaData(Long userId) throws EntityNotFoundException {
         ProjectUser user = retrieveUser(userId);
-        return user.getMetadata();
+        return new ArrayList<>(user.getMetadata());
     }
 
     @Override
     public List<MetaData> updateUserMetaData(Long userId, List<MetaData> updatedUserMetaData) throws EntityNotFoundException {
         ProjectUser user = retrieveUser(userId);
-        user.setMetadata(updatedUserMetaData);
+        user.setMetadata(new HashSet<>(updatedUserMetaData));
         ProjectUser savedUser = save(user);
-        return savedUser.getMetadata();
+        return new ArrayList<>(savedUser.getMetadata());
     }
 
     @Override
     public void removeUserMetaData(Long userId) throws EntityNotFoundException {
         ProjectUser user = retrieveUser(userId);
-        user.setMetadata(new ArrayList<>());
+        user.setMetadata(new HashSet<>());
         save(user);
     }
 
@@ -269,7 +280,8 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser createProjectUser(AccessRequestDto accessRequestDto) throws EntityException {
-        return create(accessRequestDto, false, UserStatus.ACCESS_GRANTED, AccountStatus.ACTIVE);
+        boolean isExternal = StringUtils.isNotBlank(accessRequestDto.getOrigin()) && !ProjectUser.REGARDS_ORIGIN.equals(accessRequestDto.getOrigin());
+        return create(accessRequestDto, isExternal, UserStatus.ACCESS_GRANTED, AccountStatus.ACTIVE);
     }
 
     @Override
@@ -308,16 +320,18 @@ public class ProjectUserService implements IProjectUserService {
             accessGroups.addAll(inputAccessGroups);
         }
 
+        Long maxQuota = accessRequestDto.getMaxQuota() != null ? accessRequestDto.getMaxQuota() : quotaHelperService.getDefaultQuota();
+
         ProjectUser projectUser = new ProjectUser()
                 .setEmail(email)
                 .setLastName(account.getLastName())
                 .setFirstName(account.getFirstName())
                 .setRole(role)
                 .setAccessGroups(accessGroups)
-                .setMaxQuota(accessRequestDto.getMaxQuota());
+                .setMaxQuota(maxQuota);
 
         if (accessRequestDto.getMetadata() != null) {
-            projectUser.setMetadata(accessRequestDto.getMetadata());
+            projectUser.setMetadata(new HashSet<>(accessRequestDto.getMetadata()));
         }
 
         if (isExternal) {
@@ -406,6 +420,14 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public Map<String, Long> getUserCountByAccessGroup() {
         return projectUserRepository.getUserCountByAccessGroup();
+    }
+
+    @Override
+    public void updateOrigin(String email, String origin) throws EntityNotFoundException {
+        ProjectUser projectUser = retrieveOneByEmail(email);
+        if (StringUtils.isNotBlank(origin)) {
+            projectUser.setOrigin(origin);
+        }
     }
 
 }

@@ -18,22 +18,14 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-
-import org.hibernate.validator.constraints.Length;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import org.hibernate.validator.constraints.Length;
+
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import java.util.Objects;
 
 /**
  * Domain class representing a project user's meta datum.
@@ -42,8 +34,7 @@ import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
  */
 @Entity
 // user_id is the JoinColumn defined in ProjectUser
-@Table(name = "t_metadata",
-        uniqueConstraints = @UniqueConstraint(name = "uk_metadata_key_user_id", columnNames = { "key", "user_id" }))
+@Table(name = "t_metadata", uniqueConstraints = @UniqueConstraint(name = "uk_metadata_key_user_id", columnNames = {"key", "user_id"}))
 @SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "seq_metadata")
 public class MetaData implements IIdentifiable<Long> {
 
@@ -52,6 +43,7 @@ public class MetaData implements IIdentifiable<Long> {
     @Column(name = "id")
     private Long id;
 
+    @NotBlank
     @Column(name = "key", length = 64)
     private String key;
 
@@ -65,7 +57,6 @@ public class MetaData implements IIdentifiable<Long> {
     private UserVisibility visibility;
 
     public MetaData() {
-        super();
     }
 
     /**
@@ -114,30 +105,16 @@ public class MetaData implements IIdentifiable<Long> {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MetaData)) return false;
+        MetaData metaData = (MetaData) o;
+        return Objects.equals(key, metaData.key);
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final MetaData other = (MetaData) obj;
-        if (id == null) {
-            return other.id == null;
-        } else {
-            return id.equals(other.id);
-        }
+    public int hashCode() {
+        return Objects.hash(key);
     }
 
     @Override

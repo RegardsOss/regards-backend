@@ -18,17 +18,18 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Unit testing of {@link ProjectUser}
@@ -55,7 +56,7 @@ public class ProjectUserTest {
     /**
      * Test metaData
      */
-    private final List<MetaData> metaData = new ArrayList<>();
+    private final Set<MetaData> metaData = new HashSet<>();
 
     /**
      * Test role
@@ -82,7 +83,7 @@ public class ProjectUserTest {
         final ProjectUser testUser = new ProjectUser();
         Assert.assertNull(testUser.getId());
         Assert.assertEquals(new ArrayList<>(), testUser.getPermissions());
-        Assert.assertEquals(new ArrayList<>(), testUser.getMetadata());
+        Assert.assertEquals(new HashSet<>(), testUser.getMetadata());
         Assert.assertEquals(UserStatus.WAITING_ACCOUNT_ACTIVE, testUser.getStatus());
         Assert.assertNull(testUser.getLastConnection());
         Assert.assertNull(testUser.getLastUpdate());
@@ -191,11 +192,11 @@ public class ProjectUserTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setMetadata(java.util.List)}.
+     * {@link fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser#setMetadata(java.util.Set)}.
      */
     @Test
     public void testSetMetaData() {
-        final List<MetaData> newMetaData = new ArrayList<>();
+        final Set<MetaData> newMetaData = new HashSet<>();
         projectUser.setMetadata(newMetaData);
         Assert.assertEquals(newMetaData, projectUser.getMetadata());
     }

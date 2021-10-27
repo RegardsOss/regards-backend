@@ -187,10 +187,13 @@ public interface IAccountsClient {
     /**
      * Unlink a project from an account
      *
-     * @param email email of the account to link
-     * @param project      name of the project to link
+     * @param email   email of the account to link
+     * @param project name of the project to link
      */
     @PutMapping("/{account_email}/unlink/{project}")
     ResponseEntity<Void> unlink(@PathVariable("account_email") String email, @PathVariable("project") String project);
+
+    @PutMapping("/{account_email}/origin/{origin}")
+    ResponseEntity<Void> updateOrigin(@PathVariable("account_email") String accountEmail, @PathVariable("origin") String origin);
 
 }
