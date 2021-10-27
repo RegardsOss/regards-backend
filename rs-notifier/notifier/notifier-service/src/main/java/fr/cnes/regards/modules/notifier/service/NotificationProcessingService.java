@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -74,11 +75,10 @@ public class NotificationProcessingService extends AbstractNotificationService<N
     }
 
     public Pair<Integer, Integer> processRequests(List<NotificationRequest> notificationRequests, PluginConfiguration recipient) {
+        // If recipient is null, it means it has been removed from all notification requests - therefore there's nothing to do
         if (recipient != null) {
             LOGGER.debug("Start processing for recipient {}", recipient.getLabel());
-            // first lets check is recipient is not null, in this case it means it has been removed from all notification requests so the job simply has nothing to do
             Collection<NotificationRequest> notificationsInError = notifyRecipient(notificationRequests, recipient);
-            // handle successful notification for this recipient
             Pair<Integer, Integer> result = self.handleRecipientResults(notificationRequests, recipient, notificationsInError);
             LOGGER.debug("End processing for recipient {}", recipient.getLabel());
             return result;
@@ -91,7 +91,7 @@ public class NotificationProcessingService extends AbstractNotificationService<N
             Collection<NotificationRequest> errors = ((IRecipientNotifier) pluginService.getPlugin(recipientConfiguration.getBusinessId())).send(notificationRequests);
             return Optional.ofNullable(errors).orElse(Collections.emptySet());
         } catch (Exception e) {
-            // if there is an exception, we consider none of the request could be handled,
+            // If there is an exception, we consider none of the requests could be handled,
             // either due to error from plugin configuration or the plugin implementation itself
             LOGGER.error("Error while sending notification to receiver", e);
             return notificationRequests;
@@ -107,8 +107,7 @@ public class NotificationProcessingService extends AbstractNotificationService<N
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
             notificationRequests = notificationRequestRepository.findAllById(notificationRequests.stream().map(NotificationRequest::getId).collect(Collectors.toSet()));
-            // we retry until it succeed because if it does not succeed on first time it is most likely because of
-            // another scheduled method that would then most likely happen at next invocation because execution delays are fixed
+            // Failure happens because of concurrent updates on notification request - for that reason we retry until it succeeds
             return handleRecipientResults(notificationRequests, recipient, notificationsInError);
         }
     }
@@ -122,8 +121,8 @@ public class NotificationProcessingService extends AbstractNotificationService<N
             if (notificationsInError.contains(notificationRequest)) {
                 notificationRequest.getRecipientsScheduled().remove(recipient);
                 notificationRequest.getRecipientsInError().add(recipient);
-                // because of concurrency and retries we can actually end with a process failing but that cannot be set to state ERROR
-                // in order to continue handling other recipients to schedule or rules to match
+                // because of concurrency and retries we can actually end with a process failing,
+                // but the request cannot be set to ERROR in order to continue handling other recipients to schedule or rules to match
                 if (notificationRequest.getState() != NotificationState.TO_SCHEDULE_BY_RECIPIENT && notificationRequest.getState() != NotificationState.GRANTED) {
                     notificationRequest.setState(NotificationState.ERROR);
                 }
@@ -155,12 +154,10 @@ public class NotificationProcessingService extends AbstractNotificationService<N
 
     private Set<Long> scheduleJobForOneRecipientRetryable(PluginConfiguration recipient, List<NotificationRequest> requestsToSchedule) {
         try {
-            // we need to find a page of notification request that contains this recipient to be scheduled
             return self.scheduleJobForOneRecipientConcurrent(recipient, requestsToSchedule);
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
-            // we retry until it succeed because if it does not succeed on first time it is most likely because of
-            // another scheduled method that would then most likely happen at next invocation because execution delays are fixed
+            // Failure happens because of concurrent updates on notification request - for that reason we retry until it succeeds
             // Moreover, we cannot retry on the same content as it has to be reloaded from DB
             return scheduleJobForOneRecipientRetryable(
                     recipient,
@@ -175,17 +172,17 @@ public class NotificationProcessingService extends AbstractNotificationService<N
             for (NotificationRequest request : requestsToSchedule) {
                 request.getRecipientsToSchedule().remove(recipient);
                 request.getRecipientsScheduled().add(recipient);
-                // because of concurrency issues, we have to try to set this request state to SCHEDULED here and we can't do this later
-                if (request.getRecipientsToSchedule().isEmpty() && (
-                        // This condition is a bit more complex because it represents the case when we retry requests during schedule.
-                        // Indeed, if rulesToMatch are empty it means it hasn't been retried for error while matching
-                        // a rule so the retry set the state to TO_SCHEDULE.
-                        // In this case, it is already handled by the "recipientToSchedule empty" condition.
-                        // But if rules to match are not empty and we are in state GRANTED, it means it has just been
-                        // retried so we cannot change state so the rule can be matched by matching process.
-                        // if rule to match are not empty and we are not in state GRANTED, it means it has not yet been
-                        // retried so we have nothing to worry about
-                        request.getRulesToMatch().isEmpty() || (request.getState() != NotificationState.GRANTED))) {
+                // Because of concurrency issues, we have to try to set this request state to SCHEDULED here.
+                // The first condition is self-explanatory.
+                // The second condition is a bit more complex : it represents the case when requests are retried during scheduling.
+                // 1. If rulesToMatch is empty it means the matching process succeeded.
+                // 2. If rulesToMatch is not empty :
+                //  - if we are in state GRANTED, it means it has just been retried.
+                //    In this case we should not change state, so that the matching process takes place.
+                //  - if we are not in state GRANTED, it means it has not yet been retried.
+                //    In this case we have nothing to do, since the retry will take place (or not) later.
+                if (request.getRecipientsToSchedule().isEmpty()
+                        && (request.getRulesToMatch().isEmpty() || (request.getState() != NotificationState.GRANTED))) {
                     request.setState(NotificationState.SCHEDULED);
                 }
                 toScheduleId.add(request.getId());
@@ -198,7 +195,6 @@ public class NotificationProcessingService extends AbstractNotificationService<N
                     null,
                     NotificationJob.class.getName());
             jobInfoService.createAsQueued(notificationJobForRecipient);
-            // save recipient to schedule remove and recipient scheduled added
             notificationRequestRepository.saveAll(requestsToSchedule);
             return toScheduleId;
         }
@@ -253,9 +249,11 @@ public class NotificationProcessingService extends AbstractNotificationService<N
 
         Set<Recipient> successRecipients = notificationRequest.getSuccessRecipients().stream()
                 .map(pluginConfiguration -> getRecipient(pluginConfiguration, RecipientStatus.SUCCESS))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Set<Recipient> errorRecipients = notificationRequest.getRecipientsInError().stream()
                 .map(pluginConfiguration -> getRecipient(pluginConfiguration, RecipientStatus.ERROR))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         notifierEvent.getRecipients().addAll(successRecipients);
@@ -265,10 +263,13 @@ public class NotificationProcessingService extends AbstractNotificationService<N
     }
 
     private Recipient getRecipient(PluginConfiguration pluginConfiguration, RecipientStatus status) {
-        Recipient recipient;
+        Recipient recipient = null;
         try {
             IRecipientNotifier plugin = pluginService.getPlugin(pluginConfiguration.getBusinessId());
-            recipient = new Recipient(plugin.getRecipientId(), status, plugin.isAckRequired());
+            // Only build a recipient if recipientID has been set
+            if (StringUtils.isNotBlank(plugin.getRecipientId())) {
+                recipient = new Recipient(plugin.getRecipientId(), status, plugin.isAckRequired());
+            }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             // Should never happen, hopefully, but hey, you never know - expect the unexpected to show how modern you are
             throw new RsRuntimeException(e);

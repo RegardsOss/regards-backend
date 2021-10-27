@@ -91,10 +91,10 @@ public class RabbitMQSender implements IRecipientNotifier {
     @PluginParameter(label = "RabbitMQ queue name", name = QUEUE_PARAM_NAME, optional = true)
     private String queueName;
 
-    @PluginParameter(label = "RabbitMQ recipient ID", name = RECIPIENT_ID_PARAM_NAME)
+    @PluginParameter(label = "RabbitMQ recipient ID (must be unique)", name = RECIPIENT_ID_PARAM_NAME, optional = true)
     private String recipientId;
 
-    @PluginParameter(label = "RabbitMQ ack required", name = ACK_REQUIRED_PARAM_NAME)
+    @PluginParameter(label = "RabbitMQ ack required", name = ACK_REQUIRED_PARAM_NAME, optional = true, defaultValue = "false")
     private boolean ackRequired;
 
     @Override

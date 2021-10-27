@@ -68,15 +68,15 @@ public class NotificationJob extends AbstractJob<Void> {
 
         Type type = new TypeToken<Set<Long>>() {
         }.getType();
-        notificationRequests = this.notificationRequestRepo.findAllById(getValue(parameters, NOTIFICATION_REQUEST_IDS, type));
-        recipient = this.pluginService.loadPluginConfiguration(getValue(parameters, RECIPIENT_BUSINESS_ID, String.class));
+        notificationRequests = notificationRequestRepo.findAllById(getValue(parameters, NOTIFICATION_REQUEST_IDS, type));
+        recipient = pluginService.loadPluginConfiguration(getValue(parameters, RECIPIENT_BUSINESS_ID, String.class));
     }
 
     @Override
     public void run() {
         logger.info("[{}] Notification job starts", jobInfoId);
         long start = System.currentTimeMillis();
-        Pair<Integer, Integer> processResult = this.notificationProcessingService.processRequests(notificationRequests, recipient);
+        Pair<Integer, Integer> processResult = notificationProcessingService.processRequests(notificationRequests, recipient);
         logger.info("[{}]{}{} Notifications sent in {} ms, {} notifications failed", jobInfoId, INFO_TAB,
                     processResult.getFirst(), System.currentTimeMillis() - start, processResult.getSecond());
         // if there are exception we throw an exception to stop the job in error

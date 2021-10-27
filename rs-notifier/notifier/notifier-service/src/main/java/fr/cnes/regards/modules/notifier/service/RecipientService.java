@@ -139,7 +139,7 @@ public class RecipientService implements IRecipientService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public int scheduleNotificationJobs() {
-        // lets schedule a notification job per recipient. This ensure us that each recipient will have to process an
+        // Let's schedule a notification job per recipient. This ensures that each recipient will have to process an
         // optimum batch of requests at once. Moreover, it also ensures that there will be no influence between each recipient errors
         Set<PluginConfiguration> recipients = getRecipients();
         Set<Long> requestScheduledIds = new HashSet<>();

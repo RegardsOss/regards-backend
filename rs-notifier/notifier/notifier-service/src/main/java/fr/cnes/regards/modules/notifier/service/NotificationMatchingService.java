@@ -75,7 +75,7 @@ public class NotificationMatchingService extends AbstractNotificationService<Not
         this.notificationClient = notificationClient;
     }
 
-    @Transactional(propagation = Propagation.NOT_SUPPORTED) // otherwise spring tries to save what we first took from DB even with readOnly=true
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Pair<Integer, Integer> matchRequestNRecipient() {
         LOGGER.debug("------------------------ Starting MATCHING");
         long startTime = System.currentTimeMillis();
@@ -174,7 +174,6 @@ public class NotificationMatchingService extends AbstractNotificationService<Not
 
         toBeMatched.stream().filter(isSchedulable).forEach(request -> request.setState(NotificationState.SCHEDULED));
 
-        // save all notification
         notificationRequestRepository.saveAll(toBeMatched);
         return Pair.of(requestsActuallyMatched.size(), recipientsActuallyMatched.size());
     }
