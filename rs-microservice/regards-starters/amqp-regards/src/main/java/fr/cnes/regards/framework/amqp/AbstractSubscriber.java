@@ -208,6 +208,17 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     @Override
+    public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver, String queueName, String exchangeName, boolean purgeQueue) {
+        subscribeTo(eventType,
+                    receiver,
+                    EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType),
+                    Optional.of(queueName),
+                    Optional.of(exchangeName),
+                    purgeQueue);
+        }
+
+    @Override
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
         subscribeTo(eventType,
                     receiver,

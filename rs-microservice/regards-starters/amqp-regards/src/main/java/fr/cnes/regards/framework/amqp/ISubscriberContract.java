@@ -57,6 +57,23 @@ public interface ISubscriberContract {
     <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName, String exchangeName);
 
     /**
+     * Subscribe to the given queueName to listen for {@link ISubscribable} events<br/>
+     * <ul>
+     *     <li>The queue is created if missing</li>
+     *     <li>The exchange is created if missing</li>
+     *     <li>The queue is bind to the exchange with UNICAST(routingKey=queueName) or BROADCAST</li>
+     * </ul>
+     *
+     * @param <E> {@link ISubscribable} event
+     * @param eventType {@link ISubscribable} event
+     * @param receiver event {@link IHandler}
+     * @param queueName Name of the queue to listen for
+     * @param exchangeName Name of the exchange to create and to bind to the newly subscribe queue.
+     * @param purgeQueue
+     */
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName, String exchangeName, boolean purgeQueue);
+
+    /**
      * Subscribe to this {@link ISubscribable} event
      * @param <E> @link ISubscribable} event
      * @param eventType {@link ISubscribable} event

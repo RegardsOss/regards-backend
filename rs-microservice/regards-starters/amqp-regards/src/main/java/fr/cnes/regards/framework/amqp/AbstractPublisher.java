@@ -366,7 +366,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
             });
 
             // Publish
-            LOGGER.info("Pubkishing {}/{}",er.exchange, er.routingKey);
+            LOGGER.debug("Publishing message on {}/{}",er.exchange, er.routingKey);
             publishMessageByTenant(tenant, er.exchange, er.routingKey, event, priority, null);
         } finally {
             rabbitVirtualHostAdmin.unbind();

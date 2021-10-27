@@ -42,15 +42,19 @@ public class SubscriberMock implements ISubscriber {
             String exchangeName) {
     }
 
+    @Override
+    public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent, boolean fast) {
+
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName,
+            String exchangeName, boolean purgeQueue) {
+    }
 
     @Override
     public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType,
             Optional<String> queueName) {
-        // Nothing to do
-    }
-
-    @Override
-    public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent, boolean fast) {
         // Nothing to do
     }
 

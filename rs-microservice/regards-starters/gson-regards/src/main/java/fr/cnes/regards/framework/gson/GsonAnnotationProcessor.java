@@ -187,7 +187,7 @@ public final class GsonAnnotationProcessor {
      * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
      * {@link TypeAdapterFactory}.
      * @param builder {@link GsonBuilder}
-     * @param pPrefix base package to scan
+     * @param reflections {@link Reflections}
      */
     private static void processGsonAdapterFactory(GsonBuilder builder, Reflections reflections) {
 

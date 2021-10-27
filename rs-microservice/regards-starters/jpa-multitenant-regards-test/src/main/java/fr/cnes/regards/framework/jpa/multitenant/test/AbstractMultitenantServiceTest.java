@@ -81,7 +81,8 @@ import org.springframework.test.context.transaction.BeforeTransaction;
  * @author Marc Sordi
  */
 @SuppressWarnings("javadoc")
-@ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
+@ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class,
+        AmqpTestConfiguration.class })
 public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());

@@ -29,8 +29,8 @@ import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonHttpMessageConverterCustom;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.test.AmqpTestConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.test.AppDaoTestConfiguration;
-import fr.cnes.regards.framework.jpa.multitenant.test.MockAmqpConfiguration;
 import fr.cnes.regards.framework.microservice.autoconfigure.MicroserviceAutoConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
@@ -101,7 +101,7 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
         IStorageRestClient.class
 })
 @ContextConfiguration(
-        classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, MockAmqpConfiguration.class })
+        classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, AmqpTestConfiguration.class })
 @Import({
         MultitenantAutoConfiguration.class,
         MicroserviceAutoConfiguration.class,
