@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
  *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
-@MicroserviceInfo(name = "storage", version = "2.0.0-SNAPSHOT")
+@MicroserviceInfo(name = "worker-manager", version = "1.8.0")
 public class Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);

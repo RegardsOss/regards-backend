@@ -52,9 +52,9 @@ public class WorkerConfig {
     private final Set<String> contentTypes = Sets.newHashSet();
 
     @Id
-    @SequenceGenerator(name = "storageLocationConfSequence", initialValue = 1,
-            sequenceName = "seq_storage_location_conf")
-    @GeneratedValue(generator = "storageLocationConfSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "workerConfSequence", initialValue = 1,
+            sequenceName = "seq_worker_conf")
+    @GeneratedValue(generator = "workerConfSequence", strategy = GenerationType.SEQUENCE)
     @ConfigIgnore
     private Long id;
 
