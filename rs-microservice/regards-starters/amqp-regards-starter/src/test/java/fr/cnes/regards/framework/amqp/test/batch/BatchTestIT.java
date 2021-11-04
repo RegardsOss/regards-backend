@@ -181,7 +181,7 @@ public class BatchTestIT {
         }
         try {
             tenantResolver.forceTenant(PROJECT);
-            publisher.broadcastAll(EXCHANGE_NAME, Optional.empty(),0,messages,new HashMap<>());
+            publisher.broadcastAll(EXCHANGE_NAME, Optional.empty(), Optional.empty(), Optional.empty(), 0,messages,new HashMap<>());
         } finally {
             tenantResolver.clearTenant();
         }
@@ -196,7 +196,7 @@ public class BatchTestIT {
         }
         try {
             tenantResolver.forceTenant(PROJECT1);
-            publisher.broadcastAll(EXCHANGE_NAME, Optional.empty(),0,messages,new HashMap<>());
+            publisher.broadcastAll(EXCHANGE_NAME, Optional.empty(), Optional.empty(),Optional.empty(),0,messages,new HashMap<>());
         } finally {
             tenantResolver.clearTenant();
         }

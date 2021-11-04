@@ -191,6 +191,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                     receiver,
                     EventUtils.getWorkerMode(eventType),
                     EventUtils.getTargetRestriction(eventType),
+                    EventUtils.getRoutingKey(eventType),
                     Optional.empty(),
                     Optional.empty(),
                     false);
@@ -202,6 +203,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                     receiver,
                     EventUtils.getWorkerMode(eventType),
                     EventUtils.getTargetRestriction(eventType),
+                    EventUtils.getRoutingKey(eventType),
                     Optional.of(queueName),
                     Optional.of(exchangeName),
                     false);
@@ -213,6 +215,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                     receiver,
                     EventUtils.getWorkerMode(eventType),
                     EventUtils.getTargetRestriction(eventType),
+                    EventUtils.getRoutingKey(eventType),
                     Optional.of(queueName),
                     Optional.of(exchangeName),
                     purgeQueue);
@@ -224,6 +227,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                     receiver,
                     EventUtils.getWorkerMode(eventType),
                     EventUtils.getTargetRestriction(eventType),
+                    EventUtils.getRoutingKey(eventType),
                     Optional.empty(),
                     Optional.empty(),
                     purgeQueue);
@@ -320,10 +324,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param handler the POJO defining the method handling the corresponding event connection factory from context
      * @param workerMode {@link WorkerMode}
      * @param target communication scope
+     * @param routingKey optional routingKey. Only for broadcast mode
+     * @param queueName
+     * @param exchangeName
      * @param purgeQueue true to purge queue if already exists
      */
     protected <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(final Class<E> eventType, H handler,
-            final WorkerMode workerMode, final Target target, Optional<String> queueName, Optional<String> exchangeName, boolean purgeQueue) {
+            final WorkerMode workerMode, final Target target, String routingKey, Optional<String> queueName,
+            Optional<String> exchangeName, boolean purgeQueue) {
 
         LOGGER.info("Subscribing to event {} with target {} and mode {}", eventType.getName(), target, workerMode);
 
@@ -343,7 +351,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         for (final String tenant : tenants) {
             String virtualHost = resolveVirtualHost(tenant);
             // Declare AMQP elements
-            Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target, queueName, exchangeName,purgeQueue);
+            Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target,
+                                          Optional.ofNullable(routingKey), queueName, exchangeName,purgeQueue);
             vhostQueues.put(virtualHost, queue);
         }
 
@@ -373,12 +382,13 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param handler event handler
      * @param workerMode worker mode
      * @param target target restriction
+     * @param routingKey optional routing key for broadcast mode only
      * @param queueName optional queue name to declare.
      * @param exchangeName optional exchange name to declare.
      * @param purgeQueue true to purge queue if already exists
      */
     protected Queue declareElements(Class<? extends ISubscribable> eventType, final String tenant, String virtualHost,
-            IHandler<? extends ISubscribable> handler, final WorkerMode workerMode, final Target target,
+            IHandler<? extends ISubscribable> handler, final WorkerMode workerMode, final Target target, Optional<String> routingKey,
             Optional<String> queueName, Optional<String> exchangeName, boolean purgeQueue) {
         Queue queue;
         try {
@@ -397,7 +407,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                                                target,
                                                handlerType,
                                                queueName,
-                                               batchHandler.isDedicatedDLQEnabled());
+                                               batchHandler.isDedicatedDLQEnabled(),
+                                               batchHandler.getDLQRoutingKey());
             } else {
                 queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, handlerType, queueName);
             }
@@ -408,8 +419,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             // If queueName is provided and exchange name is not, so the queue is created without binding with any exchange.
             // If queueName and exchange name are provided, queueName is bind to the given exchange
             if (!queueName.isPresent() || exchangeName.isPresent()) {
-                Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, exchangeName);
-                amqpAdmin.declareBinding(queue, exchange, workerMode);
+                Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, exchangeName, routingKey);
+                amqpAdmin.declareBinding(queue, exchange, workerMode, routingKey);
             }
         } finally {
             virtualHostAdmin.unbind();
@@ -511,9 +522,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             // Declare AMQP elements
             WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
             Target target = EventUtils.getTargetRestriction(eventType);
+            String routingKey = EventUtils.getRoutingKey(eventType);
 
             // Declare AMQP elements
-            Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target,
+            Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target, Optional.ofNullable(routingKey),
                                           queueExchangeName.getLeft(),queueExchangeName.getRight(), false);
             // Manage listeners
             List<Queue> queues = new ArrayList<>();

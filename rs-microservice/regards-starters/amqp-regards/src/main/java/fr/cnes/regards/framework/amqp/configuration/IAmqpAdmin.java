@@ -45,9 +45,12 @@ public interface IAmqpAdmin {
      * @param eventType event type
      * @param workerMode {@link WorkerMode}
      * @param target {@link Target}
+     * @param exchangeName optional exchange name. If not provided the exchange name is calculated from the eventType
+     * @param routingKey optional routing key. If present a topic channel is created else a fanout channel is created
      * @return a new {@link Exchange} related to current tenant and event
      */
-    Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target, Optional<String> exchangeName);
+    Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target,
+            Optional<String> exchangeName, Optional<String> routingKey);
 
     /**
      * Broadcast exchange name by event
@@ -105,7 +108,8 @@ public interface IAmqpAdmin {
      * @return declared {@link Queue}
      */
     Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName, boolean isDedicatedDLQEnabled);
+            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName,
+            boolean isDedicatedDLQEnabled, Optional<String> deadLetterQueueRoutingKey);
 
     /**
      * Compute {@link WorkerMode#UNICAST} queue name with :
@@ -142,17 +146,19 @@ public interface IAmqpAdmin {
      * @param queue {@link Queue} to bind
      * @param exchange {@link Exchange} to bind
      * @param workerMode {@link WorkerMode} to compute routing key
+     * @param broadcastRoutingKey optional routing key in case of broadcast. Default is {@link RegardsAmqpAdmin#DEFAULT_ROUTING_KEY}.
      * @return {@link Binding}
      */
-    Binding declareBinding(Queue queue, Exchange exchange, WorkerMode workerMode);
+    Binding declareBinding(Queue queue, Exchange exchange, WorkerMode workerMode, Optional<String> broadcastRoutingKey);
 
     /**
      * Routing key build according to {@link WorkerMode}.
      * @param queue queue
      * @param workerMode worker mode
+     * @param broadcastRoutingKey optional routing key in case of broadcast. Default is {@link RegardsAmqpAdmin#DEFAULT_ROUTING_KEY}.
      * @return routing key
      */
-    String getRoutingKey(Optional<Queue> queue, WorkerMode workerMode);
+    String getRoutingKey(Optional<Queue> queue, WorkerMode workerMode, Optional<String> broadcastRoutingKey);
 
     /**
      * Purge the queue that manages the specified event

@@ -143,13 +143,15 @@ public interface IPublisherContract {
     /**
      * Broadcast message to specified exchange optionally creating a binded queue.
      */
-    void broadcast(String exchangeName, Optional<String> queueName, int priority, Object message,
+    void broadcast(String exchangeName, Optional<String> queueName, Optional<String> routingKey, Optional<String> dlk,
+            int priority, Object message,
             Map<String, Object> headers);
 
     /**
      * Broadcast message to specified exchange optionally creating a binded queue.
      */
-    void broadcastAll(String exchangeName, Optional<String> queueName, int priority, Collection<?> messages,
+    void broadcastAll(String exchangeName, Optional<String> queueName, Optional<String> routingKey, Optional<String> dlk,
+            int priority, Collection<?> messages,
             Map<String, Object> headers);
 
     /**

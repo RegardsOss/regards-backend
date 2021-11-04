@@ -100,7 +100,7 @@ public class RabbitMQSender implements IRecipientNotifier {
     @Override
     public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
         List<NotificationEvent> toSend = requestsToSend.stream().map(NotificationEvent::new).collect(Collectors.toList());
-        this.publisher.broadcastAll(exchange, Optional.ofNullable(queueName), 0, toSend, new HashMap<>());
+        this.publisher.broadcastAll(exchange, Optional.ofNullable(queueName), Optional.empty(), Optional.empty(), 0, toSend, new HashMap<>());
         // if there is an issue with amqp then none of the message will be sent
         return Collections.emptySet();
     }

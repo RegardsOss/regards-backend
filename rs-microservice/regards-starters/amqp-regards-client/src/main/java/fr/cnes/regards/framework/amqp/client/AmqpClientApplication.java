@@ -97,6 +97,6 @@ public class AmqpClientApplication implements ApplicationRunner {
         if ((queueName != null) && !queueName.isEmpty()) {
             queue = Optional.of(queueName);
         }
-        publisher.publish(exchangeName, queue, priority, headers, jsonPathString, iterations);
+        publisher.publish(exchangeName, queue, Optional.empty(), Optional.empty(), priority, headers, jsonPathString, iterations);
     }
 }

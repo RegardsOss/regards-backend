@@ -129,7 +129,8 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
-    public Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target, Optional<String> exchangeName) {
+    public Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target,
+            Optional<String> exchangeName, Optional<String> routingKey) {
 
         Exchange exchange;
         switch (workerMode) {
@@ -137,8 +138,13 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
                 exchange = ExchangeBuilder.directExchange(exchangeName.orElse(getUnicastExchangeName())).durable(true).build();
                 break;
             case BROADCAST:
-                exchange = ExchangeBuilder.fanoutExchange(exchangeName.orElse(getBroadcastExchangeName(eventType.getName(), target)))
-                        .durable(true).build();
+                if (routingKey.isPresent()) {
+                    exchange = ExchangeBuilder.topicExchange(exchangeName.orElse(getBroadcastExchangeName(eventType.getName(), target))).durable(true)
+                            .build();
+                } else {
+                    exchange = ExchangeBuilder.fanoutExchange(exchangeName.orElse(getBroadcastExchangeName(eventType.getName(), target))).durable(true)
+                            .build();
+                }
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
@@ -199,16 +205,17 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     @Override
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
             Optional<Class<? extends IHandler<?>>> handlerType,Optional<String> queueName) {
-        return declareQueue(tenant, eventType, workerMode, target, handlerType, queueName,false);
+        return declareQueue(tenant, eventType, workerMode, target, handlerType, queueName,false, Optional.empty());
     }
 
     @Override
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName, boolean isDedicatedDLQEnabled) {
+            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName, boolean isDedicatedDLQEnabled,
+            Optional<String> deadLetterQueueRoutingKey) {
 
         // Default DLQ values
         String dlx = REGARDS_DLX;
-        String dlrk = REGARDS_DLQ;
+        String dlrk = deadLetterQueueRoutingKey.orElse(REGARDS_DLQ);
 
         Queue queue;
         switch (workerMode) {
@@ -225,7 +232,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
                     // Dedicated DLQ creation
                     if (isDedicatedDLQEnabled) {
-                        dlrk = getDedicatedDLRKFromQueueName(qn);
+                        dlrk = deadLetterQueueRoutingKey.orElse(getDedicatedDLRKFromQueueName(qn));
                         declareDedicatedDeadLetter(getDedicatedDLQFromQueueName(qn), dlrk);
                     }
 
@@ -311,16 +318,22 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
-    public Binding declareBinding(Queue queue, Exchange exchange, WorkerMode workerMode) {
+    public Binding declareBinding(Queue queue, Exchange exchange, WorkerMode workerMode, Optional<String> broadcastRoutingKey) {
 
         Binding binding;
         switch (workerMode) {
             case UNICAST:
                 binding = BindingBuilder.bind(queue).to((DirectExchange) exchange)
-                        .with(getRoutingKey(Optional.of(queue), WorkerMode.UNICAST));
+                        .with(getRoutingKey(Optional.of(queue), WorkerMode.UNICAST, Optional.empty()));
                 break;
             case BROADCAST:
-                binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
+                if (broadcastRoutingKey.isPresent()) {
+                    binding = BindingBuilder.bind(queue).to((TopicExchange) exchange)
+                            .with(getRoutingKey(Optional.of(queue), WorkerMode.BROADCAST, broadcastRoutingKey));
+                } else {
+                    binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
+                }
+
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
@@ -331,7 +344,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
-    public String getRoutingKey(Optional<Queue> queue, WorkerMode workerMode) {
+    public String getRoutingKey(Optional<Queue> queue, WorkerMode workerMode, Optional<String> broadcastRoutingKey) {
         final String routingKey;
         switch (workerMode) {
             case UNICAST:
@@ -342,7 +355,12 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
                 }
                 break;
             case BROADCAST:
-                routingKey = DEFAULT_ROUTING_KEY;
+                if (broadcastRoutingKey.isPresent()) {
+                    LOGGER.info("----------- {} --------------- ", broadcastRoutingKey.orElse("<>"));
+                    routingKey = broadcastRoutingKey.get();
+                } else {
+                    routingKey = DEFAULT_ROUTING_KEY;
+                }
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());

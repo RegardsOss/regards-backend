@@ -27,6 +27,7 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.validation.Errors;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @param <M> Type of messages you are handling
@@ -119,6 +120,11 @@ public interface IBatchHandler<M> extends IHandler<M> {
     default boolean isDedicatedDLQEnabled() {
         return false;
     }
+
+    /**
+     * @return dlq routing queue value.
+     */
+    default Optional<String> getDLQRoutingKey() { return Optional.empty(); }
 
     @Override
     default void handle(TenantWrapper<M> wrapper) {

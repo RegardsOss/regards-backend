@@ -60,6 +60,19 @@ public final class EventUtils {
 
     /**
      * @param eventType {@link Event} annotated class
+     * @return {@link WorkerMode}
+     */
+    public static String getRoutingKey(Class<?> eventType) {
+        String routingKey = EventUtils.getEventProperties(eventType).routingKey();
+        if (routingKey.isEmpty()) {
+            return null;
+        } else {
+            return routingKey;
+        }
+    }
+
+    /**
+     * @param eventType {@link Event} annotated class
      * @return {@link JsonMessageConverter}
      */
     public static JsonMessageConverter getMessageConverter(Class<?> eventType) {

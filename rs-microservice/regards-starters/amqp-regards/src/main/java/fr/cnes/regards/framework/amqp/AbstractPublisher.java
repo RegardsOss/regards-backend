@@ -130,6 +130,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
         publish(event,
                 EventUtils.getWorkerMode(eventClass),
                 EventUtils.getTargetRestriction(eventClass),
+                EventUtils.getRoutingKey(eventClass),
                 priority,
                 Optional.empty(),
                 Optional.empty(),
@@ -142,6 +143,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
         publish(event,
                 EventUtils.getWorkerMode(eventClass),
                 EventUtils.getTargetRestriction(eventClass),
+                EventUtils.getRoutingKey(eventClass),
                 0,
                 Optional.of(exchangeName),
                 queueName,
@@ -172,7 +174,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
     @Override
     public void publish(IPollable event, int priority, boolean purgeQueue) {
         Class<?> eventClass = event.getClass();
-        publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), priority, Optional.empty(),
+        publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), EventUtils.getRoutingKey(eventClass), priority, Optional.empty(),
                 Optional.empty(),purgeQueue);
     }
 
@@ -196,7 +198,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
     }
 
     @Override
-    public void broadcast(String exchangeName, Optional<String> queueName, int priority, Object message,
+    public void broadcast(String exchangeName, Optional<String> queueName, Optional<String> routingKey, Optional<String> dlk, int priority, Object message,
             Map<String, Object> headers) {
 
         LOGGER.debug("Broadcasting object {} to exchange {} with priority {}. Binded queue : {}.",
@@ -222,18 +224,28 @@ public abstract class AbstractPublisher implements IPublisherContract {
                 // Declare AMQP elements
 
                 // Declare exchange
-                Exchange exchange = ExchangeBuilder.fanoutExchange(newExchangeName).durable(true).build();
+                Exchange exchange;
+                if (routingKey.isPresent()) {
+                    exchange = ExchangeBuilder.topicExchange(newExchangeName).durable(true).build();
+                } else {
+                    exchange = ExchangeBuilder.fanoutExchange(newExchangeName).durable(true).build();
+                }
                 rabbitAdmin.declareExchange(exchange);
 
                 // Queue
                 if (queueName.isPresent()) {
                     Queue queue = QueueBuilder.durable(queueName.get()).maxPriority(RegardsAmqpAdmin.MAX_PRIORITY)
                             .deadLetterExchange(amqpAdmin.getDefaultDLXName())
-                            .deadLetterRoutingKey(amqpAdmin.getDefaultDLQName()).build();
+                            .deadLetterRoutingKey(dlk.orElse(amqpAdmin.getDefaultDLQName())).build();
                     rabbitAdmin.declareQueue(queue);
 
                     // Bind queue
-                    Binding binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
+                    Binding binding;
+                    if (routingKey.isPresent()) {
+                        binding = BindingBuilder.bind(queue).to((TopicExchange) exchange).with(routingKey.get());
+                    } else {
+                        binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
+                    }
                     rabbitAdmin.declareBinding(binding);
                 }
                 return Boolean.TRUE;
@@ -272,27 +284,30 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     @Override
     @Transactional
-    public void broadcastAll(String exchangeName, Optional<String> queueName, int priority, Collection<?> messages,
+    public void broadcastAll(String exchangeName, Optional<String> queueName, Optional<String> routingKey, Optional<String> dlk,int priority, Collection<?> messages,
             Map<String, Object> headers) {
-        messages.forEach(message -> broadcast(exchangeName, queueName, priority, message, headers));
+        messages.forEach(message -> broadcast(exchangeName, queueName, routingKey, dlk, priority, message, headers));
     }
 
     /**
      * @param <T> event to be published
      * @param event the event you want to publish
-     * @param priority priority given to the event
      * @param workerMode publishing mode
      * @param target publishing scope
+     * @param routingKey routing key
+     * @param priority priority given to the event
+     * @param exchangeName optional name of the exchange to publish to
+     * @param queueName optional name of the queue to publish to
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    protected <T> void publish(final T event, final WorkerMode workerMode, final Target target, final int priority,
+    protected <T> void publish(final T event, final WorkerMode workerMode, final Target target, final String routingKey, final int priority,
             Optional<String> exchangeName, Optional<String> queueName, boolean purgeQueue) {
 
         LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )", event.getClass(), target, workerMode);
 
         String tenant = resolveTenant();
         if (tenant != null) {
-            publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, priority, exchangeName, queueName, purgeQueue);
+            publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, routingKey, priority, exchangeName, queueName, purgeQueue);
         } else {
             String errorMessage = String.format("Unable to publish event %s cause no tenant found.", event.getClass());
             LOGGER.error(errorMessage);
@@ -322,7 +337,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
     protected final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
-            int priority, Optional<String> exchangeName, Optional<String> queueName, boolean purgeQueue) {
+            String routingKey, int priority, Optional<String> exchangeName, Optional<String> queueName, boolean purgeQueue) {
 
         final Class<?> eventType = event.getClass();
 
@@ -331,13 +346,14 @@ public abstract class AbstractPublisher implements IPublisherContract {
             rabbitVirtualHostAdmin.bind(virtualHost);
 
             // Declare AMQP elements for first publication
-            ConcurrentMap<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent = exchangesAndRoutingKeysByEventPerTenant.computeIfAbsent(tenant, key -> new ConcurrentHashMap<>());
+            ConcurrentMap<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent =
+                    exchangesAndRoutingKeysByEventPerTenant.computeIfAbsent(tenant, key -> new ConcurrentHashMap<>());
             ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(exchangeName.orElse(eventType.getName()), key ->
             {
                 amqpAdmin.declareDeadLetter();
 
                 // Declare exchange
-                Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, exchangeName);
+                Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, exchangeName, Optional.ofNullable(routingKey));
 
                 if (WorkerMode.UNICAST.equals(workerMode)) {
                     // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
@@ -346,16 +362,16 @@ public abstract class AbstractPublisher implements IPublisherContract {
                     if (purgeQueue) {
                         amqpAdmin.purgeQueue(queue.getName(), false);
                     }
-                    amqpAdmin.declareBinding(queue, exchange, workerMode);
+                    amqpAdmin.declareBinding(queue, exchange, workerMode, Optional.empty());
                     return ExchangeAndRoutingKey.of(
                             exchange.getName(),
-                            amqpAdmin.getRoutingKey(Optional.of(queue), workerMode)
+                            amqpAdmin.getRoutingKey(Optional.of(queue), workerMode, Optional.empty())
                     );
                 } else if (WorkerMode.BROADCAST.equals(workerMode)) {
                     // Routing key useless ... always skipped with a fanout exchange
                     return ExchangeAndRoutingKey.of(
                             exchange.getName(),
-                            amqpAdmin.getRoutingKey(Optional.empty(), workerMode)
+                            amqpAdmin.getRoutingKey(Optional.empty(), workerMode, Optional.ofNullable(routingKey))
                     );
                 } else {
                     String errorMessage = String.format("Unexpected worker mode : %s.", workerMode);

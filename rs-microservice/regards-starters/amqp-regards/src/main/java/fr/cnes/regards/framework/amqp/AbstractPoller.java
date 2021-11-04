@@ -106,9 +106,9 @@ public abstract class AbstractPoller implements IPollerContract {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
             rabbitVirtualHostAdmin.bind(virtualHost);
 
-            Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, Optional.empty());
+            Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, Optional.empty(), Optional.empty());
             Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty(),Optional.empty());
-            amqpAdmin.declareBinding(queue, exchange, workerMode);
+            amqpAdmin.declareBinding(queue, exchange, workerMode, Optional.empty());
 
             // routing key is unnecessary for fanout exchanges but is for direct exchanges
             return (T) rabbitTemplate.receiveAndConvert(queue.getName(), 0);

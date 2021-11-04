@@ -73,6 +73,12 @@ public @interface Event {
     WorkerMode mode() default WorkerMode.BROADCAST;
 
     /**
+     * Routing key to use for broadcast. In unicast mode, the routingKey is the queue name.
+     * @return event {@link String}
+     */
+    String routingKey() default "";
+
+    /**
      * Allows to chose between JACKSON and GSON message converters.
      * @return event JSON converter
      */
