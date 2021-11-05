@@ -23,7 +23,12 @@ import org.springframework.util.StringUtils;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
+import fr.cnes.regards.framework.jpa.restriction.DatesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 
 public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchParameters<T>> {
 
@@ -42,8 +47,20 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         return this.toSpecification();
     }
 
+    protected Specification<T> equals(String field, Long value) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(field), value);
+    }
+
     protected Specification<T> equals(String field, String value) {
         if (StringUtils.isEmpty(value)) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(field), value);
+        }
+    }
+
+    protected Specification<T> equals(String field, Enum<?> value) {
+        if (value == null) {
             return null;
         } else {
             return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(field), value);
@@ -63,6 +80,23 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return null;
         } else {
             return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get(field), "%" + value + "%");
+        }
+    }
+
+    protected  Specification<T> useDatesRestriction(String field, DatesRestriction datesRestriction) {
+        if (datesRestriction == null) {
+            return null;
+        }
+        OffsetDateTime dateAfter = datesRestriction.getAfter();
+        OffsetDateTime dateBefore = datesRestriction.getBefore();
+        if (dateAfter == null && dateBefore == null) {
+            return null;
+        } else if (dateAfter == null && dateBefore != null) {
+            return before(field, dateBefore);
+        } else if (dateAfter != null && dateBefore == null) {
+            return after(field, dateAfter);
+        } else {
+            return ((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get(field), dateBefore, dateAfter));
         }
     }
 
@@ -95,6 +129,37 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return null;
         } else {
             return ((root, query, criteriaBuilder) -> criteriaBuilder.isMember(value, root.get(field)));
+        }
+    }
+
+    protected Specification<T> useValuesRestriction(String field, ValuesRestriction valuesRestriction) {
+        if (valuesRestriction == null) {
+            return null;
+        }
+        Collection<?> values = valuesRestriction.getValues();
+        ValuesRestrictionMode valuesRestrictionMode = valuesRestriction.getMode();
+        if (values == null || values.isEmpty()) {
+            return null;
+        } else if (valuesRestrictionMode.equals(ValuesRestrictionMode.INCLUDE)) {
+                return isIncluded(field, values);
+        } else {
+            return isExcluded(field, values);
+        }
+    }
+
+    protected Specification<T> isIncluded(String field, Collection<?> values) {
+        if (values == null || values.isEmpty()) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> root.get(field).in(values);
+        }
+    }
+
+    protected Specification<T> isExcluded(String field, Collection<?> values) {
+        if (values == null || values.isEmpty()) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> root.get(field).in(values).not();
         }
     }
 

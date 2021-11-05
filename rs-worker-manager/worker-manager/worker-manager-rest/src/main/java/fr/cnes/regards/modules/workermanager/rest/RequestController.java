@@ -1,0 +1,109 @@
+package fr.cnes.regards.modules.workermanager.rest;
+
+import javax.validation.Valid;
+
+import org.springframework.data.domain.Pageable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
+import fr.cnes.regards.modules.workermanager.domain.dto.requests.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+
+/**
+ * This controller manages Worker requests.
+ *
+ * @author Théo Lasserre
+ */
+@RestController
+@RequestMapping(RequestController.TYPE_MAPPING)
+public class RequestController implements IResourceController<LightRequest> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestController.class);
+
+    public static final String TYPE_MAPPING = "/requests";
+
+    public static final String REQUEST_ID_PATH = "/{requestId}";
+
+    /**
+     * Controller path to retry requests matching criteria
+     */
+    public static final String REQUEST_RETRY_PATH = "/retry";
+
+    /**
+     * Controller path to delete requests matching criteria
+     */
+    public static final String REQUEST_DELETE_PATH = "/delete";
+
+    @Autowired
+    private IResourceService resourceService;
+
+    @Autowired
+    private RequestService requestService;
+
+    @RequestMapping(method = RequestMethod.POST)
+    @ResourceAccess(description = "Retrieve a page of requests matching given filters", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<PagedModel<EntityModel<LightRequest>>> retrieveLightRequestList(
+            @RequestBody SearchRequestParameters filters,
+            @PageableDefault(sort = "requestId", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<LightRequest> assembler) {
+        Page<LightRequest> requests = requestService.searchLightRequests(filters, pageable);
+        return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
+    }
+
+    @RequestMapping(path = REQUEST_ID_PATH, method = RequestMethod.GET)
+    @ResourceAccess(description = "Retrieve a request matching given requestId", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<EntityModel<LightRequest>> retrieveLightRequest(@PathVariable("requestId") String requestIdPath)
+            throws EntityNotFoundException {
+        LightRequest request = requestService.retrieveLightRequest(requestIdPath);
+        return new ResponseEntity<>(toResource(request), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.EXPLOIT)
+    public void retryRequests(@Valid @RequestBody SearchRequestParameters filters) {
+        LOGGER.debug("Received request to retry requests");
+        requestService.scheduleRequestRetryJob(filters);
+    }
+
+    @RequestMapping(value = REQUEST_DELETE_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "Delete requests matching provided filters", role = DefaultRole.ADMIN)
+    public void deleteRequests(@Valid @RequestBody SearchRequestParameters filters) {
+        LOGGER.debug("Received request to delete requests");
+        requestService.scheduleRequestDeletionJob(filters);
+    }
+
+    @Override
+    public EntityModel<LightRequest> toResource(LightRequest element, Object... extras) {
+        EntityModel<LightRequest> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, RequestController.class, "retrieveLightRequest", LinkRels.SELF,
+                                MethodParamFactory.build(String.class, element.getRequestId()));
+        resourceService.addLink(resource, RequestController.class, "retrieveLightRequest", LinkRels.LIST,
+                                MethodParamFactory.build(String.class, element.getRequestId()));
+        if (element.getStatus().equals(RequestStatus.ERROR) || element.getStatus().equals(RequestStatus.NO_WORKER_AVAILABLE)) {
+            resourceService.addLink(resource, RequestController.class, "retryRequests", LinkRelation.of("retry"));
+            resourceService.addLink(resource, RequestController.class, "deleteRequests", LinkRels.DELETE);
+        }
+        return resource;
+    }
+}

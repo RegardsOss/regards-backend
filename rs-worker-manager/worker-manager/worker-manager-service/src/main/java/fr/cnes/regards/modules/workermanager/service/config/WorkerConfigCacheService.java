@@ -98,7 +98,7 @@ public class WorkerConfigCacheService {
      *
      * @return all enabled {@link WorkerConfig}
      */
-    private Map<String, String> getWorkerConfigs() {
+    public Map<String, String> getWorkerConfigs() {
         String tenant = runtimeTenantResolver.getTenant();
         return workerConfigsCachePerTenant.getUnchecked(tenant);
     }

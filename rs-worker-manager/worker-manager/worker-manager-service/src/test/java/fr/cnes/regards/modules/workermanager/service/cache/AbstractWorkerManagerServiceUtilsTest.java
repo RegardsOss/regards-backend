@@ -18,18 +18,27 @@
  */
 package fr.cnes.regards.modules.workermanager.service.cache;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
-import fr.cnes.regards.modules.workermanager.service.config.ConfigManager;
-import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import org.assertj.core.util.Lists;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
+import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
+import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.service.config.ConfigManager;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 
 /**
  * @author Léo Mieulet
@@ -58,6 +67,9 @@ public abstract class AbstractWorkerManagerServiceUtilsTest extends AbstractMult
 
     @Autowired
     private WorkerConfigCacheService workerConfigCacheService;
+
+    @Autowired
+    private IRequestRepository requestRepository;
 
     // -------------
     // BEFORE METHODS
@@ -119,10 +131,29 @@ public abstract class AbstractWorkerManagerServiceUtilsTest extends AbstractMult
         LOGGER.info("Clean repository");
         dynamicTenantSettingRepository.deleteAll();
         workerConfigRepository.deleteAll();
+        requestRepository.deleteAll();
     }
 
     // --------------
     //  WORKER MANAGER UTILS
     // --------------
+    protected void createRequests(String requestId, OffsetDateTime creationDate, String contentType, String source,
+            String session, RequestStatus status, byte[] content, String error, int nbRequests) {
+        List<Request> requests = Lists.newArrayList();
+        for (int i = 0; i < nbRequests; i++) {
+            Request request = new Request();
+            request.setRequestId(requestId + i);
+            request.setCreationDate(creationDate);
+            request.setContentType(contentType);
+            request.setSource(source);
+            request.setSession(session);
+            request.setStatus(status);
+            request.setContent(content);
+            request.setError(error);
+            requests.add(request);
+        }
+        requests = requestRepository.saveAll(requests);
+        Assert.assertEquals(nbRequests, requests.size());
+    }
 
 }

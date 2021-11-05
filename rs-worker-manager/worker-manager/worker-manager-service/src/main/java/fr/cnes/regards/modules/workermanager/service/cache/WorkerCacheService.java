@@ -1,23 +1,29 @@
 package fr.cnes.regards.modules.workermanager.service.cache;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Sets;
-import fr.cnes.regards.modules.workermanager.domain.cache.CacheEntry;
-import fr.cnes.regards.modules.workermanager.domain.cache.CacheWorkerInstance;
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
-import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.workermanager.domain.cache.CacheEntry;
+import fr.cnes.regards.modules.workermanager.domain.cache.CacheWorkerInstance;
+import fr.cnes.regards.modules.workermanager.dto.WorkerTypeAlive;
+import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
+
 @Service
 public class WorkerCacheService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkerCacheService.class);
 
     private static final String DEFAULT_EXPIRE_IN_CACHE_DURATION = "15";
 
@@ -30,7 +36,7 @@ public class WorkerCacheService {
      * This cache invalid automatically old workerType (that did not receive heartbeat since {@link WorkerCacheService#expireInCacheDuration} sec)
      * And the CacheEntry removes old heartbeat when method {@link CacheEntry#addWorkers(Set requests)} called
      */
-    private static Cache<String, CacheEntry> cache;
+    private Cache<String, CacheEntry> cache;
 
     @Autowired
     private WorkerConfigCacheService workerConfigCacheService;
@@ -92,6 +98,34 @@ public class WorkerCacheService {
             }
         }
         return Optional.empty();
+    }
+
+    public List<WorkerTypeAlive> getWorkersInstance(List<String> contentTypes) {
+        List<WorkerTypeAlive> result = new ArrayList<>();
+        Set<String> workerTypesToKeep = new HashSet<>();
+        Map<String, String> workerConfigs = workerConfigCacheService.getWorkerConfigs();
+        // Init worker types to keep
+        for(Map.Entry <String, String> workerConfig : workerConfigs.entrySet()) {
+            String workerType = workerConfig.getValue();
+            if (contentTypes == null || contentTypes.isEmpty()) {
+                // Don't ignore any worker type
+                workerTypesToKeep.add(workerType);
+            } else {
+                // Ignore all worker types not having their content types referenced in provided contentTypes
+                String contentType = workerConfig.getKey();
+                if (contentTypes.contains(contentType)) {
+                    workerTypesToKeep.add(workerType);
+                }
+            }
+        }
+        // Compute result
+        for (Map.Entry<String, CacheEntry> entry: cache.asMap().entrySet()) {
+            String workerType = entry.getKey();
+            if (workerTypesToKeep.contains(workerType)) {
+                result.add(new WorkerTypeAlive(workerType, entry.getValue().getNbWorkerIns()));
+            }
+        }
+        return result;
     }
 
     /**

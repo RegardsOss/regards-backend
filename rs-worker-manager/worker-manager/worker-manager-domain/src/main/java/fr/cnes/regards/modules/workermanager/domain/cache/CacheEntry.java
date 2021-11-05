@@ -69,4 +69,8 @@ public class CacheEntry {
                 .isAfter(OffsetDateTime.now());
     }
 
+    public Long getNbWorkerIns() {
+        return Long.valueOf(workerInsList.size());
+    }
+
 }

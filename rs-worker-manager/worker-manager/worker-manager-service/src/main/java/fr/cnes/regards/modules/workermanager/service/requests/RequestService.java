@@ -18,12 +18,28 @@
  */
 package fr.cnes.regards.modules.workermanager.service.requests;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
+import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
+import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
+import fr.cnes.regards.modules.workermanager.domain.dto.requests.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
@@ -37,16 +53,7 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Service to handle : <ul>
@@ -456,5 +463,46 @@ public class RequestService {
             event.setHeader(EventHeadersHelper.WORKER_ID , request.getDispatchedWorkerType());
         }
         return Optional.ofNullable(event);
+    }
+
+    public Page<LightRequest> searchLightRequests(SearchRequestParameters filters, Pageable pageable) {
+        return requestRepository.findAllLight(new RequestSpecificationsBuilder().withParameters(filters).build(),
+                                              pageable);
+    }
+
+    public Page<Request> searchRequests(SearchRequestParameters filters, Pageable pageable) {
+        return requestRepository.findAll(new RequestSpecificationsBuilder().withParameters(filters).build(), pageable);
+    }
+
+    public LightRequest retrieveLightRequest(String requestId) throws EntityNotFoundException {
+        Optional<LightRequest> lightRequestOpt = requestRepository.findLightByRequestId(requestId);
+        if (!lightRequestOpt.isPresent()) {
+            throw new EntityNotFoundException(requestId, LightRequest.class);
+        }
+        return lightRequestOpt.get();
+    }
+
+    public Request retrieveRequest(String requestId) throws EntityNotFoundException {
+        Optional<Request> requestOpt = requestRepository.findOneByRequestId(requestId);
+        if (!requestOpt.isPresent()) {
+            throw new EntityNotFoundException(requestId, Request.class);
+        }
+        return requestOpt.get();
+    }
+
+    /**
+     * Schedule a job to retry requests matching provided filters
+     * @param filters
+     */
+    public void scheduleRequestRetryJob(SearchRequestParameters filters) {
+        // TODO : PR Léo
+    }
+
+    /**
+     * Schedule a job to delete requests matching provided filters
+     * @param filters
+     */
+    public void scheduleRequestDeletionJob(SearchRequestParameters filters) {
+        // TODO : PR Léo
     }
 }

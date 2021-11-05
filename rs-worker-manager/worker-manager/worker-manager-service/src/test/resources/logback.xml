@@ -34,12 +34,7 @@
 	<logger name="com.mchange.v2.sql.SqlUtils" level="WARN" />
 	<logger name="org.reflections.Reflections" level="OFF" />
 	<logger name="fr.cnes.regards.framework.jpa.multitenant.resolver" level="WARN" />
-	
-	<logger name="org.hibernate.engine.transaction.internal" level="WARN" />
-	<logger name="org.hibernate" level="WARN" />
-	<logger name="org.hibernate.SQL" level="WARN" />
-	<logger name="org.hibernate.type.descriptor.sql" level="WARN" />
-	
+
 	<logger name="fr.cnes.regards" level="INFO" />
 	<logger name="fr.cnes.regards.modules.workermanager" level="INFO" />
 
