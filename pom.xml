@@ -1228,26 +1228,6 @@
 				<artifactId>toponyms-dao</artifactId>
 				<version>${revision}</version>
 			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>topopnymes-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>topopnymes-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>topopnymes-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.uiconfiguration</groupId>
-				<artifactId>topopnymes-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
 			<!-- Data provider -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.acquisition</groupId>
