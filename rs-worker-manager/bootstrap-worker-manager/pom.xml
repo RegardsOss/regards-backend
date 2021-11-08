@@ -82,6 +82,10 @@
 			<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
 			<artifactId>tenant-settings-rest</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.workermanager</groupId>
+			<artifactId>worker-manager-rest</artifactId>
+		</dependency>
 	</dependencies>
 	
 	<profiles>

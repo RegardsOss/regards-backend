@@ -46,6 +46,7 @@ public class WorkerHeartBeatEventHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(WorkerHeartBeatEvent.class, this);
+        subscriber.subscribeTo(WorkerHeartBeatEvent.class, this,
+                               "regards.worker.manager.heartbeat","regards.worker.manager.heartbeat");
     }
 }

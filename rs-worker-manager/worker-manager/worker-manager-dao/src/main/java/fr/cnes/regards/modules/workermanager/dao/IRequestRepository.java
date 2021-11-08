@@ -22,6 +22,8 @@ import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,7 +37,8 @@ import java.util.Optional;
 public interface IRequestRepository extends JpaRepository<Request, Long>,
         JpaSpecificationExecutor<Request> {
 
-    List<String> findRequestIdByRequestIdIn(Collection<String> requestIds);
+    @Query("select requestId from Request where requestId in :requestIds")
+    List<String> findRequestIdByRequestIdIn(@Param("requestIds") Collection<String> requestIds);
 
     List<Request> findByRequestIdIn(Collection<String> requestIds);
 

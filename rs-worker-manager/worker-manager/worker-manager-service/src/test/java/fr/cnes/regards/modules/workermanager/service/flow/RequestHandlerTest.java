@@ -43,6 +43,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -103,6 +104,26 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         broadcastMessage(createEvent(Optional.of(CONTENT_TYPE_TO_SKIP)), Optional.empty());
         Thread.sleep(1_000);
         Assert.assertEquals("There should be no requests created",0L, repository.count());
+    }
+
+    @Test
+    public void handleRequestAlreadyExists() {
+        Message message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE));
+        String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER );
+        Request request = new Request();
+        request.setStatus(RequestStatus.NO_WORKER_AVAILABLE);
+        request.setRequestId(requestId);
+        request.setContent("toto".getBytes(StandardCharsets.UTF_8));
+        request.setCreationDate(OffsetDateTime.now());
+        request.setContentType("type");
+        request.setSession("session");
+        request.setSource("source");
+        repository.save(request);
+
+        broadcastMessage(message, Optional.empty());
+        Assert.assertTrue("Invalid number of responses", waitForResponses(1, 5, TimeUnit.SECONDS));
+        Assert.assertEquals("Invalid number of responses", 1L, responseMock.getEvents().size());
+        Assert.assertEquals("Invalid response status",ResponseStatus.SKIPPED, responseMock.getEvents().stream().findFirst().get().getStatus());
     }
 
     @Test

@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +61,6 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
     @Autowired
     private RequestService workerManagerService;
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(RequestEvent.class, this);
@@ -78,14 +74,14 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
     @Override
     public Errors validate(RequestEvent message) {
         DataBinder db = new DataBinder(message);
-        String tenant = message.getMessageProperties().getHeader(EventHeadersHelper.TENANT_HEADER );
-        String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER );
+        String tenant = message.getMessageProperties().getHeader(EventHeadersHelper.TENANT_HEADER);
+        String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
         Errors errors = db.getBindingResult();
         if (StringUtils.isEmpty(tenant)) {
-            errors.rejectValue(EventHeadersHelper.TENANT_HEADER , EventHeadersHelper.MISSING_HEADER_CODE);
+            errors.rejectValue(EventHeadersHelper.TENANT_HEADER, EventHeadersHelper.MISSING_HEADER_CODE);
         }
         if (StringUtils.isEmpty(requestId)) {
-            errors.rejectValue(EventHeadersHelper.REQUEST_ID_HEADER , EventHeadersHelper.MISSING_HEADER_CODE);
+            errors.rejectValue(EventHeadersHelper.REQUEST_ID_HEADER, EventHeadersHelper.MISSING_HEADER_CODE);
         }
         return errors;
     }
@@ -93,11 +89,11 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
     @Override
     public void handleBatchWithRaw(List<RequestEvent> messages, List<Message> rawMessages) {
         long start = System.currentTimeMillis();
-        LOGGER.info("Handling {} messages",rawMessages.size());
+        LOGGER.info("Handling {} messages", rawMessages.size());
         RequestInfo requestInfo = workerManagerService.registerRequests(rawMessages);
         LOGGER.info("{} dispatched request(s) ,{} delayed request(s) and {} skipped event(s) registered in {} ms",
-                requestInfo.getDispatchedRequests().size(),requestInfo.getDelayedRequests().size(),requestInfo.getSkippedEvents().size(),
-                System.currentTimeMillis() - start);
+                    requestInfo.getDispatchedRequests().size(), requestInfo.getDelayedRequests().size(),
+                    requestInfo.getSkippedEvents().size(), System.currentTimeMillis() - start);
     }
 
     @Override
