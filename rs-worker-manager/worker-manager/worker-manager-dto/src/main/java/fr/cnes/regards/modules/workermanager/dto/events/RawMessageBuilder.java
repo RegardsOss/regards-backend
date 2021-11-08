@@ -40,11 +40,11 @@ public final class RawMessageBuilder {
      */
     public static Message build(String tenant, String contentType, String source, String session, String requestId, byte[] payload) {
         MessageProperties properties = new MessageProperties();
-        properties.setHeader(EventHeaders.TENANT_HEADER.getName(), tenant);
-        properties.setHeader(EventHeaders.CONTENT_TYPE_HEADER.getName(), contentType);
-        properties.setHeader(EventHeaders.OWNER_HEADER.getName(), source);
-        properties.setHeader(EventHeaders.SESSION_HEADER.getName(), session);
-        properties.setHeader(EventHeaders.REQUEST_ID_HEADER.getName(), requestId);
+        properties.setHeader(EventHeadersHelper.TENANT_HEADER , tenant);
+        properties.setHeader(EventHeadersHelper.CONTENT_TYPE_HEADER , contentType);
+        properties.setHeader(EventHeadersHelper.OWNER_HEADER , source);
+        properties.setHeader(EventHeadersHelper.SESSION_HEADER , session);
+        properties.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         return new Message(payload, properties);
     }

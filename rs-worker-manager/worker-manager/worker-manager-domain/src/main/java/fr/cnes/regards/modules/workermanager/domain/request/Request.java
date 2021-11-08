@@ -19,8 +19,7 @@
 package fr.cnes.regards.modules.workermanager.domain.request;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
-import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import org.hibernate.annotations.Type;
@@ -83,11 +82,11 @@ public class Request {
     }
 
     public Request(Message message, RequestStatus status) {
-        this.requestId = EventHeaders.getRequestIdHeader(message).get();
+        this.requestId = EventHeadersHelper.getRequestIdHeader(message).get();
         this.creationDate = OffsetDateTime.now();
-        this.contentType = EventHeaders.getContentTypeHeader(message).get();
-        this.source = EventHeaders.getOwnerHeader(message).get();
-        this.session = EventHeaders.getSessionHeader(message).get();
+        this.contentType = EventHeadersHelper.getContentTypeHeader(message).get();
+        this.source = EventHeadersHelper.getOwnerHeader(message).get();
+        this.session = EventHeadersHelper.getSessionHeader(message).get();
         this.status = status;
         this.content = message.getBody();
     }

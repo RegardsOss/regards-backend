@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
+import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class WorkerRequestDlqHandler
 
     @Override
     public Errors validate(WorkerRequestEvent message) {
-        return EventHeaders.validateHeader(message);
+        return EventHeadersHelper.validateHeader(message);
     }
 
     @Override

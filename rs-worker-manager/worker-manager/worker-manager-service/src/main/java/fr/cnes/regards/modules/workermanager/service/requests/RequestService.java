@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
+import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
@@ -283,9 +283,9 @@ public class RequestService {
     public void handleRequestErrors(List<WorkerRequestEvent> requestEvents) {
         // Dispatch events in a Pair of RequestId / error
         List<Pair<String, String>> requestErrors = requestEvents.stream()
-                .map(m -> Pair.of((String) m.getMessageProperties().getHeader(EventHeaders.REQUEST_ID_HEADER.getName()),
+                .map(m -> Pair.of((String) m.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER ),
                                   (String) m.getMessageProperties()
-                                          .getHeader(EventHeaders.DLQ_ERROR_STACKTRACE_HEADER.getName())))
+                                          .getHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER )))
                 .collect(Collectors.toList());
         // Retrieve existing requests from database
         List<Request> requests = requestRepository.findByRequestIdIn(
@@ -348,7 +348,7 @@ public class RequestService {
         } else {
             // Event requestId must be unique, check if any existing Request has one these events requestId
             List<String> existingIds = requestRepository.findRequestIdByRequestIdIn(
-                    events.stream().map(EventHeaders::getRequestIdHeader).filter(Optional::isPresent).map(Optional::get)
+                    events.stream().map(EventHeadersHelper::getRequestIdHeader).filter(Optional::isPresent).map(Optional::get)
                             .collect(Collectors.toList()));
 
             // Retrieve list of content types configured to be automatically skipped
@@ -372,30 +372,30 @@ public class RequestService {
             RequestInfo requestInfo) {
         List<String> errors = Lists.newArrayList();
         // Check owner is not empty
-        if (!EventHeaders.getOwnerHeader(event).isPresent()) {
-            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeaders.OWNER_HEADER.getName()));
+        if (!EventHeadersHelper.getOwnerHeader(event).isPresent()) {
+            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.OWNER_HEADER ));
         }
         // Check content type is not empty and do not match a content type to skipp
-        if (!EventHeaders.getContentTypeHeader(event).isPresent()) {
-            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeaders.CONTENT_TYPE_HEADER.getName()));
-        } else if (contentTypesToSkip.contains(EventHeaders.getContentTypeHeader(event).get())) {
-            errors.add(String.format(SKIPP_CONTENT_TYPE_MESSAGE, EventHeaders.getContentTypeHeader(event),
+        if (!EventHeadersHelper.getContentTypeHeader(event).isPresent()) {
+            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.CONTENT_TYPE_HEADER ));
+        } else if (contentTypesToSkip.contains(EventHeadersHelper.getContentTypeHeader(event).get())) {
+            errors.add(String.format(SKIPP_CONTENT_TYPE_MESSAGE, EventHeadersHelper.getContentTypeHeader(event),
                                      runtimeTenantResolver.getTenant()));
         }
         // Check session is not empty
-        if (!EventHeaders.getSessionHeader(event).isPresent()) {
-            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeaders.SESSION_HEADER.getName()));
+        if (!EventHeadersHelper.getSessionHeader(event).isPresent()) {
+            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.SESSION_HEADER ));
         }
         // Check requestId does not exist already.
-        if (EventHeaders.getRequestIdHeader(event).isPresent()) {
-            if (existingIds.contains(EventHeaders.getRequestIdHeader(event).get())) {
-                errors.add(String.format(REQUEST_ID_ALREADY_EXISTS_MESSAGE, EventHeaders.getRequestIdHeader(event)));
+        if (EventHeadersHelper.getRequestIdHeader(event).isPresent()) {
+            if (existingIds.contains(EventHeadersHelper.getRequestIdHeader(event).get())) {
+                errors.add(String.format(REQUEST_ID_ALREADY_EXISTS_MESSAGE, EventHeadersHelper.getRequestIdHeader(event)));
             } else {
-                existingIds.add(EventHeaders.getRequestIdHeader(event).get());
+                existingIds.add(EventHeadersHelper.getRequestIdHeader(event).get());
             }
         }
         if (!errors.isEmpty()) {
-            LOGGER.warn("Skipped request {}. Causes : {}", EventHeaders.getRequestIdHeader(event).orElse("undefined"),
+            LOGGER.warn("Skipped request {}. Causes : {}", EventHeadersHelper.getRequestIdHeader(event).orElse("undefined"),
                         String.join(",", errors));
             publisher.publish(ResponseEvent.build(ResponseStatus.SKIPPED).withMessages(errors));
             requestInfo.getSkippedEvents().add(event);
@@ -450,10 +450,10 @@ public class RequestService {
                 throw new RuntimeException(String.format("Invalid request status %s", request.getStatus().toString()));
         }
         if (event != null) {
-            event.setHeader(EventHeaders.REQUEST_ID_HEADER.getName(), request.getRequestId());
-            event.setHeader(EventHeaders.OWNER_HEADER.getName(), request.getSource());
-            event.setHeader(EventHeaders.SESSION_HEADER.getName(), request.getSession());
-            event.setHeader(EventHeaders.WORKER_ID.getName(), request.getDispatchedWorkerType());
+            event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , request.getRequestId());
+            event.setHeader(EventHeadersHelper.OWNER_HEADER , request.getSource());
+            event.setHeader(EventHeadersHelper.SESSION_HEADER , request.getSession());
+            event.setHeader(EventHeadersHelper.WORKER_ID , request.getDispatchedWorkerType());
         }
         return Optional.ofNullable(event);
     }

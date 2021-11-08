@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
+import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
@@ -67,7 +67,7 @@ public class WorkerResponseHandler
 
     @Override
     public Errors validate(WorkerResponseEvent message) {
-        return EventHeaders.validateHeader(message);
+        return EventHeadersHelper.validateHeader(message);
     }
 
     @Override

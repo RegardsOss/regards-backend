@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.workermanager.dto.events.out;
 
 import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 
 import javax.validation.constraints.NotNull;

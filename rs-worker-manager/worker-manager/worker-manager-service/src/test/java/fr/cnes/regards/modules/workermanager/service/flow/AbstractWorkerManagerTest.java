@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.workermanager.service.flow;
 
-import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
+import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
@@ -36,7 +35,6 @@ import fr.cnes.regards.modules.workermanager.service.flow.mock.WorkerRequestMock
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
-import org.bouncycastle.cert.ocsp.Req;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,15 +80,15 @@ public abstract class AbstractWorkerManagerTest extends AbstractRegardsServiceIT
 
     protected WorkerResponseEvent createWorkerResponseEvent(String requestId, WorkerResponseStatus status) {
         WorkerResponseEvent event = new WorkerResponseEvent();
-        event.setHeader(EventHeaders.REQUEST_ID_HEADER.getName(), requestId);
+        event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
         event.setStatus(status);
         return event;
     }
 
     protected WorkerRequestEvent createWorkerDlqRequestEvent(String requestId, String stackStrace) {
         WorkerRequestEvent event = new WorkerRequestEvent();
-        event.setHeader(EventHeaders.REQUEST_ID_HEADER.getName(), requestId);
-        event.setHeader(EventHeaders.DLQ_ERROR_STACKTRACE_HEADER.getName(), stackStrace);
+        event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
+        event.setHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER , stackStrace);
         return event;
     }
 

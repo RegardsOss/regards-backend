@@ -18,16 +18,13 @@
  */
 package fr.cnes.regards.modules.workermanager.dto.events.in;
 
-import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.workercommon.dto.WorkerResponse;
-import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
+import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import org.springframework.amqp.core.MessageProperties;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * Event sent by workers to inform about a request status
@@ -56,7 +53,7 @@ public class WorkerResponseEvent extends WorkerResponse implements ISubscribable
     }
 
     public String getRequestIdHeader() {
-        return this.getMessageProperties().getHeader(EventHeaders.REQUEST_ID_HEADER.getName());
+        return this.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER);
     }
 
 }

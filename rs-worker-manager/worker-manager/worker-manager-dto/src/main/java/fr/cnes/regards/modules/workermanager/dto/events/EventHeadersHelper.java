@@ -31,60 +31,52 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
-public enum EventHeaders {
+public final class EventHeadersHelper {
 
-    TENANT_HEADER("regards.tenant"),
+    public static final String TENANT_HEADER = "regards.tenant";
 
-    REQUEST_ID_HEADER("regards.request.id"),
+    public static final String REQUEST_ID_HEADER = "regards.request.id" ;
 
-    OWNER_HEADER("regards.request.owner"),
+    public static final String OWNER_HEADER = "regards.request.owner" ;
 
-    SESSION_HEADER("regards.request.session"),
+    public static final String SESSION_HEADER = "regards.request.session" ;
 
-    CONTENT_TYPE_HEADER("regards.request.content_type"),
+    public static final String CONTENT_TYPE_HEADER = "regards.request.content_type" ;
 
-    DLQ_ERROR_STACKTRACE_HEADER("x-exception-stacktrace"),
+    public static final String DLQ_ERROR_STACKTRACE_HEADER = "x-exception-stacktrace" ;
 
-    WORKER_ID("regards.worker_id");
-
-    private final String name;
+    public static final String WORKER_ID = "regards.worker_id";
 
     public static final String MISSING_HEADER_CODE= "MISSING_HEADER";
 
-    EventHeaders(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
+    private EventHeadersHelper() {}
 
     public static Optional<String> getOwnerHeader(Message message) {
-        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeaders.OWNER_HEADER.getName()));
+        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeadersHelper.OWNER_HEADER));
     }
 
     public static Optional<String> getRequestIdHeader(Message message) {
-        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeaders.REQUEST_ID_HEADER.getName()));
+        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER ));
     }
 
     public static Optional<String> getContentTypeHeader(Message message) {
-        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeaders.CONTENT_TYPE_HEADER.getName()));
+        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeadersHelper.CONTENT_TYPE_HEADER ));
     }
 
     public static Optional<String> getTenantHeader(Message message) {
-        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeaders.TENANT_HEADER.getName()));
+        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeadersHelper.TENANT_HEADER ));
     }
 
     public static Optional<String> getSessionHeader(Message message) {
-        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeaders.SESSION_HEADER.getName()));
+        return Optional.ofNullable(message.getMessageProperties().getHeader(EventHeadersHelper.SESSION_HEADER ));
     }
 
     public static Errors validateHeader(IMessagePropertiesAware message) {
         DataBinder db = new DataBinder(message);
-        String requestId = message.getMessageProperties().getHeader(EventHeaders.REQUEST_ID_HEADER.getName());
+        String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER );
         Errors errors = db.getBindingResult();
         if (StringUtils.isEmpty(requestId)) {
-            errors.rejectValue(EventHeaders.REQUEST_ID_HEADER.getName(), EventHeaders.MISSING_HEADER_CODE);
+            errors.rejectValue(EventHeadersHelper.REQUEST_ID_HEADER, EventHeadersHelper.MISSING_HEADER_CODE);
         }
         return errors;
     }

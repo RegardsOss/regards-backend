@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
+import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.slf4j.Logger;
@@ -78,14 +78,14 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
     @Override
     public Errors validate(RequestEvent message) {
         DataBinder db = new DataBinder(message);
-        String tenant = message.getMessageProperties().getHeader(EventHeaders.TENANT_HEADER.getName());
-        String requestId = message.getMessageProperties().getHeader(EventHeaders.REQUEST_ID_HEADER.getName());
+        String tenant = message.getMessageProperties().getHeader(EventHeadersHelper.TENANT_HEADER );
+        String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER );
         Errors errors = db.getBindingResult();
         if (StringUtils.isEmpty(tenant)) {
-            errors.rejectValue(EventHeaders.TENANT_HEADER.getName(), EventHeaders.MISSING_HEADER_CODE);
+            errors.rejectValue(EventHeadersHelper.TENANT_HEADER , EventHeadersHelper.MISSING_HEADER_CODE);
         }
         if (StringUtils.isEmpty(requestId)) {
-            errors.rejectValue(EventHeaders.REQUEST_ID_HEADER.getName(), EventHeaders.MISSING_HEADER_CODE);
+            errors.rejectValue(EventHeadersHelper.REQUEST_ID_HEADER , EventHeadersHelper.MISSING_HEADER_CODE);
         }
         return errors;
     }

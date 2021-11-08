@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
+import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
@@ -72,7 +72,7 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         repository.deleteAll();
         responseMock.reset();
         workerRequestMock.reset();
-        tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES.getName(), Arrays.asList(CONTENT_TYPE_TO_SKIP));
+        tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME , Arrays.asList(CONTENT_TYPE_TO_SKIP));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
     @Test
     public void handleValidRequest() {
         Message message = createEvent(Optional.of(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE));
-        String requestId = message.getMessageProperties().getHeader(EventHeaders.REQUEST_ID_HEADER.getName());
+        String requestId = message.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER );
         broadcastMessage(message, Optional.empty());
 
         waitForResponses(1, 5, TimeUnit.SECONDS);

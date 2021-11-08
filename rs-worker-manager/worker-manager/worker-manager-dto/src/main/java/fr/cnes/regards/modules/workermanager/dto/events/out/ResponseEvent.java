@@ -22,12 +22,10 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.EventHeaders;
 import org.springframework.amqp.core.MessageProperties;
 
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * AMQP Event response to a {@link RequestEvent} to inform about request status.
