@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.notifier.dto.conf;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+
 import java.util.Collection;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
  * Associates a {@link IRuleMatcher}/{@link PluginConfiguration} to a list of {@link IRecipientNotifier}/{@link PluginConfiguration}
  * This DTO is used by import/export module configuration manager
  *
  * @author Sébastien Binda
- *
  */
 public class RuleRecipientsAssociation {
 
@@ -40,13 +38,13 @@ public class RuleRecipientsAssociation {
     private String ruleId;
 
     /**
-     * Business Ids of the {@link IRecipientNotifier}/{@link PluginConfiguration}s
+     * Recipient labels of the {@link IRecipientNotifier}/{@link PluginConfiguration}s
      */
-    private Set<String> recipientIds;
+    private Set<String> recipientLabels;
 
-    public static RuleRecipientsAssociation build(String ruleId, Collection<String> recipientIds) {
+    public static RuleRecipientsAssociation build(String ruleId, Collection<String> recipientLabels) {
         RuleRecipientsAssociation assoc = new RuleRecipientsAssociation();
-        assoc.recipientIds = Sets.newHashSet(recipientIds);
+        assoc.recipientLabels = Sets.newHashSet(recipientLabels);
         assoc.ruleId = ruleId;
         return assoc;
     }
@@ -55,8 +53,8 @@ public class RuleRecipientsAssociation {
         return ruleId;
     }
 
-    public Set<String> getRecipientIds() {
-        return recipientIds;
+    public Set<String> getRecipientLabels() {
+        return recipientLabels;
     }
 
 }

@@ -48,8 +48,8 @@ import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
+import fr.cnes.regards.modules.notifier.service.plugin.AbstractRabbitMQSender;
 import fr.cnes.regards.modules.notifier.service.plugin.DefaultRuleMatcher;
-import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
 import fr.cnes.regards.modules.notifier.service.plugin.RecipientSenderTestFail;
 import org.junit.Assert;
 import org.junit.Before;
@@ -649,7 +649,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 RECIPIENT_R1_1_LABEL,
                 Sets.newHashSet(
                         IPluginParam.build(RecipientSenderTestFail.FAIL_PARAM_NAME, true),
-                        IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
+                        IPluginParam.build(AbstractRabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
                         RECIPIENT,
                         ACK_REQUIRED),
                 RecipientSenderTestFail.class.getAnnotation(Plugin.class).id()));
@@ -708,7 +708,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 RECIPIENT_R1_1_LABEL,
                 Sets.newHashSet(
                         IPluginParam.build(RecipientSenderTestFail.FAIL_PARAM_NAME, true),
-                        IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
+                        IPluginParam.build(AbstractRabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
                         RECIPIENT,
                         ACK_REQUIRED),
                 RecipientSenderTestFail.class.getAnnotation(Plugin.class).id()));
@@ -2019,7 +2019,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                             recipientR1_1Error ?
                                     Sets.newHashSet(
                                             IPluginParam.build(RecipientSenderTestFail.FAIL_PARAM_NAME, true),
-                                            IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
+                                            IPluginParam.build(AbstractRabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
                                             RECIPIENT,
                                             ACK_REQUIRED)
                                     : new HashSet<>(),

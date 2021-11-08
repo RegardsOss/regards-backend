@@ -34,7 +34,7 @@ public interface IRecipientNotifier {
      */
     Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend);
 
-    String getRecipientId();
+    String getRecipientLabel();
 
     boolean isAckRequired();
 

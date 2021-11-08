@@ -405,18 +405,19 @@ public abstract class AbstractPublisher implements IPublisherContract {
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event, message -> {
             MessageProperties messageProperties = message.getMessageProperties();
-            // Add headers from parameter
-            if (headers != null) {
-                headers.forEach((k, v) -> messageProperties.setHeader(k, v));
-            }
             // Add headers from event
             if (IMessagePropertiesAware.class.isAssignableFrom(event.getClass())) {
                 MessageProperties mp = ((IMessagePropertiesAware) event).getMessageProperties();
                 if (mp != null) {
-                    mp.getHeaders().forEach((k, v) -> messageProperties.setHeader(k, v));
+                    mp.getHeaders().forEach(messageProperties::setHeader);
                 }
             }
+            // Add default tenant
             messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
+            // Add headers from parameter
+            if (headers != null) {
+                headers.forEach(messageProperties::setHeader);
+            }
             messageProperties.setPriority(priority);
             return new Message(message.getBody(), messageProperties);
         });

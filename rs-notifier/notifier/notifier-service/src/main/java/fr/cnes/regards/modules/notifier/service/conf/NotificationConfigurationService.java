@@ -18,27 +18,26 @@
  */
 package fr.cnes.regards.modules.notifier.service.conf;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.notifier.dto.RuleDTO;
-import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
+import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
 import fr.cnes.regards.modules.notifier.service.IRuleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RegardsTransactional
@@ -109,19 +108,19 @@ public class NotificationConfigurationService {
                 }
 
                 // Check target recipient(s)
-                for (String recipientId : asso.getRecipientIds()) {
-                    PluginConfiguration recipientConf = recipientPluginConfs.get(recipientId);
+                for (String recipientLabel : asso.getRecipientLabels()) {
+                    PluginConfiguration recipientConf = recipientPluginConfs.get(recipientLabel);
                     if (recipientConf == null) {
                         String errorMessage = String
                                 .format("Unknown RECIPIENT plugin business id %s in association with RULE %s",
-                                        recipientId, asso.getRuleId());
+                                        recipientLabel, asso.getRuleId());
                         LOGGER.error(errorMessage);
                         throw new ModuleException(errorMessage);
                     }
                 }
 
                 // Create or update association
-                ruleService.createOrUpdateRule(RuleDTO.build(ruleConf, asso.getRecipientIds()));
+                ruleService.createOrUpdateRule(RuleDTO.build(ruleConf, asso.getRecipientLabels()));
             }
         }
     }

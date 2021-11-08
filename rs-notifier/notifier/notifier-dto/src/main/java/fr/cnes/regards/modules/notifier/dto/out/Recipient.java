@@ -22,25 +22,25 @@ import java.util.Objects;
 
 public class Recipient {
 
-    private String id;
+    private String label;
     private RecipientStatus status;
     private boolean ackRequired;
 
     public Recipient() {
     }
 
-    public Recipient(String id, RecipientStatus status, boolean ackRequired) {
-        this.id = id;
+    public Recipient(String label, RecipientStatus status, boolean ackRequired) {
+        this.label = label;
         this.status = status;
         this.ackRequired = ackRequired;
     }
 
-    public String getId() {
-        return id;
+    public String getLabel() {
+        return label;
     }
 
-    public Recipient setId(String id) {
-        this.id = id;
+    public Recipient setLabel(String label) {
+        this.label = label;
         return this;
     }
 
@@ -67,12 +67,12 @@ public class Recipient {
         if (this == o) return true;
         if (!(o instanceof Recipient)) return false;
         Recipient recipient = (Recipient) o;
-        return Objects.equals(id, recipient.id);
+        return Objects.equals(label, recipient.label);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(label);
     }
 
 }

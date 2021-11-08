@@ -266,9 +266,9 @@ public class NotificationProcessingService extends AbstractNotificationService<N
         Recipient recipient = null;
         try {
             IRecipientNotifier plugin = pluginService.getPlugin(pluginConfiguration.getBusinessId());
-            // Only build a recipient if recipientID has been set
-            if (StringUtils.isNotBlank(plugin.getRecipientId())) {
-                recipient = new Recipient(plugin.getRecipientId(), status, plugin.isAckRequired());
+            // Only build a recipient if recipientLabel has been set
+            if (StringUtils.isNotBlank(plugin.getRecipientLabel())) {
+                recipient = new Recipient(plugin.getRecipientLabel(), status, plugin.isAckRequired());
             }
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             // Should never happen, hopefully, but hey, you never know - expect the unexpected to show how modern you are

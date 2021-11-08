@@ -26,7 +26,7 @@
               {"name":"exchange", "type":"STRING", "value":"regards.geode-validation"},
               {"name":"queueName", "type":"STRING", "value":"regards.geode-validation"},
               {"name":"fail", "type":"BOOLEAN", "value":"true"},
-              {"name":"recipientId", "type":"STRING", "value":"rabbitMQ"},
+              {"name":"recipientLabel", "type":"STRING", "value":"rabbitMQ"},
               {"name":"ackRequired", "type":"BOOLEAN", "value":"false"}
             ]
           }
@@ -50,7 +50,7 @@
           "key": "fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation",
           "value": {
             "ruleId": "RuleByType",
-            "recipientIds" : ["TestSendFail"]
+            "recipientLabels" : ["TestSendFail"]
           }
         }
       ]

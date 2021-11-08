@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
-import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -36,13 +35,11 @@ import java.util.stream.Collectors;
 /**
  * Default plugin notification sender
  * @author Kevin Marchois
- *
  */
 @Plugin(author = "REGARDS Team", description = "Default recipient sender", id = RabbitMQSender.PLUGIN_ID,
         version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class RabbitMQSender implements IRecipientNotifier {
-
+public class RabbitMQSender extends AbstractRabbitMQSender {
     @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
     private static class NotificationEvent implements ISubscribable {
 
@@ -74,25 +71,10 @@ public class RabbitMQSender implements IRecipientNotifier {
 
     public static final String PLUGIN_ID = "RabbitMQSender";
 
-    public static final String EXCHANGE_PARAM_NAME = "exchange";
-
-    public static final String QUEUE_PARAM_NAME = "queueName";
-
-    public static final String RECIPIENT_ID_PARAM_NAME = "recipientId";
-
     public static final String ACK_REQUIRED_PARAM_NAME = "ackRequired";
 
     @Autowired
     private IPublisher publisher;
-
-    @PluginParameter(label = "RabbitMQ exchange name", name = EXCHANGE_PARAM_NAME)
-    private String exchange;
-
-    @PluginParameter(label = "RabbitMQ queue name", name = QUEUE_PARAM_NAME, optional = true)
-    private String queueName;
-
-    @PluginParameter(label = "RabbitMQ recipient ID (must be unique)", name = RECIPIENT_ID_PARAM_NAME, optional = true)
-    private String recipientId;
 
     @PluginParameter(label = "RabbitMQ ack required", name = ACK_REQUIRED_PARAM_NAME, optional = true, defaultValue = "false")
     private boolean ackRequired;
@@ -100,14 +82,8 @@ public class RabbitMQSender implements IRecipientNotifier {
     @Override
     public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
         List<NotificationEvent> toSend = requestsToSend.stream().map(NotificationEvent::new).collect(Collectors.toList());
-        this.publisher.broadcastAll(exchange, Optional.ofNullable(queueName), Optional.empty(), Optional.empty(), 0, toSend, new HashMap<>());
-        // if there is an issue with amqp then none of the message will be sent
-        return Collections.emptySet();
-    }
-
-    @Override
-    public String getRecipientId() {
-        return recipientId;
+        HashMap<String, Object> headers = new HashMap<>();
+        return sendEvents(toSend, headers);
     }
 
     @Override

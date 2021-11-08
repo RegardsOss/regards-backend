@@ -36,8 +36,8 @@ public class RecipientSender4 extends AbstractRecipientSender<NotificationEvent4
     }
 
     @Override
-    public String getRecipientId() {
-        return "recipientId4";
+    public String getRecipientLabel() {
+        return "recipientLabel4";
     }
 
     @Override

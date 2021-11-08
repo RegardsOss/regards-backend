@@ -32,18 +32,10 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
-import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
-import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
-import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.SessionDeleteEventHandler;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.SourceDeleteEventHandler;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
-import fr.cnes.regards.framework.modules.session.manager.service.handlers.SessionManagerHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import java.util.Arrays;
-import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,6 +45,9 @@ import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Iliana Ghazali
@@ -182,7 +177,6 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
     // -------------
     //     AMQP
     // -------------
-
 
     /**
      * Internal method to clean AMQP queues, if actives

@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
 import fr.cnes.regards.modules.notifier.service.AbstractNotificationMultitenantServiceTest;
+import fr.cnes.regards.modules.notifier.service.plugin.AbstractRabbitMQSender;
 import fr.cnes.regards.modules.notifier.service.plugin.DefaultRuleMatcher;
 import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
 import org.junit.Assert;
@@ -104,18 +105,18 @@ public class NotificationConfigurationServiceTest extends AbstractNotificationMu
 
         PluginConfiguration recipient1 = PluginConfiguration
                 .build(RabbitMQSender.PLUGIN_ID, "RECIPIENT1",
-                        IPluginParam.set(
-                                IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "exchange.test.name1"),
-                                IPluginParam.build(RabbitMQSender.QUEUE_PARAM_NAME, "queue.test.name1"),
+                       IPluginParam.set(
+                                IPluginParam.build(AbstractRabbitMQSender.EXCHANGE_PARAM_NAME, "exchange.test.name1"),
+                                IPluginParam.build(AbstractRabbitMQSender.QUEUE_PARAM_NAME, "queue.test.name1"),
                                 RECIPIENT,
                                 ACK_REQUIRED));
         configurations.add(recipient1);
 
         PluginConfiguration recipient2 = PluginConfiguration
                 .build(RabbitMQSender.PLUGIN_ID, "RECIPIENT2",
-                        IPluginParam.set(
-                                IPluginParam.build(RabbitMQSender.EXCHANGE_PARAM_NAME, "exchange.test.name2"),
-                                IPluginParam.build(RabbitMQSender.QUEUE_PARAM_NAME, "queue.test.name2"),
+                       IPluginParam.set(
+                                IPluginParam.build(AbstractRabbitMQSender.EXCHANGE_PARAM_NAME, "exchange.test.name2"),
+                                IPluginParam.build(AbstractRabbitMQSender.QUEUE_PARAM_NAME, "queue.test.name2"),
                                 RECIPIENT,
                                 ACK_REQUIRED));
         configurations.add(recipient2);

@@ -60,8 +60,8 @@ public abstract class AbstractRecipientSender<E extends ISubscribable> implement
     }
 
     @Override
-    public String getRecipientId() {
-        return "recipientId";
+    public String getRecipientLabel() {
+        return "recipientLabel";
     }
 
     @Override

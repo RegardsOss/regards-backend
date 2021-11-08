@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
+import fr.cnes.regards.modules.notifier.service.plugin.AbstractRabbitMQSender;
 import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -73,7 +74,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
 
     protected static final int EVENT_BULK = 1_000;
 
-    protected static final StringPluginParam RECIPIENT = IPluginParam.build(RabbitMQSender.RECIPIENT_ID_PARAM_NAME, "recipient");
+    protected static final StringPluginParam RECIPIENT = IPluginParam.build(AbstractRabbitMQSender.RECIPIENT_LABEL_PARAM_NAME, "recipient");
     protected static final BooleanPluginParam ACK_REQUIRED = IPluginParam.build(RabbitMQSender.ACK_REQUIRED_PARAM_NAME, false);
 
     // used to param if the test Recipient will fail
