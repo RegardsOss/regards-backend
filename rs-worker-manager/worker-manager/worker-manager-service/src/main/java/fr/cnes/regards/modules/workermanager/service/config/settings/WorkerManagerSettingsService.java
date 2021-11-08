@@ -41,6 +41,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Dynamic tenant setting service for WorkerManager
+ *
+ * @author Sébastien Binda
+ */
 @Service
 @RegardsTransactional
 public class WorkerManagerSettingsService extends AbstractSettingService {

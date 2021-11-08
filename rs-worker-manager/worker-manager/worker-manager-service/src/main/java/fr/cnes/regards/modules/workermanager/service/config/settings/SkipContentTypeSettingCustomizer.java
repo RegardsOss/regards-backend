@@ -8,6 +8,11 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * Dynamic tenant setting to configure a list of content type to skip
+ *
+ * @author Sébastien Binda
+ */
 @Component
 public class SkipContentTypeSettingCustomizer implements IDynamicTenantSettingCustomizer {
 

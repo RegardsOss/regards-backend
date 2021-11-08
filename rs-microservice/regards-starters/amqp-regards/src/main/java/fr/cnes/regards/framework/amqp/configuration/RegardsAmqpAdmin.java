@@ -356,7 +356,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
                 break;
             case BROADCAST:
                 if (broadcastRoutingKey.isPresent()) {
-                    LOGGER.info("----------- {} --------------- ", broadcastRoutingKey.orElse("<>"));
                     routingKey = broadcastRoutingKey.get();
                 } else {
                     routingKey = DEFAULT_ROUTING_KEY;

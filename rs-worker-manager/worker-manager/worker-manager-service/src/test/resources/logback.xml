@@ -40,7 +40,7 @@
 	<logger name="org.hibernate.SQL" level="WARN" />
 	<logger name="org.hibernate.type.descriptor.sql" level="WARN" />
 	
-	<logger name="fr.cnes.regards" level="WARN" />
+	<logger name="fr.cnes.regards" level="INFO" />
 	<logger name="fr.cnes.regards.modules.workermanager" level="INFO" />
 
 	<root level="info">
