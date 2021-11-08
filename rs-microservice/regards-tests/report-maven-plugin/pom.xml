@@ -23,16 +23,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>report-maven-plugin</artifactId>
-	<groupId>fr.cnes.regards.microservices</groupId>
 
 	<packaging>maven-plugin</packaging>
 	<description>Maven plugin to aggregate all requirement reports</description>
 
 	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-oss-backend</artifactId>
+		<groupId>fr.cnes.regards.framework.test</groupId>
+		<artifactId>regards-tests</artifactId>
 		<version>${revision}</version>
-		<relativePath>../../../pom.xml</relativePath>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -77,7 +75,7 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>fr.cnes.regards.microservices</groupId>
+				<groupId>fr.cnes.regards.framework.test</groupId>
 				<artifactId>report-maven-plugin</artifactId>
 			</plugin>
 			<plugin>

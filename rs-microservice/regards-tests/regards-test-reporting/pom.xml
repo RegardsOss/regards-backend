@@ -22,14 +22,12 @@
         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.framework.test</groupId>
     <artifactId>regards-test-reporting</artifactId>
 
     <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-oss-backend</artifactId>
+        <groupId>fr.cnes.regards.framework.test</groupId>
+        <artifactId>regards-tests</artifactId>
         <version>${revision}</version>
-        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

@@ -2480,7 +2480,7 @@
 					</configuration>
 				</plugin>
 				<plugin>
-					<groupId>fr.cnes.regards.microservices</groupId>
+					<groupId>fr.cnes.regards.framework.test</groupId>
 					<artifactId>report-maven-plugin</artifactId>
 					<version>${revision}</version>
 				</plugin>
