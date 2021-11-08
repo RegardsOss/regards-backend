@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
@@ -58,6 +59,11 @@ public class WorkerResponseHandler
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(WorkerResponseEvent.class, this, service.getWorkerResponseQueueName(),
                                service.getWorkerResponseQueueName(), false);
+    }
+
+    @Override
+    public Class<WorkerResponseEvent> getMType() {
+        return WorkerResponseEvent.class;
     }
 
     @Override

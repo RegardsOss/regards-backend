@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,11 @@ public class WorkerRequestDlqHandler
     @Override
     public int getBatchSize() {
         return BULK_SIZE;
+    }
+
+    @Override
+    public Class<WorkerRequestEvent> getMType() {
+        return WorkerRequestEvent.class;
     }
 
     @Override
