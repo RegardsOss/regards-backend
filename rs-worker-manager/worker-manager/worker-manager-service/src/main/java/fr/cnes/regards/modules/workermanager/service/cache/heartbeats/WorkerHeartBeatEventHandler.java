@@ -12,22 +12,29 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Handler of {@link WorkerHeartBeatEvent} events
  *
+ * NOTE : heartbeat queue is created with autoDelete amqp option. With this options tests will fails during queue
+ * creation. So this handler bean is never instantiated in test context
+ *
  * @author Léo Mieulet
  */
 @Component
-@Profile("!nohandler")
+@Profile("!testAmqp")
 public class WorkerHeartBeatEventHandler
         implements IBatchHandler<WorkerHeartBeatEvent>, ApplicationListener<ApplicationReadyEvent> {
 
-    @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
     private WorkerCacheService workerCacheService;
+
+    public WorkerHeartBeatEventHandler(ISubscriber subscriber, WorkerCacheService workerCacheService) {
+        this.subscriber = subscriber;
+        this.workerCacheService = workerCacheService;
+    }
 
     @Override
     public Class<WorkerHeartBeatEvent> getMType() {
@@ -46,7 +53,10 @@ public class WorkerHeartBeatEventHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
+        // Use a random uuid to create a unique queue for this instance of the microservice.
+        // Heartbeat needs to be listened by each instance of microservice so a queue is bind to the exchange for each instance.
         subscriber.subscribeTo(WorkerHeartBeatEvent.class, this,
-                               "regards.worker.manager.heartbeat","regards.worker.manager.heartbeat");
+                               "regards.worker.manager.heartbeat." + UUID.randomUUID(),
+                               "regards.worker.manager.heartbeat");
     }
 }

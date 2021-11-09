@@ -31,7 +31,7 @@ import java.time.OffsetDateTime;
  *
  * @author Léo Mieulet
  */
-@Event(target = Target.ALL, converter = JsonMessageConverter.GSON, routingKey = "#")
+@Event(target = Target.ALL, converter = JsonMessageConverter.GSON, routingKey = "#", autoDelete = true)
 public class WorkerHeartBeatEvent extends WorkerHeartBeat implements ISubscribable {
 
     public WorkerHeartBeatEvent(String id, String type, OffsetDateTime heartBeatDate) {

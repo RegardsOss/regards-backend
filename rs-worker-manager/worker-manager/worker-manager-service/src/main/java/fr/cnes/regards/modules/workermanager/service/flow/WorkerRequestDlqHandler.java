@@ -48,11 +48,14 @@ public class WorkerRequestDlqHandler
     @Value("${regards.workermanager.worker.response.bulk.size:1000}")
     private int BULK_SIZE;
 
-    @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
     private RequestService service;
+
+    public WorkerRequestDlqHandler(ISubscriber subscriber, RequestService service) {
+        this.service = service;
+        this.subscriber = subscriber;
+    }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
