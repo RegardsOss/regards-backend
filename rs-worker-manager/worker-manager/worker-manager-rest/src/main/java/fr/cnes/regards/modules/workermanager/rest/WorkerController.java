@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.workermanager.dto.WorkerTypeAlive;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 
 /**
+ * 
  * @author Théo Lasserre
  */
 @RestController
