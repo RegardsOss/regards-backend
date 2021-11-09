@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.crawler.service.conf.CrawlerPropertiesConfigurati
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
-import fr.cnes.regards.modules.dam.domain.datasources.plugins.IAipDataSourcePlugin;
+import fr.cnes.regards.modules.dam.domain.datasources.plugins.IInternalDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -432,7 +432,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         for (DataObjectFeature feature : page.getContent()) {
             // Wrap each feature into its decorator
             DataObject dataObject = DataObject.wrap(model, feature,
-                                                    IAipDataSourcePlugin.class.isAssignableFrom(dsPlugin.getClass()));
+                                                    IInternalDataSourcePlugin.class.isAssignableFrom(dsPlugin.getClass()));
             dataObject.setDataSourceId(datasourceId);
             // Generate IpId only if datasource plugin hasn't yet generate it
             if (dataObject.getIpId().isRandomEntityId()) {

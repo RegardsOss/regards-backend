@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+import org.springframework.util.MimeType;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * File attributes
@@ -55,17 +54,23 @@ public class FeatureFileAttributes {
     private Long filesize;
 
     /**
-     * The checksum algorithm (<b>required</b> if data object is not a reference)
+     * The checksum algorithm
      */
     @NotBlank
     @HandledMessageDigestAlgorithm
     private String algorithm;
 
     /**
-     * The checksum (<b>required</b> if data object is not a reference)
+     * The checksum to verify data consistency
      */
     @NotBlank
     private String checksum;
+
+    /**
+     * Optional checksum dedicated to detect transmission errors (for download purpose).
+     * It's only a statistical detection and cannot replace checksum property dedicated to consistency check.
+     */
+    private String crc32;
 
     public DataType getDataType() {
         return dataType;
@@ -115,6 +120,14 @@ public class FeatureFileAttributes {
         this.checksum = checksum;
     }
 
+    public String getCrc32() {
+        return crc32;
+    }
+
+    public void setCrc32(String crc32) {
+        this.crc32 = crc32;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -125,6 +138,7 @@ public class FeatureFileAttributes {
         result = (prime * result) + (filesize == null ? 0 : filesize.hashCode());
         result = (prime * result) + (filename == null ? 0 : filename.hashCode());
         result = (prime * result) + (mimeType == null ? 0 : mimeType.hashCode());
+        result = (prime * result) + (crc32 == null ? 0 : crc32.hashCode());
         return result;
     }
 
@@ -176,6 +190,13 @@ public class FeatureFileAttributes {
                 return false;
             }
         } else if (!mimeType.equals(other.mimeType)) {
+            return false;
+        }
+        if (crc32 == null) {
+            if (other.crc32 != null) {
+                return false;
+            }
+        } else if (!crc32.equals(other.crc32)) {
             return false;
         }
         return true;

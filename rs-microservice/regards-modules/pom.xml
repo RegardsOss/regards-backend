@@ -62,6 +62,7 @@
         <module>dump</module>
         <module>tenant-settings</module>
         <module>session</module>
+        <module>tinyurl</module>
     </modules>
 
 </project>

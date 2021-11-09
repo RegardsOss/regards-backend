@@ -16,15 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.dam.domain.datasources.plugins;
+package fr.cnes.regards.framework.modules.tinyurl.dao;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
+import org.junit.Ignore;
 
 /**
- * Aip specialization of data source plugin
- * @author oroussel
+ * Generate SQL script using persistence annotations
  */
-@PluginInterface(description = "Plugin to search in a data source that consumes AIPs")
-public interface IAipDataSourcePlugin extends IDataSourcePlugin {
+@Ignore
+public class TinyUrlGeneratorTest extends AbstractScriptGeneratorTest {
 
 }

@@ -18,17 +18,14 @@
  */
 package fr.cnes.regards.modules.indexer.domain;
 
-import java.net.URI;
-import java.util.Set;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.urn.DataType;
+import org.springframework.util.MimeType;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import org.springframework.util.MimeType;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.urn.DataType;
+import java.net.URI;
+import java.util.Set;
 
 /**
  * This class manages data reference. Use {@link #build(DataType, String, String, MimeType, Boolean)} to instanciate it.
@@ -81,7 +78,7 @@ public class DataFile {
     private Boolean online;
 
     /**
-     * Optional file checksum
+     * Optional file checksum to verify data consistency
      */
     private String checksum;
 
@@ -105,6 +102,12 @@ public class DataFile {
      * Custom data file types
      */
     private Set<String> types = Sets.newHashSet();
+
+    /**
+     * Optional checksum dedicated to detect ZIP transmission errors (for download purpose).
+     * It's only a statistical detection and cannot replace checksum property dedicated to consistency check.
+     */
+    private String crc32;
 
     public DataType getDataType() {
         return dataType;
@@ -206,6 +209,15 @@ public class DataFile {
         this.types = types;
     }
 
+    public String getCrc32() {
+        return crc32;
+    }
+
+    public DataFile setCrc32(String crc32) {
+        this.crc32 = crc32;
+        return this;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -274,7 +286,7 @@ public class DataFile {
 
     /**
      * Base builder with required properties.<br/>
-     * For image, size is required, use {@link #setImageWidth(Integer)} and {@link #setImageHeight(Integer)}.<br/>
+     * For image, size is required, use {@link #setImageWidth(Double)} and {@link #setImageHeight(Double)}.<br/>
      * Additional file properties can be supplied using :
      *
      * <ul>

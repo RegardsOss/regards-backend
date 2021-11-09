@@ -560,6 +560,12 @@
 				<artifactId>dump-rest</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<!-- Tiny URL -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules</groupId>
+				<artifactId>tinyurl</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- Regards Plugins -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
