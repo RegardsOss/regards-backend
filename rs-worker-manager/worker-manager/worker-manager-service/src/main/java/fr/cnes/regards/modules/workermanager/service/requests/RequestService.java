@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
-import fr.cnes.regards.modules.workermanager.domain.dto.requests.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
@@ -54,6 +54,7 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import org.springframework.data.util.Pair;
+import org.springframework.stereotype.Service;
 
 /**
  * Service to handle : <ul>

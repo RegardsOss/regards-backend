@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
-import fr.cnes.regards.modules.workermanager.domain.dto.requests.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 

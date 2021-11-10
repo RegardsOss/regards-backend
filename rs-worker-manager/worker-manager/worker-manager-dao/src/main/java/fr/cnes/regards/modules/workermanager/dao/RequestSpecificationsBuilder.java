@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.workermanager.dao;
 
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
-import fr.cnes.regards.modules.workermanager.domain.dto.requests.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 
 /**
@@ -34,7 +34,7 @@ public class RequestSpecificationsBuilder extends AbstractSpecificationsBuilder<
             specifications.add(like("sessionOwner", parameters.getSessionOwner()));
             specifications.add(like("session", parameters.getSession()));
             specifications.add(like("dispatchedWorkerType", parameters.getDispatchedWorkerType()));
-            specifications.add(useValuesRestriction("status", parameters.getStatus()));
+            specifications.add(useValuesRestriction("status", parameters.getStatuses()));
             specifications.add(useValuesRestriction("id", parameters.getIds()));
             specifications.add(useValuesRestriction("contentType", parameters.getContentTypes()));
         }

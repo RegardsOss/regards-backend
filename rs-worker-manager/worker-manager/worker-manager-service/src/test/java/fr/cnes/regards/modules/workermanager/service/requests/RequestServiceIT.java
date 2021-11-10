@@ -32,10 +32,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.restriction.DatesRestriction;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
-import fr.cnes.regards.modules.workermanager.domain.dto.requests.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsTest;
@@ -91,31 +90,31 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsTest {
         SearchRequestParameters srp = new SearchRequestParameters();
 
         LOGGER.info("=========================> BEGIN SEARCH REQUESTS <=====================");
-        srp.withStatusIncluded(RequestStatus.DISPATCHED);
+        srp.withStatusesIncluded(RequestStatus.DISPATCHED);
         Page<LightRequest> requests = requestService.searchLightRequests(srp, pr);
         Assert.assertEquals("Error searching DISPATCHED requests", 1, requests.getTotalElements());
 
-        srp.withStatusIncluded(RequestStatus.INVALID_CONTENT);
+        srp.withStatusesIncluded(RequestStatus.INVALID_CONTENT);
         requests = requestService.searchLightRequests(srp, pr);
         Assert.assertEquals("Error searching INVALID_CONTENT requests",2, requests.getTotalElements());
 
-        srp.withStatusIncluded(RequestStatus.NO_WORKER_AVAILABLE);
+        srp.withStatusesIncluded(RequestStatus.NO_WORKER_AVAILABLE);
         requests = requestService.searchLightRequests(srp, pr);
         Assert.assertEquals("Error searching NO_WORKER_AVAILABLE requests",3, requests.getTotalElements());
 
-        srp.withStatusIncluded(RequestStatus.ERROR);
+        srp.withStatusesIncluded(RequestStatus.ERROR);
         requests = requestService.searchLightRequests(srp, pr);
         Assert.assertEquals("Error searching ERROR requests",4, requests.getTotalElements());
 
-        srp.withStatusIncluded(RequestStatus.RUNNING);
+        srp.withStatusesIncluded(RequestStatus.RUNNING);
         requests = requestService.searchLightRequests(srp, pr);
         Assert.assertEquals("Error searching RUNNING requests",5, requests.getTotalElements());
 
-        srp.withStatusIncluded(RequestStatus.SUCCESS);
+        srp.withStatusesIncluded(RequestStatus.SUCCESS);
         requests = requestService.searchLightRequests(srp, pr);
         Assert.assertEquals("Error searching SUCCESS requests",6, requests.getTotalElements());
 
-        srp.withStatusIncluded(); // clear status
+        srp.withStatusesIncluded(); // clear status
         OffsetDateTime createdBefore = OffsetDateTime.now().plusDays(2);
         srp.withCreationDateBefore(createdBefore);
         requests = requestService.searchLightRequests(srp, pr);

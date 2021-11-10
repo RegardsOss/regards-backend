@@ -26,29 +26,36 @@ import java.util.Collection;
  *
  * @author Théo Lasserre
  */
-public class ValuesRestriction {
+public class ValuesRestriction<T> {
 
-    private Collection<?> values;
+    private Collection<T> values;
     private ValuesRestrictionMode mode;
 
-    public ValuesRestriction(Collection<?> values, ValuesRestrictionMode mode) {
+    public ValuesRestriction() {
+    }
+
+    public ValuesRestriction(Collection<T> values, ValuesRestrictionMode mode) {
         this.values = values;
         this.mode = mode;
     }
 
-    public static ValuesRestriction buildInclude(Collection<?> values) {
-        return new ValuesRestriction(values, ValuesRestrictionMode.INCLUDE);
+    public ValuesRestriction<T> withInclude(Collection<T> values) {
+        this.values = values;
+        this.mode = ValuesRestrictionMode.INCLUDE;
+        return this;
     }
 
-    public static ValuesRestriction buildExclude(Collection<?> values) {
-        return new ValuesRestriction(values, ValuesRestrictionMode.EXCLUDE);
+    public ValuesRestriction<T> withExclude(Collection<T> values) {
+        this.values = values;
+        this.mode = ValuesRestrictionMode.EXCLUDE;
+        return this;
     }
 
-    public Collection<?> getValues() {
+    public Collection<T> getValues() {
         return values;
     }
 
-    public void setValues(Collection<?> values) {
+    public void setValues(Collection<T> values) {
         this.values = values;
     }
 

@@ -1,8 +1,12 @@
 package fr.cnes.regards.modules.workermanager.rest;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
@@ -13,13 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
-import fr.cnes.regards.modules.workermanager.domain.dto.requests.SearchRequestParameters;
-import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * {@link Request} REST API testing
@@ -81,6 +80,7 @@ public class RequestControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.expectIsArray(JSON_PATH_CONTENT);
         requestBuilderCustomizer.expectToHaveSize(JSON_PATH_CONTENT, 1);
         SearchRequestParameters body = new SearchRequestParameters();
+        body.withStatusesIncluded(RequestStatus.DISPATCHED);
         performDefaultPost(RequestController.TYPE_MAPPING, body, requestBuilderCustomizer, "Error retrieving requests");
     }
 
