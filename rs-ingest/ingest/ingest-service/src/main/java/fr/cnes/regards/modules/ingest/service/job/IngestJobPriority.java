@@ -20,89 +20,32 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 /**
  * Ingest jobs priority management
+ *
  * @author Marc Sordi
  * @author Sébastien Binda
- *
  */
-public enum IngestJobPriority {
+public final class IngestJobPriority {
 
-    INGEST_PROCESSING_JOB_PRIORITY {
+    public static int INGEST_PROCESSING_JOB_PRIORITY = 0;
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
+    public static int CHOOSE_VERSIONING_JOB_PRIORITY = 0;
 
-    CHOOSE_VERSIONING_JOB_PRIORITY {
+    public static int SESSION_DELETION_JOB_PRIORITY = 0;
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
+    public static int UPDATE_AIP_SCAN_JOB_PRIORITY = 0;
 
-    SESSION_DELETION_JOB_PRIORITY {
+    public static int UPDATE_AIP_RUNNER_PRIORITY = 0;
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
+    public static int AIP_SAVE_METADATA_RUNNER_PRIORITY = 0;
 
-    UPDATE_AIP_SCAN_JOB_PRIORITY {
+    public static int OAIS_DELETION_JOB_PRIORITY = 0;
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
+    public static int REQUEST_DELETION_JOB_PRIORITY = 0;
 
-    UPDATE_AIP_RUNNER_PRIORITY {
+    public static int REQUEST_RETRY_JOB_PRIORITY = 0;
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
+    public static int POST_PROCESSING_JOB = 0;
 
-    AIP_SAVE_METADATA_RUNNER_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-    OAIS_DELETION_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-
-    REQUEST_DELETION_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-
-    REQUEST_RETRY_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-    POST_PROCESSING_JOB {
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    };
-
-    public abstract int getPriority();
+    private IngestJobPriority() {
+    }
 }

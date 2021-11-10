@@ -20,58 +20,33 @@ package fr.cnes.regards.modules.acquisition.service.job;
 
 /**
  * Acquisition jobs priority management
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
-public enum AcquisitionJobPriority {
+public final class AcquisitionJobPriority {
 
     /**
      * Only one job per acquisition chain can be available at a time
      */
-    PRODUCT_ACQUISITION_JOB_PRIORITY {
+    public static int PRODUCT_ACQUISITION_JOB_PRIORITY = 10;
 
-        @Override
-        public int getPriority() {
-            return 10;
-        }
-    },
     /**
      * One product, one job!
      */
-    SIP_GENERATION_JOB_PRIORITY {
+    public static int SIP_GENERATION_JOB_PRIORITY = 0;
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
     /**
      * Only one job per acquisition chain can be available at a time
      */
-    SIP_SUBMISSION_JOB_PRIORITY {
+    public static int SIP_SUBMISSION_JOB_PRIORITY = 10;
 
-        @Override
-        public int getPriority() {
-            return 10;
-        }
-    },
     /**
      * One product, one job!
      */
-    POST_ACQUISITION_JOB_PRIORITY {
+    public static int POST_ACQUISITION_JOB_PRIORITY = 0;
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    },
-    DELETION_JOB {
+    public static int DELETION_JOB = 100;
 
-        @Override
-        public int getPriority() {
-            return 100;
-        }
-    };
-
-    public abstract int getPriority();
+    private AcquisitionJobPriority() {
+    }
 }

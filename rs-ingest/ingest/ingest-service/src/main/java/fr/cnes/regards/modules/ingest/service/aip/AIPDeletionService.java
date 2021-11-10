@@ -106,7 +106,7 @@ public class AIPDeletionService {
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(OAISDeletionJob.OAIS_DELETION_REQUEST_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.OAIS_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
+            jobInfo = new JobInfo(false, IngestJobPriority.OAIS_DELETION_JOB_PRIORITY, jobParameters,
                     null, OAISDeletionJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
             LOGGER.debug("[OAIS DELETION SCHEDULER] 1 Job scheduled for {} OAISDeletionRequest(s) in {} ms",

@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
-import fr.cnes.regards.modules.storage.service.JobsPriority;
+import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.job.CacheCleanJob;
 
 /**
@@ -348,7 +348,7 @@ public class CacheService {
         Set<JobParameter> parameters = Sets.newHashSet();
         if (jobService.retrieveJobsCount(CacheCleanJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
                                          JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
-            jobService.createAsQueued(new JobInfo(false, JobsPriority.CACHE_PURGE.getPriority(), parameters,
+            jobService.createAsQueued(new JobInfo(false, StorageJobsPriority.CACHE_PURGE, parameters,
                                                   jobOwner, CacheCleanJob.class.getName()));
         }
         runtimeTenantResolver.clearTenant();

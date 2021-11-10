@@ -151,7 +151,7 @@ public class IngestRequestService implements IIngestRequestService {
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainName));
         // Lock job info
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY,
                 jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
         // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         jobInfo.setLocked(true);
@@ -591,7 +591,7 @@ public class IngestRequestService implements IIngestRequestService {
         Set<JobParameter> jobParameters = Sets
                 .newHashSet(new JobParameter(ChooseVersioningJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request retry job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY.getPriority(),
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY,
                 jobParameters, authResolver.getUser(), ChooseVersioningJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", ChooseVersioningJob.class.getName(), jobInfo.getId());

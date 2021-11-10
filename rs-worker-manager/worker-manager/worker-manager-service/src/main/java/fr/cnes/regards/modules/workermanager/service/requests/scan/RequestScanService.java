@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
-import fr.cnes.regards.modules.workermanager.service.JobsPriority;
+import fr.cnes.regards.modules.workermanager.service.WorkerManagerJobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import fr.cnes.regards.modules.workermanager.service.requests.job.DeleteRequestJob;
@@ -184,12 +184,12 @@ public class RequestScanService {
         switch (status) {
             case TO_DELETE:
                 jobParameters = Sets.newHashSet(new JobParameter(DeleteRequestJob.REQUEST_DB_IDS, requestsIds));
-                priority = getDeletionJobPriority();
+                priority = WorkerManagerJobsPriority.REQUEST_DELETION_JOB;
                 className = DeleteRequestJob.class.getName();
                 break;
             case TO_DISPATCH:
                 jobParameters = Sets.newHashSet(new JobParameter(DispatchRequestJob.REQUEST_DB_IDS, requestsIds));
-                priority = getDispatchJobPriority();
+                priority = WorkerManagerJobsPriority.REQUEST_DISPATCH_JOB;
                 className = DispatchRequestJob.class.getName();
                 break;
             default:
@@ -200,13 +200,5 @@ public class RequestScanService {
         // create job
         return jobInfoService.createAsQueued(
                 new JobInfo(false, priority, jobParameters, authResolver.getUser(), className));
-    }
-
-    private int getDeletionJobPriority() {
-        return JobsPriority.REQUEST_DELETION_JOB.getPriority();
-    }
-
-    private int getDispatchJobPriority() {
-        return JobsPriority.REQUEST_DISPATCH_JOB.getPriority();
     }
 }

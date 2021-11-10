@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.storage.service.JobsPriority;
+import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.job.CacheVerificationJob;
 
 /**
@@ -90,7 +90,7 @@ public class CacheScheduler {
             Set<JobParameter> parameters = Sets.newHashSet();
             if (jobService.retrieveJobsCount(CacheVerificationJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
                                              JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
-                jobService.createAsQueued(new JobInfo(false, JobsPriority.CACHE_VERIFICATION.getPriority(), parameters,
+                jobService.createAsQueued(new JobInfo(false, StorageJobsPriority.CACHE_VERIFICATION, parameters,
                                                       CacheScheduler.class.getName(), CacheVerificationJob.class.getName()));
             }
             runtimeTenantResolver.clearTenant();

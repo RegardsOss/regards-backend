@@ -99,7 +99,7 @@ public class AIPPostProcessService {
             // Schedule aipPostProcessing jobs
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(IngestPostProcessingJob.AIP_POST_PROCESS_REQUEST_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.POST_PROCESSING_JOB.getPriority(), jobParameters,
+            jobInfo = new JobInfo(false, IngestJobPriority.POST_PROCESSING_JOB, jobParameters,
                     authResolver.getUser(), IngestPostProcessingJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
             LOGGER.debug("[AIP POSTPROCESS SCHEDULER] 1 Job scheduled for {} AIPPostProcessRequest(s) in {} ms",

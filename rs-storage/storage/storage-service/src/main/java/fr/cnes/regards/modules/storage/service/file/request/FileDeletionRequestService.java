@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
-import fr.cnes.regards.modules.storage.service.JobsPriority;
+import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestJob;
@@ -310,8 +310,8 @@ public class FileDeletionRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileStorageRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, pluginConfBusinessId));
         parameters.add(new JobParameter(FileStorageRequestJob.WORKING_SUB_SET, workingSubset));
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(),
-                parameters, authResolver.getUser(), FileDeletionRequestJob.class.getName()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.FILE_DELETION_JOB,
+                                                                    parameters, authResolver.getUser(), FileDeletionRequestJob.class.getName()));
         workingSubset.getFileDeletionRequests().forEach(fileRefReq -> fileDeletionRequestRepo
                 .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), fileRefReq.getId()));
         return jobInfo;
@@ -592,8 +592,8 @@ public class FileDeletionRequestService {
             parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.SESSION_OWNER, sessionOwner));
             parameters.add(new JobParameter(FileDeletionRequestsCreatorJob.SESSION, session));
             JobInfo jobInfo = jobInfoService
-                    .createAsQueued(new JobInfo(false, JobsPriority.FILE_DELETION_JOB.getPriority(), parameters,
-                            authResolver.getUser(), FileDeletionRequestsCreatorJob.class.getName()));
+                    .createAsQueued(new JobInfo(false, StorageJobsPriority.FILE_DELETION_JOB, parameters,
+                                                authResolver.getUser(), FileDeletionRequestsCreatorJob.class.getName()));
             LOGGER.debug("[DELETION REQUESTS] Job scheduled to delete all files from storage location {} (force={}).",
                          storageLocationId, forceDelete);
             return jobInfo;

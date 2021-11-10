@@ -195,7 +195,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         // we need to set up a fake ProductAcquisitionJob to fill its attributes
         JobInfo jobInfo = new JobInfo(true);
-        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
+        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY);
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
                               new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());
@@ -278,7 +278,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         // we need to set up a fake ProductAcquisitionJob to fill its attributes
         JobInfo jobInfo = new JobInfo(true);
-        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
+        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY);
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
                               new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, "my funky session"));
         jobInfo.setClassName(ProductAcquisitionJob.class.getName());

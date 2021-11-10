@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.JobsPriority;
+import fr.cnes.regards.modules.workermanager.service.WorkerManagerJobsPriority;
 import fr.cnes.regards.modules.workermanager.service.requests.job.DispatchRequestJob;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -61,7 +61,7 @@ public class RequestScanServiceTest extends AbstractRequestJobTest {
         Optional<JobInfo> jobInfoOpt = jobInfos.stream().findFirst();
         Assert.assertTrue("should launch correct number of RepublishRequestJob", jobInfoOpt.isPresent());
         Assert.assertEquals("should get the correct priority",
-                            Integer.valueOf(JobsPriority.REQUEST_DISPATCH_JOB.getPriority()),
+                            Integer.valueOf(WorkerManagerJobsPriority.REQUEST_DISPATCH_JOB),
                             jobInfoOpt.get().getPriority());
 
         // Run job

@@ -76,7 +76,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubse
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
-import fr.cnes.regards.modules.storage.service.JobsPriority;
+import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
@@ -475,8 +475,8 @@ public class FileCacheRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, workingSubset));
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_CACHE_JOB.getPriority(),
-                parameters, authResolver.getUser(), FileCacheRequestJob.class.getName()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.FILE_CACHE_JOB,
+                                                                    parameters, authResolver.getUser(), FileCacheRequestJob.class.getName()));
         workingSubset.getFileRestorationRequests().forEach(r -> repository
                 .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), r.getId()));
         em.flush();

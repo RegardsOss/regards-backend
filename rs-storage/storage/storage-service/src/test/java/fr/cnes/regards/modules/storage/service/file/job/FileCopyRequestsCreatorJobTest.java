@@ -41,7 +41,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
-import fr.cnes.regards.modules.storage.service.JobsPriority;
+import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 
 /**
  * Tests for creation of copy requests
@@ -126,8 +126,8 @@ public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH_PARMETER_NAME, "from_online"));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER_PARMETER_NAME, "source1"));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_PARMETER_NAME, "session1"));
-        JobInfo jobInfo = new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(), jobParameters, null,
-                FileCopyRequestsCreatorJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, StorageJobsPriority.FILE_COPY_JOB, jobParameters, null,
+                                      FileCopyRequestsCreatorJob.class.getName());
         jobInfoService.createAsPending(jobInfo);
         jobService.runJob(jobInfo, getDefaultTenant()).get();
 
@@ -168,7 +168,7 @@ public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH_PARMETER_NAME, ""));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER_PARMETER_NAME, "source1"));
         jobParameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_PARMETER_NAME, "session1"));
-        JobInfo jobInfo = new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(), jobParameters, null,
+        JobInfo jobInfo = new JobInfo(false, StorageJobsPriority.FILE_COPY_JOB, jobParameters, null,
                                       FileCopyRequestsCreatorJob.class.getName());
         jobInfoService.createAsPending(jobInfo);
         jobService.runJob(jobInfo, getDefaultTenant()).get();

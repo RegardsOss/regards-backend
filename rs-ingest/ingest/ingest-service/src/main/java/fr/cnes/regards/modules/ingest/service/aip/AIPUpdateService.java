@@ -103,7 +103,7 @@ public class AIPUpdateService {
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(AIPUpdateRunnerJob.UPDATE_REQUEST_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY.getPriority(), jobParameters,
+            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY, jobParameters,
                     null, AIPUpdateRunnerJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
             LOGGER.debug("[OAIS UPDATE SCHEDULER] 1 Job scheduled for {} AIPUpdateRequest(s) in {} ms",

@@ -647,7 +647,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         LOGGER.debug("Scheduling product acquisition job for processing chain \"{}\"", processingChain.getLabel());
         JobInfo jobInfo = new JobInfo(true);
-        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY.getPriority());
+        jobInfo.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY);
         jobInfo.setParameters(new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ID, processingChain.getId()),
                               new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_SESSION, sessionName),
                               new JobParameter(ProductAcquisitionJob.CHAIN_PARAMETER_ONLY_ERRORS, onlyErrors));

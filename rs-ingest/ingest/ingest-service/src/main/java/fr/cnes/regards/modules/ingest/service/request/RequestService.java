@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.*;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -43,11 +29,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
-import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.mapper.IRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
@@ -67,6 +49,19 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.job.*;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle all {@link AbstractRequest}s
@@ -176,13 +171,13 @@ public class RequestService implements IRequestService {
         if (request instanceof OAISDeletionCreatorRequest) {
             // Schedule OAIS Deletion job
             jobParameters.add(new JobParameter(OAISDeletionsCreatorJob.REQUEST_ID, request.getId()));
-            jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY.getPriority(), jobParameters,
+            jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY, jobParameters,
                     authResolver.getUser(), OAISDeletionsCreatorJob.class.getName());
             // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         } else if (request instanceof AIPUpdatesCreatorRequest) {
             // Schedule Updates Creator job
             jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
-            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY.getPriority(), jobParameters,
+            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY, jobParameters,
                     authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
         } else {
             throw new IllegalArgumentException(
@@ -201,7 +196,7 @@ public class RequestService implements IRequestService {
         Set<JobParameter> jobParameters = Sets
                 .newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request deletion job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY.getPriority(),
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY,
                 jobParameters, authResolver.getUser(), RequestDeletionJob.class.getName());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", RequestDeletionJob.class.getName(), jobInfo.getId());
@@ -212,7 +207,7 @@ public class RequestService implements IRequestService {
         Set<JobParameter> jobParameters = Sets
                 .newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request retry job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_RETRY_JOB_PRIORITY.getPriority(), jobParameters,
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_RETRY_JOB_PRIORITY, jobParameters,
                 authResolver.getUser(), RequestRetryJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", RequestRetryJob.class.getName(), jobInfo.getId());

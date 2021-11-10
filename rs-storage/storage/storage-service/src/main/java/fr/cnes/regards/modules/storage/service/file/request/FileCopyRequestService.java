@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
-import fr.cnes.regards.modules.storage.service.JobsPriority;
+import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -388,8 +388,8 @@ public class FileCopyRequestService {
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER_PARMETER_NAME, sessionOwner));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_PARMETER_NAME, session));
 
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, JobsPriority.FILE_COPY_JOB.getPriority(),
-                parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.FILE_COPY_JOB,
+                                                                    parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
         LOGGER.debug("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for types {}.",
                      storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""), types);
         return jobInfo;

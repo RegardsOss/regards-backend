@@ -16,33 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.workermanager.service;
+package fr.cnes.regards.modules.storage.service;
 
 /**
- * Centralize the WorkerManager jobs priorities.
+ * Centralize the storage jobs priorities.
  *
- * @author Léo Mieulet
+ * @author Sébastien Binda
  */
-public enum JobsPriority {
+public final class StorageJobsPriority {
 
-    REQUEST_DELETION_JOB(10),
+    public static int FILE_CACHE_JOB = 30;
 
-    REQUEST_SCAN_JOB(20),
+    public static int FILE_STORAGE_JOB = 40;
 
-    REQUEST_DISPATCH_JOB(30);
+    public static int FILE_DELETION_JOB = 60;
 
-    private int priority;
+    public static int FILE_COPY_JOB = 80;
 
-    private JobsPriority(int priority) {
-        this.priority = priority;
+    public static int CACHE_VERIFICATION = 90;
+
+    public static int CACHE_PURGE = 100;
+
+    private StorageJobsPriority() {
     }
-
-    public int getPriority() {
-        return priority;
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
 }

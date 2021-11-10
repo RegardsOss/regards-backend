@@ -287,7 +287,7 @@ public class ProductService implements IProductService {
 
         // Schedule job
         JobInfo jobInfo = new JobInfo(true);
-        jobInfo.setPriority(AcquisitionJobPriority.SIP_GENERATION_JOB_PRIORITY.getPriority());
+        jobInfo.setPriority(AcquisitionJobPriority.SIP_GENERATION_JOB_PRIORITY);
         jobInfo.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, chain.getId()),
                               new JobParameter(SIPGenerationJob.PRODUCT_NAMES, productNames));
         jobInfo.setClassName(SIPGenerationJob.class.getName());
@@ -612,7 +612,7 @@ public class ProductService implements IProductService {
                 // Do post processing when SIP properly stored
                 if (product.getProcessingChain().getPostProcessSipPluginConf().isPresent()) {
                     JobInfo jobInfo = new JobInfo(true);
-                    jobInfo.setPriority(AcquisitionJobPriority.POST_ACQUISITION_JOB_PRIORITY.getPriority());
+                    jobInfo.setPriority(AcquisitionJobPriority.POST_ACQUISITION_JOB_PRIORITY);
                     jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, info));
                     jobInfo.setClassName(PostAcquisitionJob.class.getName());
                     jobInfo.setOwner(authResolver.getUser());
@@ -865,7 +865,7 @@ public class ProductService implements IProductService {
     public JobInfo scheduleProductsDeletionJob(AcquisitionProcessingChain chain, Optional<String> session,
             boolean deleteChain) {
         JobInfo jobInfo = new JobInfo(true);
-        jobInfo.setPriority(AcquisitionJobPriority.DELETION_JOB.getPriority());
+        jobInfo.setPriority(AcquisitionJobPriority.DELETION_JOB);
         jobInfo.setParameters(DeleteProductsJob.getParameters(chain.getId(), session, deleteChain));
         jobInfo.setClassName(DeleteProductsJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());

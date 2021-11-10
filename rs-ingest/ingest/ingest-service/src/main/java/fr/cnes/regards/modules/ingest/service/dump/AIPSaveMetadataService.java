@@ -78,7 +78,7 @@ public class AIPSaveMetadataService {
         // Schedule save metadata job
         jobInfo = new JobInfo(
                 false,
-                IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
+                IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY,
                 Sets.newHashSet(new JobParameter(AIPSaveMetadataJob.SAVE_METADATA_REQUEST, aipSaveMetadataRequest)),
                 null,
                 AIPSaveMetadataJob.class.getName()

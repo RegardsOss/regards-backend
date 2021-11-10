@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.JobsPriority;
+import fr.cnes.regards.modules.workermanager.service.WorkerManagerJobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import fr.cnes.regards.modules.workermanager.service.requests.job.ScanRequestJob;
@@ -549,7 +549,7 @@ public class RequestService {
                                                           new JobParameter(ScanRequestJob.REQUEST_NEW_STATUS,
                                                                            newStatus));
         // Schedule request deletion job
-        JobInfo jobInfo = new JobInfo(false, JobsPriority.REQUEST_SCAN_JOB.getPriority(), jobParameters,
+        JobInfo jobInfo = new JobInfo(false, WorkerManagerJobsPriority.REQUEST_SCAN_JOB, jobParameters,
                                       authenticationResolver.getUser(), ScanRequestJob.class.getName());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} scan job to update {} to with id {}", ScanRequestJob.class.getName(), newStatus,
