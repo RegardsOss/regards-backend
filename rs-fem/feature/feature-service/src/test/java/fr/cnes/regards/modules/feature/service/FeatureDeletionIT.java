@@ -61,8 +61,9 @@ import static org.junit.Assert.*;
  *
  */
 @TestPropertySource(
-        properties = {"spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true"},
-        locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
+        properties = {"spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true",
+        "regards.feature.max.bulk.size=10"},
+        locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties",})
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
@@ -135,6 +136,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testDeletionWithFiles() throws InterruptedException {
 
+        int nbFeature = properties.getMaxBulkSize();
         String deletionOwner = "deleter";
 
         // mock the publish method to not broke other tests in notifier manager
@@ -144,28 +146,12 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         int cpt = 0;
 
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
-                                                                           properties.getMaxBulkSize(),
+                                                                           nbFeature,
                                                                            this.isToNotify);
         this.featureDeletionService.registerRequests(events);
         this.featureDeletionService.scheduleRequests();
 
-        do {
-            featureNumberInDatabase = this.featureDeletionRequestRepo.count();
-            Thread.sleep(100);
-            cpt++;
-        } while ((cpt < 100) && ((featureNumberInDatabase != properties.getMaxBulkSize().intValue())
-                || !this.featureDeletionRequestRepo.findAll().stream()
-                        .allMatch(request -> FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED
-                                .equals(request.getStep()))));
-        // in that case all features hasn't be deleted
-        if (cpt == 1000) {
-            fail("Some FeatureDeletionRequest have been deleted");
-        }
-
-        if (!this.featureDeletionRequestRepo.findAll().stream()
-                .allMatch(request -> FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED.equals(request.getStep()))) {
-            fail("Some FeatureDeletionRequest have a wrong status");
-        }
+        waitForStep(featureDeletionRequestRepo, FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED, nbFeature, 10_000);
 
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
         // the publisher has been called because of storage successes (feature creation with files)
@@ -177,45 +163,35 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
      * Test priority level for feature deletion we will schedule properties.getMaxBulkSize() {@link FeatureDeletionRequestEvent}
      * with priority set to average plus properties.getMaxBulkSize() /2 {@link FeatureDeletionRequestEvent}
      * with {@link PriorityLevel} to average
-     * @throws InterruptedException
      */
     @Test
     public void testFeaturePriority() throws InterruptedException {
 
         String deletionOwner = "deleter";
-        long featureNumberInDatabase;
-        int cpt = 0;
+        int nbFeaturesBatch1 = properties.getMaxBulkSize();
+        int nbFeaturesBatch2 = properties.getMaxBulkSize() / 2;
+        int nbFeatures = nbFeaturesBatch1 + nbFeaturesBatch2;
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
-                                                                           properties.getMaxBulkSize()
-                                                                                   + (properties.getMaxBulkSize() / 2),
-                                                                           this.isToNotify);
+                                                                           nbFeatures, this.isToNotify);
         this.featureDeletionService.registerRequests(events);
 
         this.featureDeletionService.scheduleRequests();
 
-        do {
-            featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != (properties.getMaxBulkSize() / 2)));
+        waitFeature(nbFeaturesBatch2, null, 30_000);
 
-        // in that case all features hasn't been saved
-        if (cpt == 100) {
-            fail("Doesn't have all features at the end of time");
-        }
         if (this.isToNotify) {
             // first feature batch has been successfully deleted, now let simulate notification success
             mockNotificationSuccess();
         }
         // there should remain properties.getMaxBulkSize / 2 request to be handled (scheduleRequest only schedule properties.getMaxBulkSize requests)
         List<FeatureDeletionRequest> notScheduled = this.featureDeletionRequestRepo.findAll();
-        assertEquals(properties.getMaxBulkSize() / 2, notScheduled.size());
+        assertEquals(nbFeaturesBatch2, notScheduled.size());
         assertTrue(notScheduled.stream().allMatch(request -> PriorityLevel.NORMAL.equals(request.getPriority())));
     }
 
     @Test
     public void testRetrieveRequests() throws InterruptedException {
-        int nbValid = 20;
+        int nbValid = properties.getMaxBulkSize();
         OffsetDateTime start = OffsetDateTime.now();
         // Register valid requests
         String deletionOwner = "deleter";
@@ -254,12 +230,12 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
                                                      FeatureRequestsSelectionDTO.build().withProviderId("id1"),
                                                      PageRequest.of(0, 100));
-        Assert.assertEquals(11, results.getContent().size());
-        Assert.assertEquals(11, results.getTotalElements());
+        Assert.assertEquals(1, results.getContent().size());
+        Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestsSelectionDTO.build().withProviderId("id10"),
+                                                     FeatureRequestsSelectionDTO.build().withProviderId("id2"),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
@@ -269,14 +245,14 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testDeleteRequests() throws InterruptedException {
 
-        int nbValid = 20;
+        int nbValid = properties.getMaxBulkSize();
         // Register valid requests
         String deletionOwner = "deleter";
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
         this.featureDeletionService.registerRequests(events);
 
         // Simulate all requests to scheduled
-        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, nbValid*2))
                 .forEach(r -> {
                     r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
                     this.featureDeletionRequestRepo.save(r);
@@ -300,7 +276,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
                             response.getTotalRequested());
 
         // Simulate all requests to scheduled
-        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
+        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, nbValid*2))
                 .forEach(r -> {
                     r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
                     this.featureDeletionRequestRepo.save(r);
@@ -308,15 +284,15 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
         response = this.featureDeletionService.deleteRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 20 requests deleted", 20, response.getTotalHandled());
-        Assert.assertEquals("There should be 20 requests to delete", 20, response.getTotalRequested());
+        Assert.assertEquals("invalid number of granted delete requests", nbValid, response.getTotalHandled());
+        Assert.assertEquals("invalid number of granted delete requests", nbValid, response.getTotalRequested());
 
     }
 
     @Test
     public void testRetryRequests() throws InterruptedException {
 
-        int nbValid = 20;
+        int nbValid = properties.getMaxBulkSize();
         // Register valid requests
         String deletionOwner = "deleter";
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
@@ -334,9 +310,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         response = this.featureDeletionService
                 .retryRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 20 requests retryed as selection set on GRANTED Requests", nbValid,
+        Assert.assertEquals("invalid number of GRANTED Requests", nbValid,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 20 requests to retry as selection set on GRANTED Requests", nbValid,
+        Assert.assertEquals("invalid number GRANTED Requests", nbValid,
                             response.getTotalRequested());
 
     }

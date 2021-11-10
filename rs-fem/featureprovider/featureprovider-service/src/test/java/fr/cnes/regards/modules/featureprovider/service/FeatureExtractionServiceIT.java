@@ -85,7 +85,7 @@ public class FeatureExtractionServiceIT extends FeatureProviderMultitenantTest {
             parameters.add("location", new JsonPrimitive("test" + i));
             FeatureExtractionRequestEvent referenceEvent = FeatureExtractionRequestEvent
                     .build("bibi",
-                           FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
+                           FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false, false,
                                                                 new StorageMetadata[0]),
                            parameters, "testFeatureGeneration");
             eventsToPublish.add(referenceEvent);
@@ -122,7 +122,8 @@ public class FeatureExtractionServiceIT extends FeatureProviderMultitenantTest {
             parameters.add("location", new JsonPrimitive("test" + i));
             eventsToPublish.add(FeatureExtractionRequestEvent
                     .build("bibi",
-                           FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
+                           FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL,
+                                                                false, false,
                                                                 new StorageMetadata[0]),
                            parameters, "testFeatureGeneration"));
         }

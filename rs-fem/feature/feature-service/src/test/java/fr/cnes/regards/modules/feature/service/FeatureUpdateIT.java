@@ -105,7 +105,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     public void testScheduleFeatureUpdateDuringDeletion() throws InterruptedException {
 
         // create features
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(3, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(3, true,false);
         this.featureCreationService.registerRequests(events);
 
         this.featureCreationService.scheduleRequests();
@@ -146,7 +146,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testSchedulerSteps() throws InterruptedException {
         // create features
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(3, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(3, true,false);
         this.featureCreationService.registerRequests(events);
 
         this.featureCreationService.scheduleRequests();
@@ -231,7 +231,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         // create features
         int featureToCreateNumber = properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2);
         List<FeatureCreationRequestEvent> events = prepareCreationTestData(true, featureToCreateNumber, this.isToNotify,
-                                                                           true);
+                                                                           true, false);
 
         // create update requests
         List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
@@ -296,7 +296,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         int nbValid = 20;
         OffsetDateTime start = OffsetDateTime.now();
         // Create features
-        prepareCreationTestData(false, nbValid, true, true);
+        prepareCreationTestData(false, nbValid, true, true, false);
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService
                 .findAll(FeatureRequestTypeEnum.UPDATE, FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
@@ -343,7 +343,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
         int nbValid = 20;
         // Create features
-        prepareCreationTestData(false, nbValid, true, true);
+        prepareCreationTestData(false, nbValid, true, true, false);
         // Notify them
         List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(f -> f.getUrn())
                 .collect(Collectors.toList());
@@ -393,7 +393,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
         int nbValid = 20;
         // Create features
-        prepareCreationTestData(false, nbValid, true, true);
+        prepareCreationTestData(false, nbValid, true, true, false);
         // Notify them
         List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(f -> f.getUrn())
                 .collect(Collectors.toList());
@@ -423,7 +423,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     public void test1SessionNotifier() throws InterruptedException {
 
         int requestCount = 10;
-        prepareCreationTestData(false, requestCount, true, true);
+        prepareCreationTestData(false, requestCount, true, true, false);
 
         // Update
         List<FeatureUniformResourceName> urns = Collections
@@ -444,7 +444,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         setNotificationSetting(false);
 
         int requestCount = 10;
-        prepareCreationTestData(false, requestCount, false, true);
+        prepareCreationTestData(false, requestCount, false, true, false);
 
         // Update
         List<FeatureUniformResourceName> urns = Collections
@@ -573,7 +573,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
     private void createOneWithError() throws InterruptedException {
         // Create and Update One with Files, fail on notification
-        prepareCreationTestData(false, 1, true, true);
+        prepareCreationTestData(false, 1, true, true, false);
 
         // Update
         List<FeatureUniformResourceName> urns = Collections

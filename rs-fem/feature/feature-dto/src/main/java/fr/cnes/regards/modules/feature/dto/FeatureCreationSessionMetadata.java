@@ -32,6 +32,9 @@ public class FeatureCreationSessionMetadata extends FeatureSessionMetadata {
     /** If we override previous version or not*/
     private boolean override = false;
 
+    /** If urn is provided and associated feature already exists update the existing feature with parameters of given one */
+    private boolean updateIfExists = false;
+
     public boolean isOverride() {
         return override;
     }
@@ -40,6 +43,14 @@ public class FeatureCreationSessionMetadata extends FeatureSessionMetadata {
         this.override = override;
     }
 
+    public boolean isUpdateIfExists() {
+        return updateIfExists;
+    }
+
+    public void setUpdateIfExists(boolean updateIfExists) {
+        this.updateIfExists = updateIfExists;
+    }
+
     /**
      * Build feature metadata
      * @param sessionOwner Owner of the session
@@ -48,8 +59,8 @@ public class FeatureCreationSessionMetadata extends FeatureSessionMetadata {
      * @param storages storage metadata
      */
     public static FeatureCreationSessionMetadata build(String sessionOwner, String session, PriorityLevel priority,
-            boolean override, StorageMetadata... storages) {
-        return FeatureCreationSessionMetadata.build(sessionOwner, session, priority, Arrays.asList(storages), override);
+            boolean override, boolean updateIfExists, StorageMetadata... storages) {
+        return FeatureCreationSessionMetadata.build(sessionOwner, session, priority, Arrays.asList(storages), override, updateIfExists);
     }
 
     /**
@@ -60,7 +71,7 @@ public class FeatureCreationSessionMetadata extends FeatureSessionMetadata {
      * @param override if we override previous version
      */
     public static FeatureCreationSessionMetadata build(String sessionOwner, String session, PriorityLevel priority,
-            List<StorageMetadata> storages, boolean override) {
+            List<StorageMetadata> storages, boolean override, boolean updateIfExists) {
         Assert.hasLength(sessionOwner, MISSING_SESSION_OWNER);
         Assert.hasLength(session, MISSING_SESSION);
         Assert.notNull(storages, MISSING_STORAGE_METADATA);
@@ -71,6 +82,7 @@ public class FeatureCreationSessionMetadata extends FeatureSessionMetadata {
         m.setStorages(storages);
         m.setPriority(priority);
         m.setOverride(override);
+        m.setUpdateIfExists(updateIfExists);
         return m;
     }
 }

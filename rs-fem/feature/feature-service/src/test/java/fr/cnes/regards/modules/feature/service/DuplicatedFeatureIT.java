@@ -84,7 +84,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
     }
     @Test
     public void testDuplicatedFeatureCreationWithOverride() throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
         events.get(0).getFeature().setId("id");
         publisher.publish(events);
         waitRequest(this.featureCreationRequestRepo, 1, 30000);
@@ -145,7 +145,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
 
     @Test
     public void testDuplicatedFeatureCreationWithOverrideCaseNoFiles() throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
         events.get(0).getFeature().setId("id");
         events.get(0).getFeature().setFiles(new ArrayList<>());
         publisher.publish(events);
@@ -186,7 +186,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
 
     @Test
     public void testDuplicatedFeatureCreationWithoutOverride() throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
         events.get(0).getMetadata().setOverride(false);
 
         events.get(0).getFeature().setId("id");
@@ -231,7 +231,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
 
     @Test
     public void testDuplicatedFeatureCreationWithoutOverrideCaseNoFiles() throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
         events.get(0).getMetadata().setOverride(false);
 
         events.get(0).getFeature().setId("id");

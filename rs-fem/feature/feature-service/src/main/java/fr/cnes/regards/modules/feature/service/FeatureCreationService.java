@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
@@ -36,13 +37,11 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -91,6 +90,9 @@ import java.util.stream.Collectors;
 public class FeatureCreationService extends AbstractFeatureService<FeatureCreationRequest> implements IFeatureCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCreationService.class);
+
+    @Autowired
+    private IFeatureUpdateService updateService;
 
     @Autowired
     private IFeatureCreationRequestRepository featureCreationRequestRepo;
@@ -143,17 +145,24 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         long registrationStart = System.currentTimeMillis();
 
         List<FeatureCreationRequest> grantedRequests = new ArrayList<>();
+        List<FeatureUpdateRequestEvent> newUpdateRequests = new ArrayList<>();
         RequestInfo<String> requestInfo = new RequestInfo<>();
         // Only retrieve from database requestIds matching the events to check if requests already exists.
         Set<String> existingRequestIds = this.featureCreationRequestRepo.findRequestIdByRequestIdIn(
                 events.stream().map(FeatureCreationRequestEvent::getRequestId).collect(Collectors.toList()));
 
-        events.forEach(item -> prepareFeatureCreationRequest(item, grantedRequests, requestInfo, existingRequestIds));
+        events.forEach(item -> prepareFeatureCreationRequest(item, grantedRequests, requestInfo, existingRequestIds, newUpdateRequests));
         LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(), System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureCreationRequest from a list of FeatureCreationRequestEvent
         featureCreationRequestRepo.saveAll(grantedRequests);
         LOGGER.trace("------------->>> {} creation requests registered in {} ms", grantedRequests.size(), System.currentTimeMillis() - registrationStart);
+
+        if (!newUpdateRequests.isEmpty()) {
+            RequestInfo<FeatureUniformResourceName> updateInfo = updateService.registerRequests(newUpdateRequests);
+            updateInfo.getGranted().forEach((urn,requestId) -> requestInfo.addGrantedRequest(urn.toString(),requestId));
+            updateInfo.getDenied().forEach((urn,requestId) -> requestInfo.addDeniedRequest(urn.toString(),requestId));
+        }
 
         return requestInfo;
     }
@@ -178,7 +187,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
      * @param existingRequestIds list of existing request ids in database (its a unique constraint)
      */
     private void prepareFeatureCreationRequest(FeatureCreationRequestEvent item, List<FeatureCreationRequest> grantedRequests, RequestInfo<String> requestInfo,
-                                               Set<String> existingRequestIds
+                                               Set<String> existingRequestIds, List<FeatureUpdateRequestEvent> newUpdateRequests
     ) {
 
         // Validate event
@@ -204,9 +213,15 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         // Validate provided URN
         if (urn != null) {
-            // URN should not already exist
+            // Check if provided URN match an existing feature
             if (featureEntityRepository.existsByUrn(urn)) {
-                errors.rejectValue("urn", "feature.urn.already.exists.error.message", "URN already exists");
+                if (sessionMetadata.isUpdateIfExists()) {
+                    // if updateIfExists option is enabled, register an update request instead of a creation one.
+                    newUpdateRequests.add(buidUpdateEventFromCreationEvent(item));
+                    return;
+                } else {
+                    errors.rejectValue("urn", "feature.urn.already.exists.error.message", "URN already exists");
+                }
             } else {
                 // New version should be greater than previous one
                 List<IUrnVersionByProvider> previousVersions = featureEntityRepository.findByProviderIdInOrderByVersionDesc(Collections.singletonList(feature.getId()));
@@ -248,6 +263,23 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             // Update session properties
             featureSessionNotifier.incrementCount(sessionOwner, session, FeatureSessionProperty.REFERENCING_REQUESTS);
         }
+    }
+
+    /**
+     * Creates a {@link FeatureUpdateRequestEvent} from a {@link FeatureCreationRequestEvent}. Useful to update an already existing feature
+     * when a creationEvent is received with a given urn and updateIfExists option enabled.
+     * @param creationEvent 
+     * @return
+     */
+    private FeatureUpdateRequestEvent buidUpdateEventFromCreationEvent(FeatureCreationRequestEvent creationEvent) {
+        FeatureUpdateRequestEvent updateEvent = new FeatureUpdateRequestEvent();
+        updateEvent.setMetadata(FeatureMetadata.build(creationEvent.getMetadata().getPriority()));
+        updateEvent.setRequestId(creationEvent.getRequestId());
+        updateEvent.setFeature(creationEvent.getFeature());
+        updateEvent.getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER, creationEvent.getRequestId());
+        updateEvent.getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_OWNER_HEADER, creationEvent.getRequestOwner());
+        updateEvent.getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_DATE_HEADER, creationEvent.getRequestDate().toString());
+        return updateEvent;
     }
 
     @Override

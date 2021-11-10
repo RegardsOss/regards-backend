@@ -117,7 +117,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
     private List<Feature> doNotificationProcess(int numberNotified) {
         // use it only to initialize Feature
-        List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(numberNotified, true);
+        List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(numberNotified, true,false);
         for(FeatureCreationRequestEvent event: list) {
             event.getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
                                                                                  EntityType.DATA,
@@ -170,7 +170,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         int nbValid = 20;
         OffsetDateTime start = OffsetDateTime.now();
         // Create features
-        prepareCreationTestData(false, nbValid, true, true);
+        prepareCreationTestData(false, nbValid, true, true, false);
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService
                 .findAll(FeatureRequestTypeEnum.NOTIFICATION, FeatureRequestsSelectionDTO.build(),
                          PageRequest.of(0, 100));
@@ -218,7 +218,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         int nbValid = 20;
         // Create features
-        prepareCreationTestData(false, nbValid, true, true);
+        prepareCreationTestData(false, nbValid, true, true, false);
         // Notify them
         List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn)
                 .collect(Collectors.toList());
@@ -251,7 +251,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         int nbValid = 20;
         // Create features
-        prepareCreationTestData(false, nbValid, true, true);
+        prepareCreationTestData(false, nbValid, true, true, false);
         // Notify them
         List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn)
                 .collect(Collectors.toList());
@@ -282,7 +282,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
     @Test
     public void testSessionNotifier() throws InterruptedException {
 
-        prepareCreationTestData(false, 1, true, true);
+        prepareCreationTestData(false, 1, true, true, false);
         List<FeatureUniformResourceName> urn = featureRepo.findAll().stream().map(FeatureEntity::getUrn).collect(Collectors.toList());
         featureNotificationService.registerRequests(prepareNotificationRequests(urn));
         mockNotificationSuccess();
@@ -401,7 +401,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
     private void createOneRequestWithError() throws InterruptedException {
 
-        prepareCreationTestData(false, 1, true, true);
+        prepareCreationTestData(false, 1, true, true, false);
         List<FeatureUniformResourceName> urn = featureRepo.findAll().stream().map(FeatureEntity::getUrn).collect(Collectors.toList());
         featureNotificationService.registerRequests(prepareNotificationRequests(urn));
         mockNotificationError();

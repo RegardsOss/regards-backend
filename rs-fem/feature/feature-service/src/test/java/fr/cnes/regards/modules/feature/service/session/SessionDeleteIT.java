@@ -46,10 +46,10 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     private void prepareData() throws InterruptedException {
-        prepareCreationTestData(true, 2, false, false, SOURCE2, SESSION1);
-        prepareCreationTestData(true, 2, false, false, SOURCE1, SESSION1);
-        prepareCreationTestData(true, 2, false, false, SOURCE2, SESSION2);
-        prepareCreationTestData(true, 2, false, false, SOURCE1, SESSION2);
+        prepareCreationTestData(true, 2, false, false, false,SOURCE2, SESSION1);
+        prepareCreationTestData(true, 2, false, false, false,SOURCE1, SESSION1);
+        prepareCreationTestData(true, 2, false, false, false,SOURCE2, SESSION2);
+        prepareCreationTestData(true, 2, false, false, false,SOURCE1, SESSION2);
 
         Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());

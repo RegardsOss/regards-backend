@@ -140,7 +140,7 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceTest {
     //    @Test
     public void requestCreation() {
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true);
+                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
 
         long creationStart = System.currentTimeMillis();
         List<FeatureCreationRequestEvent> events = new ArrayList<>();

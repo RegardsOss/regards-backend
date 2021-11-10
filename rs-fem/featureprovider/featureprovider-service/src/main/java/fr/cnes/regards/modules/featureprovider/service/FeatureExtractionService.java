@@ -359,7 +359,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             return FeatureCreationRequestEvent.build(request.getRequestOwner(), request.getRequestId(),
                                                      FeatureCreationSessionMetadata
                                                              .build(metadata.getSessionOwner(), metadata.getSession(),
-                                                                    request.getPriority(), metadata.isOverride(),
+                                                                    request.getPriority(), metadata.isOverride(), false,
                                                                     array), feature);
         } catch (ModuleException e) {
             // Error should be logged before so only debug level is set.

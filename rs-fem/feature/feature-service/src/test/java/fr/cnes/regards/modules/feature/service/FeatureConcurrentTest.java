@@ -42,7 +42,7 @@ public class FeatureConcurrentTest extends AbstractFeatureMultitenantServiceTest
         // Register creation requests
         String owner = "sessionOwner";
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build(owner, "session", PriorityLevel.NORMAL, Lists.emptyList(), true);
+                .build(owner, "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
         String modelName = mockModelClient(GeodeProperties.getGeodeModel());
 
         Thread.sleep(5_000);

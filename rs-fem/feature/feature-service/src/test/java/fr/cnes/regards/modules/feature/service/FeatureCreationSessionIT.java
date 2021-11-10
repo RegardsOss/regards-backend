@@ -57,7 +57,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceT
     @Test
     public void testSessionNotifierWithNotification() throws InterruptedException {
         int requestCount = 10;
-        prepareCreationTestData(true, requestCount, true, true);
+        prepareCreationTestData(true, requestCount, true, true, false);
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
@@ -90,7 +90,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceT
         setNotificationSetting(false);
 
         int requestCount = 10;
-        prepareCreationTestData(true, requestCount, false, true);
+        prepareCreationTestData(true, requestCount, false, true, false);
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
@@ -334,7 +334,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceT
 
     private void createOneRequestsWithNotificationError() throws InterruptedException {
 
-        prepareCreationTestData(false, 1, false, true);
+        prepareCreationTestData(false, 1, false, true, false);
         mockNotificationError();
         waitCreationRequestDeletion(1, 20000);
         waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);

@@ -47,6 +47,7 @@ public class FeatureExtractionControllerIT extends AbstractRegardsIT {
                                                                     "session",
                                                                     PriorityLevel.NORMAL,
                                                                     false,
+                                                                    false,
                                                                     StorageMetadata.build("id ")));
         collection.setFactory("PluginName");
         Set<JsonObject> parameters = new HashSet<>();

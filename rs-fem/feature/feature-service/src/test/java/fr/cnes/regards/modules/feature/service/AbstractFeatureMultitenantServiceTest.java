@@ -423,7 +423,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
      * @param nbFeatures number of features to create
      */
     protected void initData(int nbFeatures) {
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true, false);
         this.featureCreationService.registerRequests(events);
         this.featureCreationService.scheduleRequests();
         waitFeature(nbFeatures, null, nbFeatures * 1000);
@@ -442,12 +442,12 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     }
 
     protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
-            boolean override) {
-        return initFeatureCreationRequestEvent(featureNumberToCreate, override, owner, session);
+            boolean override, boolean updateIfExists) {
+        return initFeatureCreationRequestEvent(featureNumberToCreate, override, updateIfExists, owner, session);
     }
 
     protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
-            boolean override, String source, String session) {
+            boolean override, boolean updateIfExists, String source, String session) {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
         FeatureCreationRequestEvent toAdd;
@@ -471,12 +471,15 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             featureToAdd = Feature
                     .build("id" + i, source, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA,
                            model).withFiles(file);
-            featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
+            // data_type is configured to be not alterable. For creation with update if exists do not set this property.
+            if (!updateIfExists) {
+                featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
+            }
             featureToAdd.addProperty(
                     IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", Boolean.TRUE)));
 
             toAdd = FeatureCreationRequestEvent.build(source, FeatureCreationSessionMetadata
-                    .build(source, session, PriorityLevel.NORMAL, Lists.emptyList(), override), featureToAdd);
+                    .build(source, session, PriorityLevel.NORMAL, Lists.emptyList(), override, updateIfExists), featureToAdd);
             toAdd.setRequestId(String.valueOf(i));
             toAdd.setFeature(featureToAdd);
             toAdd.setRequestDate(OffsetDateTime.now().minusDays(1));
@@ -487,17 +490,17 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     }
 
     protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles,
-            int featureToCreateNumber, boolean isToNotify, boolean override) throws InterruptedException {
-        return prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, override, owner,
-                                       session);
+            int featureToCreateNumber, boolean isToNotify, boolean override, boolean updateIfExists) throws InterruptedException {
+        return prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, override, updateIfExists,
+                                       owner, session);
     }
 
     protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles,
-            int featureToCreateNumber, boolean isToNotify, boolean override, String source, String session)
+            int featureToCreateNumber, boolean isToNotify, boolean override, boolean updateIfExists, String source, String session)
             throws InterruptedException {
 
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, override,
-                                                                                   source, session);
+                                                                                   updateIfExists, source, session);
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features
@@ -551,7 +554,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             throws InterruptedException {
 
         // create features
-        prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, true);
+        prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, true, false);
 
         // get urn from feature we just created
         List<FeatureUniformResourceName> entityCreatedUrn = this.featureRepo.findAll().stream()

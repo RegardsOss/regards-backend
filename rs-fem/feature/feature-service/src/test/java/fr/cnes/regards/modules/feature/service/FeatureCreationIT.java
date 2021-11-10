@@ -96,7 +96,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
 
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(maxBulkSize, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(maxBulkSize, true,false);
         // clear file to test notifications without files
         events.forEach(request -> request.getFeature().getFiles().clear());
         featureCreationService.registerRequests(events);
@@ -113,7 +113,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         events.clear();
         // lets add one feature which is the same as the first to test versioning code
-        events = super.initFeatureCreationRequestEvent(1, false);
+        events = super.initFeatureCreationRequestEvent(1, false,false);
         // clear file to test notifications without files
         events.forEach(request -> request.getFeature().getFiles().clear());
         this.featureCreationService.registerRequests(events);
@@ -156,7 +156,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         int nbValid = 20;
         // Register valid requests
         OffsetDateTime start = OffsetDateTime.now();
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true,false);
         this.featureCreationService.registerRequests(events);
 
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService
@@ -203,7 +203,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         int nbValid = 20;
         // Register valid requests
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true,false);
         this.featureCreationService.registerRequests(events);
 
         // Simulate all requests to scheduled
@@ -249,7 +249,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         int nbValid = 20;
         // Register valid requests
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true,false);
         this.featureCreationService.registerRequests(events);
 
         // Try delete all requests.
@@ -303,7 +303,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
 
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true,false);
 
         // clear file to test notifications without files and put the same request id
         events.forEach(request -> {
@@ -327,7 +327,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testFeatureCreationWithInvalidFeature() throws InterruptedException {
 
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true,false);
 
         Feature f = events.get(0).getFeature();
         f.setEntityType(null);
@@ -355,7 +355,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         StorageMetadata.build("id ");
         FeatureCreationCollection collection = FeatureCreationCollection.build(
                 "owner",
-                FeatureCreationSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, false, StorageMetadata.build("id ")),
+                FeatureCreationSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, false,false, StorageMetadata.build("id ")),
                 features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
@@ -374,7 +374,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         StorageMetadata.build("id ");
         FeatureCreationCollection collection = FeatureCreationCollection.build(
                 "owner",
-                FeatureCreationSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, false, StorageMetadata.build("id ")),
+                FeatureCreationSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, false, false, StorageMetadata.build("id ")),
                 features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
@@ -391,7 +391,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     public void testFeaturePriority() throws InterruptedException {
 
         List<FeatureCreationRequestEvent> events =
-                initFeatureCreationRequestEvent(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2), true);
+                initFeatureCreationRequestEvent(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2), true,false);
 
         // we will set all priority to normal except for the (properties.getMaxBulkSize() / 2) last events
         for (int i = properties.getMaxBulkSize(); i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2)); i++) {
@@ -428,7 +428,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testCreationWithURN() throws InterruptedException {
         // Given
-        FeatureCreationRequestEvent featureCreationRequestEvent = createFeatureCreationRequestEvent("ùlajzlke", 1);
+        FeatureCreationRequestEvent featureCreationRequestEvent = createFeatureCreationRequestEvent("ùlajzlke", 1, false);
         // When
         RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(featureCreationRequestEvent));
         featureCreationService.scheduleRequests();
@@ -441,12 +441,12 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testCreationWithExistingURN() throws InterruptedException {
         // Given
-        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1);
+        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1, false);
         featureCreationService.registerRequests(Collections.singletonList(event1));
         featureCreationService.scheduleRequests();
         waitForFeatures(1);
         // When
-        FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent("ùlajzlke", 1);
+        FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent("ùlajzlke", 1,false);
         event2.setRequestId("request2");
         event2.getFeature().setUrn(event1.getFeature().getUrn());
         RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(event2));
@@ -458,16 +458,33 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     @Test
+    public void testCreationWithExistingURNAndUpdateMode() throws InterruptedException {
+        // Given
+        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1,false);
+        featureCreationService.registerRequests(Collections.singletonList(event1));
+        featureCreationService.scheduleRequests();
+        waitForFeatures(1);
+        // When
+        FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent("ùlajzlke", 1,true);
+        event2.setRequestId("request2");
+        event2.getFeature().setUrn(event1.getFeature().getUrn());
+        RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(event2));
+        // Then
+        assertEquals(1, requestInfo.getGranted().size());
+        assertEquals(0, requestInfo.getDenied().size());
+    }
+
+    @Test
     public void testCreationWithURNAndBadVersion() throws InterruptedException {
         // Given
-        FeatureCreationRequestEvent event2_1 = createFeatureCreationRequestEvent("ùlajzlke", 2);
+        FeatureCreationRequestEvent event2_1 = createFeatureCreationRequestEvent("ùlajzlke", 2,false);
         event2_1.setRequestId("event2_1");
         featureCreationService.registerRequests(Collections.singletonList(event2_1));
         featureCreationService.scheduleRequests();
         waitForFeatures(1);
 
         // When
-        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1);
+        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1,false);
         event1.setRequestId("event1");
         RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(event1));
         featureCreationService.scheduleRequests();
@@ -477,7 +494,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitForFeatures(1);
 
         // When
-        FeatureCreationRequestEvent event2_2 = createFeatureCreationRequestEvent("ùlajzlke", 2);
+        FeatureCreationRequestEvent event2_2 = createFeatureCreationRequestEvent("ùlajzlke", 2,false);
         event2_2.setRequestId("event2_2");
         requestInfo = featureCreationService.registerRequests(Collections.singletonList(event2_2));
         featureCreationService.scheduleRequests();
@@ -487,8 +504,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         waitForFeatures(1);
     }
 
-    private FeatureCreationRequestEvent createFeatureCreationRequestEvent(String tenant, int version) {
-        FeatureCreationRequestEvent featureCreationRequestEvent = initFeatureCreationRequestEvent(1, false).get(0);
+    private FeatureCreationRequestEvent createFeatureCreationRequestEvent(String tenant, int version, boolean updateIfExists) {
+        FeatureCreationRequestEvent featureCreationRequestEvent = initFeatureCreationRequestEvent(1, false,updateIfExists).get(0);
         Feature feature = featureCreationRequestEvent.getFeature();
         UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
         FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, feature.getEntityType(), tenant, uuid, version);

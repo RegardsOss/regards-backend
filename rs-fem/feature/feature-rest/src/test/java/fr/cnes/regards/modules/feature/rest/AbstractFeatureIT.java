@@ -135,7 +135,7 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
             List<FeatureCreationRequestEvent> features = Lists.newArrayList();
             FeatureCreationSessionMetadata meta = FeatureCreationSessionMetadata
                     .build(source, session, PriorityLevel.NORMAL, Lists.newArrayList(StorageMetadata.build("disk")),
-                           true);
+                           true, false);
             features.add(FeatureCreationRequestEvent.build("owner", meta, featureToAdd));
             Assert.assertEquals(1, featureService.registerRequests(features).getGranted().size());
         }

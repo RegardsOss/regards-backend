@@ -85,7 +85,7 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
 
         // Register creation requests
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true);
+                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
         String modelName = mockModelClient(GeodeProperties.getGeodeModel());
 
         Thread.sleep(5_000);

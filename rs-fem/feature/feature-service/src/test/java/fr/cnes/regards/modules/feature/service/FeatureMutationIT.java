@@ -79,7 +79,7 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
 
 
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true);
+                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
         String modelName = mockModelClient("feature_mutation_model.xml", this.getCps(), this.getFactory(),
                                            this.getDefaultTenant(), this.getModelAttrAssocClientMock()
         );

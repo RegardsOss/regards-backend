@@ -185,7 +185,8 @@ public class SessionIT extends FeatureProviderMultitenantTest {
             JsonObject parameters = new JsonObject();
             parameters.add("location", new JsonPrimitive("test" + i));
             eventsToPublish.add(FeatureExtractionRequestEvent.build("test", FeatureCreationSessionMetadata
-                                                                            .build(source, session, PriorityLevel.NORMAL, false, new StorageMetadata[0]), parameters,
+                                                                            .build(source, session, PriorityLevel.NORMAL,
+                                                                                   false, false, new StorageMetadata[0]), parameters,
                                                                     "testFeatureGeneration"));
         }
         return eventsToPublish;
