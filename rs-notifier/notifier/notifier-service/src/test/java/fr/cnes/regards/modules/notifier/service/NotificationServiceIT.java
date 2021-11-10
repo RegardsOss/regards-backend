@@ -32,7 +32,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -48,9 +47,7 @@ import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
-import fr.cnes.regards.modules.notifier.service.plugin.AbstractRabbitMQSender;
 import fr.cnes.regards.modules.notifier.service.plugin.DefaultRuleMatcher;
-import fr.cnes.regards.modules.notifier.service.plugin.RecipientSenderTestFail;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -473,11 +470,11 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR1_1 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_1_LABEL,
                 new HashSet<>(),
-                RecipientSender2.class.getAnnotation(Plugin.class).id()));
+                RecipientSender2.PLUGIN_ID));
         PluginConfiguration recipientR1_2 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
-                RecipientSender3.class.getAnnotation(Plugin.class).id()));
+                RecipientSender3.PLUGIN_ID));
         JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> requestsToSchedule = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
@@ -529,11 +526,11 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR1_1 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_1_LABEL,
                 new HashSet<>(),
-                RecipientSender2.class.getAnnotation(Plugin.class).id()));
+                RecipientSender2.PLUGIN_ID));
         PluginConfiguration recipientR1_2 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
-                RecipientSender3.class.getAnnotation(Plugin.class).id()));
+                RecipientSender3.PLUGIN_ID));
         JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> requestsToSchedule = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
@@ -595,11 +592,11 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR1_1 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_1_LABEL,
                 new HashSet<>(),
-                RecipientSender2.class.getAnnotation(Plugin.class).id()));
+                RecipientSender2.PLUGIN_ID));
         PluginConfiguration recipientR1_2 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
-                RecipientSender3.class.getAnnotation(Plugin.class).id()));
+                RecipientSender3.PLUGIN_ID));
         JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> toProcess = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
@@ -647,16 +644,12 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         // create notification request that will be processed with recipientR1_1(which will fail) and recipientR1_2 scheduled
         PluginConfiguration recipientR1_1 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_1_LABEL,
-                Sets.newHashSet(
-                        IPluginParam.build(RecipientSenderTestFail.FAIL_PARAM_NAME, true),
-                        IPluginParam.build(AbstractRabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
-                        RECIPIENT,
-                        ACK_REQUIRED),
-                RecipientSenderTestFail.class.getAnnotation(Plugin.class).id()));
+                new HashSet<>(),
+                RecipientSenderFail.PLUGIN_ID));
         PluginConfiguration recipientR1_2 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
-                RecipientSender3.class.getAnnotation(Plugin.class).id()));
+                RecipientSender3.PLUGIN_ID));
         JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> toProcess = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
@@ -706,16 +699,12 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         // create notification request that will be processed with recipientR1_1(which will fail) and recipientR1_2 scheduled
         PluginConfiguration recipientR1_1 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_1_LABEL,
-                Sets.newHashSet(
-                        IPluginParam.build(RecipientSenderTestFail.FAIL_PARAM_NAME, true),
-                        IPluginParam.build(AbstractRabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
-                        RECIPIENT,
-                        ACK_REQUIRED),
-                RecipientSenderTestFail.class.getAnnotation(Plugin.class).id()));
+                new HashSet<>(),
+                RecipientSenderFail.PLUGIN_ID));
         PluginConfiguration recipientR1_2 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
-                RecipientSender3.class.getAnnotation(Plugin.class).id()));
+                RecipientSender3.PLUGIN_ID));
         JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> toProcess = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
@@ -790,7 +779,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR1_2 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
-                RecipientSender3.class.getAnnotation(Plugin.class).id()));
+                RecipientSender3.PLUGIN_ID));
         List<NotificationRequest> notYetInSuccess = new ArrayList<>(properties.getMaxBulkSize() - nbSuccess);
         for (int i = 0; i < properties.getMaxBulkSize() - nbSuccess; i++) {
             NotificationRequest notYet = new NotificationRequest(matchR1,
@@ -1523,7 +1512,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   REQUEST_OWNER,
                                                                   OffsetDateTime.now(),
                                                                   NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                  Sets.newHashSet());
+                                                                  new HashSet<>());
             //recipientR1_1 & recipientR1_2 has already been scheduled previously
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
@@ -1627,7 +1616,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   OffsetDateTime.now(),
                                                                   // was in state SCHEDULED because job have been scheduled but match has set requests in state TO_SCHEDULE
                                                                   NotificationState.TO_SCHEDULE_BY_RECIPIENT,
-                                                                  Sets.newHashSet());
+                                                                  new HashSet<>());
             request.getRecipientsToSchedule().add(recipientR2_1);
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
@@ -1937,9 +1926,9 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
 
         // Given
         PluginConfiguration recipient1 = pluginService.savePluginConfiguration(
-                new PluginConfiguration("recipient1", new HashSet<>(), RecipientSender3.class.getAnnotation(Plugin.class).id()));
+                new PluginConfiguration("recipient1", new HashSet<>(), RecipientSender3.PLUGIN_ID));
         PluginConfiguration recipient2 = pluginService.savePluginConfiguration(
-                new PluginConfiguration("recipient2", new HashSet<>(), RecipientSender4.class.getAnnotation(Plugin.class).id()));
+                new PluginConfiguration("recipient2", new HashSet<>(), RecipientSender4.PLUGIN_ID));
 
         String owner1 = "owner1";
         String owner2 = "owner2";
@@ -2016,42 +2005,36 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
             recipientR1_1 = pluginService.savePluginConfiguration(
                     new PluginConfiguration(
                             RECIPIENT_R1_1_LABEL,
+                            new HashSet<>(),
                             recipientR1_1Error ?
-                                    Sets.newHashSet(
-                                            IPluginParam.build(RecipientSenderTestFail.FAIL_PARAM_NAME, true),
-                                            IPluginParam.build(AbstractRabbitMQSender.EXCHANGE_PARAM_NAME, "IDon'tCareBecauseItWillFailAndNotBeUsed"),
-                                            RECIPIENT,
-                                            ACK_REQUIRED)
-                                    : new HashSet<>(),
-                            recipientR1_1Error ?
-                                    RecipientSenderTestFail.class.getAnnotation(Plugin.class).id()
-                                    : RecipientSender2.class.getAnnotation(Plugin.class).id()));
+                                    RecipientSenderFail.PLUGIN_ID
+                                    : RecipientSender2.PLUGIN_ID));
 
             recipientR1_2 = pluginService.savePluginConfiguration(
                     new PluginConfiguration(
                             RECIPIENT_R1_2_LABEL,
                             new HashSet<>(),
-                            RecipientSender3.class.getAnnotation(Plugin.class).id()));
+                            RecipientSender3.PLUGIN_ID));
 
             recipientR2_1 = pluginService.savePluginConfiguration(
                     new PluginConfiguration(
                             RECIPIENT_R2_1_LABEL,
                             new HashSet<>(),
-                            RecipientSender4.class.getAnnotation(Plugin.class).id()));
+                            RecipientSender4.PLUGIN_ID));
 
             PluginConfiguration rule1Plg = new PluginConfiguration(
                     RULE1_LABEL,
                     Sets.newHashSet(
                             IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME, "nature"),
                             IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME, "TM")),
-                    DefaultRuleMatcher.class.getAnnotation(Plugin.class).id());
+                    DefaultRuleMatcher.PLUGIN_ID);
 
             PluginConfiguration rule2Plg = new PluginConfiguration(
                     RULE2_LABEL,
                     Sets.newHashSet(
                             IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME, "info"),
                             IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME, "toto")),
-                    DefaultRuleMatcher.class.getAnnotation(Plugin.class).id());
+                    DefaultRuleMatcher.PLUGIN_ID);
 
             rule1 = ruleRepo.findByRulePluginBusinessId(
                             ruleService.createOrUpdateRule(RuleDTO.build(rule1Plg, Sets.newHashSet(recipientR1_1.getBusinessId(), recipientR1_2.getBusinessId()))).getId())

@@ -35,19 +35,18 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.BooleanPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSenderFail;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
-import fr.cnes.regards.modules.notifier.service.plugin.AbstractRabbitMQSender;
-import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,16 +65,13 @@ import static org.junit.Assert.fail;
 
 public abstract class AbstractNotificationMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNotificationMultitenantServiceTest.class);
-
     protected static final int RECIPIENTS_PER_RULE = 10;
 
     protected static final int EVENT_TO_RECEIVE = 1_000;
 
     protected static final int EVENT_BULK = 1_000;
 
-    protected static final StringPluginParam RECIPIENT = IPluginParam.build(AbstractRabbitMQSender.RECIPIENT_LABEL_PARAM_NAME, "recipient");
-    protected static final BooleanPluginParam ACK_REQUIRED = IPluginParam.build(RabbitMQSender.ACK_REQUIRED_PARAM_NAME, false);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNotificationMultitenantServiceTest.class);
 
     // used to param if the test Recipient will fail
     public static boolean RECIPIENT_FAIL = true;
@@ -172,9 +168,10 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
 
     /**
      * Wait data creation on a {@link JpaRepository}
-     * @param repo {@link JpaRepository} where we wait data
+     *
+     * @param repo           {@link JpaRepository} where we wait data
      * @param expectedNumber number of data waited
-     * @param timeout in seconds to throw exception
+     * @param timeout        in seconds to throw exception
      * @throws InterruptedException
      */
     public void waitDatabaseCreation(JpaRepository<?, ?> repo, int expectedNumber, int timeout)
@@ -196,6 +193,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     /**
      * Init 1 rule and RECIPIENTS_PER_RULE {@link Recipient}, one of the {@link Recipient} will fail
      * if the param fail is set to true
+     *
      * @param fail
      * @throws ModuleException
      */
@@ -218,11 +216,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         recipientPlugin.setBusinessId(fail ? "failRecipient" : "testRecipient");
         recipientPlugin.setVersion("1.0.0");
         recipientPlugin.setLabel("test recipient");
-        recipientPlugin.setPluginId(fail ? "fail" : RabbitMQSender.PLUGIN_ID);
-        param = IPluginParam.build("exchange", "regards.notifier.exchange-tu");
-        recipientPlugin.getParameters().add(param);
-        param = IPluginParam.build("queueName", "regards.notifier.queue-tu");
-        recipientPlugin.getParameters().add(param);
+        recipientPlugin.setPluginId(fail ? RecipientSenderFail.PLUGIN_ID : RecipientSender3.PLUGIN_ID);
         recipientService.createOrUpdateRecipient(recipientPlugin);
         recipients.add(recipientPlugin.getBusinessId());
 
@@ -242,6 +236,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
 
     /**
      * load {@link JsonElement} from a resource test
+     *
      * @return initialised {@link JsonElement}
      */
     protected JsonObject initElement(String name) {

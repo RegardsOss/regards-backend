@@ -27,9 +27,11 @@ import fr.cnes.regards.modules.notifier.dto.NotificationEvent3;
  * @author kevin
  *
  */
-@Plugin(author = "REGARDS Team", description = "Recipient sender 3", id = "RecipientSender3", version = "1.0.0",
+@Plugin(author = "REGARDS Team", description = "Recipient sender 3", id = RecipientSender3.PLUGIN_ID, version = "1.0.0",
         contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class RecipientSender3 extends AbstractRecipientSender<NotificationEvent3> {
+
+    public static final String PLUGIN_ID = "RecipientSender3";
 
     @Override
     NotificationEvent3 buildEvent(JsonElement element, JsonElement action) {
