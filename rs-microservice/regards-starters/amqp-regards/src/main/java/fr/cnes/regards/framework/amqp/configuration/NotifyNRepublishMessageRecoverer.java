@@ -51,7 +51,7 @@ public class NotifyNRepublishMessageRecoverer extends RepublishMessageRecoverer 
         // As spring code is not aware of our little trick for multitenancy,
         // lets wrap the call to bind rabbit template to the right vHost
         try {
-            rabbitVhostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
+            rabbitVhostAdmin.bind(AmqpChannel.AMQP_INSTANCE_MANAGER);
             super.recover(message, cause);
         } finally {
             rabbitVhostAdmin.unbind();

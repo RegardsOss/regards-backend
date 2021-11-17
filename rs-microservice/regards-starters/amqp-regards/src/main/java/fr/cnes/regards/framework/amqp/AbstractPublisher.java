@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.*;
 import fr.cnes.regards.framework.amqp.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,28 +123,18 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     @Override
     public void publish(ISubscribable event, int priority) {
-        Class<?> eventClass = event.getClass();
-        publish(event,
-                EventUtils.getWorkerMode(eventClass),
-                EventUtils.getTargetRestriction(eventClass),
-                EventUtils.getRoutingKey(eventClass),
-                priority,
-                Optional.empty(),
-                Optional.empty(),
-                false);
+        Class<? extends ISubscribable> eventClass = event.getClass();
+        AmqpChannel channel = AmqpChannel.build(eventClass);
+        publish(event, priority,channel,false);
     }
 
     @Override
     public void publish(ISubscribable event, String exchangeName, Optional<String> queueName) {
-        Class<?> eventClass = event.getClass();
-        publish(event,
-                EventUtils.getWorkerMode(eventClass),
-                EventUtils.getTargetRestriction(eventClass),
-                EventUtils.getRoutingKey(eventClass),
-                0,
-                Optional.of(exchangeName),
-                queueName,
-                false);
+        Class<? extends ISubscribable> eventClass = event.getClass();
+        AmqpChannel channel = AmqpChannel.build(eventClass)
+                .exchange(exchangeName);
+        queueName.ifPresent(qn -> channel.queue(qn));
+        publish(event, 0, channel, false);
     }
 
     @Override
@@ -174,8 +161,16 @@ public abstract class AbstractPublisher implements IPublisherContract {
     @Override
     public void publish(IPollable event, int priority, boolean purgeQueue) {
         Class<?> eventClass = event.getClass();
-        publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), EventUtils.getRoutingKey(eventClass), priority, Optional.empty(),
-                Optional.empty(),purgeQueue);
+        String tenant = resolveTenant();
+        if (tenant != null) {
+            publish(event, priority,
+                    AmqpChannel.build(eventClass, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass)),
+                    purgeQueue);
+        } else {
+            String errorMessage = String.format("Unable to publish event %s cause no tenant found.", event.getClass());
+            LOGGER.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
     }
 
     @Override
@@ -185,12 +180,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
         try {
             rabbitVirtualHostAdmin.bind(virtualHost);
-            Queue queue = amqpAdmin.declareQueue(tenant,
+            Queue queue = amqpAdmin.declareQueue(tenant, AmqpChannel.build(
                                                  eventType,
                                                  WorkerMode.UNICAST,
-                                                 EventUtils.getTargetRestriction(eventType),
-                                                 Optional.empty(),
-                                                 Optional.empty());
+                                                 EventUtils.getTargetRestriction(eventType)));
             amqpAdmin.purgeQueue(queue.getName(), false);
         } finally {
             rabbitVirtualHostAdmin.unbind();
@@ -292,22 +285,16 @@ public abstract class AbstractPublisher implements IPublisherContract {
     /**
      * @param <T> event to be published
      * @param event the event you want to publish
-     * @param workerMode publishing mode
-     * @param target publishing scope
-     * @param routingKey routing key
      * @param priority priority given to the event
-     * @param exchangeName optional name of the exchange to publish to
-     * @param queueName optional name of the queue to publish to
+     * @param channel queue and exchange configuration to publish to
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    protected <T> void publish(final T event, final WorkerMode workerMode, final Target target, final String routingKey, final int priority,
-            Optional<String> exchangeName, Optional<String> queueName, boolean purgeQueue) {
-
-        LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )", event.getClass(), target, workerMode);
-
+    protected <T> void publish(T event, int priority, AmqpChannel channel, boolean purgeQueue) {
+        LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )", event.getClass(),
+                     channel.getTarget(), channel.getWorkerMode());
         String tenant = resolveTenant();
         if (tenant != null) {
-            publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, routingKey, priority, exchangeName, queueName, purgeQueue);
+            publish(resolveVirtualHost(tenant), tenant, event, priority, channel, purgeQueue);
         } else {
             String errorMessage = String.format("Unable to publish event %s cause no tenant found.", event.getClass());
             LOGGER.error(errorMessage);
@@ -327,19 +314,15 @@ public abstract class AbstractPublisher implements IPublisherContract {
     protected abstract String resolveVirtualHost(String tenant);
 
     /**
-     * @param <T> event to be published
-     * @param tenant the tenant name
      * @param virtualHost virtual host for current tenant
-     * @param event the event you want to publish
+     * @param tenant
+     * @param <T> event to be published
      * @param priority priority given to the event
-     * @param workerMode publishing mode
-     * @param target publishing scope
+     * @param channel Channel configuration for exchange/queue/binding
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    protected final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
-            String routingKey, int priority, Optional<String> exchangeName, Optional<String> queueName, boolean purgeQueue) {
-
-        final Class<?> eventType = event.getClass();
+    protected final <T> void publish(String virtualHost, String tenant, T event, int priority,
+            AmqpChannel channel, boolean purgeQueue) {
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
@@ -348,33 +331,36 @@ public abstract class AbstractPublisher implements IPublisherContract {
             // Declare AMQP elements for first publication
             ConcurrentMap<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent =
                     exchangesAndRoutingKeysByEventPerTenant.computeIfAbsent(tenant, key -> new ConcurrentHashMap<>());
-            ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(exchangeName.orElse(eventType.getName()), key ->
+            ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(
+                    channel.getExchangeName().orElse(channel.getEventType().getName()), key ->
             {
                 amqpAdmin.declareDeadLetter();
 
                 // Declare exchange
-                Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, exchangeName, Optional.ofNullable(routingKey));
+                Exchange exchange = amqpAdmin.declareExchange(channel);
 
-                if (WorkerMode.UNICAST.equals(workerMode)) {
+                if (WorkerMode.UNICAST.equals(channel.getWorkerMode())) {
                     // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
                     // specific routing key
-                    Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty(), queueName);
+                    Queue queue = amqpAdmin.declareQueue(tenant, channel);
                     if (purgeQueue) {
                         amqpAdmin.purgeQueue(queue.getName(), false);
                     }
-                    amqpAdmin.declareBinding(queue, exchange, workerMode, Optional.empty());
+                    amqpAdmin.declareBinding(queue, exchange, channel.getWorkerMode(), Optional.empty());
                     return ExchangeAndRoutingKey.of(
                             exchange.getName(),
-                            amqpAdmin.getRoutingKey(Optional.of(queue), workerMode, Optional.empty())
+                            amqpAdmin.getRoutingKey(Optional.of(queue), channel.getWorkerMode(), Optional.empty())
                     );
-                } else if (WorkerMode.BROADCAST.equals(workerMode)) {
+                } else if (WorkerMode.BROADCAST.equals(channel.getWorkerMode())) {
                     // Routing key useless ... always skipped with a fanout exchange
                     return ExchangeAndRoutingKey.of(
                             exchange.getName(),
-                            amqpAdmin.getRoutingKey(Optional.empty(), workerMode, Optional.ofNullable(routingKey))
+                            amqpAdmin.getRoutingKey(Optional.empty(),
+                                                    channel.getWorkerMode(),
+                                                    channel.getRoutingKey())
                     );
                 } else {
-                    String errorMessage = String.format("Unexpected worker mode : %s.", workerMode);
+                    String errorMessage = String.format("Unexpected worker mode : %s.", channel.getWorkerMode());
                     LOGGER.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }

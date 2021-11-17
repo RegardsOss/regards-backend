@@ -25,15 +25,6 @@ package fr.cnes.regards.framework.amqp.configuration;
 public final class AmqpConstants {
 
     /**
-     * Base name for the AMQP manager virtual host.
-     */
-    public static final String AMQP_INSTANCE_MANAGER = "regards.instance.manager";
-
-    public static final String AMQP_MULTITENANT_MANAGER = "regards.multitenant.manager";
-
-    public static final String INSTANCE_TENANT = "instance";
-
-    /**
      * Headers
      */
     public static final String REGARDS_HEADER_NS = "regards.";

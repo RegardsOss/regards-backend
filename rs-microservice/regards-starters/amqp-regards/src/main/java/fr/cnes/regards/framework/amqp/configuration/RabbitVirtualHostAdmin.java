@@ -167,11 +167,11 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     public void init() {
 
         // Initialize AMQP instance manager VHOST
-        addVhost(AmqpConstants.AMQP_INSTANCE_MANAGER);
+        addVhost(AmqpChannel.AMQP_INSTANCE_MANAGER);
 
         if (VirtualHostMode.SINGLE.equals(mode)) {
             // Initialize AMQP multitenant manager VHOST
-            addVhost(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+            addVhost(AmqpChannel.AMQP_MULTITENANT_MANAGER);
         } else {
             // Check if we have startup tenant vhost to manage
             if (bootstrapTenants != null) {

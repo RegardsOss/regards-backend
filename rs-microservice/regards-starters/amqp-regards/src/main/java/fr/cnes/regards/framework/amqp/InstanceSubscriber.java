@@ -21,12 +21,9 @@ package fr.cnes.regards.framework.amqp;
 import java.util.HashSet;
 import java.util.Set;
 
+import fr.cnes.regards.framework.amqp.configuration.*;
 import org.springframework.amqp.support.converter.MessageConverter;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
@@ -46,12 +43,12 @@ public class InstanceSubscriber extends AbstractSubscriber implements IInstanceS
     protected Set<String> resolveTenants() {
         // Instance is considered as a single tenant
         Set<String> tenants = new HashSet<>();
-        tenants.add(AmqpConstants.INSTANCE_TENANT);
+        tenants.add(AmqpChannel.INSTANCE_TENANT);
         return tenants;
     }
 
     @Override
     protected String resolveVirtualHost(String tenant) {
-        return AmqpConstants.AMQP_INSTANCE_MANAGER;
+        return AmqpChannel.AMQP_INSTANCE_MANAGER;
     }
 }

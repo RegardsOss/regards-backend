@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.framework.amqp.single;
 
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import fr.cnes.regards.framework.amqp.AbstractPublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -49,6 +49,6 @@ public class SingleVhostPublisher extends AbstractPublisher implements IPublishe
 
     @Override
     protected String resolveVirtualHost(String tenant) {
-        return AmqpConstants.AMQP_MULTITENANT_MANAGER;
+        return AmqpChannel.AMQP_MULTITENANT_MANAGER;
     }
 }

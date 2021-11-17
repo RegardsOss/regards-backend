@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.modules.session.manager.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -185,7 +185,7 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
         if (vhostAdmin != null) {
             // Purge event queue
             try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+                vhostAdmin.bind(AmqpChannel.AMQP_MULTITENANT_MANAGER);
                 amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
             } catch (AmqpIOException e) {
                 LOGGER.warn("Failed to clean AMQP queues");

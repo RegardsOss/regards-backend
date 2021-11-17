@@ -79,4 +79,8 @@ public final class EventUtils {
         return EventUtils.getEventProperties(eventType).converter();
     }
 
+    public static boolean isAutoDeleteQueue(Class<?> eventType) {
+       return EventUtils.getEventProperties(eventType).autoDelete();
+    }
+
 }

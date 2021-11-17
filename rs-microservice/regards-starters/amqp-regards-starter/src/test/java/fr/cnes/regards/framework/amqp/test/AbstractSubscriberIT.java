@@ -36,14 +36,12 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.constraints.AssertTrue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -300,14 +298,14 @@ public abstract class AbstractSubscriberIT {
         // First lets subscribe to a queue
         subscriber.subscribeTo(ErrorEvent.class, new ErrorHandler());
         try {
-            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
+            rabbitVirtualHostAdmin.bind(AmqpChannel.AMQP_INSTANCE_MANAGER);
             // Purge DLQ before doing anything
             amqpAdmin.purgeQueue(amqpAdmin.getDefaultDLQName(), true);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
         try {
-            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+            rabbitVirtualHostAdmin.bind(AmqpChannel.AMQP_MULTITENANT_MANAGER);
             // sends a malformed message to the queue used by the handler (no tenant wrapper)
             Target target = ErrorEvent.class.getAnnotation(Event.class).target();
             String exchangeName = amqpAdmin.getBroadcastExchangeName(ErrorEvent.class.getName(), target);
@@ -328,7 +326,7 @@ public abstract class AbstractSubscriberIT {
         }
         try {
             Thread.sleep(1000);
-            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
+            rabbitVirtualHostAdmin.bind(AmqpChannel.AMQP_INSTANCE_MANAGER);
             // Check that the message ended up in DLQ
             // To do so we have to poll on DLQ one message that is the right one
             Object fromDlq = rabbitTemplate.receiveAndConvert(amqpAdmin.getDefaultDLQName(), 0);

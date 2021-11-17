@@ -54,7 +54,7 @@ public class MultitenantRabbitTransactionManager extends RabbitTransactionManage
 
     @Override
     protected void doBegin(Object transaction, TransactionDefinition definition) {
-        String virtualHost = AmqpConstants.AMQP_MULTITENANT_MANAGER;
+        String virtualHost = AmqpChannel.AMQP_MULTITENANT_MANAGER;
         if (VirtualHostMode.MULTI.equals(mode)) {
             virtualHost = RabbitVirtualHostAdmin.getVhostName(runtimeTenantResolver.getTenant());
         }

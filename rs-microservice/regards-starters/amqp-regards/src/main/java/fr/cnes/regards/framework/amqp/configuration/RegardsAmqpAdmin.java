@@ -129,25 +129,31 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
-    public Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<String> exchangeName, Optional<String> routingKey) {
+    public Exchange declareExchange(AmqpChannel channel) {
 
         Exchange exchange;
-        switch (workerMode) {
+        switch (channel.getWorkerMode()) {
             case UNICAST:
-                exchange = ExchangeBuilder.directExchange(exchangeName.orElse(getUnicastExchangeName())).durable(true).build();
+                exchange = ExchangeBuilder.directExchange(
+                        channel.getExchangeName().orElse(getUnicastExchangeName())).durable(true).build();
                 break;
             case BROADCAST:
-                if (routingKey.isPresent()) {
-                    exchange = ExchangeBuilder.topicExchange(exchangeName.orElse(getBroadcastExchangeName(eventType.getName(), target))).durable(true)
+                if (channel.getRoutingKey().isPresent()) {
+                    exchange = ExchangeBuilder.topicExchange(
+                                    channel.getExchangeName().orElse(
+                                    getBroadcastExchangeName(channel.getEventType().getName(),
+                                                             channel.getTarget())))
+                            .durable(true)
                             .build();
                 } else {
-                    exchange = ExchangeBuilder.fanoutExchange(exchangeName.orElse(getBroadcastExchangeName(eventType.getName(), target))).durable(true)
+                    exchange = ExchangeBuilder.fanoutExchange(channel.getExchangeName().orElse(
+                            getBroadcastExchangeName(channel.getEventType().getName(), channel.getTarget())))
+                            .durable(true)
                             .build();
                 }
                 break;
             default:
-                throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
+                throw new EnumConstantNotPresentException(WorkerMode.class, channel.getWorkerMode().name());
         }
 
         rabbitAdmin.declareExchange(exchange);
@@ -203,51 +209,47 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
-    public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType,Optional<String> queueName) {
-        return declareQueue(tenant, eventType, workerMode, target, handlerType, queueName,false, Optional.empty());
-    }
-
-    @Override
-    public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName, boolean isDedicatedDLQEnabled,
-            Optional<String> deadLetterQueueRoutingKey) {
+    public Queue declareQueue(String tenant, AmqpChannel channel) {
 
         // Default DLQ values
         String dlx = REGARDS_DLX;
-        String dlrk = deadLetterQueueRoutingKey.orElse(REGARDS_DLQ);
+        String dlrk = channel.getDeadLetterQueueRoutingKey().orElse(REGARDS_DLQ);
 
-        Queue queue;
-        switch (workerMode) {
+        QueueBuilder builder;
+        switch (channel.getWorkerMode()) {
             case UNICAST:
                 // Useful for publishing unicast event and subscribe to a unicast exchange
-                queue = QueueBuilder.durable(queueName.orElse(getUnicastQueueName(tenant, eventType, target))).deadLetterExchange(dlx)
-                        .deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY).build();
+                builder = QueueBuilder.durable(channel.getQueueName().orElse(
+                        getUnicastQueueName(tenant, channel.getEventType(), channel.getTarget())))
+                        .deadLetterExchange(dlx)
+                        .deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY);
                 break;
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
-                if (handlerType.isPresent()) {
+                if (channel.getHandlerType().isPresent()) {
 
-                    String qn = queueName.orElse(getSubscriptionQueueName(handlerType.get(), target));
+                    String qn = channel.getQueueName().orElse(
+                            getSubscriptionQueueName(channel.getHandlerType().get(), channel.getTarget()));
 
                     // Dedicated DLQ creation
-                    if (isDedicatedDLQEnabled) {
-                        dlrk = deadLetterQueueRoutingKey.orElse(getDedicatedDLRKFromQueueName(qn));
+                    if (channel.isDedicatedDLQEnabled()) {
+                        dlrk = channel.getDeadLetterQueueRoutingKey().orElse(getDedicatedDLRKFromQueueName(qn));
                         declareDedicatedDeadLetter(getDedicatedDLQFromQueueName(qn), dlrk);
                     }
 
-                    QueueBuilder qb = QueueBuilder.durable(qn).deadLetterExchange(dlx).deadLetterRoutingKey(dlrk)
+                    builder = QueueBuilder.durable(qn).deadLetterExchange(dlx).deadLetterRoutingKey(dlrk)
                             .maxPriority(MAX_PRIORITY);
-                    // NOTE : test does not work with auto deletion queues
-                    // queue = isAutoDeleteSubscriptionQueue(target) ? qb.autoDelete().build() : qb.build();
-                    queue = qb.build();
                 } else {
                     throw new IllegalArgumentException("Missing event handler for broadcasted event");
                 }
                 break;
             default:
-                throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
+                throw new EnumConstantNotPresentException(WorkerMode.class, channel.getWorkerMode().name());
         }
+        if (channel.isAutoDeleteQueue()) {
+            builder = builder.autoDelete();
+        }
+        Queue queue = builder.build();
         rabbitAdmin.declareQueue(queue);
         return queue;
     }
@@ -311,10 +313,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     @Override
     public String getDedicatedDLRKFromQueueName(String queueName) {
         return getDedicatedDLQFromQueueName(queueName);
-    }
-
-    public boolean isAutoDeleteSubscriptionQueue(Target target) {
-        return this.instanceIdGenerated && (Target.ALL.equals(target) || Target.MICROSERVICE.equals(target));
     }
 
     @Override

@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.amqp;
 
 import java.util.Optional;
 
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
@@ -106,8 +107,9 @@ public abstract class AbstractPoller implements IPollerContract {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
             rabbitVirtualHostAdmin.bind(virtualHost);
 
-            Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target, Optional.empty(), Optional.empty());
-            Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty(),Optional.empty());
+            AmqpChannel channel = AmqpChannel.build(eventType, workerMode, target);
+            Exchange exchange = amqpAdmin.declareExchange(channel);
+            Queue queue = amqpAdmin.declareQueue(tenant, channel);
             amqpAdmin.declareBinding(queue, exchange, workerMode, Optional.empty());
 
             // routing key is unnecessary for fanout exchanges but is for direct exchanges

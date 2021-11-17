@@ -83,4 +83,10 @@ public @interface Event {
      * @return event JSON converter
      */
     JsonMessageConverter converter() default JsonMessageConverter.JACKSON;
+
+    /**
+     * Allows to specify an autoDelete queue.
+     * @return
+     */
+    boolean autoDelete() default false;
 }

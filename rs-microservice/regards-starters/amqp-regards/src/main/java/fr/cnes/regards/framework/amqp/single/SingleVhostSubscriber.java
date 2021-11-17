@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.amqp.single;
 import java.util.Map;
 import java.util.Set;
 
+import fr.cnes.regards.framework.amqp.configuration.*;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.MessageConverter;
 
@@ -28,12 +29,7 @@ import fr.cnes.regards.framework.amqp.AbstractSubscriber;
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -63,7 +59,7 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
 
     @Override
     protected String resolveVirtualHost(String tenant) {
-        return AmqpConstants.AMQP_MULTITENANT_MANAGER;
+        return AmqpChannel.AMQP_MULTITENANT_MANAGER;
     }
 
     @Override
@@ -77,7 +73,7 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
             for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
 
                 Class<?> handlerClass = entry.getKey();
-                Class<? extends ISubscribable> eventType = handledEvents.get(handlerClass);
+                Class<?> eventType = handledEvents.get(handlerClass);
                 //                IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
                 WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
                 Target target = EventUtils.getTargetRestriction(eventType);

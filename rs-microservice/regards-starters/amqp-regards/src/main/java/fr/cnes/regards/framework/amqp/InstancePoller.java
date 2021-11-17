@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 
@@ -37,11 +37,11 @@ public class InstancePoller extends AbstractPoller implements IInstancePoller {
 
     @Override
     protected String resolveTenant() {
-        return AmqpConstants.INSTANCE_TENANT;
+        return AmqpChannel.INSTANCE_TENANT;
     }
 
     @Override
     protected String resolveVirtualHost(String tenant) {
-        return AmqpConstants.AMQP_INSTANCE_MANAGER;
+        return AmqpChannel.AMQP_INSTANCE_MANAGER;
     }
 }

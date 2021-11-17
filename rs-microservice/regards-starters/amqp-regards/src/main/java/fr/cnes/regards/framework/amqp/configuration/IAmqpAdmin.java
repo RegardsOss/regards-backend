@@ -19,8 +19,6 @@
 package fr.cnes.regards.framework.amqp.configuration;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.IPollable;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import org.springframework.amqp.core.Binding;
@@ -42,15 +40,10 @@ public interface IAmqpAdmin {
      *     <li>{@link WorkerMode#UNICAST} : creates a {@link org.springframework.amqp.core.DirectExchange} with {@link IAmqpAdmin#getUnicastExchangeName}</li>
      *     <li>{@link WorkerMode#BROADCAST} : creates a {@link org.springframework.amqp.core.FanoutExchange} with {@link IAmqpAdmin#getBroadcastExchangeName}</li>
      * </ul>
-     * @param eventType event type
-     * @param workerMode {@link WorkerMode}
-     * @param target {@link Target}
-     * @param exchangeName optional exchange name. If not provided the exchange name is calculated from the eventType
-     * @param routingKey optional routing key. If present a topic channel is created else a fanout channel is created
+     * @param channel Channel configuration for exchange/queue/binding
      * @return a new {@link Exchange} related to current tenant and event
      */
-    Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<String> exchangeName, Optional<String> routingKey);
+    Exchange declareExchange(AmqpChannel channel);
 
     /**
      * Broadcast exchange name by event
@@ -74,24 +67,6 @@ public interface IAmqpAdmin {
     void declareDeadLetter();
 
     /**
-     * Declare a queue that can handle priority with default DLQ
-     * If queueName is provided the declared queue is named with it or else the queue name is computed with :
-     * <ul>
-     *     <li>{@link WorkerMode#UNICAST} : {@link IAmqpAdmin#getUnicastQueueName}</li>
-     *     <li>{@link WorkerMode#BROADCAST} : {@link IAmqpAdmin#getSubscriptionQueueName}</li>
-     * </ul>
-     * @param tenant tenant for which the queue is created
-     * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}
-     * @param workerMode worker mode
-     * @param target target
-     * @param handlerType optional event handler type
-     * @param queueName optional quene name to declare. If not provided queue name is defined by eventType/handlerType/WorkerMode/Target
-     * @return declared {@link Queue}
-     */
-    Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName);
-
-    /**
      * Declare a queue that can handle priority with custom Dead Letter Exchange and custom Dead Letter Routing Key
      * If queueName is provided the declared queue is named with it or else the queue name is computed with :
      * <ul>
@@ -99,17 +74,10 @@ public interface IAmqpAdmin {
      *     <li>{@link WorkerMode#BROADCAST} : {@link IAmqpAdmin#getSubscriptionQueueName}</li>
      * </ul>
      * @param tenant tenant for which the queue is created
-     * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}
-     * @param workerMode worker mode
-     * @param target target
-     * @param handlerType optional event handler type
-     * @param isDedicatedDLQEnabled enable creation of a dedicated DLQ
-     * @param queueName Name of the queue to declare. If not provided queue name is defined by eventType/handlerType/WorkerMode/Target
+     * @param channel Channel configuration for exchange/queue/binding
      * @return declared {@link Queue}
      */
-    Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
-            Optional<Class<? extends IHandler<?>>> handlerType, Optional<String> queueName,
-            boolean isDedicatedDLQEnabled, Optional<String> deadLetterQueueRoutingKey);
+    Queue declareQueue(String tenant, AmqpChannel channel);
 
     /**
      * Compute {@link WorkerMode#UNICAST} queue name with :
