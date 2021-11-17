@@ -34,13 +34,9 @@ public final class ChecksumUtils {
      */
     public static String computeHexChecksum(Path filePath, String checksumAlgorithm)
             throws NoSuchAlgorithmException, IOException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        try (InputStream is = Files.newInputStream(filePath); DigestInputStream dis = new DigestInputStream(is, md)) {
-            byte[] buffer = new byte[8192];
-            while (dis.read(buffer) != -1) {
-            }
+        try (InputStream is = Files.newInputStream(filePath)) {
+            return computeHexChecksum(is, checksumAlgorithm);
         }
-        return getHexChecksum(md.digest());
     }
 
     /**
@@ -51,7 +47,7 @@ public final class ChecksumUtils {
      */
     public static String computeHexChecksum(InputStream is, String checksumAlgorithm)
             throws NoSuchAlgorithmException, IOException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
+        MessageDigest md = MessageDigest.getInstance(checksumAlgorithm);
         try (DigestInputStream dis = new DigestInputStream(is, md)) {
             /* Read decorated stream (dis) to EOF as normal... */
             byte[] buffer = new byte[8192];
