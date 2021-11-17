@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.workermanager.domain.request;
 
-import fr.cnes.regards.framework.jpa.restriction.DatesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
@@ -41,7 +41,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     private ValuesRestriction<String> contentTypes;
     private ValuesRestriction<RequestStatus> statuses;
     private ValuesRestriction<Long> ids;
-    private DatesRestriction creationDate = new DatesRestriction();
+    private DatesRangeRestriction creationDate = new DatesRangeRestriction();
 
     public String getSessionOwner() {
         return sessionOwner;
@@ -83,22 +83,22 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return contentTypes;
     }
 
-    public DatesRestriction getCreationDate() {
+    public DatesRangeRestriction getCreationDate() {
         return creationDate;
     }
 
     public SearchRequestParameters withCreationDateBefore(OffsetDateTime before) {
-        this.creationDate = DatesRestriction.buildBefore(before);
+        this.creationDate = DatesRangeRestriction.buildBefore(before);
         return this;
     }
 
     public SearchRequestParameters withCreationDateAfter(OffsetDateTime after) {
-        this.creationDate = DatesRestriction.buildAfter(after);
+        this.creationDate = DatesRangeRestriction.buildAfter(after);
         return this;
     }
 
     public SearchRequestParameters withCreateDateBeforeAndAfter(OffsetDateTime before, OffsetDateTime after) {
-        this.creationDate = DatesRestriction.buildBeforeAndAfter(before, after);
+        this.creationDate = DatesRangeRestriction.buildBeforeAndAfter(before, after);
         return this;
     }
 

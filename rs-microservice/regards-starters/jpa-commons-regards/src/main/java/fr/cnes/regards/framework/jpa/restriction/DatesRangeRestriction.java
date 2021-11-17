@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.jpa.restriction;
 
 import java.time.OffsetDateTime;
-import java.util.Collection;
 
 /**
  * Restriction used in specification builder.
@@ -27,30 +26,30 @@ import java.util.Collection;
  *
  * @author Théo Lasserre
  */
-public class DatesRestriction {
+public class DatesRangeRestriction {
 
     private OffsetDateTime after;
     private OffsetDateTime before;
 
-    public DatesRestriction () {
+    public DatesRangeRestriction() {
 
     }
 
-    public DatesRestriction(OffsetDateTime before, OffsetDateTime after) {
+    public DatesRangeRestriction(OffsetDateTime before, OffsetDateTime after) {
         this.after = after;
         this.before = before;
     }
 
-    public static DatesRestriction buildBefore(OffsetDateTime before) {
-        return new DatesRestriction(before, null);
+    public static DatesRangeRestriction buildBefore(OffsetDateTime before) {
+        return new DatesRangeRestriction(before, null);
     }
 
-    public static DatesRestriction buildAfter(OffsetDateTime after) {
-        return new DatesRestriction(null, after);
+    public static DatesRangeRestriction buildAfter(OffsetDateTime after) {
+        return new DatesRangeRestriction(null, after);
     }
 
-    public static DatesRestriction buildBeforeAndAfter(OffsetDateTime before, OffsetDateTime after) {
-        return new DatesRestriction(before, after);
+    public static DatesRangeRestriction buildBeforeAndAfter(OffsetDateTime before, OffsetDateTime after) {
+        return new DatesRangeRestriction(before, after);
     }
 
     public OffsetDateTime getAfter() {

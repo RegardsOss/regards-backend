@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import fr.cnes.regards.framework.jpa.restriction.DatesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 
@@ -83,12 +83,12 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected  Specification<T> useDatesRestriction(String field, DatesRestriction datesRestriction) {
-        if (datesRestriction == null) {
+    protected  Specification<T> useDatesRestriction(String field, DatesRangeRestriction datesRangeRestriction) {
+        if (datesRangeRestriction == null) {
             return null;
         }
-        OffsetDateTime dateAfter = datesRestriction.getAfter();
-        OffsetDateTime dateBefore = datesRestriction.getBefore();
+        OffsetDateTime dateAfter = datesRangeRestriction.getAfter();
+        OffsetDateTime dateBefore = datesRangeRestriction.getBefore();
         if (dateAfter == null && dateBefore == null) {
             return null;
         } else if (dateAfter == null && dateBefore != null) {
@@ -140,7 +140,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         ValuesRestrictionMode valuesRestrictionMode = valuesRestriction.getMode();
         if (values == null || values.isEmpty()) {
             return null;
-        } else if (valuesRestrictionMode.equals(ValuesRestrictionMode.INCLUDE)) {
+        } else if (valuesRestrictionMode == ValuesRestrictionMode.INCLUDE) {
                 return isIncluded(field, values);
         } else {
             return isExcluded(field, values);
