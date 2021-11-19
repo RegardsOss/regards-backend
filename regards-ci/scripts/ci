@@ -20,20 +20,32 @@ echo "#####################################"
 
 cd ${SERVICES} || exit
 case $STEP in
-    install)
+    dependencies)
         tm dependencyTree
-        tm computeModuleHashes
-        tm install
     ;;
-    deploy)
-        tm dependencyTree
+    hashes)
         tm computeModuleHashes
-        tm deploy
     ;;
-    fast)
-        tm dependencyTree
-        tm computeModuleHashes
-        tm fast
+    compile)
+        tm compile
+    ;;
+    compileForTests)
+        tm compileForTests
+    ;;
+    tests)
+	    tm tests
+    ;;
+    deployDockerImages)
+        tm buildAnDeployDockerImages "true"
+    ;;
+    deployFastDockerImages)
+        tm buildAnDeployDockerImages "false" "fast-" 
+    ;;
+    deployMvnArtifacts)
+        tm deployMvnArtifacts
+    ;;
+    updateHashes)
+        tm updateNexusHashes
     ;;
     nightly)
         tm nightly
@@ -42,9 +54,15 @@ case $STEP in
   #TODO Build docs site
     *)
         echo -e "Unknown step '$STEP'. Available steps:
-        \n- verify
-        \n- deploy
-        \n- fast
+        \n- dependencies
+        \n- hashes
+        \n- compile
+        \n- compileForTests
+        \n- tests
+        \n- deployDockerImages
+        \n- deployFastDockerImages
+        \n- deployMvnArtifacts
+        \n- updateHashes
         \n- nightly
         "
     ;;

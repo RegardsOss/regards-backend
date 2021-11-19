@@ -2515,6 +2515,9 @@
 							</path>
 							<!-- other annotation processors -->
 						</annotationProcessorPaths>
+						<compilerArgs>
+						    <arg>-Xpkginfo:always</arg>
+						</compilerArgs>
 					</configuration>
 				</plugin>
 				<plugin>

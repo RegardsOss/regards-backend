@@ -33,28 +33,6 @@ services:
     networks:
       - regards_IT_network
 
-  rs-build:
-    image: 172.26.46.158/rs-maven-ci
-    environment:
-      - BRANCH_NAME
-      - REGARDS_VERSION
-      - WORKSPACE
-      - CI_DIR=regards-ci/docker
-      - MODE
-      - REGARDS_HOME
-      - COTS=rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432
-    volumes:
-      - /DATA/maven-multibranch-repository:/localRepository
-      - /usr/bin/docker:/bin/docker
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ../../.:/app_to_build
-    links:
-      - rs-rabbitmq
-      - rs-postgres
-      - rs-elasticsearch
-    networks:
-      - regards_IT_network
-
 networks:
   regards_IT_network:
     external:
