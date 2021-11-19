@@ -39,13 +39,13 @@ public interface IRuleRepository extends JpaRepository<Rule, Long> {
      * Get all enabled {@link Rule}
      * @return a set of {@link Rule}
      */
-    @EntityGraph(attributePaths = { "rulePlugin", "recipients" })
+    @EntityGraph(attributePaths = { "rulePlugin", "recipients" }, type = EntityGraph.EntityGraphType.LOAD)
     public Set<Rule> findByRulePluginActiveTrue();
 
-    @EntityGraph(attributePaths = { "rulePlugin", "recipients" })
+    @EntityGraph(attributePaths = { "rulePlugin", "recipients" }, type = EntityGraph.EntityGraphType.LOAD)
     public Optional<Rule> findByRulePluginBusinessId(String businessId);
 
-    @EntityGraph(attributePaths = { "recipients" })
+    @EntityGraph(attributePaths = { "recipients" }, type = EntityGraph.EntityGraphType.LOAD)
     public Set<Rule> findByRecipientsBusinessId(String businessId);
 
     public void deleteByRulePluginBusinessId(String businessId);

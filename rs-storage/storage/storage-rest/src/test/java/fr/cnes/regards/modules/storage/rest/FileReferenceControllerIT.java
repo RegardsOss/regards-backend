@@ -72,6 +72,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import reactor.util.retry.Retry;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -252,7 +253,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         })
             // Retry in case of weird but transient "Spring headers" error.
             // Still, let AssertionErrors fail the test downstream.
-            .retry(t -> ! (t instanceof AssertionError))
+            .retryWhen(Retry.indefinitely().filter(t -> ! (t instanceof AssertionError)))
             // blow up maybe?
             .block();
     }
@@ -414,7 +415,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
                     }
                 })
                     // retry until we finally get the result we expect (200 download successful)
-                    .retry(t -> t == unexpectedResultEx)
+                    .retryWhen(Retry.indefinitely().filter(t -> t == unexpectedResultEx))
                     // use the dedicated thread pool
                     .subscribeOn(Schedulers.newParallel("hammer", maxConcurrency))
                 ,

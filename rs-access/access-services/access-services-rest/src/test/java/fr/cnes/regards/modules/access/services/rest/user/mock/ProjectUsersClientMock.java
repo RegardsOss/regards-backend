@@ -202,5 +202,10 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
         public MockedPageable first() {
             return new MockedPageable(0, getPageSize());
         }
+
+        @Override
+        public MockedPageable withPage(int pageNumber) {
+            return new MockedPageable(pageNumber, getPageSize());
+        }
     }
 }

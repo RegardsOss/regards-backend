@@ -82,7 +82,7 @@ public interface INotificationRepository
             @Param("role") String role, Pageable pageable);
 
     @Override
-    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
+    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" }, type = EntityGraph.EntityGraphType.LOAD)
     Optional<Notification> findById(Long id);
 
     default Page<INotificationWithoutMessage> findAllNotificationsWithoutMessage(Pageable pageable) {
@@ -169,7 +169,7 @@ public interface INotificationRepository
         return new PageImpl<>(notifs, idPage.getPageable(), idPage.getTotalElements());
     }
 
-    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
+    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" }, type = EntityGraph.EntityGraphType.LOAD)
     List<Notification> findAllNotifByIdInOrderByIdDesc(List<Long> ids);
 
     @Query(value = "select notif.id from {h-schema}t_notification notif "

@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
  */
 public interface ILinkPluginsDatasetsRepository extends JpaRepository<LinkPluginsDatasets, Long> {
 
-    @EntityGraph(attributePaths = { "services" })
+    @EntityGraph(attributePaths = { "services" }, type = EntityGraph.EntityGraphType.LOAD)
     LinkPluginsDatasets findOneByDatasetId(String pDatasetId);
 
 }

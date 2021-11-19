@@ -45,7 +45,7 @@ public interface ICollectionRepository extends IAbstractEntityRepository<Collect
      * @return found collections
      */
     @Override
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     List<Collection> findByIpIdIn(Set<UniformResourceName> pIpIds);
 
     /**
@@ -55,7 +55,7 @@ public interface ICollectionRepository extends IAbstractEntityRepository<Collect
      * @return found entity
      */
     @Override
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     Collection findByIpId(UniformResourceName pIpId);
 
     /**
@@ -65,6 +65,6 @@ public interface ICollectionRepository extends IAbstractEntityRepository<Collect
      * @return the collection or null if none were found
      */
     @Override
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     Optional<Collection> findById(Long pId);
 }

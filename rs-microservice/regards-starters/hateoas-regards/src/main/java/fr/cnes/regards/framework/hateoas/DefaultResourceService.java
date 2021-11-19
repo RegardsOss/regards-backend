@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +93,9 @@ public class DefaultResourceService implements IResourceService {
             for (int i = 0; i < methodParams.length; i++) {
                 parameterTypes[i] = methodParams[i].getParameterType();
                 if (methodParams[i].getValue() != null) {
-                    parameterValues.add(methodParams[i].getValue());
+                    parameterValues.add(Optional.ofNullable(methodParams[i].getValue()));
+                } else {
+                    parameterValues.add(Optional.empty());
                 }
             }
         }
@@ -100,7 +103,7 @@ public class DefaultResourceService implements IResourceService {
         try {
             final Method method = getMethod(controller, methodName, parameterTypes);
             final Link link;
-            if (parameterValues != null) {
+            if (parameterValues != null && !parameterValues.isEmpty()) {
                 link = buildLink(method, rel, parameterValues.toArray());
             } else {
                 link = buildLink(method, rel);

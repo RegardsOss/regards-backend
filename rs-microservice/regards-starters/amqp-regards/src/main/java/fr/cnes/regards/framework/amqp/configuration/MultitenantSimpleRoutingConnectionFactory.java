@@ -28,6 +28,21 @@ import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory
 public class MultitenantSimpleRoutingConnectionFactory extends SimpleRoutingConnectionFactory {
 
     @Override
+    public void afterPropertiesSet() throws Exception {
+        // Disable connection check
+    }
+
+    @Override
+    public boolean isPublisherConfirms() {
+        return false;
+    }
+
+    @Override
+    public boolean isPublisherReturns() {
+        return false;
+    }
+
+    @Override
     public void addTargetConnectionFactory(Object pKey, ConnectionFactory pConnectionFactory) {
         super.addTargetConnectionFactory(pKey, pConnectionFactory);
     }

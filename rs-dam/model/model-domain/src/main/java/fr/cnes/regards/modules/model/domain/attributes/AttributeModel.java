@@ -132,7 +132,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     /**
      * Optional fragment
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "fragment_id", foreignKey = @ForeignKey(name = "fk_fragment_id"), nullable = false,
             updatable = false)
     private Fragment fragment;
@@ -168,7 +168,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     /**
      * Applicable restriction
      */
-    @OneToOne(orphanRemoval = true)
+    @OneToOne(orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "restriction_id", foreignKey = @ForeignKey(name = "fk_restriction_id"))
     @Valid
     private AbstractRestriction restriction;

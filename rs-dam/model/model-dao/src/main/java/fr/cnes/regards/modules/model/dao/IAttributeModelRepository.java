@@ -25,6 +25,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -40,12 +42,12 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  */
 @Repository
 public interface IAttributeModelRepository
-        extends CrudRepository<AttributeModel, Long>, JpaSpecificationExecutor<AttributeModel> {
+        extends JpaRepositoryImplementation<AttributeModel, Long> {
 
     List<AttributeModel> findAll();
 
     @Override
-    @EntityGraph(attributePaths = { "properties" })
+    @EntityGraph(attributePaths = { "properties" }, type = EntityGraph.EntityGraphType.LOAD)
     Optional<AttributeModel> findById(Long id);
 
     List<AttributeModel> findByType(PropertyType pType);
@@ -56,7 +58,7 @@ public interface IAttributeModelRepository
 
     AttributeModel findByNameAndFragmentName(String pAttributeName, String pFragmentName);
 
-    @EntityGraph(attributePaths = { "properties" })
+    @EntityGraph(attributePaths = { "properties" }, type = EntityGraph.EntityGraphType.LOAD)
     List<AttributeModel> findByFragmentId(Long pFragmentId);
 
     /**
@@ -67,6 +69,6 @@ public interface IAttributeModelRepository
     Collection<AttributeModel> findByName(String fragmentName);
 
     @Override
-    @EntityGraph(attributePaths = { "properties" })
+    @EntityGraph(attributePaths = { "properties" }, type = EntityGraph.EntityGraphType.LOAD)
     List<AttributeModel> findAll(Specification<AttributeModel> spec);
 }

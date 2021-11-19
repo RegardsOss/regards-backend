@@ -43,22 +43,23 @@ public interface IModelAttrAssocRepository extends JpaRepository<ModelAttrAssoc,
 
     List<ModelAttrAssoc> findByModelId(Long pModelId);
 
-    @EntityGraph(attributePaths = { "attribute.properties" })
+    @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)
     List<ModelAttrAssoc> findByModelName(String modelName);
 
-    @EntityGraph(attributePaths = { "attribute.properties" })
+    @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)
     ModelAttrAssoc findByModelIdAndAttribute(Long pModelId, AttributeModel pAttributeModel);
 
     @Override
-    @EntityGraph(attributePaths = { "attribute.properties" })
+    @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)
     List<ModelAttrAssoc> findAll();
 
     @Override
-    @EntityGraph(attributePaths = { "attribute.properties" })
+    @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)
     Optional<ModelAttrAssoc> findById(Long id);
 
     /**
      * Find page attribute which are associated to at least one of the models
+     *
      * @return a page of attribute which are associated to at least one of the models
      */
     default Page<ModelAttrAssoc> findAllByModelNameIn(Collection<String> modelNames, Pageable pageable) {
@@ -71,22 +72,24 @@ public interface IModelAttrAssocRepository extends JpaRepository<ModelAttrAssoc,
     Page<Long> findIdPageByModelNameIn(@Param("modelNames") Collection<String> modelNames, Pageable pageable);
 
     @Override
-    @EntityGraph(attributePaths = { "attribute.properties" })
+    @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)
     List<ModelAttrAssoc> findAllById(Iterable<Long> ids);
 
     /**
      * Find all the model attribute association which model is one of the given, represented by their ids
+     *
      * @param pModelsIds
      * @return the model attribute assocations
      */
-    @EntityGraph(attributePaths = { "attribute.properties" })
+    @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)
     Collection<ModelAttrAssoc> findAllByModelIdIn(Collection<Long> pModelsIds);
 
     /**
      * Find all model attribute associations by attribute id
+     *
      * @param attrId
      * @return the model attribute associations
      */
-    @EntityGraph(attributePaths = { "attribute.properties" })
+    @EntityGraph(attributePaths = { "attribute.properties" }, type = EntityGraph.EntityGraphType.LOAD)
     Collection<ModelAttrAssoc> findAllByAttributeId(Long attrId);
 }

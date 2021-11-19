@@ -68,10 +68,11 @@
 		<!-- hsqldb is into spring-boot dependencies with version 2.4.1, but some
             dao use it without spring-boot -->
 		<hsqldb.hsqldb.version>2.4.1</hsqldb.hsqldb.version>
-		<spring.cloud.version>Hoxton.RELEASE</spring.cloud.version>
+		<spring.cloud.version>2020.0.4</spring.cloud.version>
+		<spring.cloud.netflix>2.2.9.RELEASE</spring.cloud.netflix>
 		<!-- Take a version that retrieve a version of Hibernate that correctly
             manage uk naming while inheriting classes with JOINED strategy -->
-		<spring.boot.version>2.2.4.RELEASE</spring.boot.version>
+		<spring.boot.version>2.5.5</spring.boot.version>
 		<!-- Spring OAuth is no more into spring-boot, only client is (From what
             i understood) -->
 		<spring-security-oauth2-autoconfigure>2.2.0.RELEASE</spring-security-oauth2-autoconfigure>
@@ -468,6 +469,11 @@
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>regards-test-aggregation</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>worker-regards-starter</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<!-- Test dependencies -->
@@ -1768,6 +1774,18 @@
 				<version>${spring.cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<!-- Remove from cloud scope : use Spring Cloud Gateway instead -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+				<version>${spring.cloud.netflix}</version>
+			</dependency>
+			<!-- Remove from cloud scope : use Spring Cloud Loadbalancer instead -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+				<version>${spring.cloud.netflix}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>

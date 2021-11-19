@@ -57,7 +57,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
         return findFirstByStatusStatusOrderByPriorityDesc(JobStatus.QUEUED);
     }
 
-    @EntityGraph(attributePaths = { "parameters" })
+    @EntityGraph(attributePaths = { "parameters" }, type = EntityGraph.EntityGraphType.LOAD)
     JobInfo findCompleteById(UUID id);
 
     @Modifying
@@ -103,7 +103,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     /**
      * Search jobs with given status at given date (only unlocked)
      */
-    @EntityGraph(attributePaths = { "parameters" })
+    @EntityGraph(attributePaths = { "parameters" }, type = EntityGraph.EntityGraphType.LOAD)
     List<JobInfo> findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime stopDate, Boolean locked,
             JobStatus... statuses);
 

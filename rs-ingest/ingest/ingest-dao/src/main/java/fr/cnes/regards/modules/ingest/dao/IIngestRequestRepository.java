@@ -41,13 +41,13 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 public interface IIngestRequestRepository extends JpaRepository<IngestRequest, Long> {
 
     @Override
-    @EntityGraph(attributePaths = "aips")
+    @EntityGraph(attributePaths = "aips", type = EntityGraph.EntityGraphType.LOAD)
     Optional<IngestRequest> findById(Long id);
 
     /**
      * Get request by ids
      */
-    @EntityGraph(attributePaths = "aips")
+    @EntityGraph(attributePaths = "aips", type = EntityGraph.EntityGraphType.LOAD)
     List<IngestRequest> findByIdIn(Collection<Long> ids);
 
     /**
@@ -77,7 +77,7 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
     /**
      * Internal method used to retrieve IngestRequest using a specification with linked AIPs
      */
-    @EntityGraph(attributePaths = "aips")
+    @EntityGraph(attributePaths = "aips", type = EntityGraph.EntityGraphType.LOAD)
     List<IngestRequest> findAll(Specification<IngestRequest> spec);
 
     /**
@@ -89,10 +89,10 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
 
     boolean existsByAipsIdAndState(Long id, InternalRequestState state);
 
-    @EntityGraph(attributePaths = "aips")
+    @EntityGraph(attributePaths = "aips", type = EntityGraph.EntityGraphType.LOAD)
     List<IngestRequest> findAllByAipsIdIn(List<Long> aipIds);
 
-    @EntityGraph(attributePaths = "aips")
+    @EntityGraph(attributePaths = "aips", type = EntityGraph.EntityGraphType.LOAD)
     List<IngestRequest> findByProviderId(String providerId);
 
     /**

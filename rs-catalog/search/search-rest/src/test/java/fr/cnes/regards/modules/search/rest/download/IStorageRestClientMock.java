@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.search.rest.download;
 
 import feign.Request;
 import feign.Request.Body;
+import feign.RequestTemplate;
 import feign.Response;
 import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
@@ -58,7 +59,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     @Override
     public Response downloadFile(String checksum, Boolean isContentInline) {
         Map<String, Collection<String>> map = new HashMap<>();
-        Request request = Request.create(Request.HttpMethod.GET, "test", map, Body.empty());
+        Request request = Request.create(Request.HttpMethod.GET, "test", map, Body.empty(), new RequestTemplate());
         if (!"checksumOk".equals(checksum)) {
             return Response.builder().status(HttpStatus.NOT_FOUND.value()).reason("not found").request(request)
                     .headers(map).build();

@@ -62,7 +62,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
      * @param pIpIds set of ipId
      * @return found entities
      */
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     List<T> findByIpIdIn(Set<UniformResourceName> pIpIds);
 
     /**
@@ -77,7 +77,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
      * @param pIpId ipId of which entity
      * @return found entity
      */
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     T findByIpId(UniformResourceName pIpId);
 
     /**
@@ -85,7 +85,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
      * @param pModelName name of the model we want to be complient with
      * @return entities complient with the given model
      */
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     Set<T> findAllByModelName(String pModelName);
 
     /**
@@ -93,14 +93,14 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
      * @param modelIds model list
      * @return entities complient with the given model
      */
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     Set<T> findAllByModelIdIn(Set<Long> modelIds);
 
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     Set<T> findAllByModelNameIn(Collection<String> modelNames);
 
     @Override
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     Page<T> findAll(Specification<T> spec, Pageable pageRequest);
 
     @Override
@@ -114,7 +114,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
     Page<Long> findIdPage(Pageable pageable);
 
     @Override
-    @EntityGraph(attributePaths = { "tags", "groups", "model" })
+    @EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     List<T> findAllById(@Param("ids") Iterable<Long> ids);
 
     boolean existsByModel(Model model);
