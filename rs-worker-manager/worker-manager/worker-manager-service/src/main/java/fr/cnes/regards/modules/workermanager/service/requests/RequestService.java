@@ -18,22 +18,14 @@
  */
 package fr.cnes.regards.modules.workermanager.service.requests;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
@@ -51,10 +43,22 @@ import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.service.JobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
+import fr.cnes.regards.modules.workermanager.service.requests.job.ScanRequestJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle : <ul>
@@ -101,6 +105,12 @@ public class RequestService {
 
     @Autowired
     private WorkerCacheService workerCacheService;
+
+    @Autowired
+    private IAuthenticationResolver authenticationResolver;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
 
     @Value("${worker.request.queue.name.template:regards.worker.%s.request}")
     private String WORKER_REQUEST_QUEUE_NAME_TEMPLATE;
@@ -177,6 +187,10 @@ public class RequestService {
         return this.handleRequests(requests, requestInfo);
     }
 
+    public void deleteRequests(List<Request> requests) {
+        requestRepository.deleteInBatch(requests);
+    }
+
     /**
      * Using the WorkerCache and {@link Request} infos, try to send {@link WorkerRequestEvent}s to workers, <br/>
      * update {@link Request}s state and notify the owner of {@link Request}s about advancement.
@@ -224,6 +238,17 @@ public class RequestService {
         // Notify owner of the request
         notifyStatus(requests);
         return requestInfo;
+    }
+
+    /**
+     * Converts events {@link Message}s to {@link Request}s
+     *
+     * @param validEvents events to convert
+     * @return Requests
+     */
+    private Collection<Request> getRequestsFromEvents(Collection<Message> validEvents) {
+        return validEvents.stream().map(event -> new Request(event, RequestStatus.TO_DISPATCH))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -315,6 +340,7 @@ public class RequestService {
                         request.setError(error);
                         break;
                     case TO_DISPATCH:
+                    case TO_DELETE:
                     default:
                         LOGGER.error(
                                 "Request error detected from workers dlq for request {} but request is in {} status. Error is skipped.",
@@ -324,17 +350,6 @@ public class RequestService {
                 }
             });
         }
-    }
-
-    /**
-     * Converts events {@link Message}s to {@link Request}s
-     *
-     * @param validEvents events to convert
-     * @return Requests
-     */
-    private Collection<Request> getRequestsFromEvents(Collection<Message> validEvents) {
-        return validEvents.stream().map(event -> new Request(event, RequestStatus.TO_DISPATCH))
-                .collect(Collectors.toList());
     }
 
     /**
@@ -454,6 +469,8 @@ public class RequestService {
                 event = ResponseEvent.build(ResponseStatus.ERROR).withMessage(
                         String.format(ERROR_MESSAGE, request.getDispatchedWorkerType(), request.getError()));
                 break;
+            case TO_DISPATCH:
+            case TO_DELETE:
             default:
                 throw new RuntimeException(String.format("Invalid request status %s", request.getStatus().toString()));
         }
@@ -475,6 +492,10 @@ public class RequestService {
         return requestRepository.findAll(new RequestSpecificationsBuilder().withParameters(filters).build(), pageable);
     }
 
+    public List<Request> searchRequests(Collection<Long> ids) {
+        return requestRepository.findByIdIn(ids);
+    }
+
     public LightRequest retrieveLightRequest(String requestId) throws EntityNotFoundException {
         Optional<LightRequest> lightRequestOpt = requestRepository.findLightByRequestId(requestId);
         if (!lightRequestOpt.isPresent()) {
@@ -492,18 +513,48 @@ public class RequestService {
     }
 
     /**
-     * Schedule a job to retry requests matching provided filters
+     * Schedule a job to retry all requests matching provided filters
+     *
      * @param filters
      */
     public void scheduleRequestRetryJob(SearchRequestParameters filters) {
-        // TODO : PR Léo
+        runScanJob(filters, RequestStatus.TO_DISPATCH);
     }
 
     /**
-     * Schedule a job to delete requests matching provided filters
+     * Schedule a job to delete all requests matching provided filters
+     *
      * @param filters
      */
     public void scheduleRequestDeletionJob(SearchRequestParameters filters) {
-        // TODO : PR Léo
+        runScanJob(filters, RequestStatus.TO_DELETE);
+    }
+
+    private void runScanJob(SearchRequestParameters filters, RequestStatus newStatus) {
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(ScanRequestJob.FILTERS, filters),
+                                                          new JobParameter(ScanRequestJob.REQUEST_NEW_STATUS,
+                                                                           newStatus));
+        // Schedule request deletion job
+        JobInfo jobInfo = new JobInfo(false, JobsPriority.REQUEST_SCAN_JOB.getPriority(), jobParameters,
+                                      authenticationResolver.getUser(), ScanRequestJob.class.getName());
+        jobInfo = jobInfoService.createAsQueued(jobInfo);
+        LOGGER.debug("Schedule {} scan job to update {} to with id {}", ScanRequestJob.class.getName(), newStatus,
+                     jobInfo.getId());
+    }
+
+    /**
+     * Return true when there is at least one request with NO_WORKER_AVAILABLE
+     *
+     * @param contentTypes
+     */
+    public boolean hasRequestsMatchingContentTypeAndNoWorkerAvailable(Set<String> contentTypes) {
+        long nbWaitingRequests = requestRepository.countByContentTypeInAndStatus(contentTypes,
+                                                                                 RequestStatus.NO_WORKER_AVAILABLE);
+        return nbWaitingRequests > 0;
+    }
+
+    public void updateRequestsStatusTo(Page<Request> requests, RequestStatus newRequestStatus) {
+        Set<Long> requestsIds = requests.stream().map(Request::getId).collect(Collectors.toSet());
+        requestRepository.updateStatus(newRequestStatus, requestsIds);
     }
 }

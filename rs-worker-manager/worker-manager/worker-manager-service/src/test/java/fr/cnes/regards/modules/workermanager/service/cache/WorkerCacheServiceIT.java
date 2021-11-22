@@ -130,7 +130,7 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
     }
 
     @Test
-    @Ignore
+    @Ignore("testing the cache expiration is useless")
     public void testCacheExpiration() throws InterruptedException {
 
         // Save configuration used by this test
@@ -167,7 +167,7 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
     }
 
     @Test
-    @Ignore
+    @Ignore("Useless perf test")
     public void testHandleManyRequests() {
         // Save configuration used by this test
         workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1),

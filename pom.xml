@@ -479,6 +479,11 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.test</groupId>
+				<artifactId>regards-job-test</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.test</groupId>
 				<artifactId>regards-test-reporting</artifactId>
 				<version>${revision}</version>
 			</dependency>

@@ -25,7 +25,7 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Allows complex research on {@link Request}
@@ -109,7 +109,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withIdsIncluded(List<Long> ids) {
+    public SearchRequestParameters withIdsIncluded(Collection<Long> ids) {
         this.ids = new ValuesRestriction<Long>().withInclude(ids);
         return this;
     }
@@ -119,7 +119,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withIdsExcluded(List<Long> ids) {
+    public SearchRequestParameters withIdsExcluded(Collection<Long> ids) {
         this.ids = new ValuesRestriction<Long>().withExclude(ids);
         return this;
     }
@@ -131,7 +131,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withStatusesIncluded(List<RequestStatus> status) {
+    public SearchRequestParameters withStatusesIncluded(Collection<RequestStatus> status) {
         this.statuses = new ValuesRestriction<RequestStatus>().withInclude(status);
         return this;
     }
@@ -141,7 +141,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withStatusesExcluded(List<RequestStatus> status) {
+    public SearchRequestParameters withStatusesExcluded(Collection<RequestStatus> status) {
         this.statuses = new ValuesRestriction<RequestStatus>().withExclude(status);
         return this;
     }
@@ -151,7 +151,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withContentTypesIncluded(List<String> contentTypes) {
+    public SearchRequestParameters withContentTypesIncluded(Collection<String> contentTypes) {
         this.contentTypes = new ValuesRestriction<String>().withInclude(contentTypes);
         return this;
     }
@@ -161,7 +161,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withContentTypesExcluded(List<String> contentTypes) {
+    public SearchRequestParameters withContentTypesExcluded(Collection<String> contentTypes) {
         this.contentTypes = new ValuesRestriction<String>().withExclude(contentTypes);
         return this;
     }

@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Repository to access {@link Request}
@@ -41,13 +43,14 @@ import java.util.Optional;
  * @author Théo Lasserre
  */
 @Repository
-public interface IRequestRepository extends JpaRepository<Request, Long>,
-        JpaSpecificationExecutor<Request> {
+public interface IRequestRepository extends JpaRepository<Request, Long>, JpaSpecificationExecutor<Request> {
 
     @Query("select requestId from Request where requestId in :requestIds")
     List<String> findRequestIdByRequestIdIn(@Param("requestIds") Collection<String> requestIds);
 
     List<Request> findByRequestIdIn(Collection<String> requestIds);
+
+    List<Request> findByIdIn(Collection<Long> ids);
 
     Optional<Request> findOneByRequestId(String requestId);
 
@@ -59,4 +62,10 @@ public interface IRequestRepository extends JpaRepository<Request, Long>,
     }
 
     Optional<LightRequest> findLightByRequestId(String requestId);
+
+    long countByContentTypeInAndStatus(Set<String> contentTypes, RequestStatus requestStatus);
+
+    @Modifying
+    @Query("update Request request set request.status = :newStatus where request.id in :ids ")
+    void updateStatus(@Param("newStatus") RequestStatus requestState, @Param("ids") Set<Long> ids);
 }

@@ -40,10 +40,6 @@ public class ConfigManagerIT extends AbstractWorkerManagerServiceUtilsTest {
     @Autowired
     private ConfigManager configManager;
 
-    @Autowired
-    private WorkerConfigService workerConfigService;
-
-
     @Test
     public void test() {
         Assert.assertEquals("Should be able to export conf, 0 at first", 0,
@@ -62,6 +58,5 @@ public class ConfigManagerIT extends AbstractWorkerManagerServiceUtilsTest {
         configManager.resetConfiguration();
         Assert.assertEquals("Should delete any conf", 0,
                             configManager.exportConfiguration(Lists.newArrayList()).getConfiguration().size());
-
     }
 }

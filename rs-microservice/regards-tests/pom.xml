@@ -59,6 +59,7 @@
         <module>regards-test-reporting</module>
         <module>report-maven-plugin</module>
         <module>regards-integration-test</module>
+        <module>regards-job-test</module>
         <module>regards-test-aggregation</module>
     </modules>
 </project>

@@ -61,4 +61,8 @@ public enum RequestStatus {
      */
     TO_DISPATCH,
 
+    /**
+     * Request will be deleted soon
+     */
+    TO_DELETE;
 }
