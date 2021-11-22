@@ -1,7 +1,22 @@
 #!/usr/bin/env groovy
 
 /*
- * LICENSE_PLACEHOLDER
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -21,29 +36,126 @@ pipeline {
     environment {
         PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
         REGARDS_HOME="${WORKSPACE}"
+        MVN_IMAGE="172.26.46.158/rs-maven-ci"
+        BRANCH_NAME_VERSION="${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
     }
     agent { label 'unix-integration' }
     stages {
-        // Refresh docker images
-        stage('Pull docker images') {
+        stage('Preparation') {
             steps {
+                echo "Jenkins node name = ${env.NODE_NAME}"
+                echo "Current workspace = ${env.WORKSPACE}"
+
+                echo "Pull docker images"
                 sh 'cd ' + CI_DIR + ' \
-                     && docker-compose -f docker/docker-compose.yml pull'
+                    && docker-compose -f docker/docker-compose-cots.yml pull \
+                    && docker pull ' + MVN_IMAGE
             }
         }
-        stage("Run build") {
-            environment {
-                MODE="nightly"
-            }
+        stage("Tests Prepration") {
             steps {
-                sh 'cd ' + CI_DIR + ' \
-                     && docker-compose \
-                            -f docker/docker-compose.yml \
-                            -p ' + PROJECT_NAME + ' \
-                            up \
-                            --exit-code-from rs-build \
-                            --abort-on-container-exit \
-                            rs-build'
+                parallel(
+                    compile: {
+                        echo "Build with CI profile"
+                        runMavenDockerImg("compileForTests", "", false, false)
+                    },
+                    cots: {
+                        echo "Launch COTS"
+                            sh 'cd ' + CI_DIR + ' \
+                                && docker-compose \
+                                        -f docker/docker-compose-cots.yml \
+                                        -p ' + PROJECT_NAME + ' \
+                                        up -d'
+                    }
+                )
+            }
+        }
+
+        stage('Run tests') {
+            parallel {
+                stage('-1-') {
+                    stages {
+                        stage('Bom') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-bom", true, true)
+                            }
+                        }
+                        stage('Microservice') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-microservice", true, true)
+                            }
+                        }
+                        stage('Cloud') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-cloud", true, true)
+                            }
+                        }
+                        stage('Ingest') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-ingest", true, true)
+                            }
+                        }
+                        stage('Access') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-access", true, true)
+                            }
+                        }
+                        stage('Fem') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-fem", true, true)
+                            }
+                        }
+                        stage('Notifier') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-notifier", true, true)
+                            }
+                        }
+                        stage('Worker manager') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-worker-manager", true, true)
+                            }
+                        }
+                    }
+                }
+                stage('-2-') {
+                    stages {
+                        stage('Admin') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-admin", true, false)
+                            }
+                        }
+                        stage('Dam') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-dam", true, false)
+                            }
+                        }
+                        stage('Catalog') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-catalog", true, false)
+                            }
+                        }
+                        stage('Storage') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-storage", true, false)
+                            }
+                        }
+                        stage('Dataprovider') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-dataprovider", true, false)
+                            }
+                        }
+                        stage('Order') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-order", true, false)
+                            }
+                        }
+                        stage('processing') {
+                            steps {
+                                runMavenDockerImg("sonarTests", "rs-processing", true, false)
+                            }
+                        }
+                    }
+                }
             }
         }
         stage("Harvest requirements reports") {
@@ -69,14 +181,92 @@ pipeline {
     }
     post {
         failure {
-            echo 'The nightly build FAILEED'
+            mattermostSend color: 'danger', message: "Build Failed - ${env.JOB_NAME}#${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)", text: "Changes: \n"+getChangeString()
+            echo 'POST-FAILURE-TASK -- The build FAILED, let\'s print all COTS logs'
+
+            // Log COTS only if they are existing
+            sh 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-elasticsearch)" ]; then \
+                        echo "########################################" \
+                     && echo "#### ELASTICSEARCH" \
+                     && echo "########################################" \
+                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-elasticsearch; \
+                   fi'
+
+
+            sh 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-postgres)" ]; then \
+                        echo "########################################" \
+                     && echo "#### POSTGRES" \
+                     && echo "########################################" \
+                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-postgres; \
+                   fi'
+
+
+            sh 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq)" ]; then \
+                        echo "########################################" \
+                     && echo "#### RABBITMQ" \
+                     && echo "########################################" \
+                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq; \
+                   fi'
+
+
+            sh 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq-second)" ]; then \
+                        echo "########################################" \
+                     && echo "#### RABBITMQ" \
+                     && echo "########################################" \
+                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second; \
+                   fi'
         }
         cleanup {
-            echo 'lets clean up the mess!'
+            echo 'POST-CLEANUP-TASK -- Stop CoTs'
             sh 'cd ' + CI_DIR + ' \
-                 && docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' down'
-            echo 'In case any test played with access rights, lets add read/write to owner'
-            sh 'chmod -R +rw .'
+                 && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
+            echo 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues'
+            sh 'chown -R jenkins:jenkins .'
+            sh 'chmod -R u+rwx .'
+            sh 'chmod -R g+rwx .'
         }
     }
+}
+
+
+// Return the shell to execute to run a docker container using rs-maven-ci image
+// @params mode Expected mode (see ci script file)
+// @params regardsMs the pom submodule to restrict on
+// @params isRequiringCots true when the container will use CoTs
+// @params isRabbitMqIdFirst should use the first rabbitMQ
+@NonCPS
+def runMavenDockerImg(mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
+    // Transform PROJECT_NAME to what Docker will use for CoTS names
+    // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
+    // become
+    // regardsossbackendfeature2fimprovejenkinsstages31
+    echo "Run maven container with mode=[" + mode + "] and regardsMs=[" + regardsMs + "]. This tasks will use CoTs ? [" + isRequiringCots +"]"
+    def dockerProject = PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()
+    def dockerCommand = 'docker run --rm -i                                                          \
+                        --name ' + dockerProject + '_maven_' + regardsMs + '                         \
+                        -v ${WORKSPACE}:/app_to_build                                                \
+                        -v /DATA/maven-multibranch-repository:/localRepository                       \
+                        -v /usr/bin/docker:/bin/docker                                               \
+                        -v /var/run/docker.sock:/var/run/docker.sock                                 \
+                        -e BRANCH_NAME="${BRANCH_NAME}"                                              \
+                        -e BRANCH_NAME_VERSION="${BRANCH_NAME_VERSION}"                              \
+                        -e WORKSPACE="${WORKSPACE}"                                                  \
+                        -e CI_DIR="regards-ci/docker"                                                \
+                        -e MODE="' + mode + '"                                                       \
+                        -e REGARDS_HOME="${REGARDS_HOME}"                                            \
+                        -e REGARDS_MS="' + regardsMs + '"                                            '
+    if (isRequiringCots) {
+        def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
+        dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432"          \
+                         --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq                      \
+                         --link ' + dockerProject + '_rs-elasticsearch_1:rs-elasticsearch            \
+                         --link ' + dockerProject + '_rs-postgres_1:rs-postgres                      '
+    }
+    dockerCommand +=    ' --network="regards_IT_network"                                             \
+                        ' + MVN_IMAGE
+    sh dockerCommand
 }

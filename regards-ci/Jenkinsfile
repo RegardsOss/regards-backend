@@ -1,7 +1,22 @@
 #!/usr/bin/env groovy
 
 /*
- * LICENSE_PLACEHOLDER
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -38,19 +53,19 @@ pipeline {
                     && docker pull ' + MVN_IMAGE
 
                 echo "Build dependency tree"
-                runMavenDockerImg("dependencies", "", false)
+                runMavenDockerImg("dependencies", "", false, false)
 
                 echo "Build modules hashes"
-                runMavenDockerImg("hashes", "", false)
+                runMavenDockerImg("hashes", "", false, false)
             }
         }
         stage("Fast Build") {
             steps {
                 echo "Build with docker profile"
-                runMavenDockerImg("compile", "", false)
+                runMavenDockerImg("compile", "", false, false)
 
                 echo "Build/Deploy docker images"
-                runMavenDockerImg("deployFastDockerImages", "", false)
+                runMavenDockerImg("deployFastDockerImages", "", false, false)
             }
         }
         stage("Tests Prepration") {
@@ -58,7 +73,7 @@ pipeline {
                 parallel(
                     compile: {
                         echo "Build with CI profile"
-                        runMavenDockerImg("compileForTests", "", false)
+                        runMavenDockerImg("compileForTests", "", false, false)
                     },
                     cots: {
                         echo "Launch COTS"
@@ -78,42 +93,42 @@ pipeline {
                     stages {
                         stage('Bom') {
                             steps {
-                                runMavenDockerImg("tests", "rs-bom", true)
+                                runMavenDockerImg("tests", "rs-bom", true, true)
                             }
                         }
                         stage('Microservice') {
                             steps {
-                                runMavenDockerImg("tests", "rs-microservice", true)
+                                runMavenDockerImg("tests", "rs-microservice", true, true)
                             }
                         }
                         stage('Cloud') {
                             steps {
-                                runMavenDockerImg("tests", "rs-cloud", true)
+                                runMavenDockerImg("tests", "rs-cloud", true, true)
                             }
                         }
                         stage('Ingest') {
                             steps {
-                                runMavenDockerImg("tests", "rs-ingest", true)
+                                runMavenDockerImg("tests", "rs-ingest", true, true)
                             }
                         }
                         stage('Access') {
                             steps {
-                                runMavenDockerImg("tests", "rs-access", true)
+                                runMavenDockerImg("tests", "rs-access", true, true)
                             }
                         }
                         stage('Fem') {
                             steps {
-                                runMavenDockerImg("tests", "rs-fem", true)
+                                runMavenDockerImg("tests", "rs-fem", true, true)
                             }
                         }
                         stage('Notifier') {
                             steps {
-                                runMavenDockerImg("tests", "rs-notifier", true)
+                                runMavenDockerImg("tests", "rs-notifier", true, true)
                             }
                         }
                         stage('Worker manager') {
                             steps {
-                                runMavenDockerImg("tests", "rs-worker-manager", true)
+                                runMavenDockerImg("tests", "rs-worker-manager", true, true)
                             }
                         }
                     }
@@ -122,37 +137,37 @@ pipeline {
                     stages {
                         stage('Admin') {
                             steps {
-                                runMavenDockerImg("tests", "rs-admin", true)
+                                runMavenDockerImg("tests", "rs-admin", true, false)
                             }
                         }
                         stage('Dam') {
                             steps {
-                                runMavenDockerImg("tests", "rs-dam", true)
+                                runMavenDockerImg("tests", "rs-dam", true, false)
                             }
                         }
                         stage('Catalog') {
                             steps {
-                                runMavenDockerImg("tests", "rs-catalog", true)
+                                runMavenDockerImg("tests", "rs-catalog", true, false)
                             }
                         }
                         stage('Storage') {
                             steps {
-                                runMavenDockerImg("tests", "rs-storage", true)
+                                runMavenDockerImg("tests", "rs-storage", true, false)
                             }
                         }
                         stage('Dataprovider') {
                             steps {
-                                runMavenDockerImg("tests", "rs-dataprovider", true)
+                                runMavenDockerImg("tests", "rs-dataprovider", true, false)
                             }
                         }
                         stage('Order') {
                             steps {
-                                runMavenDockerImg("tests", "rs-order", true)
+                                runMavenDockerImg("tests", "rs-order", true, false)
                             }
                         }
                         stage('processing') {
                             steps {
-                                runMavenDockerImg("tests", "rs-processing", true)
+                                runMavenDockerImg("tests", "rs-processing", true, false)
                             }
                         }
                     }
@@ -161,15 +176,15 @@ pipeline {
         }
         stage("Deploy") {
             when {
-                branch pattern: /(master|develop.*|release.*|feature\/improve_jenkins_stages)/, comparator: "REGEXP"
+                branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
             }
             steps {
 
                 echo "Build/Deploy stable docker images"
-                runMavenDockerImg("deployDockerImages", "", false)
+                runMavenDockerImg("deployDockerImages", "", false, false)
 
                 echo "Deploy Maven Artifacts"
-                runMavenDockerImg("deployMvnArtifacts", "", false)
+                runMavenDockerImg("deployMvnArtifacts", "", false, false)
             }
         }
     }
@@ -177,7 +192,7 @@ pipeline {
 	    always {
             echo 'POST-ALWAYS-TASK -- Send new successfull modules hashes to nexus'
             // Always send new successfull modules hashes to nexus
-            runMavenDockerImg("updateHashes", "", false)
+            runMavenDockerImg("updateHashes", "", false, false)
         }
         failure {
             tuleapNotifyCommitStatus status: 'failure', repositoryId: '875', credentialId: 'tuleap-ci-token'
@@ -204,11 +219,20 @@ pipeline {
 
 
             sh 'cd ' + CI_DIR + ' \
-                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq)" ]; then \
+                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq-first)" ]; then \
                         echo "########################################" \
                      && echo "#### RABBITMQ" \
                      && echo "########################################" \
-                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq; \
+                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-first; \
+                   fi'
+
+
+            sh 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq-second)" ]; then \
+                        echo "########################################" \
+                     && echo "#### RABBITMQ" \
+                     && echo "########################################" \
+                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second; \
                    fi'
         }
         success {
@@ -250,8 +274,9 @@ def getChangeString() {
 // @params mode Expected mode (see ci script file)
 // @params regardsMs the pom submodule to restrict on
 // @params isRequiringCots true when the container will use CoTs
+// @params isRabbitMqIdFirst should use the first rabbitMQ
 @NonCPS
-def runMavenDockerImg(mode, regardsMs, isRequiringCots) {
+def runMavenDockerImg(mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
     // Transform PROJECT_NAME to what Docker will use for CoTS names
     // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
     // become
@@ -272,8 +297,9 @@ def runMavenDockerImg(mode, regardsMs, isRequiringCots) {
                         -e REGARDS_HOME="${REGARDS_HOME}"                                            \
                         -e REGARDS_MS="' + regardsMs + '"                                            '
     if (isRequiringCots) {
+        def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
         dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432"          \
-                         --link ' + dockerProject + '_rs-rabbitmq_1:rs-rabbitmq                      \
+                         --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq                      \
                          --link ' + dockerProject + '_rs-elasticsearch_1:rs-elasticsearch            \
                          --link ' + dockerProject + '_rs-postgres_1:rs-postgres                      '
     }

@@ -33,7 +33,10 @@ case $STEP in
         tm compileForTests
     ;;
     tests)
-	    tm tests
+	    tm tests "false"
+    ;;
+    sonarTests)
+	    tm tests "true"
     ;;
     deployDockerImages)
         tm buildAnDeployDockerImages "true"
@@ -46,9 +49,6 @@ case $STEP in
     ;;
     updateHashes)
         tm updateNexusHashes
-    ;;
-    nightly)
-        tm nightly
     ;;
   #TODO Improve hash (get git diff since last build success' commit, assoc files to modules, only hash those)
   #TODO Build docs site

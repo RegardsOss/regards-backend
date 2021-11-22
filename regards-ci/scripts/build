@@ -199,6 +199,20 @@ function tests {
     checkArtifactsRebuild ${pomFile}
     logFile="${DATADIR}/mvn-build-${REGARDS_MS:-all}.log"
 
+    IS_SONAR_TESTS=$1
+    sonarArgs=""
+    if [ "${IS_SONAR_TESTS}" == "true" ]; then
+        sonarArgs="org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
+	    sonar:sonar \
+        -Dsonar.jacoco.reportPath="${SERVICES}/target/coverage-reports/jacoco-ut.exec" \
+        -Dsonar.jacoco.itReportPath="${SERVICES}/target/coverage-reports/jacoco-it.exec" \
+        -Dsonar.branch.name="develop" \
+        -Djacoco.skip=false"
+    else
+        # Otherwise desactive Sonar 
+        sonarArgs="-Djacoco.skip=true"
+    fi
+
     set -x
     rm -f ${logFile}
     set +x
@@ -210,12 +224,12 @@ function tests {
         set -x
         mvn -U -B -P CI verify \
             -f ${pomFile} \
+            ${sonarArgs} \
             -Dregards.version="CI-${REGARDS_VERSION}" \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
             -DcmdLineTarget=target \
             -Dmaven-deploy.skip=true \
-            -Djacoco.skip=true \
             -DskipDocker=true \
             -Dasciidoctor.skip=true \
             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
@@ -335,41 +349,6 @@ function deployMvnArtifacts {
         echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-deploy.log' artifact for more information"
     else
         echo "Error while executing Maven build, please refer to the full 'mvn-deploy.log' artifact for more information."
-        exit 1
-    fi
-}
-
-function nightly {
-    echo -e "\nRunning nightly Maven build and Sonar analyse on branch develop ..."
-    echo -e "\nWARN : Nightly build is specificly run on develop branch and is not made for multibranch build !!!!!!"
-
-    set -x
-    mvn -B -P CI \
-        clean verify \
-        org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
-	    sonar:sonar \
-        -Dsonar.jacoco.reportPath="${SERVICES}/target/coverage-reports/jacoco-ut.exec" \
-        -Dsonar.jacoco.itReportPath="${SERVICES}/target/coverage-reports/jacoco-it.exec" \
-        -Dsonar.branch.name="develop" \
-        -Dmaven.multiModuleProjectDirectory=${SERVICES} \
-        -Dfile.encoding=UTF-8 \
-        -DcmdLineTarget=target \
-        -Dmaven-deploy.skip=false \
-        -Djacoco.skip=false \
-        -DskipDocker=true \
-        -DpushImageTag=false \
-        -Dasciidoctor.skip=true \
-        -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
-        -Dmaven.wagon.http.ssl.insecure=true \
-        -Dmaven.wagon.http.ssl.allowall=true \
-        -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
-        2>&1 | tee ${DATADIR}/mvn-build.log
-    set +x
-
-    if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
-        echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
-    else
-        echo "Error while executing Maven build, please refer to the full 'mvn-build.log' artifact for more information."
         exit 1
     fi
 }
