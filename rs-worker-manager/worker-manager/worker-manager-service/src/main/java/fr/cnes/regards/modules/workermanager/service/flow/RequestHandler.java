@@ -22,7 +22,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,9 +91,10 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
     public void handleBatchWithRaw(List<RequestEvent> messages, List<Message> rawMessages) {
         long start = System.currentTimeMillis();
         LOGGER.info("Handling {} messages", rawMessages.size());
-        RequestInfo requestInfo = workerManagerService.registerRequests(rawMessages);
+        SessionsRequestsInfo requestInfo = workerManagerService.registerRequests(rawMessages);
         LOGGER.info("{} dispatched request(s) ,{} delayed request(s) and {} skipped event(s) registered in {} ms",
-                    requestInfo.getDispatchedRequests().size(), requestInfo.getDelayedRequests().size(),
+                    requestInfo.getRequests(RequestStatus.DISPATCHED).size(),
+                    requestInfo.getRequests(RequestStatus.NO_WORKER_AVAILABLE).size(),
                     requestInfo.getSkippedEvents().size(), System.currentTimeMillis() - start);
     }
 

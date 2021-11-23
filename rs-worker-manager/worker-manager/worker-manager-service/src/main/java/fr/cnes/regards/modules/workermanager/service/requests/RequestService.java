@@ -18,6 +18,20 @@
  */
 package fr.cnes.regards.modules.workermanager.service.requests;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -41,24 +55,12 @@ import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.JobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import fr.cnes.regards.modules.workermanager.service.requests.job.ScanRequestJob;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Service to handle : <ul>
@@ -111,6 +113,9 @@ public class RequestService {
 
     @Autowired
     private IJobInfoService jobInfoService;
+
+    @Autowired
+    private SessionService sessionService;
 
     @Value("${worker.request.queue.name.template:regards.worker.%s.request}")
     private String WORKER_REQUEST_QUEUE_NAME_TEMPLATE;
@@ -174,8 +179,8 @@ public class RequestService {
      * @param events {@link Message}
      * @return {@link Request}
      */
-    public RequestInfo registerRequests(List<Message> events) {
-        RequestInfo requestInfo = new RequestInfo();
+    public SessionsRequestsInfo registerRequests(List<Message> events) {
+        SessionsRequestsInfo requestInfo = new SessionsRequestsInfo();
 
         // Omit request not valid
         Collection<Message> validEvents = this.omitInvalidMessages(events, requestInfo);
@@ -184,11 +189,14 @@ public class RequestService {
         Collection<Request> requests = getRequestsFromEvents(validEvents);
 
         // Handle requests
-        return this.handleRequests(requests, requestInfo);
+        return this.handleRequests(requests, requestInfo, false);
     }
 
     public void deleteRequests(List<Request> requests) {
+        SessionsRequestsInfo info = new SessionsRequestsInfo();
+        info.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         requestRepository.deleteInBatch(requests);
+        sessionService.notifyDelete(info);
     }
 
     /**
@@ -197,9 +205,12 @@ public class RequestService {
      *
      * @param requests    request to send and update
      * @param requestInfo various information about what's going on
-     * @return {@link RequestInfo}s various information about what's going on
+     * @return {@link SessionsRequestsInfo}s various information about what's going on
      */
-    public RequestInfo handleRequests(Collection<Request> requests, RequestInfo requestInfo) {
+    public SessionsRequestsInfo handleRequests(Collection<Request> requests, SessionsRequestsInfo requestInfo, boolean retry) {
+        SessionsRequestsInfo newRequestsInfo = new SessionsRequestsInfo();
+        // For monitoring/logs purpose add skipped events to result info
+        newRequestsInfo.getSkippedEvents().addAll(requestInfo.getSkippedEvents());
         // Create a multimap to publish bulk events by worker type
         Multimap<String, Request> toDispatchRequests = ArrayListMultimap.create();
         // Check and update request depending on whether they can be dispatched (using Worker cache)
@@ -210,12 +221,14 @@ public class RequestService {
                 request.setStatus(RequestStatus.DISPATCHED);
                 request.setDispatchedWorkerType(workerTypeOpt.get());
                 toDispatchRequests.put(workerTypeOpt.get(), request);
-                requestInfo.getDispatchedRequests().add(request.toDTO());
             } else {
                 // No worker alive
                 request.setStatus(RequestStatus.NO_WORKER_AVAILABLE);
-                requestInfo.getDelayedRequests().add(request.toDTO());
             }
+            newRequestsInfo.addRequest(request.toDTO());
+        }
+        if (!retry) {
+            sessionService.notifyNewRequests(newRequestsInfo);
         }
         // Save status update
         requestRepository.saveAll(requests);
@@ -237,7 +250,8 @@ public class RequestService {
         }
         // Notify owner of the request
         notifyStatus(requests);
-        return requestInfo;
+        sessionService.notifySessions(requestInfo, newRequestsInfo);
+        return newRequestsInfo;
     }
 
     /**
@@ -255,13 +269,15 @@ public class RequestService {
      * Handle events received from workers to inform about a request status changed
      *
      * @param events {@link WorkerResponseEvent} to handle
-     * @return RequestInfo containing information about requests updated
+     * @return SessionsRequestsInfo containing information about requests updated
      */
-    public RequestInfo handleWorkersResponses(Collection<WorkerResponseEvent> events) {
-        RequestInfo requestInfo = new RequestInfo();
+    public SessionsRequestsInfo handleWorkersResponses(Collection<WorkerResponseEvent> events) {
+        SessionsRequestsInfo requestInfo = new SessionsRequestsInfo();
+        SessionsRequestsInfo newRequestInfo = new SessionsRequestsInfo();
         // Retrieve requests matching worker responses
         List<Request> requests = requestRepository.findByRequestIdIn(
                 events.stream().map(e -> e.getRequestIdHeader()).collect(Collectors.toList()));
+        requestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         // For each worker response update matching request status
         events.forEach(e -> {
             Optional<Request> oRequest = requests.stream().filter(r -> e.getRequestIdHeader().equals(r.getRequestId()))
@@ -292,19 +308,12 @@ public class RequestService {
         // Save updated requests and notify clients
         requestRepository.saveAll(requests);
         notifyStatus(requests);
-
-        requestInfo.setRunningRequests(
-                requests.stream().filter(r -> r.getStatus() == RequestStatus.RUNNING).map(Request::toDTO)
-                        .collect(Collectors.toList()));
-        requestInfo.setSuccessRequests(
-                requests.stream().filter(r -> r.getStatus() == RequestStatus.SUCCESS).map(Request::toDTO)
-                        .collect(Collectors.toList()));
-        requestInfo.setErrorRequests(requests.stream().filter(r -> r.getStatus() == RequestStatus.ERROR
-                || r.getStatus() == RequestStatus.INVALID_CONTENT).map(Request::toDTO).collect(Collectors.toList()));
+        newRequestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
+        sessionService.notifySessions(requestInfo, newRequestInfo);
 
         // Delete succeeded requests. Success requests do not need to be persisted
         requests.stream().filter(r -> r.getStatus().equals(RequestStatus.SUCCESS)).forEach(requestRepository::delete);
-        return requestInfo;
+        return newRequestInfo;
     }
 
     /**
@@ -314,6 +323,8 @@ public class RequestService {
      * @param requestEvents {@link WorkerRequestEvent}s
      */
     public void handleRequestErrors(List<WorkerRequestEvent> requestEvents) {
+        SessionsRequestsInfo requestInfo = new SessionsRequestsInfo();
+        SessionsRequestsInfo newRequestInfo = new SessionsRequestsInfo();
         // Dispatch events in a Pair of RequestId / error
         List<Pair<String, String>> requestErrors = requestEvents.stream()
                 .map(m -> Pair.of((String) m.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER ),
@@ -323,6 +334,7 @@ public class RequestService {
         // Retrieve existing requests from database
         List<Request> requests = requestRepository.findByRequestIdIn(
                 requestErrors.stream().map(r -> r.getFirst()).collect(Collectors.toList()));
+        requestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         // For each request update it with error status and error cause.
         for (Pair<String, String> requestError : requestErrors) {
             String requestId = requestError.getFirst();
@@ -350,6 +362,8 @@ public class RequestService {
                 }
             });
         }
+        newRequestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
+        sessionService.notifySessions(requestInfo, newRequestInfo);
     }
 
     /**
@@ -362,10 +376,10 @@ public class RequestService {
      * </ul>
      *
      * @param events      {@link Message}s to check validity
-     * @param requestInfo {@link RequestInfo} RequestInfo information about current requests. New skipped events are added in this object.
+     * @param requestInfo {@link SessionsRequestsInfo} RequestInfo information about current requests. New skipped events are added in this object.
      * @return valid {@link Message}s
      */
-    private Collection<Message> omitInvalidMessages(List<Message> events, RequestInfo requestInfo) {
+    private Collection<Message> omitInvalidMessages(List<Message> events, SessionsRequestsInfo requestInfo) {
         if (events == null || events.isEmpty()) {
             return new ArrayList<>();
         } else {
@@ -392,7 +406,7 @@ public class RequestService {
      * @return True if event is valid.
      */
     private boolean omitInvalidMessages(Message event, List<String> contentTypesToSkip, List<String> existingIds,
-            RequestInfo requestInfo) {
+            SessionsRequestsInfo requestInfo) {
         List<String> errors = Lists.newArrayList();
         // Check owner is not empty
         if (!EventHeadersHelper.getOwnerHeader(event).isPresent()) {

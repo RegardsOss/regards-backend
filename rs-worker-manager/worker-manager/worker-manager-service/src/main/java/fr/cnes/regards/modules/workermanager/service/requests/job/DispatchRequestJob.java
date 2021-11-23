@@ -24,14 +24,17 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Job to re-dispatch {@link Request}s
@@ -48,6 +51,9 @@ public class DispatchRequestJob extends AbstractJob<Void> {
     @Autowired
     private RequestService requestService;
 
+    @Autowired
+    private SessionService sessionService;
+
     private Set<Long> ids;
 
     private int nbRequestToHandle;
@@ -57,6 +63,7 @@ public class DispatchRequestJob extends AbstractJob<Void> {
             throws JobParameterMissingException, JobParameterInvalidException {
         // lets instantiate the plugin to use
         Type type = new TypeToken<Set<Long>>() {
+
         }.getType();
         ids = getValue(parameters, REQUEST_DB_IDS, type);
         nbRequestToHandle = ids.size();
@@ -67,10 +74,12 @@ public class DispatchRequestJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         logger.debug("[DISPATCH REQUEST JOB] Handling {} requests", nbRequestToHandle);
         List<Request> requests = requestService.searchRequests(ids);
-        RequestInfo requestInfo = requestService.handleRequests(requests, new RequestInfo());
+        SessionsRequestsInfo requestsInfo = new SessionsRequestsInfo(
+                requests.stream().map(Request::toDTO).collect(Collectors.toList()));
+        SessionsRequestsInfo newRequestsInfo = requestService.handleRequests(requests, requestsInfo, true);
 
         logger.info("{} re-dispatched request(s), {} re-delayed request(s) handled in {} ms",
-                    requestInfo.getDispatchedRequests().size(), requestInfo.getDelayedRequests().size(),
+                    newRequestsInfo.getRequests(RequestStatus.DISPATCHED).size(), newRequestsInfo.getRequests(RequestStatus.NO_WORKER_AVAILABLE).size(),
                     System.currentTimeMillis() - start);
     }
 

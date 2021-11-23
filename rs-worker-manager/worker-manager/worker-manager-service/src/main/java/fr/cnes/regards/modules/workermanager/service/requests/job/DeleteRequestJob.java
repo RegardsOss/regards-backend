@@ -24,13 +24,16 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Job to delete {@link Request}s
@@ -46,6 +49,9 @@ public class DeleteRequestJob extends AbstractJob<Void> {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private SessionService sessionService;
 
     private Set<Long> ids;
 
@@ -67,8 +73,7 @@ public class DeleteRequestJob extends AbstractJob<Void> {
         // Initiate the job progress manager
         logger.debug("[DELETE REQUEST JOB] Delete request job for {} requests", nbRequestToHandle);
 
-        List<Request> requests = requestService.searchRequests(ids);
-        requestService.deleteRequests(requests);
+        requestService.deleteRequests(requestService.searchRequests(ids));
 
         logger.info("[DELETE REQUEST JOB] {} request(s) deleted in {} ms", nbRequestToHandle,
                      System.currentTimeMillis() - start);

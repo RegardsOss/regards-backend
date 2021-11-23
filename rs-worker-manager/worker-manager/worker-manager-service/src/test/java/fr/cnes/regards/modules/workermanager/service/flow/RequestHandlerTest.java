@@ -27,10 +27,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
+import org.bouncycastle.cert.ocsp.Req;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,18 +52,12 @@ import java.util.concurrent.TimeUnit;
 
 @ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_manager_it",
-        "regards.amqp.enabled=true","regards.workermanager.request.bulk.size=1000" },
+        "regards.amqp.enabled=true","regards.workermanager.request.bulk.size=1000","regards.amqp.enabled=true" },
         locations = { "classpath:application-test.properties" })
 @ContextConfiguration(classes = { RequestHandlerConfiguration.class } )
 public class RequestHandlerTest extends AbstractWorkerManagerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestHandlerTest.class);
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private IRequestRepository repository;
 
     @Autowired
     private DynamicTenantSettingService tenantSettingService;
@@ -70,9 +67,6 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
     @Before
     public void init() throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        repository.deleteAll();
-        responseMock.reset();
-        workerRequestMock.reset();
         tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME , Arrays.asList(CONTENT_TYPE_TO_SKIP));
     }
 
@@ -82,8 +76,12 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
                                                  null, null,
                                                  BODY_CONTENT.getBytes(StandardCharsets.UTF_8)),Optional.empty());
         Thread.sleep(1_000);
-        Assert.assertEquals("There should be no requests created",0L, repository.count());
-        Assert.assertEquals("As the requestId is not provided the response should not be sent",0L, responseMock.getEvents().size());
+        Assert.assertEquals("There should be no requests created",0L, requestRepository.count());
+        Assert.assertEquals("As the requestId is not provided the response should not be sent",0L,
+                            responseMock.getEvents().size());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 0,0,0,
+                     0, 0, 0,0,0,0);
     }
 
     @Test
@@ -93,17 +91,79 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
                                            BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
         broadcastMessage(event, Optional.empty());
         waitForResponses(1, 5, TimeUnit.SECONDS);
-        Assert.assertEquals("There should be no requests created",0L, repository.count());
+        Assert.assertEquals("There should be no requests created",0L, requestRepository.count());
         Assert.assertEquals("As the requestId and tenant are provided the response should be sent",1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response status", ResponseStatus.SKIPPED,
                             responseMock.getEvents().stream().findFirst().get().getStatus());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 0,0,0,
+                     0, 0, 0,0,0,0);
     }
 
     @Test
     public void handleSkipRequestByContentType() throws InterruptedException {
         broadcastMessage(createEvent(Optional.of(CONTENT_TYPE_TO_SKIP)), Optional.empty());
         Thread.sleep(1_000);
-        Assert.assertEquals("There should be no requests created",0L, repository.count());
+        Assert.assertEquals("There should be no requests created",0L, requestRepository.count());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 0,0,0,
+                     0, 0, 0,0,0,0);
+    }
+
+    @Test
+    public void retryRequests() {
+
+        List<Request> requests = new ArrayList<>();
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.ERROR));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.ERROR));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.NO_WORKER_AVAILABLE));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.NO_WORKER_AVAILABLE));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.RUNNING));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.DISPATCHED));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.INVALID_CONTENT));
+        requestRepository.saveAll(requests);
+        requestService.scheduleRequestRetryJob(new SearchRequestParameters());
+
+        waitForRequests(4, RequestStatus.TO_DISPATCH, 10, TimeUnit.SECONDS);
+        waitForRequests(4, RequestStatus.DISPATCHED, 10, TimeUnit.SECONDS);
+
+        // Wait for all session properties update received :
+        // -2 NO_WORKER_AVAILABLE
+        // -2 ERROR
+        // +4 TO_DISPATCH
+        // -4 TO_DISPATCH
+        // +4 DISPATCHED
+        waitForSessionProperties(5, 5, TimeUnit.SECONDS);
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 0,0,-2,
+                                   4, 0, -2,0,0,0);
+
+    }
+
+    @Test
+    public void deleteRequests() {
+        List<Request> requests = new ArrayList<>();
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.ERROR));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.ERROR));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.NO_WORKER_AVAILABLE));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.NO_WORKER_AVAILABLE));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.RUNNING));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.DISPATCHED));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.INVALID_CONTENT));
+        requestRepository.saveAll(requests);
+        requestService.scheduleRequestDeletionJob(new SearchRequestParameters());
+
+        waitForRequests(4, RequestStatus.TO_DELETE, 10, TimeUnit.SECONDS);
+        waitForRequests(3, 10, TimeUnit.SECONDS);
+
+        // Wait for all session properties update received :
+        // -2 NO_WORKER_AVAILABLE
+        // -2 ERROR
+        // +4 TO_DELETE
+        // -4 TO_DELETE
+        // -4 TOTAL
+        waitForSessionProperties(5, 5, TimeUnit.SECONDS);
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, -4,0,-2,
+                                   0, 0, -2,0,0,0);
     }
 
     @Test
@@ -115,15 +175,20 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         request.setRequestId(requestId);
         request.setContent("toto".getBytes(StandardCharsets.UTF_8));
         request.setCreationDate(OffsetDateTime.now());
-        request.setContentType("type");
+        request.setContentType(DEFAULT_CONTENT_TYPE);
         request.setSession("session");
         request.setSource("source");
-        repository.save(request);
+        requestRepository.save(request);
 
         broadcastMessage(message, Optional.empty());
         Assert.assertTrue("Invalid number of responses", waitForResponses(1, 5, TimeUnit.SECONDS));
         Assert.assertEquals("Invalid number of responses", 1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response status",ResponseStatus.SKIPPED, responseMock.getEvents().stream().findFirst().get().getStatus());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 0,0,0,
+                     0, 0, 0,0,0,0);
+        SessionHelper.checkSession(stepPropertyUpdateRepository, "source", "session", DEFAULT_WORKER, 0,0,0,
+                                   0, 0, 0,0,0,0);
     }
 
     @Test
@@ -138,13 +203,16 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         Assert.assertEquals("Number of sent requests to worker invalid",1L,workerRequestMock.getEvents().size());
         Assert.assertEquals("Worker request content is invalid",BODY_CONTENT,
                             new String(workerRequestMock.getRawEvents().stream().findFirst().get().getBody()));
-        Assert.assertEquals("There should one request created",1L, repository.count());
-        Optional<Request> request = repository.findOneByRequestId(requestId);
+        Assert.assertEquals("There should one request created",1L, requestRepository.count());
+        Optional<Request> request = requestRepository.findOneByRequestId(requestId);
         Assert.assertTrue("Request should be created in db",request.isPresent());
         Assert.assertEquals("Request status should be DISPATCHED", RequestStatus.DISPATCHED, request.get().getStatus());
         Assert.assertEquals("Invalid number of response event sent",1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response status", ResponseStatus.GRANTED,
                             responseMock.getEvents().stream().findFirst().get().getStatus());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 1,0,0,
+                     1, 0, 0,0,0,0);
     }
 
     @Test
@@ -163,10 +231,10 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         waitForWorkerRequestResponses(4, 2, TimeUnit.SECONDS);
 
         Assert.assertEquals("Number of sent requests to worker invalid",4L,workerRequestMock.getEvents().size());
-        Assert.assertEquals("There should be 5 requests created",5L, repository.count());
-        Assert.assertEquals("There should be 4 requests created in dispatched state", 4L, repository.findByStatus(
+        Assert.assertEquals("There should be 5 requests created",5L, requestRepository.count());
+        Assert.assertEquals("There should be 4 requests created in dispatched state", 4L, requestRepository.findByStatus(
                 RequestStatus.DISPATCHED).size());
-        Assert.assertEquals("There should be 1 requests created in no worker available state", 1L, repository.findByStatus(
+        Assert.assertEquals("There should be 1 requests created in no worker available state", 1L, requestRepository.findByStatus(
                 RequestStatus.NO_WORKER_AVAILABLE).size());
         Assert.assertEquals("Invalid number of response event sent",8L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status", 4L,
@@ -175,6 +243,9 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
                 responseMock.getEvents().stream().filter(e -> e.getStatus() == ResponseStatus.SKIPPED).count());
         Assert.assertEquals("Invalid response event status", 1L,
                             responseMock.getEvents().stream().filter(e -> e.getStatus() == ResponseStatus.DELAYED).count());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   5,0,1, 4, 0, 0,0,0,0);
     }
 
     @Test
@@ -196,11 +267,14 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         Assert.assertEquals("invalid number of response event sent", 1_000, responseMock.getEvents().size());
         Assert.assertEquals("invalid number of worker request sent", 1_000, workerRequestMock.getEvents().size());
 
-        Assert.assertEquals("There should be 5_000 requests created",1_000, repository.count());
-        Assert.assertEquals("There should be 5_000 requests created",1_000, repository.findByStatus(RequestStatus.DISPATCHED).size());
+        Assert.assertEquals("There should be 5_000 requests created",1_000, requestRepository.count());
+        Assert.assertEquals("There should be 5_000 requests created",1_000, requestRepository.findByStatus(RequestStatus.DISPATCHED).size());
         Assert.assertEquals("Invalid number of response event sent",1_000, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status", 1_000,
                 responseMock.getEvents().stream().filter(e -> e.getStatus() == ResponseStatus.GRANTED).count());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   1_000,0,0, 1_000, 0, 0,0,0,0);
     }
 
 }

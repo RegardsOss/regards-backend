@@ -196,7 +196,7 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest 
             Assert.assertNotEquals("Should get a worker", Optional.empty(),
                                 workerCacheService.getWorkerTypeByContentType(randomContentType));
             if (nbRequests % 10_000L == 0) {
-                logger.info("Running requests {}", nbRequests);
+                LOGGER.info("Running requests {}", nbRequests);
             }
             nbRequests += 1;
         }

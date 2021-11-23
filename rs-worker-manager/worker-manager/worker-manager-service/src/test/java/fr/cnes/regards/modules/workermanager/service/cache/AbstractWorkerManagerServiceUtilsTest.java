@@ -21,6 +21,10 @@ package fr.cnes.regards.modules.workermanager.service.cache;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.modules.workermanager.service.flow.AbstractWorkerManagerTest;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
@@ -70,6 +74,15 @@ public abstract class AbstractWorkerManagerServiceUtilsTest extends AbstractMult
 
     @Autowired
     private IRequestRepository requestRepository;
+
+    @Autowired
+    private ISessionStepRepository sessionStepRepository;
+
+    @Autowired
+    private ISnapshotProcessRepository sessionSnapshotRepository;
+
+    @Autowired
+    protected IStepPropertyUpdateRequestRepository stepPropertyUpdateRepository;
 
     // -------------
     // BEFORE METHODS
@@ -132,6 +145,9 @@ public abstract class AbstractWorkerManagerServiceUtilsTest extends AbstractMult
         dynamicTenantSettingRepository.deleteAll();
         workerConfigRepository.deleteAll();
         requestRepository.deleteAll();
+        stepPropertyUpdateRepository.deleteAll();
+        sessionSnapshotRepository.deleteAll();
+        sessionStepRepository.deleteAll();
     }
 
     // --------------

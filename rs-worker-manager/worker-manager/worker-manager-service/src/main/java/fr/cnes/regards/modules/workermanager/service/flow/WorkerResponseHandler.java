@@ -21,10 +21,11 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
-import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestInfo;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+import org.omg.PortableInterceptor.RequestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -80,9 +81,10 @@ public class WorkerResponseHandler
     public void handleBatch(List<WorkerResponseEvent> messages) {
         long start = System.currentTimeMillis();
         LOGGER.info("Handling {} workers responses", messages.size());
-        RequestInfo ri = service.handleWorkersResponses(messages);
+        SessionsRequestsInfo info = service.handleWorkersResponses(messages);
         LOGGER.info("{} success requests, {} running requests and {} error requests handled in {}ms",
-                    ri.getSuccessRequests().size(), ri.getRunningRequests().size(), ri.getErrorRequests().size(),
+                    info.getRequests(RequestStatus.SUCCESS).size(), info.getRequests(RequestStatus.RUNNING).size(),
+                    info.getRequests(RequestStatus.ERROR).size(),
                     System.currentTimeMillis() - start);
     }
 }

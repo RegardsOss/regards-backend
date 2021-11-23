@@ -77,6 +77,15 @@
             <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
             <artifactId>jobs-service</artifactId>
         </dependency>
+        <!-- session handling -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+            <artifactId>session-agent-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+            <artifactId>session-agent-service</artifactId>
+        </dependency>
 
         <!-- TEST dependencies -->
 		<dependency>

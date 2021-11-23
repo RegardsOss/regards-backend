@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,22 +46,6 @@ import java.util.concurrent.TimeUnit;
         locations = { "classpath:application-test.properties" })
 public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private IRequestRepository repository;
-
-    @Autowired
-    private RequestService service;
-
-    @Before
-    public void init() {
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        repository.deleteAll();
-        responseMock.reset();
-    }
-
     /**
      * Check that requests are updated in database with RUNNING status after RUNNING response sent by worker
      * @throws InterruptedException
@@ -68,16 +53,19 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
     @Test
     public void handleGrantedResponseFromWorker() throws InterruptedException {
         // Create request in database
-        Request request =  repository.save(createRequest("1", RequestStatus.DISPATCHED));
+        Request request =  requestRepository.save(createRequest("1", RequestStatus.DISPATCHED));
 
         // Simulate new event from worker
         publishWorkerResponse(createWorkerResponseEvent("1", WorkerResponseStatus.RUNNING));
         Thread.sleep(2_000);
 
-        Optional<RequestDTO> dto = service.get(request.getRequestId());
+        Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertTrue("Request should exists",dto.isPresent());
         Assert.assertEquals("Requests status invalid", RequestStatus.RUNNING, dto.get().getStatus());
         Assert.assertEquals("Invalid number of response event sent",0L, responseMock.getEvents().size());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   0, 1, 0,-1, 0, 0, 0, 0, 0);
     }
 
     /**
@@ -86,17 +74,20 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
     @Test
     public void handleSuccessResponseFromWorker() {
         // Create request in database
-        Request request =  repository.save(createRequest("1", RequestStatus.RUNNING));
+        Request request =  requestRepository.save(createRequest("1", RequestStatus.RUNNING));
 
         // Simulate new event from worker
         publishWorkerResponse(createWorkerResponseEvent("1", WorkerResponseStatus.SUCCESS));
         waitForResponses(1, 5, TimeUnit.SECONDS);
 
-        Optional<RequestDTO> dto = service.get(request.getRequestId());
+        Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertFalse("Request should noy exists anymore",dto.isPresent());
         Assert.assertEquals("Invalid number of response event sent",1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status", ResponseStatus.SUCCESS,
                             responseMock.getEvents().stream().findFirst().get().getStatus());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   0,-1,0,0, 1, 0,0,0,0);
     }
 
     /**
@@ -105,18 +96,21 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
     @Test
     public void handleInvalidContentResponseFromWorker() {
         // Create request in database
-        Request request =  repository.save(createRequest("1", RequestStatus.RUNNING));
+        Request request =  requestRepository.save(createRequest("1", RequestStatus.RUNNING));
         // Simulate new event from worker
         publishWorkerResponse(createWorkerResponseEvent("1", WorkerResponseStatus.INVALID_CONTENT));
 
         waitForResponses(1, 5, TimeUnit.SECONDS);
 
-        Optional<RequestDTO> dto = service.get(request.getRequestId());
+        Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertTrue("Request should exists",dto.isPresent());
         Assert.assertEquals("Requests status invalid", RequestStatus.INVALID_CONTENT, dto.get().getStatus());
         Assert.assertEquals("Invalid number of response event sent",1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status", ResponseStatus.INVALID_CONTENT,
                             responseMock.getEvents().stream().findFirst().get().getStatus());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   0,-1,0,0, 0, 0,1,0,0);
     }
 
     /**
@@ -125,18 +119,21 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
     @Test
     public void handleErrorResponseFromWorker() {
         // Create request in database
-        Request request =  repository.save(createRequest("1", RequestStatus.RUNNING));
+        Request request =  requestRepository.save(createRequest("1", RequestStatus.RUNNING));
 
         // Simulate new event from worker
         publishWorkerResponse(createWorkerResponseEvent("1", WorkerResponseStatus.ERROR));
         waitForResponses(1, 5, TimeUnit.SECONDS);
 
-        Optional<RequestDTO> dto = service.get(request.getRequestId());
+        Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertTrue("Request should exists",dto.isPresent());
         Assert.assertEquals("Requests status invalid", RequestStatus.ERROR, dto.get().getStatus());
         Assert.assertEquals("Invalid number of response event sent",1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status", ResponseStatus.ERROR,
                             responseMock.getEvents().stream().findFirst().get().getStatus());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   0,-1,0,0, 0, 1,0,0,0);
     }
 
     /**
@@ -144,7 +141,11 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
      */
     @Test
     public void handleDlqErrorFromWorker() {
+
         handleDlqErrorFromWorker(RequestStatus.RUNNING, RequestStatus.ERROR);
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   0,-1,0,0, 0, 1,0,0,0);
     }
 
     /**
@@ -154,6 +155,9 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
     @Test
     public void handleDlqErrorDuringReDispatchFromWorker() {
         handleDlqErrorFromWorker(RequestStatus.TO_DISPATCH, RequestStatus.TO_DISPATCH);
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   0,0,0,0, 0, 0,0,0,0);
     }
 
     /**
@@ -162,7 +166,7 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
     @Test
     public void handleInvalidResponseFromWorker() {
         // Create request in database
-        Request request =  repository.save(createRequest("1", RequestStatus.DISPATCHED));
+        Request request =  requestRepository.save(createRequest("1", RequestStatus.DISPATCHED));
 
         // Simulate new event from worker
         publishWorkerResponse(createWorkerResponseEvent("2", WorkerResponseStatus.RUNNING));
@@ -172,9 +176,12 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
             Assert.fail(e.getMessage());
         }
 
-        Optional<RequestDTO> dto = service.get(request.getRequestId());
+        Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertTrue("Request should exists",dto.isPresent());
         Assert.assertEquals("Requests status invalid", RequestStatus.DISPATCHED, dto.get().getStatus());
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   0,0,0,0, 0, 0,0,0,0);
     }
 
     @Test
@@ -186,25 +193,28 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
             requests.add(createRequest("request_" + String.valueOf(i), RequestStatus.RUNNING));
             responses.add(createWorkerResponseEvent(requestId, WorkerResponseStatus.SUCCESS));
         }
-        repository.saveAll(requests);
+        requestRepository.saveAll(requests);
         publishWorkerResponses(responses);
         waitForResponses(1_000, 3, TimeUnit.SECONDS);
 
         Assert.assertEquals("Invalid number of response event sent",1_000L, responseMock.getEvents().size());
         Assert.assertFalse("Invalid response event status",
                            responseMock.getEvents().stream().anyMatch(e -> e.getStatus() != ResponseStatus.SUCCESS));
+
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
+                                   0,-1_000,0,0, 1_000, 0,0,0,0);
     }
 
     private void handleDlqErrorFromWorker(RequestStatus initialStatus, RequestStatus finalStatus) {
         // Create request in database
-        Request request =  repository.save(createRequest("1",initialStatus));
+        Request request =  requestRepository.save(createRequest("1",initialStatus));
 
         // Simulate request sent to DLQ by worker
         String errorStackTrace = "Test error stacktrace";
         publishWorkerDlq(createWorkerDlqRequestEvent("1","Test error stacktrace"));
         waitForResponses(1, 5, TimeUnit.SECONDS);
 
-        Optional<RequestDTO> dto = service.get(request.getRequestId());
+        Optional<RequestDTO> dto = requestService.get(request.getRequestId());
         Assert.assertTrue("Request should exists",dto.isPresent());
         Assert.assertEquals("Request status invalid", finalStatus, dto.get().getStatus());
         if (finalStatus == RequestStatus.ERROR) {

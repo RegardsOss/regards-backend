@@ -31,11 +31,13 @@ import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.JobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import fr.cnes.regards.modules.workermanager.service.requests.job.DeleteRequestJob;
 import fr.cnes.regards.modules.workermanager.service.requests.job.DispatchRequestJob;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +92,9 @@ public class RequestScanService {
 
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
+
+    @Autowired
+    private SessionService sessionService;
 
     @Autowired
     private RequestScanService self;
@@ -160,10 +165,12 @@ public class RequestScanService {
             throws ModuleException {
         Pageable pageable = PageRequest.of(0, scanPageSize);
         Page<Request> requests = requestService.searchRequests(filters, pageable);
+        SessionsRequestsInfo info = new SessionsRequestsInfo(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         if (requests.getNumberOfElements() > 0) {
             scheduleJob(newStatus, requests);
             requestService.updateRequestsStatusTo(requests, newStatus);
         }
+        sessionService.notifyScannedRequests(info, newStatus);
         return requests.getNumberOfElements();
     }
 

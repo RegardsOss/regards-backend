@@ -62,5 +62,9 @@
             <groupId>fr.cnes.regards.modules.worker-common</groupId>
             <artifactId>worker-common-dto</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
     </dependencies>
 </project>
