@@ -958,32 +958,6 @@
 				<artifactId>feature-client</artifactId>
 				<version>${revision}</version>
 			</dependency>
-			<!-- Feature provider -->
-			<dependency>
-				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
-				<artifactId>featureprovider-dao</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
-				<artifactId>featureprovider-domain</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
-				<artifactId>featureprovider-rest</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
-				<artifactId>featureprovider-service</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
-				<artifactId>featureprovider-client</artifactId>
-				<version>${revision}</version>
-			</dependency>
 			<!-- Crawler -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.crawler</groupId>
