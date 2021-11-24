@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -x
+#!/usr/bin/env bash
 
 SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
@@ -194,6 +194,25 @@ function compile {
     fi
 }
 
+# When maven build a maven structure containing only one submodule, the build success log is not the same.
+# With only one submodule there is no summary of the build. As our system calculate succeeded modules by reading those
+# log files we have to simulate one.
+function simulateMavenSuccessBuildLog {
+    module=$1
+    additionalLogFile=$2
+    { 
+        echo "13:27:18,366 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - Reactor Summary for ${module} :";
+        echo "11:03:39,267 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ------------------------------------------------------------------------" 
+        echo "11:03:39,268 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ${module} .................................... SUCCESS [ XX.XXXX s]"
+        echo "11:03:39,277 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ------------------------------------------------------------------------" 
+        echo "11:03:39,278 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - BUILD SUCCESS"
+        echo "11:03:39,278 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ------------------------------------------------------------------------"
+        echo "11:03:39,278 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - Total time:  XX:XX min"
+        echo "11:03:39,279 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - Finished at: XXXX-XX-XXTXX:XX:XXZ"
+        echo "11:03:39,279 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ------------------------------------------------------------------------"
+    } >> "${additionalLogFile}"
+}
+
 function tests {
     pomFile="${REGARDS_MS:-.}/pom.xml"
     checkArtifactsRebuild ${pomFile}
@@ -249,15 +268,7 @@ function tests {
                 touch "${additionalLogFile}"
             set +x
             module=$(echo $mvnPlArg | cut -d: -f2)
-            echo "13:27:18,366 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - Reactor Summary for ${module} :" >> "${additionalLogFile}"
-            echo "11:03:39,267 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ------------------------------------------------------------------------" >> "${additionalLogFile}"
-            echo "11:03:39,268 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ${module} .................................... SUCCESS [ 11.274 s]" >> "${additionalLogFile}"
-            echo "11:03:39,277 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ------------------------------------------------------------------------" >> "${additionalLogFile}"
-            echo "11:03:39,278 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - BUILD SUCCESS" >> "${additionalLogFile}"
-            echo "11:03:39,278 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ------------------------------------------------------------------------" >> "${additionalLogFile}"
-            echo "11:03:39,278 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - Total time:  05:40 min" >> "${additionalLogFile}"
-            echo "11:03:39,279 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - Finished at: 2021-11-19T11:03:39Z" >> "${additionalLogFile}"
-            echo "11:03:39,279 [main] INFO org.apache.maven.cli.event.ExecutionEventLogger - ------------------------------------------------------------------------" >> "${additionalLogFile}"
+            simulateMavenSuccessBuildLog "${module}" "${additionalLogFile}"
         fi
 
         if grep -q "BUILD SUCCESS" "${logFile}"; then

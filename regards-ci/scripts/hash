@@ -132,7 +132,7 @@ function computeModuleHashes {
             dir=$(dirname $p)
             #  Do not compute hashes for pom modules
             if ! grep -q "<packaging>pom</packaging>" $p; then
-                echo "Hashing module ${name} at ${dir}"
+                # echo "Hashing module ${name} at ${dir}"
                 echo "${name}:$(folderHash $dir)" >> "${DATADIR}/hashes.tmp"
             fi
     done
@@ -165,26 +165,27 @@ function computeModulesToRebuild {
     done < "${DATADIR}/hashes.txt"
 
     # For each module of the dependency tree check if the module is to rebuild or depends on a module to rebuild
+    echo "#########################################"
+    echo "# List of modules to rebuild            #"
     while read -r moduleLine; do
         name=$(echo "${moduleLine}" | awk -F= '{print $1}')
         deps=$(echo "${moduleLine}" | awk -F= '{print $2}')
         for moduleToRebuild in "${artifactsThatNeedARebuild[@]}"; do
             if [ "${name}" == "${moduleToRebuild}" ]; then
-                echo "Module to rebuild: ${name}"
+                echo "# Module to rebuild: ${name}"
                 echo "${name}" >> ${DATADIR}/modulesToRebuild.txt
                 break
             else
                 found=$(echo ${deps} | grep ",${moduleToRebuild},")
                 if [[ "${found}" != "" ]]; then
-                    echo "Module to rebuild: ${name} for dependency hash changed ${moduleToRebuild}"
+                    echo "# Module to rebuild: ${name} for dependency hash changed ${moduleToRebuild}"
                     echo "${name}" >> ${DATADIR}/modulesToRebuild.txt
                     break
                 fi
             fi
         done
     done < "${DATADIR}/dependencyTree.txt"
-
-    echo "Modules to rebuild :"
-    cat "${DATADIR}/modulesToRebuild.txt"
+    echo "# End                                   #"
+    echo "#########################################"
 
 }
