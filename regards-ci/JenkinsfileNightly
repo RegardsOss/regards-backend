@@ -32,12 +32,14 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '2'))
         disableConcurrentBuilds()
+        parallelsAlwaysFailFast()
     }
     environment {
         PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
         REGARDS_HOME="${WORKSPACE}"
         MVN_IMAGE="172.26.46.158/rs-maven-ci"
-        BRANCH_NAME_VERSION="${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
+        BRANCH_NAME="develop"
+        IGNORE_HASH="true"
     }
     agent { label 'unix-integration' }
     stages {
@@ -75,11 +77,6 @@ pipeline {
             parallel {
                 stage('-1-') {
                     stages {
-                        stage('Bom') {
-                            steps {
-                                runMavenDockerImg("sonarTests", "rs-bom", true, true)
-                            }
-                        }
                         stage('Microservice') {
                             steps {
                                 runMavenDockerImg("sonarTests", "rs-microservice", true, true)
@@ -255,6 +252,7 @@ def runMavenDockerImg(mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
                         -e BRANCH_NAME="${BRANCH_NAME}"                                              \
                         -e BRANCH_NAME_VERSION="${BRANCH_NAME_VERSION}"                              \
                         -e WORKSPACE="${WORKSPACE}"                                                  \
+                        -e IGNORE_HASH="${IGNORE_HASH}"                                              \
                         -e CI_DIR="regards-ci/docker"                                                \
                         -e MODE="' + mode + '"                                                       \
                         -e REGARDS_HOME="${REGARDS_HOME}"                                            \

@@ -123,9 +123,12 @@ function compileForTests {
 
     echo -e "\nRunning Maven build with CI profile ..."
 
-    if [[ -z "${mvnPlArg}" ]]; then
+    if [ -z "${IGNORE_HASH}" ] && [ -z "${mvnPlArg}" ]; then
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
+        if [ -z "${IGNORE_HASH}" ]; then
+            mvnPlArgArg="-pl ${mvnPlArg}"
+        fi
         set -x
         mvn -U -B -P CI clean install -T 6 \
             -Dregards.version="CI-${REGARDS_VERSION}" \
@@ -143,8 +146,8 @@ function compileForTests {
             -Dmaven.wagon.http.ssl.insecure=true \
             -Dmaven.wagon.http.ssl.allowall=true \
             -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
-            -pl ${mvnPlArg} \
-            2>&1 | tee ${DATADIR}/mvn-compile.log
+            ${mvnPlArgArg} \
+            2>&1 | tee "${DATADIR}/mvn-compile.log"
         set +x
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-compile.log"; then
@@ -214,17 +217,18 @@ function simulateMavenSuccessBuildLog {
 }
 
 function tests {
+    moduleToTest=${REGARDS_MS:-all}
     pomFile="${REGARDS_MS:-.}/pom.xml"
     checkArtifactsRebuild ${pomFile}
-    logFile="${DATADIR}/mvn-build-${REGARDS_MS:-all}.log"
+    logFile="${DATADIR}/mvn-build-${moduleToTest}.log"
 
     IS_SONAR_TESTS=$1
     sonarArgs=""
     if [ "${IS_SONAR_TESTS}" == "true" ]; then
         sonarArgs="org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
 	    sonar:sonar \
-        -Dsonar.jacoco.reportPath="${SERVICES}/target/coverage-reports/jacoco-ut.exec" \
-        -Dsonar.jacoco.itReportPath="${SERVICES}/target/coverage-reports/jacoco-it.exec" \
+        -Dsonar.jacoco.reportPath="${SERVICES}/target/coverage-reports/jacoco-ut-${moduleToTest}.exec" \
+        -Dsonar.jacoco.itReportPath="${SERVICES}/target/coverage-reports/jacoco-it-${moduleToTest}.exec" \
         -Dsonar.branch.name="develop" \
         -Djacoco.skip=false"
     else
@@ -237,9 +241,12 @@ function tests {
     set +x
     
 
-    if [[ -z "${mvnPlArg}" ]]; then
+     if [ -z "${IGNORE_HASH}" ] && [ -z "${mvnPlArg}" ]; then
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
+        if [ -z "${IGNORE_HASH}" ]; then
+            mvnPlArgArg="-pl ${mvnPlArg}"
+        fi
         set -x
         mvn -U -B -P CI verify \
             -f ${pomFile} \
@@ -255,8 +262,8 @@ function tests {
             -Dmaven.wagon.http.ssl.insecure=true \
             -Dmaven.wagon.http.ssl.allowall=true \
             -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
-            -pl ${mvnPlArg} \
-            2>&1 | tee ${logFile}
+            ${mvnPlArgArg} \
+            2>&1 | tee "${logFile}"
         set +x
 
         multiMdule=$(echo ${mvnPlArg} | grep ",")
