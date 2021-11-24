@@ -342,7 +342,7 @@ function deployMvnArtifacts {
     if [[ -z "${mvnPlArg}" ]]; then
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
-        mvn -B -P install -T 6 \
+        mvn -B -P delivery,docker,CI -T 6 \
             deploy \
             -Dregards.version=${REGARDS_VERSION} \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \

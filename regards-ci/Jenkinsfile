@@ -180,11 +180,11 @@ pipeline {
             }
             steps {
 
-                echo "Build/Deploy stable docker images"
-                runMavenDockerImg("deployDockerImages", "", false, false)
-
                 echo "Deploy Maven Artifacts"
                 runMavenDockerImg("deployMvnArtifacts", "", false, false)
+
+                echo "Build/Deploy stable docker images"
+                runMavenDockerImg("deployDockerImages", "", false, false)
             }
         }
     }
