@@ -25,17 +25,23 @@ import static org.junit.Assert.fail;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.feature.dto.*;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runners.MethodSorters;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -87,6 +93,12 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
     private IFeatureUpdateRequestRepository featureUpdateRequestRepository;
+
+    @Autowired
+    private Gson gson;
+
+    @Captor
+    private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
     private boolean isToNotify;
 
@@ -496,9 +508,37 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         featureUpdateService.scheduleRequests();
         waitForStep(featureUpdateRequestRepository, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationSuccess();
+
+        // Check update notification valid metadata
+        checkNotifications(requestCount, 1);
+
         waitUpdateRequestDeletion(0, 20000);
 
         checkOneUpdate(requestCount);
+    }
+
+    private void checkNotifications(int createNotificationExpected, int updateNotificationExpected) {
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(recordsCaptor.capture());
+        AtomicInteger nbUpdate = new AtomicInteger();
+        AtomicInteger nbCreate = new AtomicInteger();
+        assertEquals(createNotificationExpected+updateNotificationExpected,
+                     recordsCaptor.getAllValues().stream().flatMap(Collection::stream).count());
+        recordsCaptor.getAllValues().stream().flatMap(Collection::stream).forEach(notification -> {
+            CreateNotificationRequestEventVisitor.NotificationActionEventMetadata metadata =
+                    gson.fromJson(notification.getMetadata(),
+                                  CreateNotificationRequestEventVisitor.NotificationActionEventMetadata.class);
+            if (metadata.getAction().equals(FeatureManagementAction.UPDATED.toString())) {
+                assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
+                        FeatureManagementAction.UPDATED,owner,session)), notification.getMetadata().toString());
+                nbUpdate.getAndIncrement();
+            } else if (metadata.getAction().equals(FeatureManagementAction.CREATED.toString())) {
+                assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
+                        FeatureManagementAction.CREATED,owner,session)), notification.getMetadata().toString());
+                nbCreate.getAndIncrement();
+            }
+        });
+        Assert.assertEquals(createNotificationExpected, nbCreate.get());
+        Assert.assertEquals(updateNotificationExpected, nbUpdate.get());
     }
 
     @Test

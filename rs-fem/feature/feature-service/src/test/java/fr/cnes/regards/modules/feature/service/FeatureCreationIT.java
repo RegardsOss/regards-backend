@@ -75,9 +75,6 @@ import static org.junit.Assert.assertEquals;
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
-    @SpyBean
-    private IPublisher publisherSpy;
-
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
@@ -102,7 +99,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         int maxBulkSize = properties.getMaxBulkSize();
 
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(maxBulkSize, true, false);
         // clear file to test notifications without files
@@ -399,7 +396,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         featureNotificationService.sendToNotifier();
 
         // lets capture events sent and check that there is properties.getMaxBulkSize NotificationActionEvent
-        Mockito.verify(publisherSpy, Mockito.atLeastOnce()).publish(recordsCaptor.capture());
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(recordsCaptor.capture());
         // That captor also records SessionStepEvent published, for some reason, hence the need to filter
         List<List<NotificationRequestEvent>> value = recordsCaptor.getAllValues().stream()
                 .filter(list -> list.get(0) instanceof NotificationRequestEvent).collect(Collectors.toList());
@@ -414,7 +411,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     public void testFeatureCreationWithDuplicateRequestId() {
 
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(),
                                                                                          true, false);

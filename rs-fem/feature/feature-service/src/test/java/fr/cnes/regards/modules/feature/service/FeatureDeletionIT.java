@@ -68,9 +68,6 @@ import static org.junit.Assert.*;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
-    @SpyBean
-    private IPublisher publisherSpy;
-
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
@@ -94,7 +91,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
     public void testDeletionWithoutFiles() throws InterruptedException {
         String deletionOwner = "deleter";
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
         long featureNumberInDatabase;
         int cpt = 0;
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, false,
@@ -118,7 +115,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         if (this.isToNotify) {
             mockNotificationSuccess();
             // the publisher must be called 2 times one for feature creation and one for feature deletion
-            Mockito.verify(publisherSpy, Mockito.times(2)).publish(recordsCaptor.capture());
+            Mockito.verify(publisher, Mockito.times(2)).publish(recordsCaptor.capture());
             // each call concern properties.getMaxBulkSize().intValue() features
             assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(0).size());
             assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(1).size());
@@ -140,7 +137,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         String deletionOwner = "deleter";
 
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
                                                                            nbFeature,
@@ -152,7 +149,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
         // the publisher has been called because of storage successes (feature creation with files)
-        Mockito.verify(publisherSpy, Mockito.times(1)).publish(recordsCaptor.capture());
+        Mockito.verify(publisher, Mockito.times(1)).publish(recordsCaptor.capture());
 
     }
 

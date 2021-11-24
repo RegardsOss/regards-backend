@@ -66,6 +66,12 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     @Type(type = "jsonb")
     private Feature toNotify;
 
+    @Column(name="sessionToNotify", length=255)
+    private String sessionToNotify;
+
+    @Column(name="sourceToNotify", length=255)
+    private String sourceToNotify;
+
     public static FeatureUpdateRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             RequestState state, Set<String> errors, Feature feature, PriorityLevel priority, FeatureRequestStep step) {
         Assert.notNull(feature, "Feature is required");
@@ -114,6 +120,22 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
 
     public void setToNotify(Feature toNotify) {
         this.toNotify = toNotify;
+    }
+
+    public String getSessionToNotify() {
+        return sessionToNotify;
+    }
+
+    public void setSessionToNotify(String sessionToNotify) {
+        this.sessionToNotify = sessionToNotify;
+    }
+
+    public String getSourceToNotify() {
+        return sourceToNotify;
+    }
+
+    public void setSourceToNotify(String sourceToNotify) {
+        this.sourceToNotify = sourceToNotify;
     }
 
     public FeatureStorageMedataEntity getMetadata() {

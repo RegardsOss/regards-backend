@@ -54,6 +54,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -144,7 +145,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     @Autowired
     protected ISubscriber subscriber;
 
-    @Autowired
+    @SpyBean
     protected IPublisher publisher;
 
     @Autowired

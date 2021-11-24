@@ -59,6 +59,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -79,9 +80,6 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
     @Autowired
     private IFeatureNotificationService notificationService;
 
-    @SpyBean
-    private IPublisher publisher;
-
     @Autowired
     private Gson gson;
 
@@ -94,30 +92,33 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         // mock the publish method to not broke other tests
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
+        String source = "testNotification";
+        String session = UUID.randomUUID().toString();
+
         int numberFeature = 2;
-        List<Feature> featuresNotified = doNotificationProcess(numberFeature);
+        List<Feature> featuresNotified = doNotificationProcess(numberFeature,source,session);
 
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(recordsCaptor.capture());
         // the first publish message to be intercepted must be the creation of createdEntity
         assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
-                FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(0).getMetadata().toString());
+                FeatureManagementAction.NOTIFIED,source,session)), recordsCaptor.getValue().get(0).getMetadata().toString());
         assertEquals(gson.toJson(featuresNotified.get(0)), recordsCaptor.getValue().get(0).getPayload().toString());
         // the second message is the update of updatedEntity
         assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
-                FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(1).getMetadata().toString());
+                FeatureManagementAction.NOTIFIED,source,session)), recordsCaptor.getValue().get(1).getMetadata().toString());
         assertEquals(gson.toJson(featuresNotified.get(1)), recordsCaptor.getValue().get(1).getPayload().toString());
-
     }
 
     @Test
     @Ignore("Test to manuel check perf using logs of feature notification request handling.")
     public void testNotification1000() {
-        doNotificationProcess(1000);
+        doNotificationProcess(1000, "source","session");
     }
 
-    private List<Feature> doNotificationProcess(int numberNotified) {
+    private List<Feature> doNotificationProcess(int numberNotified, String source, String session) {
         // use it only to initialize Feature
-        List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(numberNotified, true,false);
+        List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(numberNotified, true,false,
+                                                                                 source, session);
         for(FeatureCreationRequestEvent event: list) {
             event.getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
                                                                                  EntityType.DATA,
@@ -130,9 +131,9 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         List<Feature> featuresNotified = new ArrayList<>(numberNotified);
         for(int i = 0; i< numberNotified /2; i++) {
             FeatureEntity createdEntity = FeatureEntity
-                    .build("moi", "session", list.get(i).getFeature(), null, list.get(i).getFeature().getModel());
+                    .build(source, session, list.get(i).getFeature(), null, list.get(i).getFeature().getModel());
             FeatureEntity updatedEntity = FeatureEntity
-                    .build("moi", "session", list.get(i+ numberNotified /2).getFeature(), null, list.get(i+ numberNotified
+                    .build(source, session, list.get(i+ numberNotified /2).getFeature(), null, list.get(i+ numberNotified
                             /2).getFeature().getModel());
             updatedEntity.setLastUpdate(OffsetDateTime.now().plusSeconds(1));
             createdEntity.setUrn(list.get(i).getFeature().getUrn());

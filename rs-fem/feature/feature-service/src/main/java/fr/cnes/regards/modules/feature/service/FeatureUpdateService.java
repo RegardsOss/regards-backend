@@ -354,6 +354,10 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                 FeatureLogger.updateSuccess(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
                                             request.getFeature().getUrn());
 
+                // Update source/session for request notification
+                request.setSessionToNotify(entity.getSession());
+                request.setSourceToNotify(entity.getSessionOwner());
+
                 // Check files update
                 try {
                     featureFilesService.handleFeatureUpdateFiles(request, entity);

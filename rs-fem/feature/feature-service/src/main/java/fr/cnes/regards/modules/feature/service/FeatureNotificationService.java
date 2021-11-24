@@ -139,10 +139,11 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
      * Prepare {@link FeatureNotificationRequest} from {@link FeatureNotificationRequestEvent} to register in database
      *
      * @param item                 {@link FeatureNotificationRequestEvent} source
+     * @param featureToNotify {@link FeatureEntity} feature to notify
      * @param notificationsRequest list of {@link FeatureNotificationRequest} granted
      * @param existingRequestIds   list of existing request in database
      */
-    private void prepareNotificationRequest(FeatureNotificationRequestEvent item, FeatureEntity sessionInfo,
+    private void prepareNotificationRequest(FeatureNotificationRequestEvent item, FeatureEntity featureToNotify,
             List<FeatureNotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
@@ -154,7 +155,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
 
-        if (sessionInfo == null) {
+        if (featureToNotify == null) {
             errors.rejectValue("urn", "request.urn.feature.does.not.exists", "Feature to notify does not exists");
         }
 
@@ -167,15 +168,17 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                         item.getRequestOwner(), null, item.getUrn(),
                                                         RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             // Update session properties
-            if (sessionInfo != null) {
-                featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.DENIED_NOTIFY_REQUESTS);
+            if (featureToNotify != null) {
+                featureSessionNotifier.incrementCount(featureToNotify, FeatureSessionProperty.DENIED_NOTIFY_REQUESTS);
             }
         } else {
             FeatureNotificationRequest request = FeatureNotificationRequest
                     .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
                            FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, item.getPriority(), item.getUrn(),
                            RequestState.GRANTED);
-            request.setToNotify(sessionInfo.getFeature());
+            request.setToNotify(featureToNotify.getFeature());
+            request.setSessionToNotify(featureToNotify.getSession());
+            request.setSourceToNotify(featureToNotify.getSessionOwner());
             // Monitoring log
             FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
             // Publish GRANTED request
@@ -187,7 +190,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
             // Add new request id to existing ones
             existingRequestIds.add(request.getRequestId());
             // Update session properties
-            featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.NOTIFY_REQUESTS);
+            featureSessionNotifier.incrementCount(featureToNotify, FeatureSessionProperty.NOTIFY_REQUESTS);
         }
     }
 
