@@ -38,6 +38,8 @@ import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -73,8 +75,9 @@ public class FeatureFilesService {
      * @param entity {@link FeatureEntity} associated feature
      * @throws ModuleException if error occurs sending requests to storage microservice
      */
+    @Transactional(noRollbackFor = ModuleException.class)
     public void handleFeatureUpdateFiles(FeatureUpdateRequest request, FeatureEntity entity) throws ModuleException {
-        if (request.getFeature().getFiles() != null && !request.getFeature().getFiles().isEmpty()) {
+        if (!CollectionUtils.isEmpty(request.getFeature().getFiles())) {
             Set<FileReferenceRequestDTO> referenceRequests = Sets.newHashSet();
             Set<FileStorageRequestDTO> storageRequests = Sets.newHashSet();
 
@@ -99,7 +102,7 @@ public class FeatureFilesService {
                 sendReferenceRequestsToStorage(request, referenceRequests);
             } else if (!storageRequests.isEmpty() && referenceRequests.isEmpty()) {
                 sendStorageRequestsToStorage(request, storageRequests);
-            } else {
+            } else if (!storageRequests.isEmpty() && !referenceRequests.isEmpty()){
                 throw new ModuleException(
                         "Update request cannot be handled as both storage and reference files are provided");
             }
