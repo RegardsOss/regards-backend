@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author kevin
- *
+ * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_listener_creation",
         "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
@@ -97,11 +97,11 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
     @Test
     public void testHandlerStorageOk() {
 
-        RequestInfo info = RequestInfo.build();
+        initData(1);
 
-        initData(info);
+        assertEquals(1, fcrRepo.count());
 
-        this.listener.onStoreSuccess(Sets.newHashSet(info));
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
         if (this.isToNotify) {
             mockNotificationSuccess();
         }
@@ -135,11 +135,11 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
     @Test
     public void testHandlerReferenceOk() {
 
-        RequestInfo info = RequestInfo.build();
+        initData(1);
 
-        initData(info);
+        assertEquals(1, fcrRepo.count());
 
-        this.listener.onReferenceSuccess(Sets.newHashSet(info));
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
         if (this.isToNotify) {
             mockNotificationSuccess();
         }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -56,9 +57,7 @@ import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
-import fr.cnes.regards.modules.storage.client.IStorageClient;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +83,7 @@ import java.util.stream.Collectors;
  * Feature service management
  *
  * @author Kevin Marchois
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
@@ -113,9 +113,6 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     private IFeatureValidationService validationService;
 
     @Autowired
-    private IStorageClient storageClient;
-
-    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
@@ -135,6 +132,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
     @Autowired
     private FeatureSessionNotifier featureSessionNotifier;
+
+    @Autowired
+    private FeatureFilesService featureFilesService;
 
     @PersistenceContext
     private EntityManager em;
@@ -339,10 +339,10 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         long processStart = System.currentTimeMillis();
 
-        Set<FeatureEntity> entities = createEntities(requests, featureCreationJob);
-
         // Update requests with feature set and publish files to storage
+        Set<FeatureEntity> entities = createEntities(requests, featureCreationJob);
         updateRequestsWithFiles(requests);
+
         // Update requests for storage retry
         updateRequestsWithFiles(retryRequests);
 
@@ -365,6 +365,8 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         long startSuccessProcess = System.currentTimeMillis();
 
+        boolean isNotificationActive = notificationSettingsService.isActiveNotification();
+
         for (FeatureCreationRequest request : requests) {
             // Monitoring log
             FeatureLogger.creationSuccess(request.getRequestOwner(), request.getRequestId(), request.getProviderId(), request.getFeature().getUrn());
@@ -381,27 +383,26 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                 publisher.publish(
                         FeatureDeletionRequestEvent.build(request.getMetadata().getSessionOwner(), request.getFeatureEntity().getPreviousVersionUrn(), PriorityLevel.NORMAL));
             }
+            // notify creation of feature
+            if (isNotificationActive) {
+                request.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+                featureCreationRequestRepo.save(request);
+            }
         }
 
         if (!requests.isEmpty()) {
-            // See if notifications are required
-            if (notificationSettingsService.isActiveNotification()) {
-                // notify creation of feature
-                for (FeatureCreationRequest request : requests) {
-                    request.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
-                    featureCreationRequestRepo.save(request);
-                }
-            } else {
+            // If notification are not active, creation is ended and requests can be deleted. Else, we need to wait for
+            // notification response status.
+            if (!isNotificationActive) {
                 doOnTerminated(requests);
-                // Successful requests are deleted now!
                 featureCreationRequestRepo.deleteByUrnIn(requests.stream().map(AbstractFeatureRequest::getUrn).collect(Collectors.toSet()));
-                for (FeatureCreationRequest fcr : requests) {
-                    em.detach(fcr);
-                }
-                LOGGER.trace("------------->>> {} creation requests deleted in {} ms", requests.size(), System.currentTimeMillis() - startSuccessProcess);
+                requests.forEach(em::detach);
+                LOGGER.trace("------------->>> {} creation requests deleted in {} ms", requests.size(),
+                             System.currentTimeMillis() - startSuccessProcess);
             }
         }
-        LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms", requests.size(), System.currentTimeMillis() - startSuccessProcess);
+        LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms",
+                     requests.size(), System.currentTimeMillis() - startSuccessProcess);
     }
 
     private Set<FeatureEntity> createEntities(List<FeatureCreationRequest> requests, FeatureCreationJob featureCreationJob) {
@@ -501,57 +502,34 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         long subProcessStart = System.currentTimeMillis();
         Set<FeatureCreationRequest> requestWithFiles = requests.stream()
                 .filter(fcr -> !CollectionUtils.isEmpty(fcr.getFeature().getFiles()))
-                .map(this::handleRequestWithFiles)
+                .map(featureFilesService::handleRequestFiles)
                 .collect(Collectors.toSet());
         featureCreationRequestRepo.saveAll(requestWithFiles);
         LOGGER.trace("------------->>> {} creation requests with files updated in {} ms", requestWithFiles.size(), System.currentTimeMillis() - subProcessStart);
     }
 
-    /**
-     * Handle {@link FeatureCreationRequest} with files to be stored or referenced by storage microservice:
-     * <ul>
-     *     <li>No storage metadata at all -> feature files are to be referenced</li>
-     *     <li>for each metadata without any data storage identifier specified -> feature files are to be stored</li>
-     *     <li>for each metadata with a data storage identifier specified -> feature files are to be referenced</li>
-     * </ul>
-     *
-     * @param fcr currently creating feature
-     */
-    private FeatureCreationRequest handleRequestWithFiles(FeatureCreationRequest fcr) {
-        for (FeatureFile file : fcr.getFeature().getFiles()) {
-            FeatureFileAttributes attribute = file.getAttributes();
-            for (FeatureFileLocation loc : file.getLocations()) {
-                FeatureCreationMetadataEntity metadata = fcr.getMetadata();
-                // there is no metadata but a file location so we will update reference
-                if (!metadata.hasStorage()) {
-                    fcr.setGroupId(this.storageClient
-                            .reference(FileReferenceRequestDTO
-                                    .build(attribute.getFilename(), attribute.getChecksum(), attribute.getAlgorithm(),
-                                           attribute.getMimeType().toString(), attribute.getFilesize(),
-                                           fcr.getFeature().getUrn().toString(), loc.getStorage(), loc.getUrl(),
-                                           metadata.getSessionOwner(), metadata.getSession()))
-                            .getGroupId());
-                }
-                for (StorageMetadata storageMetadata : metadata.getStorages()) {
-                    if (loc.getStorage() == null) {
-                        fcr.setGroupId(this.storageClient.store(FileStorageRequestDTO
-                                .build(attribute.getFilename(), attribute.getChecksum(), attribute.getAlgorithm(),
-                                       attribute.getMimeType().toString(), fcr.getFeature().getUrn().toString(),
-                                       metadata.getSessionOwner(), metadata.getSession(), loc.getUrl(),
-                                       storageMetadata.getPluginBusinessId(), Optional.of(loc.getUrl())))
-                                .getGroupId());
-                    } else {
-                        fcr.setGroupId(this.storageClient.reference(FileReferenceRequestDTO
-                                .build(attribute.getFilename(), attribute.getChecksum(), attribute.getAlgorithm(),
-                                       attribute.getMimeType().toString(), attribute.getFilesize(),
-                                       fcr.getFeature().getUrn().toString(), loc.getStorage(), loc.getUrl(),
-                                       metadata.getSessionOwner(), metadata.getSession())).getGroupId());
-                    }
-                }
+    @Override
+    public void handleStorageError(Collection<RequestResultInfoDTO> errorRequests) {
+        Map<String, String> errorByGroupId = Maps.newHashMap();
+        errorRequests.forEach(e -> errorByGroupId.put(e.getGroupId(), e.getErrorCause()));
+
+        Set<FeatureCreationRequest> requests = featureCreationRequestRepo.findByGroupIdIn(errorByGroupId.keySet());
+
+        if (!requests.isEmpty()) {
+            // publish error notification for all request id
+            requests.forEach(item -> publisher.publish(
+                    FeatureRequestEvent.build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
+                                              item.getFeature() != null ? item.getFeature().getId() : null, null,
+                                              RequestState.ERROR, null)));
+            // set FeatureCreationRequest to error state
+            for (FeatureCreationRequest request : requests) {
+                String errorCause = Optional.ofNullable(errorByGroupId.get(request.getGroupId()))
+                        .orElse("unknown error.");
+                addRemoteStorageError(request,errorCause);
             }
+            doOnError(requests);
+            featureCreationRequestRepo.saveAll(requests);
         }
-        fcr.setStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED);
-        return fcr;
     }
 
     @Override

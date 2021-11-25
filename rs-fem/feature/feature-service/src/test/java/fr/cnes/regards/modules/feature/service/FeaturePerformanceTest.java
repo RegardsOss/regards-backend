@@ -42,7 +42,6 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
 
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_perf", "regards.amqp.enabled=true",
@@ -62,9 +61,6 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
     @Autowired
     private IFeatureCreationService featureService;
 
-    @Autowired
-    private IFeatureNotificationSettingsService notificationSettingsService;
-
     /**
      * Test creation of EVENTS_NUMBER features Check if
      * {@link FeatureCreationRequest} and {@link FeatureEntity}are stored in
@@ -75,11 +71,6 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
      */
     @Test
     public void createFeatures() throws InterruptedException {
-
-
-//        FeatureNotificationSettings settings = notificationSettingsService.retrieve();
-//        settings.setActiveNotification(false);
-//        notificationSettingsService.update(settings);
 
         String format = "F%05d";
 
@@ -137,12 +128,5 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
         featureService.registerRequests(events);
         LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms", events.size(),
                     System.currentTimeMillis() - start);
-    }
-
-    @SuppressWarnings("unused")
-    private void addDefaultProperties(Feature feature) {
-        feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
-        feature.addProperty(IProperty.buildObject("file_characterization",
-                                                  IProperty.buildBoolean("valid", Boolean.TRUE)));
     }
 }

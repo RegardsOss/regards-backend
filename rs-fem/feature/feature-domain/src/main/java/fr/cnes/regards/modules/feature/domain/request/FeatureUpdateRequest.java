@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
 
@@ -40,7 +41,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
  * @author Marc SORDI
- *
+ * @author Sébastien Binda
  */
 @Entity
 @DiscriminatorValue(FeatureRequestTypeEnum.UPDATE_DISCRIMINENT)
@@ -54,6 +55,9 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     @Column(columnDefinition = "jsonb", name = "feature", nullable = false)
     @Type(type = "jsonb")
     private Feature feature;
+
+    @Embedded
+    private FeatureStorageMedataEntity metadata;
 
     /**
      * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
@@ -110,5 +114,13 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
 
     public void setToNotify(Feature toNotify) {
         this.toNotify = toNotify;
+    }
+
+    public FeatureStorageMedataEntity getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(FeatureStorageMedataEntity metadata) {
+        this.metadata = metadata;
     }
 }

@@ -4,7 +4,6 @@ import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.amqp.event.IRequestValidation;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
@@ -12,10 +11,10 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 public interface IAbstractFeatureService<R extends AbstractFeatureRequest> extends IRequestDeniedService, IRequestValidation {
 

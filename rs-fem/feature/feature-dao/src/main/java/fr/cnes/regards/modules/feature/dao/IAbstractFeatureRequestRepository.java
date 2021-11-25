@@ -1,9 +1,11 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,15 +23,19 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 @Repository
 public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequest>
         extends JpaRepository<T, Long>, JpaSpecificationExecutor<T> {
 
+    Page<T> findByStepAndGroupIdIn(FeatureRequestStep step, Collection<String> groupIds, Pageable page);
+
     @Query("select distinct afr.requestId from AbstractFeatureRequest afr")
     Set<String> findRequestId();
 
-    Set<String> findRequestIdByRequestIdIn(List<String> requestIds);
+    @Query ("select requestId from AbstractFeatureRequest where requestId in (:requestIds)")
+    Set<String> findRequestIdByRequestIdIn(@Param("requestIds") List<String> requestIds);
 
     @Query("select f.urn as urn, f.providerId as providerId from FeatureEntity f, AbstractFeatureRequest r where r.urn in :urns and r.urn=f.urn")
     List<IProviderIdByUrn> findFeatureProviderIdFromRequestUrns(@Param("urns") List<FeatureUniformResourceName> urns);
@@ -79,4 +85,6 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     void deleteByUrnIn(@Param("urns") Set<FeatureUniformResourceName> urns);
 
     Long countByState(RequestState state);
+
+    Page<T> findByStep(FeatureRequestStep remoteStorageRequested, Pageable pageToRequest);
 }

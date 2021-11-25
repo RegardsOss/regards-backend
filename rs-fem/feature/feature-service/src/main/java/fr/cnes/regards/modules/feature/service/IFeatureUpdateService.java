@@ -18,9 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -36,6 +40,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 /**
  * This service handles feature update workflow.
  * @author Marc SORDI
+ * @author Sébastien Binda
  */
 public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUpdateRequest> {
 
@@ -62,4 +67,16 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
      */
     Page<FeatureUpdateRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
 
+    /**
+     * Update files and locations of given {@link FeatureEntity}s after storage microservice responses received.
+     * @param updateInfo storage requests results
+     * @return FeatureEntity updated features
+     */
+    List<FeatureEntity> updateFilesLocations(Map<FeatureEntity, List<RequestResultInfoDTO>> updateInfo);
+
+    /**
+     * Handle storage response errors from storage microservice by looking for {@link FeatureUpdateRequest} associated
+     * @param errorRequests error requests results
+     */
+    void handleStorageError(Collection<RequestResultInfoDTO> errorRequests);
 }

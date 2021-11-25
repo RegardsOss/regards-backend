@@ -18,43 +18,36 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.dto.*;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Test feature mutation based on null property values.
  *
  * @author Marc SORDI
- *
+ * @author Sébastien Binda
  */
-//@Ignore
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode", "regards.amqp.enabled=true",
                 "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
@@ -67,80 +60,57 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureGeodeIT.class);
 
-    private static final Integer NB_FEATURES = 5_000;
+    private static final Integer NB_FEATURES = 500;
 
     private static final String PROVIDER_ID_FORMAT = "F%05d";
 
-    private static final Integer PUBLISH_BULK_SIZE = 1_000;
+    private static final Integer PUBLISH_BULK_SIZE = 100;
 
     private String modelName;
-
-    @SuppressWarnings("unused")
-    @Autowired
-    private AutowireCapableBeanFactory beanFactory;
 
     @Before
     public void prepareContext() throws Exception {
         super.before();
-
-        // Manage model
         modelName = mockModelClient(GeodeProperties.getGeodeModel(), this.getCps(), this.getFactory(),
                                     this.getDefaultTenant(), this.getModelAttrAssocClientMock());
         Thread.sleep(5_000);
-
-        // Add new consumers
-        // Just for testing purpose / Cannot be simulated with operational AMQP starter as it prevents multiple subscription.
-        //        int extraConsumers = 5;
-        //        for (int i = 0; i < extraConsumers; i++) {
-        //
-        //            FeatureCreationRequestEventHandler creationHandler = new FeatureCreationRequestEventHandler();
-        //            beanFactory.autowireBean(creationHandler);
-        //            subscriber.subscribeTo(FeatureCreationRequestEvent.class, creationHandler);
-        //
-        //            FeatureUpdateRequestEventHandler updateHandler = new FeatureUpdateRequestEventHandler();
-        //            beanFactory.autowireBean(updateHandler);
-        //            subscriber.subscribeTo(FeatureUpdateRequestEvent.class, updateHandler);
-        //        }
-
     }
 
     @Test
-    public void createAndUpdateTest() throws InterruptedException {
+    public void createAndUpdateTest() {
 
         // Request creations
         long creationStart = System.currentTimeMillis();
         requestCreation();
         // Wait for request handling and feature creation
-        waitFeature(NB_FEATURES, null, 3_000_000);
+        waitFeature(NB_FEATURES, null, 30_000);
+        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED, NB_FEATURES, 30_000);
         LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms", NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
+
+        mockNotificationResponseSuccess();
+        waitRequest(featureCreationRequestRepo, 0,5_000);
 
         // Request update
         long updateStart = System.currentTimeMillis();
         OffsetDateTime requestDate = requestUpdate();
         // Wait for request handling and feature update
-        waitFeature(NB_FEATURES, requestDate, 3_000_000);
+        waitFeature(NB_FEATURES, requestDate, 30_000);
         LOGGER.info(">>>>>>>>>>>>>>>>> {} update requests done in {} ms", NB_FEATURES,
                     System.currentTimeMillis() - updateStart);
+
+        waitForStep(featureUpdateRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED, NB_FEATURES, 30_000);
+        mockNotificationResponseSuccess();
+        waitRequest(featureUpdateRequestRepo, 0,5_000);
 
         LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests and {} update requests done in {} ms", NB_FEATURES,
                     NB_FEATURES, System.currentTimeMillis() - creationStart);
     }
 
-    //    @Test
-    //    public void justHandleCreation() throws InterruptedException {
-    //        // Request creations
-    //        long creationStart = System.currentTimeMillis();
-    //        // Wait for request handling and feature creation
-    //        waitFeature(NB_FEATURES, null, 3_000_000);
-    //        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms", NB_FEATURES,
-    //                    System.currentTimeMillis() - creationStart);
-    //    }
-    //
-    //    @Test
     public void requestCreation() {
-        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
+        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata.build("sessionOwner", "session",
+                                                                                       PriorityLevel.NORMAL,
+                                                                                       Lists.emptyList(), true, false);
 
         long creationStart = System.currentTimeMillis();
         List<FeatureCreationRequestEvent> events = new ArrayList<>();

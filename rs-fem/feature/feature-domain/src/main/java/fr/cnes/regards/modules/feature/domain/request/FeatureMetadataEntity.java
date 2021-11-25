@@ -36,24 +36,18 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 
 /**
  * @author Marc SORDI
- *
+ * @author Sébastien Binda
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Embeddable
 @MappedSuperclass
-public class FeatureMetadataEntity {
+public class FeatureMetadataEntity extends FeatureStorageMedataEntity {
 
     @Column(length = 128, name = "session_owner", nullable = false)
     private String sessionOwner;
 
     @Column(length = 128, name = "session_name", nullable = false)
     private String session;
-
-    @Valid
-    @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-            value = "fr.cnes.regards.modules.feature.dto.StorageMetadata") })
-    private List<StorageMetadata> storages;
 
     public static FeatureMetadataEntity build(String sessionOwner, String session, List<StorageMetadata> storages) {
         FeatureMetadataEntity f = new FeatureMetadataEntity();
@@ -77,18 +71,6 @@ public class FeatureMetadataEntity {
 
     public void setSession(String session) {
         this.session = session;
-    }
-
-    public List<StorageMetadata> getStorages() {
-        return storages;
-    }
-
-    public void setStorages(List<StorageMetadata> storages) {
-        this.storages = storages;
-    }
-
-    public boolean hasStorage() {
-        return !storages.isEmpty();
     }
 
 }

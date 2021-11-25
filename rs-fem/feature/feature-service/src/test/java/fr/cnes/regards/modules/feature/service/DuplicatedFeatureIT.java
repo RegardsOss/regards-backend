@@ -18,22 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-
 import static org.junit.Assert.assertNotEquals;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -41,9 +35,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.service.request.FeatureStorageListener;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -52,7 +44,7 @@ import fr.cnes.regards.modules.storage.client.RequestInfo;
  * Test feature mutation based on null property values.
  *
  * @author Marc SORDI
- *
+ * @author Sébastien Binda
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_duplication",
@@ -70,12 +62,6 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
     @Autowired
     private IPublisher publisher;
 
-    @Autowired
-    private IFeatureNotificationService featureNotificationService;
-
-    @Autowired
-    private IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
-
     private boolean isToNotify;
 
     @Override
@@ -83,7 +69,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         this.isToNotify = initDefaultNotificationSettings();
     }
     @Test
-    public void testDuplicatedFeatureCreationWithOverride() throws InterruptedException {
+    public void testDuplicatedFeatureCreationWithOverride() {
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
         events.get(0).getFeature().setId("id");
         publisher.publish(events);
@@ -93,11 +79,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
 
         // mock storage response to indicate creation success
         FeatureEntity featureInDatabase = this.featureRepo.findAll().get(0);
-        FeatureCreationRequest fcr = this.featureCreationRequestRepo.findAll().get(0);
-        RequestInfo info = RequestInfo.build();
-        fcr.setGroupId(info.getGroupId());
-        fcr = this.featureCreationRequestRepo.save(fcr);
-        this.listener.onStoreSuccess(Sets.newHashSet(info));
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         //end creation process
         if(this.isToNotify) {
@@ -105,16 +87,14 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         }
 
         // publish a duplicated feature creation
+        events.get(0).setRequestId(UUID.randomUUID().toString());
         publisher.publish(events);
         waitRequest(this.featureCreationRequestRepo, 1, 30000);
         this.featureCreationService.scheduleRequests();
         waitRequest(this.featureRepo, 2, 30000);
 
         // mock storage response to indicate creation success
-        fcr = this.featureCreationRequestRepo.findAll().get(0);
-        fcr.setGroupId(info.getGroupId());
-        fcr = this.featureCreationRequestRepo.save(fcr);
-        this.listener.onStoreSuccess(Sets.newHashSet(info));
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         //end creation process
         if(this.isToNotify) {
@@ -127,6 +107,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
 
         // mock the deletion success for storage
         FeatureDeletionRequest fdr = this.featureDeletionRequestRepo.findAll().get(0);
+        RequestInfo info = RequestInfo.build();
         fdr.setGroupId(info.getGroupId());
         fdr = this.featureDeletionRequestRepo.save(fdr);
         this.listener.onDeletionSuccess(Sets.newHashSet(info));
@@ -144,7 +125,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     @Test
-    public void testDuplicatedFeatureCreationWithOverrideCaseNoFiles() throws InterruptedException {
+    public void testDuplicatedFeatureCreationWithOverrideCaseNoFiles() {
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
         events.get(0).getFeature().setId("id");
         events.get(0).getFeature().setFiles(new ArrayList<>());
@@ -185,7 +166,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     @Test
-    public void testDuplicatedFeatureCreationWithoutOverride() throws InterruptedException {
+    public void testDuplicatedFeatureCreationWithoutOverride() {
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
         events.get(0).getMetadata().setOverride(false);
 
@@ -196,11 +177,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(this.featureRepo, 1, 30000);
 
         // mock storage response to indicate creation succed
-        FeatureCreationRequest fcr = this.featureCreationRequestRepo.findAll().get(0);
-        RequestInfo info = RequestInfo.build();
-        fcr.setGroupId(info.getGroupId());
-        fcr = this.featureCreationRequestRepo.save(fcr);
-        this.listener.onStoreSuccess(Sets.newHashSet(info));
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         // end creation process
         if(this.isToNotify) {
@@ -214,10 +191,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(this.featureRepo, 2, 30000);
 
         // mock storage response to indicate creation succed
-        fcr = this.featureCreationRequestRepo.findAll().get(0);
-        fcr.setGroupId(info.getGroupId());
-        fcr = this.featureCreationRequestRepo.save(fcr);
-        this.listener.onStoreSuccess(Sets.newHashSet(info));
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         // end creation process
         if(this.isToNotify) {
@@ -230,7 +204,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     @Test
-    public void testDuplicatedFeatureCreationWithoutOverrideCaseNoFiles() throws InterruptedException {
+    public void testDuplicatedFeatureCreationWithoutOverrideCaseNoFiles() {
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
         events.get(0).getMetadata().setOverride(false);
 
@@ -241,11 +215,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(this.featureRepo, 1, 30000);
 
         // mock storage response to indicate creation succed
-        FeatureCreationRequest fcr = this.featureCreationRequestRepo.findAll().get(0);
-        RequestInfo info = RequestInfo.build();
-        fcr.setGroupId(info.getGroupId());
-        fcr = this.featureCreationRequestRepo.save(fcr);
-        this.listener.onStoreSuccess(Sets.newHashSet(info));
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         // end creation process
         if(this.isToNotify) {

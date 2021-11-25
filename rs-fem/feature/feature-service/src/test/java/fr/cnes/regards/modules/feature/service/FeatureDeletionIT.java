@@ -58,7 +58,7 @@ import static org.junit.Assert.*;
 
 /**
  * @author Kevin Marchois
- *
+ * @author Sébastien Binda
  */
 @TestPropertySource(
         properties = {"spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true",
@@ -141,9 +141,6 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
-
-        long featureNumberInDatabase;
-        int cpt = 0;
 
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
                                                                            nbFeature,
@@ -482,7 +479,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         featureDeletionService.registerRequests(eventWithFiles);
         TimeUnit.SECONDS.sleep(5);
         featureDeletionService.scheduleRequests();
-        waitForStep(featureDeletionRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 20);
+        waitForStep(featureDeletionRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationError();
         waitForSate(featureDeletionRequestRepo, RequestState.ERROR, 1, 20);
 

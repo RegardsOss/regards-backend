@@ -43,6 +43,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -128,11 +129,8 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceT
         featureCreationService.retryRequests(new FeatureRequestsSelectionDTO());
         featureCreationService.scheduleRequests();
         TimeUnit.SECONDS.sleep(5);
-        featureRequestService.handleStorageSuccess(featureCreationRequestRepo
-                                                           .findByStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED, PageRequest.of(0, 1))
-                                                           .stream()
-                                                           .map(AbstractFeatureRequest::getGroupId)
-                                                           .collect(Collectors.toSet()));
+        mockStorageHelper.mockFeatureCreationStorageSuccess(Optional.of(1));
+
         mockNotificationSuccess();
         // Give it some time
         waitCreationRequestDeletion(0, 20000);
@@ -297,11 +295,11 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceT
         RequestResultInfoDTO requestResultInfoDTO = new RequestResultInfoDTO();
         ReflectionTestUtils.setField(requestResultInfoDTO, "groupId", errorId);
         featureRequestService.handleStorageError(Sets.newSet(requestResultInfoDTO));
-        featureRequestService.handleStorageSuccess(new HashSet<>(requestIds));
+        mockStorageHelper.mockFeatureCreationStorageSuccess(new HashSet<>(requestIds));
         mockNotificationSuccess();
         // Give it some time
         waitCreationRequestDeletion(1, 20000);
-        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_STORAGE_ERROR, 1, 20);
+        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_STORAGE_ERROR, 1, 10_000);
 
         // Compute Session step
         // for each product : 1request + 1 requestRunning + 1 referencedProduct + 1 requestRunning
@@ -337,7 +335,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceT
         prepareCreationTestData(false, 1, false, true, false);
         mockNotificationError();
         waitCreationRequestDeletion(1, 20000);
-        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
+        waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 10_000);
 
         // Compute Session step
         computeSessionStep(5);

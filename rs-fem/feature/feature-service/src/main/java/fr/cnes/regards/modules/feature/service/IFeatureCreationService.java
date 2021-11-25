@@ -1,8 +1,10 @@
 package fr.cnes.regards.modules.feature.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,6 +17,10 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 
+/**
+ *
+ * @author Sébastien Binda
+ */
 public interface IFeatureCreationService extends IAbstractFeatureService<FeatureCreationRequest> {
 
     /**
@@ -43,10 +49,17 @@ public interface IFeatureCreationService extends IAbstractFeatureService<Feature
     void handleSuccessfulCreation(Set<FeatureCreationRequest> requests);
 
     /**
+     * Handle storage response errors from storage microservice
+     * @param errorRequests errors requests
+     */
+    void handleStorageError(Collection<RequestResultInfoDTO> errorRequests);
+
+    /**
      * Find all {@link FeatureCreationRequest}s
      * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page
      * @return {@link FeatureCreationRequest}s
      */
     Page<FeatureCreationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
 }

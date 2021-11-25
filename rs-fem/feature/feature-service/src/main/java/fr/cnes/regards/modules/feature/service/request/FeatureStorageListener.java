@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * This class offers callbacks from storage events
  *
  * @author kevin
- *
+ * @author Sébastien Binda
  */
 @Component
 public class FeatureStorageListener implements IStorageRequestListener {
@@ -114,7 +114,8 @@ public class FeatureStorageListener implements IStorageRequestListener {
     @Override
     public void onReferenceSuccess(Set<RequestInfo> requests) {
         this.featureRequestService
-                .handleStorageSuccess(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
+                .handleStorageSuccess(requests.stream().flatMap(r -> r.getSuccessRequests().stream())
+                                              .collect(Collectors.toSet()));
     }
 
     @Override
@@ -126,7 +127,8 @@ public class FeatureStorageListener implements IStorageRequestListener {
     @Override
     public void onStoreSuccess(Set<RequestInfo> requests) {
         this.featureRequestService
-                .handleStorageSuccess(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
+                .handleStorageSuccess(requests.stream().flatMap(r -> r.getSuccessRequests().stream())
+                                              .collect(Collectors.toSet()));
     }
 
     @Override

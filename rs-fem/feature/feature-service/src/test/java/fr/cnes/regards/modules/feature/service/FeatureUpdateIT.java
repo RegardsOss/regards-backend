@@ -23,13 +23,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.feature.dto.*;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -39,6 +39,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -55,12 +56,6 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -73,7 +68,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 
 /**
  * @author kevin
- *
+ * @author Sébastien Binda
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_update", "regards.amqp.enabled=true",
@@ -135,6 +130,72 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
     }
 
+    @Test
+    @Purpose("Check update request on a feature with new files locations when storage error occurs")
+    public void testUpdateFeatureFilesWithErrors() throws InterruptedException {
+        updateFeaturesFiles(5, 2);
+    }
+
+    @Test
+    @Purpose("Check update request on a feature with new files locations when storage succeed")
+    public void testUpdateFeatureFiles() throws InterruptedException {
+        updateFeaturesFiles(5, 0);
+    }
+
+    private void updateFeaturesFiles(int nbSuccess, int nbErrors) throws InterruptedException {
+        int nbFeatures = nbSuccess+nbErrors;
+        int timeout = 10_000 + (nbFeatures*100);
+        // Init a feature
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true,false);
+        // Remove files to create events. Files will be added with the update requests
+        events.forEach(e-> e.getFeature().getFiles().clear());
+        this.featureCreationService.registerRequests(events);
+        this.featureCreationService.scheduleRequests();
+        waitFeature(nbFeatures,null,timeout);
+        mockNotificationSuccess();
+        List<FeatureEntity> features = featureRepo.findAll();
+        Assert.assertNotNull(features);
+        Assert.assertTrue(features.size() == nbFeatures);
+        Assert.assertEquals(0L, featureCreationRequestRepo.count());
+
+        // Now create an update request on this feature to add referenced files
+        List<FeatureUpdateRequestEvent> updates = prepareUpdateRequests(features.stream().map(f -> f.getUrn()).collect(
+                Collectors.toList()));
+        // Add one file with a store file (only url is provided in location)
+        FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
+                                                                       MediaType.APPLICATION_OCTET_STREAM, "fileName",
+                                                                       10L, "MD5", "checksum");
+        String newStorage = "somewhere";
+        String newUrl = "somewhere://dir/file.txt";
+        FeatureFileLocation location = FeatureFileLocation.build(newUrl, newStorage);
+        updates.forEach(u -> u.getFeature().getFiles().add(FeatureFile.build(attributes, location)));
+
+        // Process update request
+        RequestInfo<FeatureUniformResourceName> info = featureUpdateService.registerRequests(updates);
+        Assert.assertEquals(nbFeatures, info.getGranted().size());
+        Assert.assertEquals(0L, info.getDenied().size());
+        Thread.sleep((properties.getDelayBeforeProcessing()+1)*1000);
+        Assert.assertEquals(nbFeatures, featureUpdateService.scheduleRequests());
+
+        // As files needs to be updated, the step of the request remains REMOTE STORAGE REQUESTS still response from
+        // storage is received.
+        waitForStep(featureUpdateRequestRepo,FeatureRequestStep.REMOTE_STORAGE_REQUESTED,nbFeatures,timeout);
+
+        // Simulate response from storage
+        mockStorageHelper.mockFeatureUpdateStorageWithErrors(nbSuccess, nbErrors);
+
+        // Check feature is successfully updated with new file reference
+        features = featureRepo.findAll();
+        FeatureEntity feature = features.get(0);
+        Assert.assertNotNull(features);
+        Assert.assertEquals(1L, feature.getFeature().getFiles().size());
+        Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().size());
+        Assert.assertEquals(newStorage, feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getStorage());
+        Assert.assertEquals(newUrl, feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getUrl());
+        waitForStep(featureUpdateRequestRepo,FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,nbSuccess,timeout);
+        waitForStep(featureUpdateRequestRepo,FeatureRequestStep.REMOTE_STORAGE_ERROR,nbErrors,timeout);
+    }
+
     /**
      * Test update scheduler we will create 4 {@link FeatureUpdateRequest}
      * fur1, fur2, fur3, fur4
@@ -158,6 +219,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != 3));
         List<FeatureEntity> entities = super.featureRepo.findAll();
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
+        mockNotificationSuccess();
 
         // features have been created. now lets simulate a deletion of one of them
         FeatureEntity toDelete = entities.get(2);
@@ -196,7 +259,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         // Simulate featue deletion request running
         Page<FeatureDeletionRequest> deletionRequests = featureDeletionService
                 .findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 10));
-        Assert.assertEquals("There sould be one deletion request", 1L, deletionRequests.getTotalElements());
+        Assert.assertEquals("There should be one deletion request", 1L, deletionRequests.getTotalElements());
         FeatureDeletionRequest dr = deletionRequests.getContent().get(0);
         dr.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
         featureDeletionRequestRepo.save(dr);
@@ -431,7 +494,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         featureUpdateService.registerRequests(prepareUpdateRequests(urns));
         TimeUnit.SECONDS.sleep(5);
         featureUpdateService.scheduleRequests();
-        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 20);
+        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationSuccess();
         waitUpdateRequestDeletion(0, 20000);
 
@@ -581,9 +644,9 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         featureUpdateService.registerRequests(prepareUpdateRequests(urns));
         TimeUnit.SECONDS.sleep(5);
         featureUpdateService.scheduleRequests();
-        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 20);
+        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationError();
-        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 20);
+        waitForStep(featureUpdateRequestRepository, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 10_000);
 
         // Compute Session step
         computeSessionStep(9);

@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
+import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
@@ -37,7 +35,6 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.*;
 import fr.cnes.regards.modules.feature.service.dump.IFeatureMetadataService;
-import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
@@ -54,7 +51,7 @@ import java.util.stream.Collectors;
 /**
  *
  * @author kevin
- *
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
@@ -64,6 +61,9 @@ public class FeatureRequestService implements IFeatureRequestService {
 
     @Autowired
     private IFeatureCreationRequestRepository fcrRepo;
+
+    @Autowired
+    private IFeatureUpdateRequestRepository furRepo;
 
     @Autowired
     private IFeatureDeletionRequestRepository fdrRepo;
@@ -93,7 +93,7 @@ public class FeatureRequestService implements IFeatureRequestService {
     public IFeatureMetadataService featureMetadataService;
 
     @Autowired
-    private FeatureSessionNotifier featureSessionNotifier;
+    public IFeatureEntityRepository featureRepo;
 
     @Override
     public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection,
@@ -185,31 +185,61 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public void handleStorageSuccess(Set<String> groupIds) {
-        Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
-        // FIXME : Update feature with new file location.
-        featureCreationService.handleSuccessfulCreation(request);
+    public void handleStorageSuccess(Set<RequestResultInfoDTO> requestsInfo) {
+        long scheduleStart = System.currentTimeMillis();
+        LOGGER.trace("Handling {} storage success responses from storage",requestsInfo.size());
+        Map<String, List<RequestResultInfoDTO>> requestInfoPerGroupId = requestsInfo.stream().collect(Collectors.groupingBy(RequestResultInfoDTO::getGroupId));
+        Map<FeatureEntity, List<RequestResultInfoDTO>> updateInfos = new HashMap<>();
+
+        // Find FeatureCreationRequest associated to success storage responses if any
+        Set<FeatureCreationRequest> creationRequests = this.fcrRepo.findByGroupIdIn(requestInfoPerGroupId.keySet());
+        for (FeatureCreationRequest r : creationRequests) {
+            updateInfos.put(r.getFeatureEntity(), requestInfoPerGroupId.get(r.getGroupId()));
+        }
+
+        // Find FeatureUpdateRequest associated to success storage responses if any
+        Set<FeatureUpdateRequest> updateRequests = this.furRepo.findByGroupIdIn(requestInfoPerGroupId.keySet());
+        if (!updateRequests.isEmpty()) {
+            // Retrieve features to update associated to storage responses
+            List<FeatureEntity> featuresToUpdate = featureRepo.findCompleteByUrnIn(
+                    updateRequests.stream().map(r -> r.getUrn()).collect(Collectors.toSet()));
+            for (FeatureEntity f : featuresToUpdate) {
+                // Associate Feature to FeatureUpdaterRequest thanks to feature urn
+                Optional<FeatureUpdateRequest> request = updateRequests.stream().filter(r -> r.getUrn().equals(f.getUrn())).findFirst();
+                if (request.isPresent()) {
+                    updateInfos.put(f, requestInfoPerGroupId.get(request.get().getGroupId()));
+                }
+            }
+        }
+
+        // Updates all features files locations from both create and update requests
+        List<FeatureEntity> updatedFeatures = featureUpdateService.updateFilesLocations(updateInfos);
+        for (FeatureEntity updatedFeature : updatedFeatures) {
+            // After update done, if updated feature is associated to an update request we need to set feature toNotify
+            // in the request for further notification step.
+            Optional<FeatureUpdateRequest> updateRequest = updateRequests.stream()
+                    .filter(r -> r.getUrn().equals(updatedFeature.getUrn()))
+                    .findFirst();
+            updateRequest.ifPresent(u -> u.setToNotify(updatedFeature.getFeature()));
+        }
+
+        // Handle successful update and create requests
+        featureCreationService.handleSuccessfulCreation(creationRequests);
+        featureUpdateService.doOnSuccess(updateRequests);
+        LOGGER.debug("------------->>> {} features updated from {} storage responses "
+                             + "associated to {} creation requests and {} update requests in {} ms",
+                     updatedFeatures.size(),
+                     requestsInfo.size(),
+                     creationRequests.size(),
+                     updateRequests.size(),
+                     System.currentTimeMillis() - scheduleStart);
+
     }
 
     @Override
     public void handleStorageError(Collection<RequestResultInfoDTO> errorRequests) {
-        Map<String, String> errorByGroupId = Maps.newHashMap();
-        errorRequests.forEach(e -> errorByGroupId.put(e.getGroupId(), e.getErrorCause()));
-
-        Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(errorByGroupId.keySet());
-
-        // publish error notification for all request id
-        request.forEach(item -> publisher.publish(FeatureRequestEvent
-                .build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
-                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.ERROR, null)));
-        // set FeatureCreationRequest to error state
-        request.forEach(r -> {
-            r.setState(RequestState.ERROR);
-            r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
-            r.addError(String.format("Error during file storage : %s", Optional.ofNullable(errorByGroupId.get(r.getGroupId())).orElse("unknown error.")));
-        });
-        featureCreationService.doOnError(request);
-        this.fcrRepo.saveAll(request);
+        this.featureCreationService.handleStorageError(errorRequests);
+        this.featureUpdateService.handleStorageError(errorRequests);
     }
 
     @Override

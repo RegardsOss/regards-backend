@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
@@ -32,6 +33,10 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,15 +45,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.validation.Errors;
 
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * @author Marc SORDI
+ * @author Sébastien Binda
  */
 public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> implements IAbstractFeatureService<R> {
 
@@ -190,6 +193,17 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
             Collection<FeatureUniformResourceName> uniformResourceNames) {
         return featureEntityRepository.findByUrnIn(uniformResourceNames).stream()
                 .collect(Collectors.toMap(ILightFeatureEntity::getUrn, Function.identity()));
+    }
+
+    /**
+     * Update given request with an error status and error message
+     * @param request Request to update
+     * @param errorCause Error cause message
+     */
+    protected void addRemoteStorageError(AbstractFeatureRequest request, String errorCause) {
+        request.setState(RequestState.ERROR);
+        request.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
+        request.addError(String.format("Error during file storage : %s",errorCause));
     }
 
     protected abstract Page<R> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);

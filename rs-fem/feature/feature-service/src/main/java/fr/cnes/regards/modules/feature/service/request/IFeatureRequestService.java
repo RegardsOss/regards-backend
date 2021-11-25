@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author kevin
- *
+ * @author Sébastien Binda
  */
 public interface IFeatureRequestService {
 
@@ -52,9 +52,9 @@ public interface IFeatureRequestService {
      * Set the status STORAGE_OK to all {@link FeatureEntity} references by
      * group id in the list send in parameter
      *
-     * @param groupIds a list of group id
+     * @param requestsInfo a list of {@link RequestResultInfoDTO} received from storage
      */
-    void handleStorageSuccess(Set<String> groupIds);
+    void handleStorageSuccess(Set<RequestResultInfoDTO> requestsInfo);
 
     /**
      * Set the status STORAGE_ERROR to the {@link FeatureEntity} references by

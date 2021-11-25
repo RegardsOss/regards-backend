@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
  * Feature id corresponds to input provider identifier
  *
  * @author Marc SORDI
- *
+ * @author Sébastien Binda
  */
 public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
 
@@ -62,7 +62,7 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
     protected FeatureHistory history;
 
     @Valid
-    protected List<FeatureFile> files = new ArrayList<FeatureFile>();
+    protected List<FeatureFile> files = new ArrayList<>();
 
     private boolean last = false;
 

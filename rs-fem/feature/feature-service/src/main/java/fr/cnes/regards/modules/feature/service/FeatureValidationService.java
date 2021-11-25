@@ -20,15 +20,18 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.service.validation.AbstractValidationService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.IValidationService;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
@@ -39,6 +42,7 @@ import java.util.HashMap;
  * Validate incoming features
  *
  * @author Marc SORDI
+ * @author Sébastien Binda
  */
 @Service
 public class FeatureValidationService extends AbstractValidationService<Feature> implements IFeatureValidationService, IValidationService<Feature> {
@@ -48,16 +52,18 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
     private static final String FEATURE = "self";
     private static final String URN_FIELD = "urn";
     private static final String ID_FIELD = "id";
+    private static final String FILES_FIELD = "files";
     private static final Integer ID_LENGTH = 100;
+    private static final String FILES_STORAGE_ERROR_CODE= "feature.files.storage.unsupported";
 
     /**
      * Standard validator based on annotation
      */
-    @Autowired
     private Validator validator;
 
-    public FeatureValidationService(IModelFinder modelFinder) {
+    public FeatureValidationService(IModelFinder modelFinder, Validator validator) {
         super(modelFinder);
+        this.validator = validator;
     }
 
     @Override
@@ -108,11 +114,47 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
             errors.addAllErrors(validate(feature.getModel(), feature, mode, objectName));
         }
 
+        validateFiles(feature, errors);
+
         if (errors.hasErrors()) {
             LOGGER.error("Error validating feature \"{}\" : {}", featureId, ErrorTranslator.getErrorsAsString(errors));
         }
 
         return errors;
+    }
+
+    /**
+     * Validate {@link Feature} files
+     * @param feature {@link Feature} to valid files
+     * @param errors {@link Errors} in which add new errors if any
+     */
+    private void validateFiles(Feature feature, Errors errors) {
+        Long numberOfFilesToStore = 0L;
+        Long numberOfFilesToReference = 0L;
+
+        if (!CollectionUtils.isEmpty(feature.getFiles())) {
+            for (FeatureFile file : feature.getFiles()) {
+                numberOfFilesToStore += file.getLocations().stream().filter(loc -> loc.getStorage() == null).count();
+                numberOfFilesToReference += file.getLocations().stream().filter(loc -> loc.getStorage() != null).count();
+            }
+            if (numberOfFilesToStore > 0 && numberOfFilesToReference > 0) {
+                String message = String.format("Feature creation can not handle both store and reference files. " + "Feature contains %s files to store and %s files to reference",
+                                               numberOfFilesToStore, numberOfFilesToReference);
+                errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
+            }
+
+            if (numberOfFilesToStore > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
+                String message = String.format("Too many files to store for feature {}. Limit is {}.", numberOfFilesToStore,
+                                               ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+                errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE,message);
+            }
+
+            if (numberOfFilesToReference > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
+                String message = String.format("Too many files to reference for feature {}. Limit is {}.", numberOfFilesToReference,
+                                               ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+                errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
+            }
+        }
     }
 
 }
