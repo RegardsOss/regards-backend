@@ -343,14 +343,12 @@ public class CacheService {
         return cachedFileRepository.count() == 0;
     }
 
-    public void scheduleCacheCleanUpForTenant(String tenant, String jobOwner) {
-        runtimeTenantResolver.forceTenant(tenant);
+    public void scheduleCacheCleanUp(String jobOwner) {
         Set<JobParameter> parameters = Sets.newHashSet();
         if (jobService.retrieveJobsCount(CacheCleanJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
                                          JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
             jobService.createAsQueued(new JobInfo(false, StorageJobsPriority.CACHE_PURGE, parameters,
                                                   jobOwner, CacheCleanJob.class.getName()));
         }
-        runtimeTenantResolver.clearTenant();
     }
 }

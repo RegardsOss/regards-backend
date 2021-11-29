@@ -385,14 +385,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             Set<String> newQueueNames = new HashSet<>();
             boolean exists;
             for (Queue queue : queues) {
-                exists = false;
-                for (String existingQueue : existingQueues) {
-                    if (queue.getName().equals(existingQueue)) {
-                        exists = true;
-                        break;
-                    }
-                }
-                if (!exists) {
+                if (Arrays.stream(existingQueues).noneMatch(q -> q.equals(queue.getName()))) {
                     newQueueNames.add(queue.getName());
                 }
             }
@@ -459,7 +452,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
             // Declare AMQP elements
             AmqpChannel channel = AmqpChannel.build(eventType)
+                    .forHandler(handler)
                     .autoDelete(EventUtils.isAutoDeleteQueue(eventType));
+            queueExchangeName.getLeft().ifPresent(name -> channel.queue(name));
+            queueExchangeName.getRight().ifPresent(name -> channel.exchange(name));
 
             // Declare AMQP elements
             Queue queue = declareElements(virtualHost, tenant, channel, false);

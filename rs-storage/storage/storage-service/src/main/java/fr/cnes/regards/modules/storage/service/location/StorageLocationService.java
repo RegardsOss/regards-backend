@@ -344,7 +344,7 @@ public class StorageLocationService {
      */
     public void deleteFiles(String storageLocationId, Boolean forceDelete, String sessionOwner, String session) throws ModuleException {
         if (storageLocationId.equals(CacheService.CACHE_NAME)) {
-            cacheService.scheduleCacheCleanUpForTenant(runtimeTenantResolver.getTenant(), authResolver.getUser());
+            cacheService.scheduleCacheCleanUp(authResolver.getUser());
         } else {
             deletionService.scheduleJob(storageLocationId, forceDelete, sessionOwner, session);
         }

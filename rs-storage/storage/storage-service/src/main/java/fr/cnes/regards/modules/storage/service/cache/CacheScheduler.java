@@ -76,7 +76,9 @@ public class CacheScheduler {
             fixedDelayString = "${regards.cache.cleanup.delay:" + DEFAULT_DELAY + "}")
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            cacheService.scheduleCacheCleanUpForTenant(tenant, CacheScheduler.class.getName());
+            runtimeTenantResolver.forceTenant(tenant);
+            cacheService.scheduleCacheCleanUp(CacheScheduler.class.getName());
+            runtimeTenantResolver.clearTenant();
         }
     }
 
