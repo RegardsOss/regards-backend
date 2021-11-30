@@ -169,14 +169,14 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
                                                                        MediaType.APPLICATION_OCTET_STREAM, "fileName",
                                                                        10L, "MD5", "checksum");
-        FeatureFileLocation location = FeatureFileLocation.build("somewhere://test/file.txt", "somewhere");
+        FeatureFileLocation location = FeatureFileLocation.build("file:///test/file.txt", "somewhere");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, location));
 
         // Add one file with a store file (only url is provided in location)
         FeatureFileAttributes attributes2 = FeatureFileAttributes.build(DataType.RAWDATA,
                                                                         MediaType.APPLICATION_OCTET_STREAM, "fileName2",
                                                                         10L, "MD5", "checksum2");
-        FeatureFileLocation location2 = FeatureFileLocation.build("file://dir/file.txt");
+        FeatureFileLocation location2 = FeatureFileLocation.build("file:///dir/file.txt");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes2, location2));
         events.get(0).getMetadata().setStorages(Lists.newArrayList(StorageMetadata.build("elsewhere")));
 

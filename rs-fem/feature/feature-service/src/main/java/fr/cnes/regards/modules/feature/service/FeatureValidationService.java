@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
+import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.service.validation.AbstractValidationService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
@@ -29,13 +30,14 @@ import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 
 /**
@@ -45,21 +47,27 @@ import java.util.HashMap;
  * @author Sébastien Binda
  */
 @Service
-public class FeatureValidationService extends AbstractValidationService<Feature> implements IFeatureValidationService, IValidationService<Feature> {
+public class FeatureValidationService extends AbstractValidationService<Feature>
+        implements IFeatureValidationService, IValidationService<Feature> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureValidationService.class);
 
     private static final String FEATURE = "self";
+
     private static final String URN_FIELD = "urn";
+
     private static final String ID_FIELD = "id";
+
     private static final String FILES_FIELD = "files";
+
     private static final Integer ID_LENGTH = 100;
-    private static final String FILES_STORAGE_ERROR_CODE= "feature.files.storage.unsupported";
+
+    private static final String FILES_STORAGE_ERROR_CODE = "feature.files.storage.unsupported";
 
     /**
      * Standard validator based on annotation
      */
-    private Validator validator;
+    private final Validator validator;
 
     public FeatureValidationService(IModelFinder modelFinder, Validator validator) {
         super(modelFinder);
@@ -88,7 +96,8 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
             errors.rejectValue(ID_FIELD, "feature.id.null.error.message", "Feature id must not be null");
         } else {
             if ((featureId != null) && (featureId.length() > ID_LENGTH)) {
-                errors.rejectValue(ID_FIELD, "feature.id.length.error.message", String.format("Feature id must not exceed %s characters", ID_LENGTH));
+                errors.rejectValue(ID_FIELD, "feature.id.length.error.message",
+                                   String.format("Feature id must not exceed %s characters", ID_LENGTH));
             }
         }
 
@@ -102,7 +111,8 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
             case UPDATE:
             case PATCH:
                 if (urn == null) {
-                    errors.rejectValue(URN_FIELD, "feature.urn.required.error.message", "URN is required in feature update");
+                    errors.rejectValue(URN_FIELD, "feature.urn.required.error.message",
+                                       "URN is required in feature update");
                 }
                 break;
             default:
@@ -110,7 +120,8 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         }
 
         // Try validating properties according to data model
-        if ((feature.getModel() != null) && (feature.getProperties() != null)) { // If model is null, error already detected before!
+        if ((feature.getModel() != null) && (feature.getProperties()
+                != null)) { // If model is null, error already detected before!
             errors.addAllErrors(validate(feature.getModel(), feature, mode, objectName));
         }
 
@@ -125,8 +136,9 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
 
     /**
      * Validate {@link Feature} files
+     *
      * @param feature {@link Feature} to valid files
-     * @param errors {@link Errors} in which add new errors if any
+     * @param errors  {@link Errors} in which add new errors if any
      */
     private void validateFiles(Feature feature, Errors errors) {
         Long numberOfFilesToStore = 0L;
@@ -135,25 +147,44 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         if (!CollectionUtils.isEmpty(feature.getFiles())) {
             for (FeatureFile file : feature.getFiles()) {
                 numberOfFilesToStore += file.getLocations().stream().filter(loc -> loc.getStorage() == null).count();
-                numberOfFilesToReference += file.getLocations().stream().filter(loc -> loc.getStorage() != null).count();
+                numberOfFilesToReference += file.getLocations().stream().filter(loc -> loc.getStorage() != null)
+                        .count();
+                file.getLocations().forEach(loc -> validateFileLocation(loc, errors));
             }
             if (numberOfFilesToStore > 0 && numberOfFilesToReference > 0) {
-                String message = String.format("Feature creation can not handle both store and reference files. " + "Feature contains %s files to store and %s files to reference",
+                String message = String.format("Feature creation can not handle both store and reference files. "
+                                                       + "Feature contains %s files to store and %s files to reference",
                                                numberOfFilesToStore, numberOfFilesToReference);
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
 
             if (numberOfFilesToStore > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
-                String message = String.format("Too many files to store for feature {}. Limit is {}.", numberOfFilesToStore,
-                                               ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
-                errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE,message);
+                String message = String.format("Too many files to store for feature {}. Limit is {}.",
+                                               numberOfFilesToStore, ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+                errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
 
             if (numberOfFilesToReference > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
-                String message = String.format("Too many files to reference for feature {}. Limit is {}.", numberOfFilesToReference,
-                                               ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+                String message = String.format("Too many files to reference for feature {}. Limit is {}.",
+                                               numberOfFilesToReference, ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
+        }
+    }
+
+    /**
+     * Validate {@link FeatureFileLocation} of feature files
+     *
+     * @param loc
+     * @param errors
+     */
+    public void validateFileLocation(FeatureFileLocation loc, Errors errors) {
+        try {
+            URL url = new URL(loc.getUrl());
+        } catch (MalformedURLException e) {
+            String errorMessage = String.format("Invalid URL %s cause : %s", loc.getUrl(), e.getMessage());
+            LOGGER.error(errorMessage, e);
+            errors.rejectValue("files.location.url", FILES_STORAGE_ERROR_CODE, errorMessage);
         }
     }
 

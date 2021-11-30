@@ -178,7 +178,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                                                                        MediaType.APPLICATION_OCTET_STREAM, "fileName",
                                                                        10L, "MD5", "checksum");
         String newStorage = "somewhere";
-        String newUrl = "somewhere://dir/file.txt";
+        String newUrl = "file:///dir/file.txt";
         FeatureFileLocation location = FeatureFileLocation.build(newUrl, newStorage);
         updates.forEach(u -> u.getFeature().getFiles().add(FeatureFile.build(attributes, location)));
 

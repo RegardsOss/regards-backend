@@ -32,10 +32,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -205,6 +202,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                                                       item.getRequestDate(), RequestState.GRANTED, null,
                                                                       item.getFeature(),
                                                                       item.getMetadata().getPriority(),
+                                                                      item.getMetadata().getStorages(),
                                                                       FeatureRequestStep.LOCAL_DELAYED);
 
             // Monitoring log

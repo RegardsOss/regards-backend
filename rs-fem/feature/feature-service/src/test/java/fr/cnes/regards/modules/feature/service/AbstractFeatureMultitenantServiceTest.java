@@ -503,7 +503,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         for (int i = 0; i < featureNumberToCreate; i++) {
             file = FeatureFile.build(
                     FeatureFileAttributes.build(DataType.DESCRIPTION, new MimeType("mime"), "toto", 1024L, "MD5",
-                                                "checksum"), FeatureFileLocation.build("www.google.com", "GPFS"));
+                                                "checksum"), FeatureFileLocation.build("http://www.google.com", "GPFS"));
 
             featureToAdd = Feature.build("id" + i, source, null, IGeometry.point(IGeometry.position(10.0, 20.0)),
                                          EntityType.DATA, model).withFiles(file);

@@ -81,20 +81,10 @@ public class FeatureFilesService {
             Set<FileReferenceRequestDTO> referenceRequests = Sets.newHashSet();
             Set<FileStorageRequestDTO> storageRequests = Sets.newHashSet();
 
-            // Retrieve new storage locations from request metadata
-            Set<String> storageLocations;
-            if (request.getMetadata() != null && request.getMetadata().hasStorage()) {
-                storageLocations = request.getMetadata().getStorages().stream().map(
-                                StorageMetadata::getPluginBusinessId)
-                        .collect(Collectors.toSet());
-            } else {
-                storageLocations = Sets.newHashSet();
-            }
-
             // For each file from feature update information, check if it's a new file or if the file already exists if there
             // is some new locations.
             for (FeatureFile fileToUpdate : request.getFeature().getFiles()) {
-                handleFeatureUpdateFile(entity, fileToUpdate, storageLocations, request.getRequestOwner(),
+                handleFeatureUpdateFile(entity, fileToUpdate, request.getMetadata().getStorages(), request.getRequestOwner(),
                                         referenceRequests, storageRequests);
             }
 
@@ -112,8 +102,7 @@ public class FeatureFilesService {
     /**
      * Generate storage/reference requests if given {@link FeatureFile} does not exists in the
      * current {@link FeatureEntity} or if any location does exist.
-     *
-     * @param feature           {@link FeatureEntity} current feature to check for new file locations
+     *  @param feature           {@link FeatureEntity} current feature to check for new file locations
      * @param fileToUpdate      {@link FeatureFile} new file to add to current feature
      * @param storageLocations  {@link String}s storage locations to store new files
      * @param requestOwner      {@link String} update request owner
@@ -121,7 +110,7 @@ public class FeatureFilesService {
      * @param storageRequests   {@link FileStorageRequestDTO}s containing all storage requests to send to storage
      */
     private void handleFeatureUpdateFile(FeatureEntity feature, FeatureFile fileToUpdate,
-            Collection<String> storageLocations, String requestOwner, Set<FileReferenceRequestDTO> referenceRequests,
+            List<StorageMetadata> storageLocations, String requestOwner, Set<FileReferenceRequestDTO> referenceRequests,
             Set<FileStorageRequestDTO> storageRequests) {
 
         // Check if file to update in given feature is a new file or if it contains a new location.
@@ -134,7 +123,11 @@ public class FeatureFilesService {
             existingFile.get().getLocations().addAll(newLocations);
         } else {
             // Update feature with new file and its locations
-            newLocations = fileToUpdate.getLocations();
+            // If new location does not contains storage name, storageLocations is mandatory
+            newLocations = fileToUpdate.getLocations()
+                    .stream()
+                    .filter(l -> l.getStorage() != null || !CollectionUtils.isEmpty(storageLocations))
+                    .collect(Collectors.toSet());
             feature.getFeature().getFiles().add(fileToUpdate);
         }
 
@@ -151,14 +144,14 @@ public class FeatureFilesService {
             } else {
                 // No storage location, means that we have to store the given file from local url
                 // to given storageLocations
-                for (String storage : storageLocations) {
+                for (StorageMetadata storage : storageLocations) {
                     // Create one storage request for each storageLocation
                     storageRequests.add(FileStorageRequestDTO.build(attributes.getFilename(), attributes.getChecksum(),
                                                                     attributes.getAlgorithm(),
                                                                     attributes.getMimeType().toString(),
                                                                     feature.getUrn().toString(), requestOwner,
-                                                                    feature.getSession(), loc.getUrl(), storage,
-                                                                    Optional.of(loc.getUrl())));
+                                                                    feature.getSession(), loc.getUrl(), storage.getPluginBusinessId(),
+                                                                    Optional.ofNullable(storage.getStorePath())));
                 }
             }
         }
@@ -173,19 +166,21 @@ public class FeatureFilesService {
      * @return Set<FeatureFileLocation>
      */
     private Set<FeatureFileLocation> getNewLocations(FeatureFile newFile, FeatureFile file,
-            Collection<String> newStorageLocations) {
+            List<StorageMetadata> newStorageLocations) {
         Set<FeatureFileLocation> newLocations = Sets.newHashSet();
         for (FeatureFileLocation newFileLocation : newFile.getLocations()) {
             // Check if file to update contains a new storage location.
             // A new storage location is a location from the fileUpdate that does not exist in the existingFile.
             boolean newLocationAlreadyExist = file.getLocations().stream().anyMatch(location -> {
                 if (newFileLocation.getStorage() == null) {
-                    return newStorageLocations.contains(location.getStorage());
+                    return newStorageLocations.stream()
+                            .map(StorageMetadata::getPluginBusinessId)
+                            .anyMatch(storage -> storage.equals(location.getStorage()));
                 } else {
                     return location.getStorage().equals(newFileLocation.getStorage());
                 }
             });
-            if (!newLocationAlreadyExist) {
+            if (!newLocationAlreadyExist && !newStorageLocations.isEmpty()) {
                 newLocations.add(newFileLocation);
             }
         }

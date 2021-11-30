@@ -101,14 +101,16 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
         assertEquals(NB_FEATURES.longValue(), this.featureUpdateRequestRepo.count());
 
         // wait ...
-        Thread.sleep(properties.getDelayBeforeProcessing() * 1000);
+        Thread.sleep(properties.getDelayBeforeProcessing() * 2000);
 
-        boolean schedule;
+        int nbScheduledRequests = 0;
         do {
-            schedule = featureService.scheduleRequests() > 0;
-        } while (schedule);
+            nbScheduledRequests = featureService.scheduleRequests();
+            LOGGER.info(">>>>>>>>>>>>>>> {} Scheduled requests", nbScheduledRequests);
+            Thread.sleep(1_000);
+        } while (nbScheduledRequests > 0);
 
-        waitFeature(NB_FEATURES, requestDate, 3600_000);
+        waitFeature(NB_FEATURES, requestDate, 600_000);
 
         long duration = System.currentTimeMillis() - start;
         Assert.assertTrue(String.format("Performance not reached! (%d/%d)", duration, DURATION), duration < DURATION);

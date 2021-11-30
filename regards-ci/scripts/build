@@ -139,7 +139,8 @@ function compile {
             mvnPlArgArg="-pl ${mvnPlArg}"
         fi
         set -x
-        mvn -U -B -P docker,CI clean install \
+        mvn -U -B -P docker,CI  -T 6 \
+            clean install \
             -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
