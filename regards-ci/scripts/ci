@@ -29,9 +29,6 @@ case $STEP in
     compile)
         tm compile
     ;;
-    compileForTests)
-        tm compileForTests
-    ;;
     tests)
 	    tm tests "false"
     ;;
@@ -39,10 +36,10 @@ case $STEP in
 	    tm tests "true"
     ;;
     deployDockerImages)
-        tm buildAnDeployDockerImages "true"
+        tm buildAnDeployDockerImages
     ;;
     deployFastDockerImages)
-        tm buildAnDeployDockerImages "false" "fast-" 
+        tm buildAnDeployDockerImages "fast-" 
     ;;
     deployMvnArtifacts)
         tm deployMvnArtifacts

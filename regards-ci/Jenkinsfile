@@ -70,20 +70,12 @@ pipeline {
         }
         stage("Tests Prepration") {
             steps {
-                parallel(
-                    compile: {
-                        echo "Build with CI profile"
-                        runMavenDockerImg("compileForTests", "", false, false)
-                    },
-                    cots: {
-                        echo "Launch COTS"
-                            sh 'cd ' + CI_DIR + ' \
-                                && docker-compose \
-                                        -f docker/docker-compose-cots.yml \
-                                        -p ' + PROJECT_NAME + ' \
-                                        up -d'
-                    }
-                )
+                echo "Launch COTS"
+                sh 'cd ' + CI_DIR + ' \
+                    && docker-compose \
+                            -f docker/docker-compose-cots.yml \
+                            -p ' + PROJECT_NAME + ' \
+                            up -d'
             }
         }
 
@@ -174,15 +166,17 @@ pipeline {
                 }
             }
         }
-        stage("Deploy") {
+        stage("Deploy artifacts") {
             when {
                 branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
             }
             steps {
-
                 echo "Deploy Maven Artifacts"
                 runMavenDockerImg("deployMvnArtifacts", "", false, false)
-
+            }
+        }
+        stage("Deploy Docker images") {
+            steps {
                 echo "Build/Deploy stable docker images"
                 runMavenDockerImg("deployDockerImages", "", false, false)
             }

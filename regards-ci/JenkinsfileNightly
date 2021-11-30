@@ -59,7 +59,7 @@ pipeline {
                 parallel(
                     compile: {
                         echo "Build with CI profile"
-                        runMavenDockerImg("compileForTests", "", false, false)
+                        runMavenDockerImg("compile", "", false, false)
                     },
                     cots: {
                         echo "Launch COTS"

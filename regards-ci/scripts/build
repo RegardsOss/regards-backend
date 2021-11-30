@@ -88,12 +88,10 @@ function updateNexusHashes {
             #echo "Found in successfully built modules, taking new hash ${newModuleWithHash}"
             hashes+=("${newModuleWithHash}")
         else
-            if [[ -n "${previousModuleWithHash}" ]]; then
-                # Otherwise, keep its old one. During next build, the new hash will be re-calculated and the module will be rebuilt
-                # echo "Not found in success build, but found in previous hashes file from nexus, taking previous hash ${previousModuleWithHash}"
+            moduleToRebuild=$(cat ${DATADIR}/modulesToRebuild.txt | grep "${module}")
+            # If module is not to rebuild and the module has been successfully build in the previous build, add it to the success hashes to send to nexus with the previous hash
+            if [ -n "${previousModuleWithHash}" ] && [ -z "$moduleToRebuild" ]; then
                 hashes+=("$previousModuleWithHash")
-            # else
-                # echo "Found nowhere, ignore hash"
             fi
             # If module was not successful and was not referenced on nexus before we aren't going to reference it now so do nothing
         fi
@@ -118,7 +116,7 @@ function updateNexusHashes {
     set +x
 }
 
-function compileForTests {
+function compile {
     checkArtifactsRebuild "pom.xml"
 
     echo -e "\nRunning Maven build with CI profile ..."
@@ -130,11 +128,10 @@ function compileForTests {
             mvnPlArgArg="-pl ${mvnPlArg}"
         fi
         set -x
-        mvn -U -B -P CI clean install -T 6 \
-            -Dregards.version="CI-${REGARDS_VERSION}" \
+        mvn -U -B -P docker,CI clean install -T 6 \
+            -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
-            -DcmdLineTarget=target \
             -Dmaven.test.skip=true \
             -DskipTests=true \
             -Dmaven-deploy.skip=true \
@@ -154,44 +151,6 @@ function compileForTests {
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-compile.log' artifact for more information"
         else
             echo "Error while executing Maven build, please refer to the full 'mvn-compile.log' artifact for more information."
-            exit 1
-        fi
-    fi
-}
-
-function compile {
-    checkArtifactsRebuild "pom.xml"
-
-    echo -e "\nRunning Maven build with docker profile ..."
-
-    if [[ -z "${mvnPlArg}" ]]; then
-        echo "All modules have already been built in this code version, no need to rebuild anything !"
-    else
-        set -x
-        mvn -U -B -P docker,install clean install \
-            -Dregards.version=${REGARDS_VERSION} \
-            -Dmaven.multiModuleProjectDirectory=${SERVICES} \
-            -Dfile.encoding=UTF-8 \
-            -DcmdLineTarget=target-docker \
-            -Dmaven.test.skip=true \
-            -DskipTests=true \
-            -Dmaven-deploy.skip=true \
-            -Djacoco.skip=true \
-            -DskipDocker=true \
-            -DpushImageTag=false \
-            -Dasciidoctor.skip=true \
-            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
-            -Dmaven.wagon.http.ssl.insecure=true \
-            -Dmaven.wagon.http.ssl.allowall=true \
-            -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
-            -pl ${mvnPlArg} \
-            2>&1 | tee ${DATADIR}/mvn-compile-docker.log
-        set +x
-
-        if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-compile-docker.log"; then
-            echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-compile-docker.log' artifact for more information"
-        else
-            echo "Error while executing Maven build, please refer to the full 'mvn-compile-docker.log' artifact for more information."
             exit 1
         fi
     fi
@@ -248,13 +207,12 @@ function tests {
             mvnPlArgArg="-pl ${mvnPlArg}"
         fi
         set -x
-        mvn -U -B -P CI verify \
+        mvn -U -B -P docker,CI verify \
             -f ${pomFile} \
             ${sonarArgs} \
-            -Dregards.version="CI-${REGARDS_VERSION}" \
+            -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
-            -DcmdLineTarget=target \
             -Dmaven-deploy.skip=true \
             -DskipDocker=true \
             -Dasciidoctor.skip=true \
@@ -291,25 +249,18 @@ function tests {
 # $2 : prefix to add on the docker tag image name.
 function buildAnDeployDockerImages {
     checkArtifactsRebuild "pom.xml"
-    REBUILD=$1
-    TAG_PREFIX=$2
+    TAG_PREFIX=$1
     echo -e "\nRunning Maven build and deploy docker images..."
-
-    addtionalGoals=""
-    if [ "${REBUILD}" == "true" ]; then
-        addtionalGoals="clean package"
-    fi
 
     set -x
     if [[ -z "${mvnPlArg}" ]]; then
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
-        mvn -B -P docker,install \
-            ${addtionalGoals} docker:build \
+        mvn -B -P docker,CI \
+            docker:build \
             -Dregards.version=${REGARDS_VERSION} \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
-            -DcmdLineTarget=target-docker \
             -Dmaven-deploy.skip=false \
             -Djacoco.skip=true \
             -DskipDocker=false \
@@ -342,12 +293,11 @@ function deployMvnArtifacts {
     if [[ -z "${mvnPlArg}" ]]; then
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
-        mvn -B -P delivery,docker,CI -T 6 \
+        mvn -B -P docker,CI -T 6 \
             deploy \
             -Dregards.version=${REGARDS_VERSION} \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
-            -DcmdLineTarget=target \
             -Dmaven-deploy.skip=false \
             -Djacoco.skip=true \
             -DskipDocker=true \
