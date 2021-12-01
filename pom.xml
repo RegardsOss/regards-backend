@@ -2184,7 +2184,6 @@
 		<profile>
 			<id>CI</id>
 			<build>
-				<directory>${cmdLineTarget}</directory>
 				<testResources>
 					<testResource>
 						<directory>src/test/resources</directory>
