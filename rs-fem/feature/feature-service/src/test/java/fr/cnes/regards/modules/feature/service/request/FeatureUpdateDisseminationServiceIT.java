@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.feature.service.request;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
@@ -36,6 +38,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
@@ -73,6 +76,9 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
     private final String recipientLabelRequired = "recipientLabelRequired";
 
     private final String recipientLabelNotRequired = "recipientLabelNotRequired";
+
+    @Autowired
+    IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepository;
 
     @Autowired
     private IFeatureCreationRequestRepository fcrRepo;
@@ -211,6 +217,13 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         Assert.assertNull("should not ack", featureDisseminationRequired.getAckDate());
         Assert.assertNull("should not ack", featureDisseminationAnotherRequired.getAckDate());
         Assert.assertNotNull("should be ack", featureDisseminationNotRequired.getAckDate());
+
+        checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
+                     recipientLabelRequired, 2, 1, 14);
+        checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
+                     recipientLabelAnotherRequired, 1, 0, 14);
+        checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
+                     recipientLabelNotRequired, 2, 2, 14);
     }
 
     private FeatureUniformResourceName initValidFeatureThatHasBeenNotifiedToTwoRecipients() {
@@ -344,6 +357,36 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
                     .filter(property -> property.getName().equals("valid")).findFirst().get();
             assertEquals(false, validProperty.getValue());
         });
+    }
+
+    public void checkSession(String source, String session, String recipientLabel, int running, int done,
+            int totalTransactionOnSession) {
+
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            int nbStep = stepPropertyUpdateRequestRepository.findBySession(session).size();
+            LOGGER.info("{} steps", nbStep);
+            return nbStep == totalTransactionOnSession;
+        });
+
+        Map<String, List<StepPropertyUpdateRequest>> stepProperties = stepPropertyUpdateRequestRepository.findBySession(
+                        session).stream().filter(s -> s.getSource().equals(source))
+                .collect(Collectors.groupingBy(s -> s.getStepPropertyInfo().getProperty()));
+
+        checkSessionProperty(recipientLabel, stepProperties, FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS,
+                             running);
+        checkSessionProperty(recipientLabel, stepProperties, FeatureSessionProperty.DISSEMINATED_PRODUCTS, done);
+
+    }
+
+    private void checkSessionProperty(String recipientLabel,
+            Map<String, List<StepPropertyUpdateRequest>> stepProperties, FeatureSessionProperty property,
+            int expected) {
+        String propertyName = this.featureUpdateDisseminationService.getSessionPropertyName(property, recipientLabel);
+        int count = stepProperties.getOrDefault(propertyName, new ArrayList<>()).stream()
+                .mapToInt(s -> Integer.parseInt(s.getStepPropertyInfo().getValue()))
+                .reduce(0, (total, value) -> total + value);
+        Assert.assertEquals(String.format("Invalid number of %s requests in session", property), expected, count);
     }
 
     protected List<AbstractFeatureRequest> mockNotificationSent() {

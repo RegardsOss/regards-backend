@@ -20,10 +20,6 @@ package fr.cnes.regards.modules.workermanager.dto.requests;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.amqp.core.Message;
 
@@ -39,22 +35,22 @@ public class SessionsRequestsInfo {
     public SessionsRequestsInfo() {
         super();
     }
+
     public SessionsRequestsInfo(Collection<RequestDTO> requests) {
         super();
         this.addRequests(requests);
+    }
+
+    private static Pair<String, String> getKey(RequestDTO request) {
+        return Pair.of(request.getSource(), request.getSession());
     }
 
     public Set<Pair<String, String>> keySet() {
         return infosPerSession.keySet();
     }
 
-
     public RequestsInfo get(Pair<String, String> key) {
         return this.infosPerSession.getOrDefault(key, new RequestsInfo());
-    }
-
-    private static Pair<String, String> getKey(RequestDTO request) {
-        return Pair.of(request.getSource(), request.getSession());
     }
 
     public void addRequests(Collection<RequestDTO> requests) {
@@ -62,24 +58,26 @@ public class SessionsRequestsInfo {
     }
 
     public Set<RequestDTO> addRequest(RequestDTO request) {
-        Set<RequestDTO> statusRequests = infosPerSession
-                .compute(getKey(request),(sessionKey, ri) -> ri == null ? new RequestsInfo() : ri)
-                .getRequests().compute(request.getStatus(), (status, requests) -> requests == null ? Sets.newHashSet() : requests);
+        Map<RequestStatus, Set<RequestDTO>> requestsByStatuses = infosPerSession.compute(getKey(request),
+                                                                                       (sessionKey, ri) -> ri == null ?
+                                                                                               new RequestsInfo() :
+                                                                                               ri).getRequests();
+        Set<RequestDTO> statusRequests = requestsByStatuses.compute(request.getStatus(),
+                                                                  (status, requests) -> requests == null ?
+                                                                          Sets.newHashSet() :
+                                                                          requests);
         statusRequests.add(request);
         return statusRequests;
     }
-
 
     public Collection<Message> getSkippedEvents() {
         return this.skippedEvents;
     }
 
     public Collection<RequestDTO> getRequests(RequestStatus status) {
-        return infosPerSession.values().stream()
-                .flatMap(r -> r.getRequests()
-                        .compute(status, (key, requests) -> requests == null ? Sets.newHashSet() : requests)
-                        .stream())
-                .collect(Collectors.toList());
+        return infosPerSession.values().stream().flatMap(
+                r -> r.getRequests().compute(status, (key, requests) -> requests == null ? Sets.newHashSet() : requests)
+                        .stream()).collect(Collectors.toList());
     }
 
 }

@@ -19,6 +19,10 @@
 package fr.cnes.regards.modules.feature.service.request;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClient;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
+import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateDisseminationRequestRepository;
@@ -26,10 +30,13 @@ import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureDisseminationInfos;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.SessionFeatureDisseminationInfos;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import org.slf4j.Logger;
@@ -53,6 +60,11 @@ public class FeatureUpdateDisseminationService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeatureUpdateDisseminationService.class);
 
+    /**
+     * The name of the property gathering all metadata about this processing step
+     */
+    private static final String DISSEMINATION_SESSION_STEP = "fem_dissemination";
+
     private static final int PAGE_SIZE = 400;
 
     @Autowired
@@ -66,6 +78,9 @@ public class FeatureUpdateDisseminationService {
 
     @Autowired
     private FeatureUpdateDisseminationService self;
+
+    @Autowired
+    private ISessionAgentClient sessionNotificationClient;
 
     public int handleRequests() {
         Pageable page = PageRequest.of(0, PAGE_SIZE);
@@ -90,7 +105,7 @@ public class FeatureUpdateDisseminationService {
     public void handleFeatureUpdateDisseminationRequests(Page<FeatureUpdateDisseminationRequest> results) {
         // Retrieve features related to these events
         List<FeatureEntity> featureEntities = getFeatureEntities(results);
-
+        SessionFeatureDisseminationInfos sessionInfos = new SessionFeatureDisseminationInfos();
         // Update features recipients
         for (FeatureEntity featureEntity : featureEntities) {
             // Retrieve the request associated to the featureEntity
@@ -98,10 +113,10 @@ public class FeatureUpdateDisseminationService {
             for (FeatureUpdateDisseminationRequest request : requests) {
                 switch (request.getUpdateType()) {
                     case ACK:
-                        updateFeatureRecipientsWithAckRequest(featureEntity, request);
+                        updateFeatureRecipientsWithAckRequest(featureEntity, request, sessionInfos);
                         break;
                     case PUT:
-                        updateFeatureRecipientsWithPutRequest(featureEntity, request);
+                        updateFeatureRecipientsWithPutRequest(featureEntity, request, sessionInfos);
                         break;
                     default:
                         throw new IllegalArgumentException("Unsupported request type " + request.getUpdateType());
@@ -109,6 +124,7 @@ public class FeatureUpdateDisseminationService {
             }
             featureEntity.updateDisseminationPending();
         }
+        notifySessions(sessionInfos);
         featureWithDisseminationRepo.saveAll(featureEntities);
         featureUpdateDisseminationRequestRepository.deleteInBatch(results);
     }
@@ -116,12 +132,11 @@ public class FeatureUpdateDisseminationService {
     private List<FeatureEntity> getFeatureEntities(Page<FeatureUpdateDisseminationRequest> results) {
         Set<FeatureUniformResourceName> urnList = results.stream().map(FeatureUpdateDisseminationRequest::getUrn)
                 .collect(Collectors.toSet());
-        List<FeatureEntity> featureEntities = featureWithDisseminationRepo.findByUrnIn(urnList);
-        return featureEntities;
+        return featureWithDisseminationRepo.findByUrnIn(urnList);
     }
 
-    private void updateFeatureRecipientsWithPutRequest(FeatureEntity featureEntity,
-            FeatureUpdateDisseminationRequest request) {
+    private SessionFeatureDisseminationInfos updateFeatureRecipientsWithPutRequest(FeatureEntity featureEntity,
+            FeatureUpdateDisseminationRequest request, SessionFeatureDisseminationInfos sessionInfos) {
         // Check if a featureRecipient exists with same recipient label
         Optional<FeatureDisseminationInfo> featureRecipientToUpdate = featureEntity.getDisseminationsInfo().stream()
                 .filter(featureRecipient -> featureRecipient.getLabel().equals(request.getRecipientLabel()))
@@ -135,10 +150,12 @@ public class FeatureUpdateDisseminationService {
             featureEntity.getDisseminationsInfo()
                     .add(new FeatureDisseminationInfo(request.getRecipientLabel(), request.getAckRequired()));
         }
+        sessionInfos.addRequest(featureEntity, request);
+        return sessionInfos;
     }
 
-    private void updateFeatureRecipientsWithAckRequest(FeatureEntity featureEntity,
-            FeatureUpdateDisseminationRequest request) {
+    private SessionFeatureDisseminationInfos updateFeatureRecipientsWithAckRequest(FeatureEntity featureEntity,
+            FeatureUpdateDisseminationRequest request, SessionFeatureDisseminationInfos sessionInfos) {
         // Check if a featureRecipient exists with same recipient label
         Optional<FeatureDisseminationInfo> featureRecipientToUpdate = featureEntity.getDisseminationsInfo().stream()
                 .filter(featureRecipient -> featureRecipient.getLabel().equals(request.getRecipientLabel()))
@@ -146,7 +163,9 @@ public class FeatureUpdateDisseminationService {
         if (featureRecipientToUpdate.isPresent()) {
             // Update existing feature recipient ack date
             featureRecipientToUpdate.get().setAckDate(request.getCreationDate());
+            sessionInfos.addRequest(featureEntity, request);
         }
+        return sessionInfos;
     }
 
     public void saveAckRequests(List<DisseminationAckEvent> messages) {
@@ -213,5 +232,49 @@ public class FeatureUpdateDisseminationService {
             Page<FeatureUpdateDisseminationRequest> results) {
         return results.stream().filter(request -> request.getUrn().equals(featureEntity.getUrn()))
                 .collect(Collectors.toList());
+    }
+
+    private void notifySessions(SessionFeatureDisseminationInfos sessionInfos) {
+        sessionInfos.keySet().forEach(key -> {
+
+            String source = key.getLeft();
+            String session = key.getMiddle();
+            String recipientLabel = key.getRight();
+            FeatureDisseminationInfos featureDisseminationInfos = sessionInfos.get(key);
+
+            Set<FeatureUpdateDisseminationRequest> featureUpdateDisseminationRequestPUT = featureDisseminationInfos.get(
+                    FeatureUpdateDisseminationInfoType.PUT);
+            Set<FeatureUpdateDisseminationRequest> featureUpdateDisseminationRequestACK = featureDisseminationInfos.get(
+                    FeatureUpdateDisseminationInfoType.ACK);
+            Set<FeatureUpdateDisseminationRequest> putRequestNoAckRequired = featureUpdateDisseminationRequestPUT.stream()
+                    .filter(request -> !request.getAckRequired()).collect(Collectors.toSet());
+
+            int nbPending = featureUpdateDisseminationRequestPUT.size();
+            int nbDone = featureUpdateDisseminationRequestACK.size() + putRequestNoAckRequired.size();
+
+            if (nbPending > 0) {
+                FeatureSessionProperty property = FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS;
+                StepProperty stepProperty = getStepProperty(source, session, property, recipientLabel, nbPending);
+                sessionNotificationClient.increment(stepProperty);
+            }
+            if (nbDone > 0) {
+                FeatureSessionProperty property = FeatureSessionProperty.DISSEMINATED_PRODUCTS;
+                StepProperty stepProperty = getStepProperty(source, session, property, recipientLabel, nbDone);
+                sessionNotificationClient.increment(stepProperty);
+            }
+        });
+    }
+
+    private StepProperty getStepProperty(String source, String session, FeatureSessionProperty property,
+            String recipientLabel, int nbProducts) {
+        return new StepProperty(DISSEMINATION_SESSION_STEP, source, session,
+                                new StepPropertyInfo(StepTypeEnum.DISSEMINATION, property.getState(),
+                                                     getSessionPropertyName(property, recipientLabel),
+                                                     String.valueOf(nbProducts), property.isInputRelated(),
+                                                     property.isOutputRelated()));
+    }
+
+    public String getSessionPropertyName(FeatureSessionProperty property, String recipientLabel) {
+        return String.format(property.getName(), recipientLabel);
     }
 }

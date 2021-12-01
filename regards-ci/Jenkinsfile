@@ -103,19 +103,9 @@ pipeline {
                                 runMavenDockerImg("tests", "rs-ingest", true, true)
                             }
                         }
-                        stage('Access') {
-                            steps {
-                                runMavenDockerImg("tests", "rs-access", true, true)
-                            }
-                        }
                         stage('Fem') {
                             steps {
                                 runMavenDockerImg("tests", "rs-fem", true, true)
-                            }
-                        }
-                        stage('Notifier') {
-                            steps {
-                                runMavenDockerImg("tests", "rs-notifier", true, true)
                             }
                         }
                         stage('Worker manager') {
@@ -140,6 +130,16 @@ pipeline {
                         stage('Catalog') {
                             steps {
                                 runMavenDockerImg("tests", "rs-catalog", true, false)
+                            }
+                        }
+                        stage('Access') {
+                            steps {
+                                runMavenDockerImg("tests", "rs-access", true, true)
+                            }
+                        }
+                        stage('Notifier') {
+                            steps {
+                                runMavenDockerImg("tests", "rs-notifier", true, true)
                             }
                         }
                         stage('Storage') {

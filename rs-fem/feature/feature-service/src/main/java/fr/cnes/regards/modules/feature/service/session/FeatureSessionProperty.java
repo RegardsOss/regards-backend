@@ -46,7 +46,11 @@ public enum FeatureSessionProperty {
     IN_ERROR_REFERENCING_REQUESTS("inErrorReferencingRequests", StepPropertyStateEnum.ERROR),
     IN_ERROR_DELETE_REQUESTS("inErrorDeleteRequests", StepPropertyStateEnum.ERROR),
     IN_ERROR_UPDATE_REQUESTS("inErrorUpdateRequests", StepPropertyStateEnum.ERROR),
-    IN_ERROR_NOTIFY_REQUESTS("inErrorNotifyRequests", StepPropertyStateEnum.ERROR);
+    IN_ERROR_NOTIFY_REQUESTS("inErrorNotifyRequests", StepPropertyStateEnum.ERROR),
+
+
+    RUNNING_DISSEMINATION_PRODUCTS("%s.pending", StepPropertyStateEnum.RUNNING, true, false),
+    DISSEMINATED_PRODUCTS("%s.done", StepPropertyStateEnum.INFO, false, true);
 
 
     private final String name;
