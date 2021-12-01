@@ -18,10 +18,21 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
+import fr.cnes.regards.modules.feature.documentation.FeatureEntityControllerDocumentationHelper;
+import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumentationHelper;
+import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
+import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
+import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,17 +42,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.feature.documentation.FeatureEntityControllerDocumentationHelper;
-import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumentationHelper;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
-import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Sébastien Binda
@@ -56,6 +59,9 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
     @Autowired
     private IJobInfoService jobInfoService;
 
+    @Autowired
+    protected IFeatureEntityWithDisseminationRepository featureEntityWithDisseminationRepository;
+
     @Test
     public void getFeature() {
         createFeatures("feature_1_", 10, "source1", "session1");
@@ -64,11 +70,38 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.documentResponseBody(FeatureEntityControllerDocumentationHelper
-                .featureEntityDTOResponseDoc(Optional.empty()));
+                                                              .featureEntityDTOResponseDoc(Optional.empty()));
         performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.URN_PATH,
                           requestBuilderCustomizer, "Error retrieving features", urn.toString());
 
     }
+    @Test
+    public void getFeatureWithDissemination() {
+        createFeatures("feature_1_", 10, "source1", "session1");
+        List<FeatureEntity> allFeaturesEntity = this.featureEntityWithDisseminationRepository.findAll();
+        for (FeatureEntity featureEntity : allFeaturesEntity) {
+            featureEntity.setDisseminationPending(true);
+            featureEntity.setDisseminationsInfo(Sets.newLinkedHashSet(
+                    new FeatureDisseminationInfo("SomeRemote", true),
+                    new FeatureDisseminationInfo("AnotherRemote", false)
+                    ));
+        }
+        this.featureEntityWithDisseminationRepository.saveAll(allFeaturesEntity);
+
+        FeatureUniformResourceName urn = featureRepo.findAll().stream().findFirst().get().getUrn();
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
+                .expectToHaveSize("$.disseminationsInfo", 2).skipDocumentation();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer.documentResponseBody(FeatureEntityControllerDocumentationHelper
+                                                              .featureEntityDTOResponseDoc(Optional.empty()));
+        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.URN_PATH,
+                          requestBuilderCustomizer, "Error retrieving features", urn.toString());
+
+    }
+
+
+
 
     @Test
     public void getFeatures() throws Exception {

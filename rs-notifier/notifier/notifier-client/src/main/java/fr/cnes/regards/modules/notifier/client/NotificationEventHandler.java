@@ -16,7 +16,7 @@ import java.util.List;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-public class NofiticationEventHandler
+public class NotificationEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<NotifierEvent> {
 
     @Autowired

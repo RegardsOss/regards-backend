@@ -528,7 +528,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             List<FeatureRequestEvent> errorsEvents = requests.stream()
                     .map(request -> FeatureRequestEvent.build(FeatureRequestType.PATCH, request.getRequestId(),
                                                               request.getRequestOwner(), request.getProviderId(),
-                                                              request.getUrn(), request.getState(), request.getErrors())).collect(Collectors.toList());
+                                                              request.getUrn(), request.getState(),
+                                                              request.getErrors())).collect(Collectors.toList());
             publisher.publish(errorsEvents);
         }
     }

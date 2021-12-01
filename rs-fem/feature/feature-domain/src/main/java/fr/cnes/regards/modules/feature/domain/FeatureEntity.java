@@ -18,28 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.domain;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * {@link Feature} as database entity
@@ -47,11 +38,10 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  * @author Marc SORDI
  */
 @Entity
-@Table(name = "t_feature",
-        indexes = { @Index(name = "idx_feature_last_update", columnList = "last_update"),
-                @Index(name = "idx_feature_urn", columnList = "urn"),
-                @Index(name = "idx_feature_session", columnList = "session_owner,session_name"),
-                @Index(name = "idx_feature_provider_id", columnList = "provider_id") },
+@Table(name = "t_feature", indexes = { @Index(name = "idx_feature_last_update", columnList = "last_update"),
+        @Index(name = "idx_feature_urn", columnList = "urn"),
+        @Index(name = "idx_feature_session", columnList = "session_owner,session_name"),
+        @Index(name = "idx_feature_provider_id", columnList = "provider_id") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_feature_urn", columnNames = { "urn" }) })
 public class FeatureEntity {
 
@@ -68,9 +58,15 @@ public class FeatureEntity {
     @Convert(converter = FeatureUrnConverter.class)
     private FeatureUniformResourceName previousVersionUrn;
 
+    /**
+     * Session owner that created the Feature
+     */
     @Column(length = 128, name = "session_owner", nullable = false)
     private String sessionOwner;
 
+    /**
+     * Session that created the Feature
+     */
     @Column(length = 128, name = "session_name", nullable = false)
     private String session;
 
@@ -101,6 +97,16 @@ public class FeatureEntity {
     @NotNull
     private String model;
 
+    /**
+     * False when all dissemination systems acknowledged they have received the feature
+     */
+    @Column(name = "dissemination_pending")
+    private boolean disseminationPending;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "feature_id", foreignKey = @ForeignKey(name = "fk_feature_dissemination_info_feature_id"))
+    private Set<FeatureDisseminationInfo> disseminationsInfo = new HashSet<>();
+
     public static FeatureEntity build(String sessionOwner, String session, Feature feature,
             FeatureUniformResourceName previousVersionUrn, String model) {
         FeatureEntity featureEntity = new FeatureEntity();
@@ -114,6 +120,7 @@ public class FeatureEntity {
         featureEntity.setPreviousVersionUrn(previousVersionUrn);
         featureEntity.setCreationDate(featureEntity.getLastUpdate());
         featureEntity.setModel(model);
+        featureEntity.setDisseminationPending(false);
         return featureEntity;
     }
 
@@ -203,5 +210,29 @@ public class FeatureEntity {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public boolean isDisseminationPending() {
+        return disseminationPending;
+    }
+
+    public void setDisseminationPending(boolean disseminationPending) {
+        this.disseminationPending = disseminationPending;
+    }
+
+    public Set<FeatureDisseminationInfo> getDisseminationsInfo() {
+        return disseminationsInfo;
+    }
+
+    public void setDisseminationsInfo(Set<FeatureDisseminationInfo> disseminationsInfo) {
+        this.disseminationsInfo = disseminationsInfo;
+    }
+
+    /**
+     * Update disseminationPending using disseminationsInfo
+     */
+    public void updateDisseminationPending() {
+        this.disseminationPending = this.disseminationsInfo.stream()
+                .anyMatch(disseminationInfo -> disseminationInfo.getAckDate() == null);
     }
 }

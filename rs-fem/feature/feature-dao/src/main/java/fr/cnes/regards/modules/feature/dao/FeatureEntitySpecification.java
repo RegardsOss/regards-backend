@@ -76,6 +76,9 @@ public class FeatureEntitySpecification {
                 if (filters.getTo() != null) {
                     predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("lastUpdate"), filters.getTo()));
                 }
+                if (filters.getDisseminationPending() != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("disseminationPending"), filters.getDisseminationPending()));
+                }
             }
 
             if (!featureIds.isEmpty()) {

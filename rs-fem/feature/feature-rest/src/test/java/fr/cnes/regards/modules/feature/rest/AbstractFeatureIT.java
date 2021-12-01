@@ -18,44 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.Before;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureFile;
-import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
-import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.StorageMetadata;
+import fr.cnes.regards.modules.feature.dao.*;
+import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -70,6 +40,24 @@ import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFa
 import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.Before;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.util.MimeType;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Sébastien Binda
@@ -112,6 +100,9 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
     protected IFeatureSaveMetadataRequestRepository featureSaveMetadataRequestRepository;
 
     @Autowired
+    protected IFeatureDisseminationInfoRepository featureDisseminationInfoRepository;
+
+    @Autowired
     private IJobInfoRepository jobInfoRepository;
 
     @Autowired
@@ -123,6 +114,7 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
         this.featureUpdateRequestRepo.deleteAllInBatch();
         this.featureDeletionRequestRepo.deleteAllInBatch();
         this.featureSaveMetadataRequestRepository.deleteAllInBatch();
+        this.featureDisseminationInfoRepository.deleteAllInBatch();
         this.featureRepo.deleteAllInBatch();
         this.notificationRequestRepo.deleteAllInBatch();
         this.jobInfoRepository.deleteAll();

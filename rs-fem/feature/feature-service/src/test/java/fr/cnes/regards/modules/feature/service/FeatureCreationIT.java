@@ -644,7 +644,12 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     private void waitForFeatures(int count) {
-        Awaitility.await().atMost(count, TimeUnit.SECONDS).until(() -> {
+        int timeout = count;
+        // Timeout should not be less than 5 secs
+        if (timeout < 5) {
+            timeout = 5;
+        }
+        Awaitility.await().atMost(timeout, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             return featureRepo.count() == count;
         });

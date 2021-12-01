@@ -1,10 +1,12 @@
 package fr.cnes.regards.modules.notifier.client;
 
-import java.util.List;
-
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 
+import java.util.List;
+
 /**
+ * Listener to implement to handle {@link NotifierEvent}, which contains infos about Notifier requests it handled
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public interface INotifierRequestListener {

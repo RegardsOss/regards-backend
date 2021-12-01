@@ -18,18 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -37,14 +26,24 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.dao.FeatureEntitySpecification;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
 import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *  Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
@@ -57,7 +56,7 @@ import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJo
 public class FeatureService implements IFeatureService {
 
     @Autowired
-    private IFeatureEntityRepository featureRepo;
+    private IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -67,17 +66,17 @@ public class FeatureService implements IFeatureService {
 
     @Override
     public Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable page) {
-        Page<FeatureEntity> entities = featureRepo
+        Page<FeatureEntity> entities = featureWithDisseminationRepo
                 .findAll(FeatureEntitySpecification.searchAllByFilters(selection, page), page);
         List<FeatureEntityDto> elements = entities.stream()
                 .map(entity -> initDataObjectFeature(entity, selection.getFilters().isFull()))
                 .collect(Collectors.toList());
-        return new PageImpl<FeatureEntityDto>(elements, page, entities.getTotalElements());
+        return new PageImpl<>(elements, page, entities.getTotalElements());
     }
 
     @Override
     public FeatureEntityDto findOne(FeatureUniformResourceName urn) {
-        return initDataObjectFeature(featureRepo.findByUrn(urn), true);
+        return initDataObjectFeature(featureWithDisseminationRepo.findByUrn(urn), true);
     }
 
     private FeatureEntityDto initDataObjectFeature(FeatureEntity entity, boolean addFeatureContent) {
@@ -89,6 +88,12 @@ public class FeatureService implements IFeatureService {
         dto.setLastUpdate(entity.getLastUpdate());
         dto.setUrn(entity.getUrn());
         dto.setId(entity.getId());
+        dto.setDisseminationPending(entity.isDisseminationPending());
+        dto.setDisseminationsInfo(entity.getDisseminationsInfo().stream()
+                                          .map(featureDisseminationInfo -> new FeatureDisseminationInfoDto(
+                                                  featureDisseminationInfo.getLabel(),
+                                                  featureDisseminationInfo.getRequestDate(),
+                                                  featureDisseminationInfo.getAckDate())).collect(Collectors.toSet()));
         if (addFeatureContent) {
             dto.setFeature(entity.getFeature());
         }

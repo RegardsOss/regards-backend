@@ -17,11 +17,14 @@
 */
 package fr.cnes.regards.modules.processing.testutils;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import fr.cnes.regards.modules.processing.utils.gson.GsonProcessingTestUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,12 +51,11 @@ public abstract class AbstractMarshallingTest<T> {
             T actual = gson.fromJson(expectedJson, testedType);
             String actualJson = gson.toJson(actual);
             boolean equal = actualJson.equals(expectedJson);
-            if (!equal) {
-                LOGGER.error("Different values for {}: \n    FROM: {}\n    TO  : {}", testedType, expectedJson, actualJson);
-                LOGGER.error("Different values for {}: \n    FROM: {}\n    TO  : {}", testedType, expected, actual);
-            }
-            assertThat(actualJson).isEqualTo(expectedJson);
-            assertThat(actual).isEqualTo(expected);
+            // The string cannot be compared, as the order of JSON attributes are not assured
+            // so we transform it into Map to compare it recursively
+            Map<Object, Object> resMap = gson.fromJson(expectedJson, new TypeToken<Map<Object, Object>>() {}.getType());
+            Map<Object, Object> expectedMap = gson.fromJson(actualJson, new TypeToken<Map<Object, Object>>() {}.getType());
+            assertThat(resMap).usingRecursiveComparison().isEqualTo(expectedMap);
         }
     }
 

@@ -24,6 +24,8 @@ import org.hibernate.annotations.Type;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * {@link FeatureEntityDto} dto
@@ -56,6 +58,10 @@ public class FeatureEntityDto {
     @Type(type = "jsonb")
     @Valid
     private Feature feature;
+
+    private boolean disseminationPending;
+
+    private Set<FeatureDisseminationInfoDto> disseminationsInfo = new HashSet<>();
 
     public static FeatureEntityDto build(String source, String session, Feature feature,
             FeatureUniformResourceName previousVersionUrn, String model, String providerId, Integer version,
@@ -134,4 +140,19 @@ public class FeatureEntityDto {
         this.urn = urn;
     }
 
+    public boolean isDisseminationPending() {
+        return disseminationPending;
+    }
+
+    public void setDisseminationPending(boolean disseminationPending) {
+        this.disseminationPending = disseminationPending;
+    }
+
+    public Set<FeatureDisseminationInfoDto> getDisseminationsInfo() {
+        return disseminationsInfo;
+    }
+
+    public void setDisseminationsInfo(Set<FeatureDisseminationInfoDto> disseminationsInfo) {
+        this.disseminationsInfo = disseminationsInfo;
+    }
 }

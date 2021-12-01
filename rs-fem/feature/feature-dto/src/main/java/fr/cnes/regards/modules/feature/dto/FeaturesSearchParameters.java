@@ -24,7 +24,6 @@ import java.time.OffsetDateTime;
  * POJO to define a selection filters for {@link FeatureEntityDto}
  *
  * @author Sébastien Binda
- *
  */
 public class FeaturesSearchParameters {
 
@@ -41,6 +40,8 @@ public class FeaturesSearchParameters {
     private OffsetDateTime to;
 
     private boolean full = true;
+
+    private Boolean disseminationPending;
 
     public static FeaturesSearchParameters build() {
         return new FeaturesSearchParameters();
@@ -102,6 +103,14 @@ public class FeaturesSearchParameters {
         this.full = full;
     }
 
+    public Boolean getDisseminationPending() {
+        return disseminationPending;
+    }
+
+    public void setDisseminationPending(Boolean disseminationPending) {
+        this.disseminationPending = disseminationPending;
+    }
+
     public FeaturesSearchParameters withModel(String model) {
         this.setModel(model);
         return this;
@@ -132,4 +141,13 @@ public class FeaturesSearchParameters {
         return this;
     }
 
+    public FeaturesSearchParameters withFull(boolean isFull) {
+        this.setFull(isFull);
+        return this;
+    }
+
+    public FeaturesSearchParameters withDisseminationPending(Boolean isDisseminationPending) {
+        this.setDisseminationPending(isDisseminationPending);
+        return this;
+    }
 }

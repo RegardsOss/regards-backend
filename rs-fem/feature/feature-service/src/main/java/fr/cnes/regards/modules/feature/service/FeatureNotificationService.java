@@ -63,7 +63,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Service for prepare {@link NotificationRequestEvent} from {@link FeatureNotificationRequestEvent}
+ * Service to handle {@link NotificationRequestEvent} that are related to a {@link FeatureNotificationRequestEvent}
  *
  * @author Kevin Marchois
  */

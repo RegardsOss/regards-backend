@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
@@ -36,9 +26,18 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This service handles feature update workflow.
+ *
  * @author Marc SORDI
  * @author Sébastien Binda
  */
@@ -56,12 +55,14 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
 
     /**
      * Process batch of requests during job
+     *
      * @return updated features
      */
     Set<FeatureEntity> processRequests(List<FeatureUpdateRequest> requests, FeatureUpdateJob featureUpdateJob);
 
     /**
      * Find all {@link FeatureUpdateRequest}s
+     *
      * @param page
      * @return {@link FeatureUpdateRequest}s
      */
@@ -69,6 +70,7 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
 
     /**
      * Update files and locations of given {@link FeatureEntity}s after storage microservice responses received.
+     *
      * @param updateInfo storage requests results
      * @return FeatureEntity updated features
      */
@@ -76,6 +78,7 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
 
     /**
      * Handle storage response errors from storage microservice by looking for {@link FeatureUpdateRequest} associated
+     *
      * @param errorRequests error requests results
      */
     void handleStorageError(Collection<RequestResultInfoDTO> errorRequests);
