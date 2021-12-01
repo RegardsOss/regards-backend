@@ -268,23 +268,23 @@ public class CrawlerServiceIT {
         dataset3 = (Dataset) entitiesService.loadWithRelations(dataset3.getIpId());
 
         esRepos.refresh(tenant);
-        Collection coll1Bis = esRepos.get(tenant, coll1);
+        Collection coll1Bis = esRepos.get(Optional.of(tenant), coll1);
         Assert.assertNotNull(coll1Bis);
         Assert.assertTrue(Beans.areEqual(coll1, coll1Bis, "getModel"));
-        final Collection coll2Bis = esRepos.get(tenant, coll2);
+        final Collection coll2Bis = esRepos.get(Optional.of(tenant), coll2);
         Assert.assertNotNull(coll2Bis);
         Assert.assertTrue(Beans.areEqual(coll2, coll2Bis, "getModel"));
-        final Collection coll3Bis = esRepos.get(tenant, coll3);
+        final Collection coll3Bis = esRepos.get(Optional.of(tenant), coll3);
         Assert.assertNotNull(coll3Bis);
         Assert.assertTrue(Beans.areEqual(coll3, coll3Bis, "getModel"));
 
-        Dataset ds1Bis = esRepos.get(tenant, dataset1);
+        Dataset ds1Bis = esRepos.get(Optional.of(tenant), dataset1);
         Assert.assertNotNull(ds1Bis);
         Assert.assertTrue(Beans.areEqual(dataset1, ds1Bis, "getModel"));
-        final Dataset ds2Bis = esRepos.get(tenant, dataset2);
+        final Dataset ds2Bis = esRepos.get(Optional.of(tenant), dataset2);
         Assert.assertNotNull(ds2Bis);
         Assert.assertTrue(Beans.areEqual(dataset2, ds2Bis, "getModel"));
-        final Dataset ds3Bis = esRepos.get(tenant, dataset3);
+        final Dataset ds3Bis = esRepos.get(Optional.of(tenant), dataset3);
         Assert.assertNotNull(ds3Bis);
         Assert.assertTrue(Beans.areEqual(dataset3, ds3Bis, "getModel"));
 
@@ -298,9 +298,9 @@ public class CrawlerServiceIT {
         crawlerService.waitForEndOfWork();
 
         esRepos.refresh(tenant);
-        coll1Bis = esRepos.get(tenant, coll1);
+        coll1Bis = esRepos.get(Optional.of(tenant), coll1);
         Assert.assertNull(coll1Bis);
-        ds1Bis = esRepos.get(tenant, dataset1);
+        ds1Bis = esRepos.get(Optional.of(tenant), dataset1);
         Assert.assertNull(ds1Bis);
 
         // Check DeletedEntity has been created into database

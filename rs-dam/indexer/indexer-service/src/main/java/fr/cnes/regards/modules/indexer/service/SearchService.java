@@ -85,9 +85,9 @@ public class SearchService implements ISearchService {
                 throw new IllegalArgumentException();
         }
         if(urn.isLast()) {
-            return (T) repository.getByVirtualId(urn.getTenant(), urn.getEntityType().toString(), urn.toString(), clazz);
+            return (T) repository.getByVirtualId(urn.getEntityType().toString(), urn.toString(), clazz);
         } else {
-            return (T) repository.get(urn.getTenant(), urn.getEntityType().toString(), urn.toString(), clazz);
+            return (T) repository.get(urn.getEntityType().toString(), urn.toString(), clazz);
         }
     }
 

@@ -197,7 +197,7 @@ public class EsQueryTest {
         for (int i = 0; i < 100; i++) {
             String id = Integer.toString(random.nextInt(BIG_VOLUME_SIZE));
             long start = System.currentTimeMillis();
-            Item item = repository.get(INDEX2, TYPE1, id, Item.class);
+            Item item = repository.get(Optional.of(INDEX2), TYPE1, id, Item.class);
             cumul += System.currentTimeMillis() - start;
             Assert.assertEquals(id, item.getDocId());
         }

@@ -472,12 +472,12 @@ public class EsRepositoryTest {
         Assert.assertFalse(repository.save("items", item2));
 
         // Get
-        final Item item1FromIndex = repository.get("items", "item", "1", Item.class);
+        final Item item1FromIndex = repository.get(Optional.of("items"), "item", "1", Item.class);
         Assert.assertNotNull(item1FromIndex);
         Assert.assertEquals(item1, item1FromIndex);
 
         // Get an inexistant item
-        Assert.assertNull(repository.get("items", "item", "3", Item.class));
+        Assert.assertNull(repository.get(Optional.of("items"), "item", "3", Item.class));
 
         // Save and get an empty item
         try {
@@ -488,7 +488,7 @@ public class EsRepositoryTest {
 
         // Testing get method with an Item as parameter (instead of id and type)
         Item toFindItem = new Item("1");
-        toFindItem = repository.get("items", toFindItem);
+        toFindItem = repository.get(Optional.of("items"), toFindItem);
 
     }
 

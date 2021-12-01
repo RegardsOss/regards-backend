@@ -78,7 +78,7 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
                 // this is a virtualId
                 // lets find the corresponding entity
                 AbstractEntity entity = esRepo
-                        .getByVirtualId(urn.getTenant(), urn.getEntityType().toString(), critValue,
+                        .getByVirtualId(urn.getEntityType().toString(), critValue,
                                         AbstractEntity.class);
                 if (entity != null) {
                     return ICriterion.or(ICriterion.eq(attName, critValue, criterion.getMatchType()),
@@ -90,7 +90,7 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
             } else {
                 // this is a precise urn
                 AbstractEntity entity = esRepo
-                        .get(urn.getTenant(), urn.getEntityType().toString(), critValue, AbstractEntity.class);
+                        .get(urn.getEntityType().toString(), critValue, AbstractEntity.class);
                 if (entity != null && entity.isLast()) {
                     return ICriterion
                             .or(ICriterion.eq(attName, entity.getVirtualId().toString(), criterion.getMatchType()),
@@ -117,8 +117,7 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
             if (urn.isLast()) {
                 // this is a virtualId
                 // lets find the corresponding entity
-                AbstractEntity entity = esRepo.getByVirtualId(urn.getTenant(),
-                                                              urn.getEntityType().toString(),
+                AbstractEntity entity = esRepo.getByVirtualId(urn.getEntityType().toString(),
                                                               critValue,
                                                               AbstractEntity.class);
                 return ICriterion.or(ICriterion.multiMatch(attNames, critValue),
@@ -126,7 +125,7 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
             } else {
                 // this is a precise urn
                 AbstractEntity entity = esRepo
-                        .get(urn.getTenant(), urn.getEntityType().toString(), critValue, AbstractEntity.class);
+                        .get(urn.getEntityType().toString(), critValue, AbstractEntity.class);
                 if (entity.isLast()) {
                     return ICriterion.or(ICriterion.multiMatch(attNames, entity.getVirtualId().toString()),
                                          ICriterion.multiMatch(attNames, critValue));
@@ -157,15 +156,14 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
                     if (urn.isLast()) {
                         // this is a virtualId
                         // lets find the corresponding entity
-                        AbstractEntity entity = esRepo.getByVirtualId(urn.getTenant(),
-                                                                      urn.getEntityType().toString(),
+                        AbstractEntity entity = esRepo.getByVirtualId(urn.getEntityType().toString(),
                                                                       urnValue,
                                                                       AbstractEntity.class);
                         critValues.add(entity.getIpId().toString());
                     } else {
                         // this is a precise urn
                         AbstractEntity entity = esRepo
-                                .get(urn.getTenant(), urn.getEntityType().toString(), urnValue, AbstractEntity.class);
+                                .get(urn.getEntityType().toString(), urnValue, AbstractEntity.class);
                         if (entity.isLast()) {
                             urnValues.add(entity.getVirtualId().toString());
                         }

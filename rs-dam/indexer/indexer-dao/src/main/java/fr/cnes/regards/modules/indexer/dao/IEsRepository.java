@@ -190,10 +190,13 @@ public interface IEsRepository {
      * @param <T> document type
      * @return found document or null
      */
-    <T extends IIndexable> T get(String index, String docType, String docId, Class<T> clazz);
+    <T extends IIndexable> T get(Optional<String> index, String docType, String docId, Class<T> clazz);
 
+    default <T extends IIndexable> T get(String docType, String docId, Class<T> clazz) {
+        return get(Optional.empty(), docType, docId, clazz);
+    };
 
-    <T extends IIndexable> T getByVirtualId(String tenant, String docType, String virtualId, Class<? extends IIndexable> clazz);
+    <T extends IIndexable> T getByVirtualId(String docType, String virtualId, Class<? extends IIndexable> clazz);
 
     /**
      * Utility method to avoid using Class<T> and passing directly id and type
@@ -203,7 +206,7 @@ public interface IEsRepository {
      * @return found document of same type as document or null
      */
     @SuppressWarnings("unchecked")
-    default <T extends IIndexable> T get(final String index, final T document) {
+    default <T extends IIndexable> T get(final Optional<String> index, final T document) {
         return (T) get(index, document.getType(), document.getDocId(), document.getClass());
     }
 

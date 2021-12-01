@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
@@ -363,6 +364,9 @@ public class EsRepository implements IEsRepository {
 
     @Autowired
     private final AttrDescToJsonMapping toMapping;
+
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
 
     private RequestOptions options = RequestOptions.DEFAULT;
 
@@ -864,8 +868,9 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public <T extends IIndexable> T get(String index, String type, String id, Class<T> clazz) {
-        GetRequest request = new GetRequest(index.toLowerCase(), TYPE, id);
+    public <T extends IIndexable> T get(Optional<String> index, String type, String id, Class<T> clazz) {
+
+        GetRequest request = new GetRequest(getIndex(index).toLowerCase(), TYPE, id);
 
         try {
             GetResponse response = client.get(request, RequestOptions.DEFAULT);
@@ -881,11 +886,11 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public <T extends IIndexable> T getByVirtualId(String tenant, String docType, String virtualId,
+    public <T extends IIndexable> T getByVirtualId(String docType, String virtualId,
                                                    Class<? extends IIndexable> clazz) {
         // use search0
         SimpleSearchKey<T> searchKey = new SimpleSearchKey(docType, clazz);
-        searchKey.setSearchIndex(tenant);
+        searchKey.setSearchIndex(getIndex(Optional.empty()));
         ICriterion virtualIdCrit = ICriterion
                 .eq("feature.virtualId", virtualId, StringMatchType.KEYWORD);
         return search0(searchKey, PageRequest.of(0, 1), virtualIdCrit, null).getContent().get(0);
@@ -1408,7 +1413,7 @@ public class EsRepository implements IEsRepository {
             if (indexExists(REMINDER_IDX)) {
                 // First check existence of AbstractReminder for exact given pageRequest from ES
                 SearchAfterReminder reminder = new SearchAfterReminder(crit, searchKey, sort, pageRequest);
-                reminder = get(REMINDER_IDX, reminder);
+                reminder = get(Optional.of(REMINDER_IDX), reminder);
                 if (reminder != null) {
                     LOGGER.debug("Found search after for offset {}", pageRequest.getOffset());
                     return reminder.getSearchAfterSortValues();
@@ -1420,7 +1425,7 @@ public class EsRepository implements IEsRepository {
                 while (searchPageNumber > 0) {
                     searchReminderPageRequest = PageRequest.of(searchPageNumber, MAX_RESULT_WINDOW);
                     reminder = new SearchAfterReminder(crit, searchKey, sort, searchReminderPageRequest);
-                    reminder = get(REMINDER_IDX, reminder);
+                    reminder = get(Optional.of(REMINDER_IDX), reminder);
                     // A reminder has been found ! Let's start from it
                     if (reminder != null) {
                         LOGGER.debug("Found search after for offset {}", searchReminderPageRequest.getOffset());
@@ -2433,6 +2438,22 @@ public class EsRepository implements IEsRepository {
             termsAggBuilder.subAggregation(notRefCardinalityAgg);
         }
         builder.aggregation(termsAggBuilder);
+    }
+
+    /**
+     * Return given index if present or retrieve index from RunTimeTenantResolver
+     * @param index
+     * @return String index
+     * @throws RsRuntimeException if no index is found
+     */
+    private String getIndex(Optional<String> index) {
+        if (index.isPresent()) {
+            return index.get();
+        } else if (tenantResolver != null && tenantResolver.getTenant() != null) {
+            return tenantResolver.getTenant();
+        } else {
+            throw new RsRuntimeException("Index not defined for elasticsearch request");
+        }
     }
 
 }

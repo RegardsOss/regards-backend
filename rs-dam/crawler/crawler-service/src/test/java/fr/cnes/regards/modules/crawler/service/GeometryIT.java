@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.crawler.service;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -149,7 +150,7 @@ public class GeometryIT {
         esRepos.save(TENANT, collection);
         esRepos.refresh(TENANT);
 
-        final Collection collFromEs = esRepos.get(TENANT, collection);
+        final Collection collFromEs = esRepos.get(Optional.of(TENANT), collection);
         Assert.assertTrue(collFromEs.getNormalizedGeometry().getType() == GeoJsonType.POINT);
         Point point = (Point) collFromEs.getNormalizedGeometry();
         Assert.assertEquals(IGeometry.position(41.12, -71.34), point.getCoordinates());
@@ -195,7 +196,7 @@ public class GeometryIT {
         esRepos.save(TENANT, collection);
         esRepos.refresh(TENANT);
 
-        final Collection collFromEs = esRepos.get(TENANT, collection);
+        final Collection collFromEs = esRepos.get(Optional.of(TENANT), collection);
         Assert.assertTrue(collFromEs.getNormalizedGeometry().getType() == GeoJsonType.MULTIPOINT);
         multipoint = collFromEs.getNormalizedGeometry();
 
@@ -210,7 +211,7 @@ public class GeometryIT {
         esRepos.save(TENANT, collection2);
         esRepos.refresh(TENANT);
 
-        final Collection coll2FromEs = esRepos.get(TENANT, collection2);
+        final Collection coll2FromEs = esRepos.get(Optional.of(TENANT), collection2);
         Assert.assertTrue(coll2FromEs.getNormalizedGeometry().getType() == GeoJsonType.LINESTRING);
         lineString = (LineString) coll2FromEs.getNormalizedGeometry();
         Assert.assertArrayEquals(ref1, lineString.getCoordinates().toArray());
@@ -253,7 +254,7 @@ public class GeometryIT {
         esRepos.save(TENANT, collection);
         esRepos.refresh(TENANT);
 
-        final Collection collFromEs = esRepos.get(TENANT, collection);
+        final Collection collFromEs = esRepos.get(Optional.of(TENANT), collection);
         Assert.assertTrue(collFromEs.getNormalizedGeometry().getType() == GeoJsonType.MULTILINESTRING);
 
         collection2 = new Collection(collectionModel, TENANT, "COL2", "another collection with geometry");
@@ -285,7 +286,7 @@ public class GeometryIT {
         esRepos.save(TENANT, collection2);
         esRepos.refresh(TENANT);
 
-        final Collection coll2FromEs = esRepos.get(TENANT, collection2);
+        final Collection coll2FromEs = esRepos.get(Optional.of(TENANT), collection2);
         Assert.assertTrue(coll2FromEs.getNormalizedGeometry().getType() == GeoJsonType.POLYGON);
         Assert.assertTrue(coll2FromEs.getNormalizedGeometry() instanceof Polygon);
     }
@@ -332,7 +333,7 @@ public class GeometryIT {
         esRepos.save(TENANT, collection);
         esRepos.refresh(TENANT);
 
-        final Collection collFromEs = esRepos.get(TENANT, collection);
+        final Collection collFromEs = esRepos.get(Optional.of(TENANT), collection);
         Assert.assertTrue(collFromEs.getNormalizedGeometry().getType() == GeoJsonType.MULTIPOLYGON);
     }
 
@@ -350,7 +351,7 @@ public class GeometryIT {
         esRepos.save(TENANT, collection);
         esRepos.refresh(TENANT);
 
-        final Collection collFromEs = esRepos.get(TENANT, collection);
+        final Collection collFromEs = esRepos.get(Optional.of(TENANT), collection);
         Assert.assertTrue(collFromEs.getNormalizedGeometry() instanceof Unlocated);
     }
 

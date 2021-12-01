@@ -280,7 +280,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             if (!needAssociatedDataObjectsUpdate && (entity instanceof Dataset)) {
                 Dataset dataset = (Dataset) entity;
                 needAssociatedDataObjectsUpdate |= needAssociatedDataObjectsUpdate(dataset,
-                                                                                   esRepos.get(tenant, dataset));
+                                                                                   esRepos.get(Optional.of(tenant), dataset));
             }
             boolean created = esRepos.save(tenant, entity);
             LOGGER.debug("Elasticsearch saving result : {}", created);
@@ -976,7 +976,7 @@ public class EntityIndexerService implements IEntityIndexerService {
      * Merge data object with current indexed one if it does exist
      */
     private void mergeDataObject(String tenant, Long datasourceId, OffsetDateTime now, DataObject dataObject) {
-        DataObject curObject = esRepos.get(tenant, dataObject);
+        DataObject curObject = esRepos.get(Optional.of(tenant), dataObject);
         // Be careful : in some case, some data objects from another datasource can be retrieved (AipDataSource
         // search objects from storage only using tags so if this tag has been used
         // if current object does already exist into ES, the new one wins. It is then mandatory to retrieve from
@@ -1040,7 +1040,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Override
     public boolean deleteDataObject(String tenant, String ipId) {
         // get object deleted
-        DataObject obj = esRepos.get(tenant, EntityType.DATA.toString(), ipId, DataObject.class);
+        DataObject obj = esRepos.get(Optional.of(tenant), EntityType.DATA.toString(), ipId, DataObject.class);
         // decrement the related session
         if (obj != null && obj.getFeature() != null) {
             sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());

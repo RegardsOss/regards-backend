@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.crawler.service;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -139,12 +140,12 @@ public class MultiTenantCrawlerIT {
         esRepos.refresh(TENANT1);
         esRepos.refresh(TENANT2);
 
-        final Collection coll12FromEs = esRepos.get(TENANT1, coll12);
+        final Collection coll12FromEs = esRepos.get(Optional.of(TENANT1), coll12);
         // coll11 tags coll12 so coll11 groups must have been copied to coll12
         Assert.assertArrayEquals(Sets.newTreeSet(coll11.getGroups()).toArray(),
                                  Sets.newTreeSet(coll12FromEs.getGroups()).toArray());
 
-        final Collection coll22FromEs = esRepos.get(TENANT2, coll22);
+        final Collection coll22FromEs = esRepos.get(Optional.of(TENANT2), coll22);
         // coll21 tags coll22 so coll21 groups must have been copied to coll22
         Assert.assertArrayEquals(Sets.newTreeSet(coll21.getGroups()).toArray(),
                                  Sets.newTreeSet(coll22FromEs.getGroups()).toArray());
