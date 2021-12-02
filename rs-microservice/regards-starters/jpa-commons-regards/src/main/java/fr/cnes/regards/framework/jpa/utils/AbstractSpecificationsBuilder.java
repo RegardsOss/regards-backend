@@ -50,6 +50,14 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
+    protected Specification<T> equalsIgnoreCase(String field, String value) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(criteriaBuilder.upper(root.get(field)), value.toUpperCase());
+        }
+    }
+
     protected Specification<T> equals(String field, Boolean value) {
         if (value == null) {
             return null;
@@ -63,6 +71,14 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return null;
         } else {
             return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get(field), "%" + value + "%");
+        }
+    }
+
+    protected Specification<T> likeIgnoreCase(String field, String value) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper(root.get(field)), ("%" + value + "%").toUpperCase());
         }
     }
 
