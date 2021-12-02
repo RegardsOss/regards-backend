@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.jpa.utils;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.OffsetDateTime;
@@ -59,6 +60,14 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
+    protected Specification<T> equalsIgnoreCase(String field, String value) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(criteriaBuilder.upper(root.get(field)), value.toUpperCase());
+        }
+    }
+
     protected Specification<T> equals(String field, Enum<?> value) {
         if (value == null) {
             return null;
@@ -83,7 +92,15 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected  Specification<T> useDatesRestriction(String field, DatesRangeRestriction datesRangeRestriction) {
+    protected Specification<T> likeIgnoreCase(String field, String value) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper(root.get(field)), ("%" + value + "%").toUpperCase());
+        }
+    }
+
+    protected Specification<T> useDatesRestriction(String field, DatesRangeRestriction datesRangeRestriction) {
         if (datesRangeRestriction == null) {
             return null;
         }
@@ -91,13 +108,14 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         OffsetDateTime dateBefore = datesRangeRestriction.getBefore();
         if (dateAfter == null && dateBefore == null) {
             return null;
-        } else if (dateAfter == null && dateBefore != null) {
-            return before(field, dateBefore);
-        } else if (dateAfter != null && dateBefore == null) {
-            return after(field, dateAfter);
-        } else {
-            return ((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get(field), dateBefore, dateAfter));
         }
+        if (dateAfter == null) {
+            return before(field, dateBefore);
+        }
+        if (dateBefore == null) {
+            return after(field, dateAfter);
+        }
+        return ((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get(field), dateBefore, dateAfter));
     }
 
     protected Specification<T> before(String field, OffsetDateTime date) {
@@ -132,19 +150,18 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> useValuesRestriction(String field, ValuesRestriction valuesRestriction) {
+    protected Specification<T> useValuesRestriction(String field, ValuesRestriction<?> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
         Collection<?> values = valuesRestriction.getValues();
-        ValuesRestrictionMode valuesRestrictionMode = valuesRestriction.getMode();
-        if (values == null || values.isEmpty()) {
+        if (CollectionUtils.isEmpty(values)) {
             return null;
-        } else if (valuesRestrictionMode == ValuesRestrictionMode.INCLUDE) {
-                return isIncluded(field, values);
-        } else {
-            return isExcluded(field, values);
         }
+        if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
+            return isIncluded(field, values);
+        }
+        return isExcluded(field, values);
     }
 
     protected Specification<T> isIncluded(String field, Collection<?> values) {

@@ -34,11 +34,11 @@ public class ProjectUserSpecificationsBuilder extends AbstractSpecificationsBuil
     @Override
     protected void addSpecificationsFromParameters() {
         if (parameters != null) {
-            specifications.add(like("email", parameters.getEmail()));
-            specifications.add(like("lastName", parameters.getLastName()));
-            specifications.add(like("firstName", parameters.getFirstName()));
+            specifications.add(likeIgnoreCase("email", parameters.getEmail()));
+            specifications.add(likeIgnoreCase("lastName", parameters.getLastName()));
+            specifications.add(likeIgnoreCase("firstName", parameters.getFirstName()));
             specifications.add(hasStatus(parameters.getStatus()));
-            specifications.add(equals("origin", parameters.getOrigin()));
+            specifications.add(equalsIgnoreCase("origin", parameters.getOrigin()));
             specifications.add(joinedEquals("role", "name", parameters.getRole()));
             specifications.add(before("created", parameters.getCreatedBefore()));
             specifications.add(after("created", parameters.getCreatedAfter()));
@@ -53,7 +53,7 @@ public class ProjectUserSpecificationsBuilder extends AbstractSpecificationsBuil
         if (StringUtils.isEmpty(status)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), UserStatus.valueOf(status));
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), UserStatus.valueOf(status.toUpperCase()));
         }
     }
 
