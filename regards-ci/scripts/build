@@ -20,7 +20,7 @@ function checkArtifactsRebuild {
     set -x
     rm -f "${validateFile}"
     set +x
-    mvn validate -P docker,CI -f ${pomFile} 2>&1 1> "${validateFile}"
+    mvn validate -P docker,CI -f ${pomFile} > "${validateFile}" 2>&1
      if grep -q "BUILD SUCCESS" "${validateFile}"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full '${validateFile}' artifact for more information"
         else
