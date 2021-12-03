@@ -10,6 +10,10 @@ source ${SCRIPTS}/variables
 
 function dependencyTree {
 
+    set +x
+    rm -f ${DATADIR}/*
+    set -x
+
     echo -e "\nCalculating hash for dependency tree..."
     local pomsHash
     # lets find all pom
