@@ -15,8 +15,19 @@ source ${SCRIPTS}/variables
 function checkArtifactsRebuild {
     pomFile=$1
     module="${REGARDS_MS:-all}"
+    validateFile="${DATADIR}/mvn-validate-${module}.log"
     echo -e "\nChecking artifacts for rebuild..."
-    existingModules=($(mvn validate -P CI -f ${pomFile} 2>&1 | grep "< fr.cnes" | cut -d ' ' -f7 | cut -d ':' -f2))
+    set -x
+    rm -f "${validateFile}"
+    set +x
+    mvn validate -P docker,CI -f ${pomFile} 2>&1 1> "${validateFile}"
+     if grep -q "BUILD SUCCESS" "${validateFile}"; then
+            echo -e "BUILD SUCCESS ! \nPlease refer to the full '${validateFile}' artifact for more information"
+        else
+            echo "Error while executing Maven build, please refer to the full 'mvn-compile.log' artifact for more information."
+            exit 1
+        fi
+    existingModules=($(cat "${validateFile}" | grep "< fr.cnes" | cut -d ' ' -f7 | cut -d ':' -f2))
 
     # Try downloading an existing hashes for this job
     nexusHashesFile=${DATADIR}/hashes-nexus-${module}.txt

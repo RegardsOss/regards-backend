@@ -5,6 +5,7 @@ SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # Allow piping through tee to forward exit statuses
 set -o pipefail
 
+export MAVEN_OPTS="-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true"
 source ${SCRIPTS}/utils
 source ${SCRIPTS}/variables
 source ${SCRIPTS}/hash
