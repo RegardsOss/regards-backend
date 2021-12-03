@@ -119,8 +119,10 @@ public class RequestController implements IResourceController<LightRequest> {
         resourceService.addLink(resource, RequestController.class, "retrieveLightRequest", LinkRels.LIST,
                                 MethodParamFactory.build(String.class, element.getRequestId()));
         if (element.getStatus().equals(RequestStatus.ERROR) || element.getStatus().equals(RequestStatus.NO_WORKER_AVAILABLE)) {
-            resourceService.addLink(resource, RequestController.class, "retryRequests", LinkRelation.of("retry"));
-            resourceService.addLink(resource, RequestController.class, "deleteRequests", LinkRels.DELETE);
+            resourceService.addLink(resource, RequestController.class, "retryRequests", LinkRelation.of("retry"),
+                                    MethodParamFactory.build(SearchRequestParameters.class));
+            resourceService.addLink(resource, RequestController.class, "deleteRequests", LinkRels.DELETE,
+                                    MethodParamFactory.build(SearchRequestParameters.class));
         }
         return resource;
     }

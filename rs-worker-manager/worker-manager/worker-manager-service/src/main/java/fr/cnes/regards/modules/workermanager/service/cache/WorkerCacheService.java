@@ -79,6 +79,7 @@ public class WorkerCacheService {
             } else {
                 cache.put(workerType, new CacheEntry(workerInsSet, expireInCacheDuration));
             }
+            LOGGER.debug("{} heartbeat(s) received from worker type {}", workerInsSet.size(), workerType);
         }
     }
 
