@@ -285,15 +285,15 @@ function buildAnDeployDockerImages {
             -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
             -pl ${mvnPlArg} \
             2>&1 | tee ${DATADIR}/mvn-docker-build.log
+
+        if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-docker-build.log"; then
+            echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-docker-build.log' artifact for more information"
+        else
+            echo "Error while executing Maven build, please refer to the full 'mvn-docker-build.log' artifact for more information."
+            exit 1
+        fi
     fi
     set +x
-
-    if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-docker-build.log"; then
-        echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-docker-build.log' artifact for more information"
-    else
-        echo "Error while executing Maven build, please refer to the full 'mvn-docker-build.log' artifact for more information."
-        exit 1
-    fi
 }
 
 function deployMvnArtifacts {
@@ -321,13 +321,13 @@ function deployMvnArtifacts {
             -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
             -pl ${mvnPlArg} \
             2>&1 | tee ${DATADIR}/mvn-deploy.log
+
+        if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-deploy.log"; then
+            echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-deploy.log' artifact for more information"
+        else
+            echo "Error while executing Maven build, please refer to the full 'mvn-deploy.log' artifact for more information."
+            exit 1
+        fi
     fi
     set +x
-
-    if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-deploy.log"; then
-        echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-deploy.log' artifact for more information"
-    else
-        echo "Error while executing Maven build, please refer to the full 'mvn-deploy.log' artifact for more information."
-        exit 1
-    fi
 }

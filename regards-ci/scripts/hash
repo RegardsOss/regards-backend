@@ -61,7 +61,7 @@ function dependencyTree {
             # first remove maven log noise (timestamp, thread, etc)
             # parse the dependency tree (check result in nexus to understand)
             sed -r 's/^[0-9:,]*\s?\[[A-Z]*\]\s//' ${DATADIR}/mvn-deptree.log | sed -r 's/^[^-]*- //g' \
-                | grep ':jar:' | sed -r 's/\|  *//g' | sed -r 's/\\/+/g' | sed -r 's/^ *//g' \
+                | sed -r 's/\|  *//g' | sed -r 's/\\/+/g' | sed -r 's/^ *//g' \
                 | awk '$1 ~ /^\+/ {sub(/fr.[^:]*:/, "",$2); sub(/:.*/,"", $2); print $2 "#"} $1 ~ /^fr/ {sub(/fr.[^:]*:/, "",$1); sub(/:.*/,"", $1); print "\n" $1 "=#"}' \
                 | sed -r ':a;N;$!ba;s/#\n/,/g' \
                 > ${DATADIR}/dependencyTree.txt
@@ -109,7 +109,7 @@ function folderHash {
 
 function parentHash {
     find "$1" -maxdepth 0 -type f \
-        \(-name "pom.xml" -o -name ".deps.hash"\) \
+        \( -name "pom.xml" -o -name ".deps.hash" \) \
         -print0 | sort -z | xargs -0 git --no-pager log --format=%ct | sha1sum | awk '{ print $1 }'
 }
 
@@ -138,6 +138,8 @@ function computeModuleHashes {
             if ! grep -q "<packaging>pom</packaging>" $p; then
                 # echo "Hashing module ${name} at ${dir}"
                 echo "${name}:$(folderHash $dir)" >> "${DATADIR}/hashes.tmp"
+            else 
+                echo "${name}:$(parentHash $dir)" >> "${DATADIR}/hashes.tmp"
             fi
     done
 
@@ -156,6 +158,7 @@ function computeModulesToRebuild {
     rm -f ${DATADIR}/hashes-nexus.txt
     rm -f ${DATADIR}/hashes-nexus-new.txt
     touch ${DATADIR}/hashes-nexus.txt
+    touch ${DATADIR}/modulesToRebuild.txt
     curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} ${NEXUS_RAW}/tests/regards/hashes-${REGARDS_VERSION}.txt -o ${DATADIR}/hashes-nexus.txt --noproxy '*' -k --fail
     set +x
 
