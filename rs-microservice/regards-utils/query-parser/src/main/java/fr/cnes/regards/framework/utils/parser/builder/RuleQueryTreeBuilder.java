@@ -20,13 +20,7 @@ package fr.cnes.regards.framework.utils.parser.builder;
 
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
-import org.apache.lucene.queryparser.flexible.core.nodes.AndQueryNode;
-import org.apache.lucene.queryparser.flexible.core.nodes.BooleanQueryNode;
-import org.apache.lucene.queryparser.flexible.core.nodes.FieldQueryNode;
-import org.apache.lucene.queryparser.flexible.core.nodes.ModifierQueryNode;
-import org.apache.lucene.queryparser.flexible.core.nodes.OrQueryNode;
-import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
-import org.apache.lucene.queryparser.flexible.core.nodes.QuotedFieldQueryNode;
+import org.apache.lucene.queryparser.flexible.core.nodes.*;
 import org.apache.lucene.queryparser.flexible.standard.nodes.RegexpQueryNode;
 
 import fr.cnes.regards.framework.utils.parser.rule.IRule;
@@ -45,10 +39,10 @@ public class RuleQueryTreeBuilder extends QueryTreeBuilder implements IRuleBuild
         setBuilder(QuotedFieldQueryNode.class, new QuotedFieldQueryNodeBuilder());
         setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder());
         setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());
-        //        setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(finder));
-        //        setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder(finder));
-        //        setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
-        //        setBuilder(FuzzyQueryNode.class, new UnsupportedQueryNodeBuilder());
+        // setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(finder));
+        // setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder(finder));
+        setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
+        // setBuilder(FuzzyQueryNode.class, new UnsupportedQueryNodeBuilder());
         setBuilder(BooleanQueryNode.class, new BooleanNodeQueryBuilder());
         setBuilder(RegexpQueryNode.class, new RegexpQueryNodeBuilder());
     }

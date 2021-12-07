@@ -72,6 +72,15 @@ public class ParserTest {
     }
 
     @Test
+    public void matchingInRule() throws QueryNodeException {
+        parseRule(RULE_PARSER,
+                  String.format("%s.%s: (%s OR titi)",
+                                DATA, DATA_STRING, DATA_STRING_VALUE, DATA_STRING_VALUE),
+                  example1(),
+                  Boolean.TRUE);
+    }
+
+    @Test
     public void matchingRuleAnd() throws QueryNodeException {
         parseRule(RULE_PARSER,
                   String.format("%s.%s:\"%s\" AND %s.%s:%s",
