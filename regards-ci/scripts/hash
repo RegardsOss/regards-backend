@@ -108,8 +108,7 @@ function folderHash {
 }
 
 function parentHash {
-    find "$1" -maxdepth 0 -type f \
-        \( -name "pom.xml" -o -name ".deps.hash" \) \
+    find "$1" -maxdepth 1 -type f -name "pom.xml" \
         -print0 | sort -z | xargs -0 git --no-pager log --format=%ct | sha1sum | awk '{ print $1 }'
 }
 
