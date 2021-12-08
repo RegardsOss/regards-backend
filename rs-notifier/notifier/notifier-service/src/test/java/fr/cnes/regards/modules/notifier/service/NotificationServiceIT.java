@@ -111,7 +111,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
     private IJobService jobService;
 
     @Autowired
-    private ITestService testService;
+    private TestService testService;
 
     @SpyBean
     private IJobInfoService jobInfoService;
@@ -762,26 +762,40 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
     @Test
     public void testCheckCompleted() throws EncryptionException, EntityNotFoundException, EntityInvalidException {
         // we just need to create notification requests in state SCHEDULED and with no more recipients associated to check the success
-        int nbSuccess = properties.getMaxBulkSize() / 2;
+        int nbCompleted = properties.getMaxBulkSize() / 2;
         JsonObject matchR1 = initElement("elementRule1.json");
-        List<NotificationRequest> requestsInSuccess = new ArrayList<>(nbSuccess);
-        for (int i = 0; i < nbSuccess; i++) {
-            requestsInSuccess.add(new NotificationRequest(matchR1,
-                                                          gson.toJsonTree("SomeMetaWeDontCareAbout"),
-                                                          AbstractRequestEvent.generateRequestId(),
-                                                          REQUEST_OWNER,
-                                                          OffsetDateTime.now(),
-                                                          NotificationState.SCHEDULED,
-                                                          new HashSet<>()));
-        }
-        requestsInSuccess = notificationRequestRepository.saveAll(requestsInSuccess);
-        // we should add some notification with only recipients scheduled
         PluginConfiguration recipientR1_2 = pluginService.savePluginConfiguration(new PluginConfiguration(
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
                 RecipientSender3.PLUGIN_ID));
-        List<NotificationRequest> notYetInSuccess = new ArrayList<>(properties.getMaxBulkSize() - nbSuccess);
-        for (int i = 0; i < properties.getMaxBulkSize() - nbSuccess; i++) {
+        List<NotificationRequest> completed = new ArrayList<>(nbCompleted);
+        int nbError = 0;
+        for (int i = 0; i < nbCompleted; i++) {
+            switch (i%3) {
+                case 0:
+                    completed.add(
+                        new NotificationRequest(matchR1, gson.toJsonTree("SomeMetaWeDontCareAbout"), AbstractRequestEvent.generateRequestId(), REQUEST_OWNER,
+                                                OffsetDateTime.now(), NotificationState.SCHEDULED, new HashSet<>()));
+                    break;
+                case 1:
+                    NotificationRequest inSuccess = new NotificationRequest(matchR1, gson.toJsonTree("SomeMetaWeDontCareAbout"), AbstractRequestEvent.generateRequestId(), REQUEST_OWNER,
+                                            OffsetDateTime.now(), NotificationState.SCHEDULED, new HashSet<>());
+                    inSuccess.getSuccessRecipients().add(recipientR1_2);
+                    completed.add(inSuccess);
+                    break;
+                case 2:
+                default:
+                    NotificationRequest inError = new NotificationRequest(matchR1, gson.toJsonTree("SomeMetaWeDontCareAbout"), AbstractRequestEvent.generateRequestId(), REQUEST_OWNER,
+                                                                            OffsetDateTime.now(), NotificationState.ERROR, new HashSet<>());
+                    inError.getRecipientsInError().add(recipientR1_2);
+                    completed.add(inError);
+                    nbError++;
+                    break;
+            }
+        }
+        completed = notificationRequestRepository.saveAll(completed);
+        List<NotificationRequest> notYetCompleted = new ArrayList<>(properties.getMaxBulkSize() - nbCompleted);
+        for (int i = 0; i < properties.getMaxBulkSize() - nbCompleted; i++) {
             NotificationRequest notYet = new NotificationRequest(matchR1,
                                                                  gson.toJsonTree("DontCare"),
                                                                  AbstractRequestEvent.generateRequestId(),
@@ -790,35 +804,35 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                  NotificationState.SCHEDULED,
                                                                  new HashSet<>());
             notYet.getRecipientsScheduled().add(recipientR1_2);
-            notYetInSuccess.add(notYet);
+            notYetCompleted.add(notYet);
         }
-        notYetInSuccess = notificationRequestRepository.saveAll(notYetInSuccess);
+        notYetCompleted = notificationRequestRepository.saveAll(notYetCompleted);
         Pair<Integer, Integer> result = notificationProcessingService.checkCompletedRequests();
-        Assert.assertEquals("Not the right amount of success detected!", nbSuccess, result.getFirst().intValue());
-        //lets check that it is really requestsInSuccess that have been identified as it i.e. they do not exists anymore
+        Assert.assertEquals("Not the right amount of completed detected!", nbCompleted, result.getFirst() + result.getSecond());
+        // let's check that it is really requestsInSuccess that have been identified as it i.e. they do not exist anymore
         Assert.assertEquals("Requests in state " + NotificationState.SCHEDULED
                         + " with no recipients associated should no longer be in DB",
-                0,
-                notificationRequestRepository.findAllById(requestsInSuccess.stream().map(NotificationRequest::getId)
+                nbError,
+                notificationRequestRepository.findAllById(completed.stream().map(NotificationRequest::getId)
                         .collect(Collectors.toList())).size());
         // check that requests not yet in success have not been altered
-        notYetInSuccess = notificationRequestRepository
-                .findAllById(notYetInSuccess.stream().map(NotificationRequest::getId).collect(Collectors.toList()));
+        notYetCompleted = notificationRequestRepository
+                .findAllById(notYetCompleted.stream().map(NotificationRequest::getId).collect(Collectors.toList()));
         Assert.assertEquals("There should be the same number fo not yet in success requests than before",
-                            properties.getMaxBulkSize() - nbSuccess,
-                            notYetInSuccess.size());
-        for (NotificationRequest notYet : notYetInSuccess) {
-            Assert.assertEquals("requests not yet in success should still be in state " + NotificationState.SCHEDULED,
+                            properties.getMaxBulkSize() - nbCompleted,
+                            notYetCompleted.size());
+        for (NotificationRequest notYet : notYetCompleted) {
+            Assert.assertEquals("requests not yet completed should still be in state " + NotificationState.SCHEDULED,
                                 NotificationState.SCHEDULED,
                                 notYet.getState());
-            Assert.assertEquals("There should still be 1 recipient scheduled for requests not yet in success",
+            Assert.assertEquals("There should still be 1 recipient scheduled for requests not yet completed",
                                 1,
                                 notYet.getRecipientsScheduled().size());
-            Assert.assertTrue("recipientR1_2 should still be scheduled for request not yet in success",
+            Assert.assertTrue("recipientR1_2 should still be scheduled for request not yet completed",
                               notYet.getRecipientsScheduled().contains(recipientR1_2));
-            Assert.assertTrue("Request not yet in success should have no recipients in error",
+            Assert.assertTrue("Request not yet completed should have no recipients in error",
                               notYet.getRecipientsInError().isEmpty());
-            Assert.assertTrue("Request not yet in success should have no recipients to schedule",
+            Assert.assertTrue("Request not yet completed should have no recipients to schedule",
                               notYet.getRecipientsToSchedule().isEmpty());
         }
     }
@@ -1947,7 +1961,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         NotificationRequest successRequest = new NotificationRequest(payload, metadata, successId, owner2, now, NotificationState.SCHEDULED, rules);
         successRequest.getSuccessRecipients().addAll(Arrays.asList(recipient1, recipient2));
 
-        NotificationRequest errorRequest = new NotificationRequest(payload, metadata, errorId, owner2, now, NotificationState.SCHEDULED, rules);
+        NotificationRequest errorRequest = new NotificationRequest(payload, metadata, errorId, owner2, now, NotificationState.ERROR, rules);
         errorRequest.getRecipientsInError().addAll(Arrays.asList(recipient1, recipient2));
 
         notificationRequestRepository.saveAll(Arrays.asList(successRequest, errorRequest, halfSuccessRequest));

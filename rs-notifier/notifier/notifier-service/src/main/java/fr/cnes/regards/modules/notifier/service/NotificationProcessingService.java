@@ -61,6 +61,8 @@ public class NotificationProcessingService extends AbstractNotificationService<N
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationProcessingService.class);
 
+    public static final NotificationState[] COMPLETED_STATES = { NotificationState.SCHEDULED, NotificationState.ERROR };
+
     private final IPluginService pluginService;
     private final NotificationConfigurationProperties properties;
     private final IJobInfoService jobInfoService;
@@ -237,9 +239,8 @@ public class NotificationProcessingService extends AbstractNotificationService<N
     }
 
     private Page<NotificationRequest> findCompletedRequests() {
-        return notificationRequestRepository.findCompletedRequests(
-                NotificationState.SCHEDULED,
-                PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc(NotificationRequest.REQUEST_DATE_JPQL_NAME))));
+        return notificationRequestRepository.findCompletedRequests(COMPLETED_STATES, PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc(
+                NotificationRequest.REQUEST_DATE_JPQL_NAME))));
     }
 
     private NotifierEvent mapRequestToEvent(NotificationRequest notificationRequest) {

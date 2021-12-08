@@ -85,11 +85,11 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
     );
 
     @Query("select nr from NotificationRequest nr " +
-            "where nr.state = :state " +
+            "where nr.state in :state " +
             "and nr.recipientsScheduled is empty " +
             "and nr.recipientsToSchedule is empty " +
             "and nr.rulesToMatch is empty")
-    Page<NotificationRequest> findCompletedRequests(@Param("state") NotificationState state, Pageable pageable);
+    Page<NotificationRequest> findCompletedRequests(@Param("state") NotificationState[] state, Pageable pageable);
 
     @EntityGraph(attributePaths = {"recipientsScheduled", "recipientsInError", "recipientsToSchedule", "rulesToMatch"})
     Set<NotificationRequest> findAllByRequestIdIn(Set<String> requestsIds);

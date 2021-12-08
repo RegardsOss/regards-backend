@@ -18,12 +18,11 @@ import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
  */
 @Component
 @RegardsTransactional
-public class TestService implements ITestService {
+public class TestService  {
 
     @Autowired
     private INotificationRequestRepository notificationRequestRepository;
 
-    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateDatabaseToSimulateProcessFailForRecipient(List<NotificationRequest> requests,
             PluginConfiguration recipientThatFailed) {
@@ -36,7 +35,6 @@ public class TestService implements ITestService {
         notificationRequestRepository.saveAll(requests);
     }
 
-    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateDatabaseToSimulateRetryOnlyRulesToMatch(List<NotificationRequest> requests) {
         // retry will only change the same of the request as we do not have recipients in error but rule to match
