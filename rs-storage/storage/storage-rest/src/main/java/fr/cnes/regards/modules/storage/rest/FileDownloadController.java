@@ -157,22 +157,22 @@ public class FileDownloadController {
     protected Try<ResponseEntity<Resource>> downloadFile(DownloadableFile downloadFile, Boolean isContentInline) {
         return Try.of(() -> {
             HttpHeaders headers = new HttpHeaders();
+            MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM; // Default value
             // By default, return the attachment header, forcing browser to download the file
             if (isContentInline == null || !isContentInline) {
                 headers.add(HttpHeaders.CONTENT_DISPOSITION,
                             ContentDisposition.builder("attachment").filename(downloadFile.getFileName()).build()
                                     .toString());
             } else {
+                // Override media type to get exact one
+                mediaType = MediaType.asMediaType(downloadFile.getMimeType());
                 headers.add(HttpHeaders.CONTENT_DISPOSITION,
                             ContentDisposition.builder("inline").filename(downloadFile.getFileName()).build()
                                     .toString());
                 // Allows iframe to display inside REGARDS interface
                 headers.add("X-Frame-Options", "SAMEORIGIN");
             }
-            return ResponseEntity.ok().headers(headers).contentType(downloadFile.getMimeType() == null ?
-                                                                            MediaType.APPLICATION_OCTET_STREAM :
-                                                                            MediaType.asMediaType(
-                                                                                    downloadFile.getMimeType()))
+            return ResponseEntity.ok().headers(headers).contentType(mediaType)
                     .contentLength(downloadFile.getRealFileSize().intValue())
                     .body(new InputStreamResource(downloadFile.getFileInputStream()));
         });
