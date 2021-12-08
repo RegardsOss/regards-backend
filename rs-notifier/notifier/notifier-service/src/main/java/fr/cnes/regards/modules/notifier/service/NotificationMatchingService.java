@@ -115,7 +115,7 @@ public class NotificationMatchingService extends AbstractNotificationService<Not
                 try {
                     IRuleMatcher rulePlugin = pluginService.getPlugin(rule.getRulePlugin().getBusinessId());
                     // check if the  element match with the rule
-                    if (rulePlugin.match(notificationRequest.getPayload())) {
+                    if (rulePlugin.match(notificationRequest.getMetadata(), notificationRequest.getPayload())) {
                         for (PluginConfiguration recipient : rule.getRecipients()) {
                             notificationRequest.getRecipientsToSchedule().add(recipient);
                             // this is done so that we can know how many recipients have been matched by at least one request

@@ -55,8 +55,8 @@ public class DefaultRuleMatcher implements IRuleMatcher {
     private String attributeValueToSeek;
 
     @Override
-    public boolean match(JsonObject jsonObject) {
-        return handleProperties(jsonObject);
+    public boolean match(JsonObject metadata, JsonObject payload) {
+        return handleProperties(payload);
     }
 
     /**

@@ -39,9 +39,9 @@ public class NotificationRequestEvent extends AbstractRequestEvent implements IS
 
     private @NotNull(message = "JSON element is required") JsonObject payload;
 
-    private JsonElement metadata;
+    private JsonObject metadata;
 
-    public NotificationRequestEvent(JsonObject payload, JsonElement metadata, String requestId, String requestOwner) {
+    public NotificationRequestEvent(JsonObject payload, JsonObject metadata, String requestId, String requestOwner) {
         this.payload = payload;
         this.metadata = metadata;
         super.setRequestId(requestId);
@@ -57,11 +57,11 @@ public class NotificationRequestEvent extends AbstractRequestEvent implements IS
         this.payload = payload;
     }
 
-    public JsonElement getMetadata() {
+    public JsonObject getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(JsonElement metadata) {
+    public void setMetadata(JsonObject metadata) {
         this.metadata = metadata;
     }
 }

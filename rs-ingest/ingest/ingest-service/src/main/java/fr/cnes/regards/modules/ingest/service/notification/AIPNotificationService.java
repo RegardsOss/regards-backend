@@ -118,7 +118,8 @@ public class AIPNotificationService implements IAIPNotificationService {
                 ingestRequest.getAips().forEach((aip) -> eventToSend.add(
                         new NotificationRequestEvent(
                             gson.toJsonTree(aip).getAsJsonObject(),
-                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.INGEST_VALUE)),
+                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.INGEST_VALUE))
+                                    .getAsJsonObject(),
                             ingestRequest.getId().toString(), this.microserviceName)));
             }
             // OAIS DELETION REQUESTS
@@ -127,7 +128,8 @@ public class AIPNotificationService implements IAIPNotificationService {
                 // remark : aip content is in payload because it has already been removed from database
                 eventToSend.add(
                         new NotificationRequestEvent(gson.toJsonTree(oaisDeletionRequest.getAipToNotify()).getAsJsonObject(),
-                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.OAIS_DELETION_VALUE)),
+                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.OAIS_DELETION_VALUE))
+                                    .getAsJsonObject(),
                             oaisDeletionRequest.getId().toString(), this.microserviceName));
             }
             // UPDATE REQUESTS
@@ -135,7 +137,8 @@ public class AIPNotificationService implements IAIPNotificationService {
                 AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
                 eventToSend.add(
                         new NotificationRequestEvent(gson.toJsonTree(aipUpdateRequest.getAip()).getAsJsonObject(),
-                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.UPDATE_VALUE)),
+                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.UPDATE_VALUE))
+                                    .getAsJsonObject(),
                             aipUpdateRequest.getId().toString(), this.microserviceName));
             }
         }

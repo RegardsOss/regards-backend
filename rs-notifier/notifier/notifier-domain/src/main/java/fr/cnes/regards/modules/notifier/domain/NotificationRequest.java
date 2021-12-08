@@ -118,7 +118,7 @@ public class NotificationRequest {
 
     @Column(name = "metadata", nullable = false, columnDefinition = "jsonb")
     @Type(type = "jsonb")
-    private JsonElement metadata;
+    private JsonObject metadata;
 
     /** creation date of the instance */
     @Column(name = "request_date", nullable = false)
@@ -138,7 +138,7 @@ public class NotificationRequest {
     @Column(name = "version")
     private long version;
 
-    public NotificationRequest(JsonObject payload, JsonElement metadata, String requestId, String requestOwner,
+    public NotificationRequest(JsonObject payload, JsonObject metadata, String requestId, String requestOwner,
             OffsetDateTime requestDate, NotificationState state, Set<Rule> rulesToMatch) {
         this.payload = payload;
         this.requestDate = requestDate;
@@ -160,11 +160,11 @@ public class NotificationRequest {
         this.payload = payload;
     }
 
-    public JsonElement getMetadata() {
+    public JsonObject getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(JsonElement metadata) {
+    public void setMetadata(JsonObject metadata) {
         this.metadata = metadata;
     }
 

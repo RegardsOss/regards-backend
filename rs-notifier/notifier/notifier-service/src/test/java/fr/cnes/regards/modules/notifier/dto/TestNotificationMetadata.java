@@ -16,27 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.domain.plugin;
+package fr.cnes.regards.modules.notifier.dto;
 
-import com.google.gson.JsonObject;
-import org.dom4j.rule.Rule;
+public class TestNotificationMetadata {
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+    private String metadata;
 
-/**
- * Describe action to applied to a {@link Rule}
- * @author Kevin Marchois
- *
- */
-@FunctionalInterface
-@PluginInterface(description = "Element rule matcher")
-public interface IRuleMatcher {
+    public static TestNotificationMetadata build(String value) {
+        TestNotificationMetadata meta = new TestNotificationMetadata();
+        meta.metadata = value;
+        return meta;
+    }
 
-    /**
-     * Verify if a {@link JsonObject} corresponding to an event payload match with a rule
-     * @param metadata {@link JsonObject} to verify if it matches
-     * @param payload {@link JsonObject} to verify if it matches
-     * @return true if match, false otherwise
-     */
-    boolean match(JsonObject metadata, JsonObject payload);
+    public String getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(String metadata) {
+        this.metadata = metadata;
+    }
 }

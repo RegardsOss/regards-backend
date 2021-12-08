@@ -58,7 +58,7 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
         List<NotificationRequestEvent> events = new ArrayList<>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
             events.add(new NotificationRequestEvent(element,
-                                                    gson.toJsonTree("CREATE"),
+                                                    gson.toJsonTree("{action: CREATE}").getAsJsonObject(),
                                                     AbstractRequestEvent.generateRequestId(),
                                                     "NotificationPerfIT"));
         }
@@ -82,7 +82,7 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
         List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
             events.add(new NotificationRequestEvent(element,
-                                                    gson.toJsonTree("CREATE"),
+                                                    gson.toJsonTree("{action: CREATE}").getAsJsonObject(),
                                                     AbstractRequestEvent.generateRequestId(),
                                                     "NotificationPerfIT"));
         }

@@ -20,7 +20,9 @@ import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
         url = "https://regardsoss.github.io/")
 public class LuceneRuleMatcher implements IRuleMatcher {
 
-    public static final String LUCENE_RULE_NAME = "lucene_rule";
+    public static final String PAYLOAD_RULE_NAME = "payload_rule";
+
+    public static final String METADATA_RULE_NAME = "metadata_rule";
 
     private static final RuleParser RULE_PARSER = new RuleParser();
 
@@ -28,11 +30,21 @@ public class LuceneRuleMatcher implements IRuleMatcher {
 
     public static final String PLUGIN_ID = "LuceneRuleMatcher";
 
-    @PluginParameter(name = LUCENE_RULE_NAME, label = "lucene expression to match")
-    private String luceneRule;
+    @PluginParameter(name = PAYLOAD_RULE_NAME, label = "lucene expression to match")
+    private String payloadRule;
+
+    @PluginParameter(name = METADATA_RULE_NAME, label = "lucene expression to match", optional = true)
+    private String metadataRule;
 
     @Override
-    public boolean match(JsonObject jsonObject) {
+    public boolean match(JsonObject metadata, JsonObject payload) {
+        return match(metadata, metadataRule) && match(payload, payloadRule);
+    }
+
+    private boolean match (JsonObject jsonObject, String luceneRule) {
+        if (luceneRule == null) {
+            return true;
+        }
         try {
             // Parse rule(s)
             IRule rule = RULE_PARSER.parse(luceneRule, "defaultField");

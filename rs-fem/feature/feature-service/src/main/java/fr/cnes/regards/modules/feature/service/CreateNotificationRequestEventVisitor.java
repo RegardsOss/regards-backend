@@ -72,7 +72,7 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
                                             gson.toJsonTree(new NotificationActionEventMetadata(
                                                     FeatureManagementAction.CREATED,
                                                     creationRequest.getFeatureEntity().getSessionOwner(),
-                                                    creationRequest.getFeatureEntity().getSession())),
+                                                    creationRequest.getFeatureEntity().getSession())).getAsJsonObject(),
                                             creationRequest.getRequestId(),
                                             creationRequest.getRequestOwner()));
     }
@@ -84,12 +84,12 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
                                                                                        deletionRequest.getSessionToNotify());
         if (deletionRequest.isAlreadyDeleted()) {
             return Optional.of(new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()).getAsJsonObject(),
-                                                gson.toJsonTree(metadata),
+                                                gson.toJsonTree(metadata).getAsJsonObject(),
                                                 deletionRequest.getRequestId(),
                                                 deletionRequest.getRequestOwner()));
         } else {
             return Optional.of(new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()).getAsJsonObject(),
-                                                gson.toJsonTree(metadata),
+                                                gson.toJsonTree(metadata).getAsJsonObject(),
                                                 deletionRequest.getRequestId(),
                                                 deletionRequest.getRequestOwner()));
         }
@@ -105,7 +105,7 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
                                                 gson.toJsonTree(new NotificationActionEventMetadata(
                                                         FeatureManagementAction.COPY,
                                                         featureEntity.getSessionOwner(),
-                                                        featureEntity.getSession())),
+                                                        featureEntity.getSession())).getAsJsonObject(),
                                                 copyRequest.getRequestId(),
                                                 copyRequest.getRequestOwner()));
         } else {
@@ -121,7 +121,8 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
         return Optional.of(new NotificationRequestEvent(gson.toJsonTree(feature).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.UPDATED,
                                                                                                 updateRequest.getSourceToNotify(),
-                                                                                                updateRequest.getSessionToNotify())),
+                                                                                                updateRequest.getSessionToNotify()))
+                                                    .getAsJsonObject(),
                                             updateRequest.getRequestId(),
                                             updateRequest.getRequestOwner()));
         } else {
@@ -137,7 +138,8 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
         return Optional.of(new NotificationRequestEvent(gson.toJsonTree(feature).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.NOTIFIED,
                                                                                                 featureNotificationRequest.getSourceToNotify(),
-                                                                                                featureNotificationRequest.getSessionToNotify())),
+                                                                                                featureNotificationRequest.getSessionToNotify()))
+                                                    .getAsJsonObject(),
                                             featureNotificationRequest.getRequestId(),
                                             featureNotificationRequest.getRequestOwner()));
             } else {
