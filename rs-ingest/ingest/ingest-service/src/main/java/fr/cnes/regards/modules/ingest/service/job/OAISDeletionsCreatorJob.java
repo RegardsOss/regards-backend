@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.ingest.service.aip.AIPDeletionService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import org.springframework.util.CollectionUtils;
 
 /**
  * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task
@@ -62,7 +63,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
     private int totalPages = 0;
 
     @Autowired
-    private IAIPService aipRepository;
+    private IAIPService aipService;
 
     @Autowired
     private RequestService requestService;
@@ -82,7 +83,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
     @Value("${regards.ingest.aips.scan.iteration-limit:1000}")
     private Integer aipIterationLimit;
 
-    private OAISDeletionCreatorRequest deletionCreator;
+    private OAISDeletionCreatorRequest oaisDeletionCreatorRequest;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -95,49 +96,95 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
             throw new JobRuntimeException(String.format("Unknown deletion request with id %d", databaseId));
         }
 
-        deletionCreator = oDeletionRequest.get();
+        oaisDeletionCreatorRequest = oDeletionRequest.get();
     }
 
     @Override
     public void run() {
+
         logger.debug("[OAIS DELETION CREATOR JOB] Running job ...");
         long start = System.currentTimeMillis();
         Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Sort.Direction.ASC, "id");
         Page<AIPEntity> aipsPage;
         int nbRequestScheduled = 0;
-        // Set the request as running
-        deletionCreator.setState(InternalRequestState.RUNNING);
-        oaisDeletionCreatorRepo.save(deletionCreator);
-        do {
-            OAISDeletionCreatorPayload deletionPayload = deletionCreator.getConfig();
-            aipsPage = aipRepository.findByFilters(deletionPayload, pageRequest);
-            logger.debug("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
-            // Save number of pages to publish job advancement
-            if (totalPages < aipsPage.getTotalPages()) {
-                totalPages = aipsPage.getTotalPages();
-            }
-            // If deletion request is already registered for the given aip do not create a new one.
-            List<AbstractRequest> requests = aipsPage.stream()
-                    .filter(aip -> !aipDeletionService.deletionAlreadyPending(aip))
-                    .map(aip -> OAISDeletionRequest.build(aip, deletionPayload.getDeletionMode(),
-                                                          deletionPayload.getDeletePhysicalFiles()))
-                    .collect(Collectors.toList());
-            nbRequestScheduled += requestService.scheduleRequests(requests);
-            if (totalPages > 0) {
-                advanceCompletion();
-            }
-            pageRequest = pageRequest.next();
-        } while (aipsPage.hasNext());
-        // Delete the request
-        requestService.deleteRequest(deletionCreator);
 
-        logger.info("[OAIS DELETION CREATOR JOB] {} OAISDeletionRequest(s) scheduled in {}ms", nbRequestScheduled,
-                    System.currentTimeMillis() - start);
+        oaisDeletionCreatorRequest.setState(InternalRequestState.RUNNING);
+        oaisDeletionCreatorRepo.save(oaisDeletionCreatorRequest);
+
+        OAISDeletionCreatorPayload oaisDeletionCreatorPayload = oaisDeletionCreatorRequest.getConfig();
+
+        if (hasValidParameters(oaisDeletionCreatorPayload)) {
+
+            do {
+
+                aipsPage = aipService.findByFilters(oaisDeletionCreatorPayload, pageRequest);
+                logger.debug("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
+                // Save number of pages to publish job advancement
+                if (totalPages < aipsPage.getTotalPages()) {
+                    totalPages = aipsPage.getTotalPages();
+                }
+                // If deletion request is already registered for the given aip do not create a new one.
+                List<AbstractRequest> requests = aipsPage.stream()
+                        .filter(aip -> !aipDeletionService.deletionAlreadyPending(aip))
+                        .map(aip -> OAISDeletionRequest.build(aip, oaisDeletionCreatorPayload.getDeletionMode(), oaisDeletionCreatorPayload.getDeletePhysicalFiles()))
+                        .collect(Collectors.toList());
+                nbRequestScheduled += requestService.scheduleRequests(requests);
+                if (totalPages > 0) {
+                    advanceCompletion();
+                }
+                pageRequest = pageRequest.next();
+
+            } while (aipsPage.hasNext());
+
+        }
+
+        requestService.deleteRequest(oaisDeletionCreatorRequest);
+
+        logger.info("[OAIS DELETION CREATOR JOB] {} OAISDeletionRequest(s) scheduled in {}ms", nbRequestScheduled, System.currentTimeMillis() - start);
     }
 
     @Override
     public int getCompletionCount() {
         return totalPages;
+    }
+
+    /**
+     * Checks whether parameters are valid for a deletion
+     * <br>
+     * - with EXCLUDE selection mode, it's possible not to define any other parameter, allowing to delete all in this way
+     * <br>
+     * - with INCLUDE selection mode, at least one parameter must be defined
+     *
+     * @param oaisDeletionCreatorPayload payload including parameters
+     * @return true or false
+     */
+    public boolean hasValidParameters(OAISDeletionCreatorPayload oaisDeletionCreatorPayload) {
+
+        boolean isValid = false;
+
+        switch (oaisDeletionCreatorPayload.getSelectionMode()) {
+            case EXCLUDE:
+                isValid = true;
+                break;
+            case INCLUDE:
+                isValid = oaisDeletionCreatorPayload.getState() != null
+                        || oaisDeletionCreatorPayload.getIpType() != null
+                        || oaisDeletionCreatorPayload.getLastUpdate().getFrom() != null
+                        || oaisDeletionCreatorPayload.getLastUpdate().getTo() != null
+                        || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getProviderIds())
+                        || oaisDeletionCreatorPayload.getSessionOwner() != null
+                        || oaisDeletionCreatorPayload.getSession() != null
+                        || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getStorages())
+                        || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getCategories())
+                        || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getTags())
+                        || oaisDeletionCreatorPayload.getLast() != null
+                        || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getAipIds());
+                break;
+            default:
+                break;
+        }
+
+        return isValid;
     }
 
 }
