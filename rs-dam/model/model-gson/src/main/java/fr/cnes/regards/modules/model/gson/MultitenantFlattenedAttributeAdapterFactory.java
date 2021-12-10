@@ -137,16 +137,18 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
      * @param att the attribute containing its fragment with its name and its type and name.
      */
     public void registerAttribute(String pTenant, AttributeModel att) {
-        // Define namespace if required
-        String namespace = null;
-        // Register namespace as an object wrapper
-        if (!att.getFragment().isDefaultFragment() && !att.getFragment().isVirtual()) {
-            namespace = att.getFragment().getName();
-            registerSubtype(pTenant, ObjectProperty.class, namespace);
-        }
+        if (!att.isVirtual()) {
+            // Define namespace if required
+            String namespace = null;
+            // Register namespace as an object wrapper
+            if (!att.getFragment().isDefaultFragment()) {
+                namespace = att.getFragment().getName();
+                registerSubtype(pTenant, ObjectProperty.class, namespace);
+            }
 
-        // Register attribute
-        registerSubtype(pTenant, getClassByType(att.getType()), att.getName(), namespace);
+            // Register attribute
+            registerSubtype(pTenant, getClassByType(att.getType()), att.getName(), namespace);
+        }
     }
 
     /**

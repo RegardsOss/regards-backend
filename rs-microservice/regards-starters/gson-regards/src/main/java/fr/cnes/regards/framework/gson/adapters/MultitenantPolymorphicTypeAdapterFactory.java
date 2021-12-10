@@ -24,29 +24,20 @@
 // CHECKSTYLE:ON
 package fr.cnes.regards.framework.gson.adapters;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
+import com.google.gson.*;
 import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Generic polymorphic adapter factory. This adapter is based on a discriminator field to explicitly map an entity to
@@ -185,7 +176,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         if (tenantDiscriminatorToSubtype.containsKey(discriminatorFieldValue)
                 && (type != tenantDiscriminatorToSubtype.get(discriminatorFieldValue))) {
 
-            final String errorMessage = String.format("Discrimator field value %s must be unique",
+            final String errorMessage = String.format("Discriminator field value %s must be unique",
                                                       discriminatorFieldValue);
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
