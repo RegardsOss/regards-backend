@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.dao;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import org.springframework.data.domain.Pageable;
@@ -39,17 +40,13 @@ import java.util.Set;
  */
 public class FeatureEntitySpecification {
 
-    private FeatureEntitySpecification() {
-        throw new IllegalStateException("Utility class");
-    }
-
     /**
-     * Creates search {@link Specification} for {@link FeatureEntity}s
+     * Creates search {@link Specification} for {@link FeatureSimpleEntity}s
      * @param selection {@link FeaturesSearchParameters}
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureEntity> searchAllByFilters(FeaturesSelectionDTO selection, Pageable page) {
+    public static Specification<FeatureSimpleEntity> searchAllByFilters(FeaturesSelectionDTO selection, Pageable page) {
 
         return (root, query, criteriaBuilder) -> {
 
@@ -101,6 +98,9 @@ public class FeatureEntitySpecification {
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private FeatureEntitySpecification() {
     }
 
 }

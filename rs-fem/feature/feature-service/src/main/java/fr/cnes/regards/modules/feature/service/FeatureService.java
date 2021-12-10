@@ -27,7 +27,9 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.dao.FeatureEntitySpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureSimpleEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
@@ -46,14 +48,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- *  Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
- *  @author Kevin Marchois
- *  @author Sébastien Binda
+ * Service to create {@link DataObjectFeature} from {@link FeatureEntity}
  *
+ * @author Kevin Marchois
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
 public class FeatureService implements IFeatureService {
+
+    @Autowired
+    private IFeatureSimpleEntityRepository featureSimpleEntityRepository;
 
     @Autowired
     private IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo;
@@ -66,12 +71,15 @@ public class FeatureService implements IFeatureService {
 
     @Override
     public Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable page) {
-        Page<FeatureEntity> entities = featureWithDisseminationRepo
-                .findAll(FeatureEntitySpecification.searchAllByFilters(selection, page), page);
+        // Workaround to avoid in-memory pagination with specification
+        // 1. use simple entities with specification + pagination to get 1 page
+        // 2. fetch full entities for objects in this page
+        Page<FeatureSimpleEntity> simpleEntities = featureSimpleEntityRepository.findAll(FeatureEntitySpecification.searchAllByFilters(selection, page), page);
+        List<FeatureEntity> entities = featureWithDisseminationRepo.findByUrnIn(simpleEntities.stream().map(FeatureSimpleEntity::getUrn).collect(Collectors.toSet()));
         List<FeatureEntityDto> elements = entities.stream()
                 .map(entity -> initDataObjectFeature(entity, selection.getFilters().isFull()))
                 .collect(Collectors.toList());
-        return new PageImpl<>(elements, page, entities.getTotalElements());
+        return new PageImpl<>(elements, page, simpleEntities.getTotalElements());
     }
 
     @Override

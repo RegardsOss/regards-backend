@@ -18,34 +18,17 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Set;
-
-/**
- * Another repository for {@link FeatureEntity}, but this one always fetch disseminationsInfo graph
- *
- * @author Léo Mieulet
- */
 @Repository
-public interface IFeatureEntityWithDisseminationRepository extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
+public interface IFeatureSimpleEntityRepository extends JpaRepository<FeatureSimpleEntity, Long>, JpaSpecificationExecutor<FeatureSimpleEntity> {
 
-    @EntityGraph(attributePaths = {"disseminationsInfo"})
-    List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn);
-
-    @EntityGraph(attributePaths = {"disseminationsInfo"})
-    FeatureEntity findByUrn(FeatureUniformResourceName urn);
-
-    @EntityGraph(attributePaths = {"disseminationsInfo"})
-    List<FeatureEntity> findAll();
+    Page<FeatureSimpleEntity> findAll(Specification<FeatureSimpleEntity> spec, Pageable page);
 
 }
