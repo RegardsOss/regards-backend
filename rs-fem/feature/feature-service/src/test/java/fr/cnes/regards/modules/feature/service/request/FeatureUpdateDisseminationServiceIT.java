@@ -119,7 +119,7 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
 
         // The recipient send back ACK
         List<DisseminationAckEvent> messages = Lists.newArrayList(
-                new DisseminationAckEvent(featureURN, recipientLabelRequired));
+                new DisseminationAckEvent(featureURN.toString(), recipientLabelRequired));
         featureUpdateDisseminationService.saveAckRequests(messages);
 
         // The FeatureUpdateDissemination request is saved
@@ -317,7 +317,7 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
 
         List<DisseminationAckEvent> disseminationAckEvents = new ArrayList<>();
         for (FeatureEntity featureEntity : allFeatureEntities) {
-            disseminationAckEvents.add(new DisseminationAckEvent(featureEntity.getUrn(), recipientLabel));
+            disseminationAckEvents.add(new DisseminationAckEvent(featureEntity.getUrn().toString(), recipientLabel));
         }
 
         // we wait for delay before schedule

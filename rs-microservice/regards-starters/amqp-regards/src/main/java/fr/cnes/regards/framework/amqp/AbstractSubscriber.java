@@ -295,9 +295,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      */
     protected <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(H handler, AmqpChannel channel, boolean purgeQueue) {
 
-        LOGGER.info("Subscribing to event {} with target {} and mode {}", channel.getEventType().getName(),
+        LOGGER.info("Subscribing to event {} with target {} and mode {} - {}", channel.getEventType().getName(),
                     channel.getTarget(),
-                    channel.getWorkerMode());
+                    channel.getWorkerMode(),
+                    channel.getQueueName().orElse(""));
 
         Set<String> tenants = resolveTenants();
 

@@ -170,7 +170,8 @@ public class FeatureUpdateDisseminationService {
 
     public void saveAckRequests(List<DisseminationAckEvent> messages) {
         // Retrieve features related to these events
-        Collection<FeatureUniformResourceName> urnList = messages.stream().map(DisseminationAckEvent::getUrn)
+        Collection<FeatureUniformResourceName> urnList = messages.stream()
+                .map(f -> FeatureUniformResourceName.fromString(f.getUrn()))
                 .collect(Collectors.toList());
 
         List<ILightFeatureEntity> lightFeatureEntities = featureEntityRepository.findByUrnIn(urnList);
@@ -179,11 +180,12 @@ public class FeatureUpdateDisseminationService {
         for (DisseminationAckEvent disseminationAckEvent : messages) {
             // Retrieve the FeatureEntity this event refers to
             Optional<ILightFeatureEntity> lightFeatureEntityOpt = lightFeatureEntities.stream()
-                    .filter(urnAndSessionById -> urnAndSessionById.getUrn().equals(disseminationAckEvent.getUrn()))
+                    .filter(urnAndSessionById -> urnAndSessionById.getUrn().toString().equals(disseminationAckEvent.getUrn()))
                     .findFirst();
             if (lightFeatureEntityOpt.isPresent()) {
                 // Add an ACK request
-                updateAckRequests.add(new FeatureUpdateDisseminationRequest(disseminationAckEvent.getUrn(),
+                FeatureUniformResourceName urn = FeatureUniformResourceName.fromString(disseminationAckEvent.getUrn());
+                updateAckRequests.add(new FeatureUpdateDisseminationRequest(urn,
                                                                             disseminationAckEvent.getRecipientLabel(),
                                                                             FeatureUpdateDisseminationInfoType.ACK,
                                                                             Optional.empty()));

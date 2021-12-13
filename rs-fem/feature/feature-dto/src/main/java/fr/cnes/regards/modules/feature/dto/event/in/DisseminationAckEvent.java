@@ -32,23 +32,23 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class DisseminationAckEvent implements ISubscribable {
 
-    private FeatureUniformResourceName urn;
+    private String urn;
 
     private String recipientLabel;
 
     public DisseminationAckEvent() {
     }
 
-    public DisseminationAckEvent(FeatureUniformResourceName urn, String recipientLabel) {
+    public DisseminationAckEvent(String urn, String recipientLabel) {
         this.urn = urn;
         this.recipientLabel = recipientLabel;
     }
 
-    public FeatureUniformResourceName getUrn() {
+    public String getUrn() {
         return urn;
     }
 
-    public void setUrn(FeatureUniformResourceName urn) {
+    public void setUrn(String urn) {
         this.urn = urn;
     }
 
