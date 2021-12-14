@@ -44,9 +44,20 @@ public class ResponseEvent implements ISubscribable, IMessagePropertiesAware {
 
     private Collection<String> messages = Lists.newArrayList();
 
-    public static ResponseEvent build(ResponseStatus status) {
+    private String requestId;
+
+    /**
+     * FIXME : Remove when SDS is updated.
+     * To avoid modifying interface with SDS by replacing featureFactory wit workerManager for extraction requests
+     * we add the type parameter to EXTRACTION as it was in previous version of regards.
+     */
+    private String type;
+
+    public static ResponseEvent build(ResponseStatus status, String requestId, String type) {
         ResponseEvent event = new ResponseEvent();
         event.status = status;
+        event.requestId = requestId;
+        event.type = type;
         return event;
     }
 

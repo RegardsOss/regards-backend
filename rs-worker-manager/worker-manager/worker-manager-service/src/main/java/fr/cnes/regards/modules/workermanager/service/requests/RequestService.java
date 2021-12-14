@@ -448,13 +448,28 @@ public class RequestService {
             }
         }
         if (!errors.isEmpty()) {
+            String requestId = EventHeadersHelper.getRequestIdHeader(event).orElse(null);
+            String owner = EventHeadersHelper.getOwnerHeader(event).orElse(null);
+            String session = EventHeadersHelper.getSessionHeader(event).orElse(null);
             LOGGER.warn("Skipped request {}. Causes : {}", EventHeadersHelper.getRequestIdHeader(event).orElse("undefined"),
                         String.join(",", errors));
-            publisher.publish(ResponseEvent.build(ResponseStatus.SKIPPED).withMessages(errors));
+            ResponseEvent response = ResponseEvent.build(ResponseStatus.SKIPPED, requestId, getRequestTypeForSds()).withMessages(errors);
+            addResponseHeaders(response, requestId, owner, session, null);
+            publisher.publish(response);
             requestInfo.getSkippedEvents().add(event);
             return false;
         }
         return true;
+    }
+
+    /**
+     * FIXME : Remove when SDS is updated.
+     * To avoid modifying interface with SDS by replacing featureFactory wit workerManager for extraction requests
+     * we add the type parameter to EXTRACTION as it was in previous version of regards.
+     * @return EXTRACTION
+     */
+    private String getRequestTypeForSds() {
+        return "EXTRACTION";
     }
 
     /**
@@ -481,22 +496,22 @@ public class RequestService {
                 // Do not inform clients for worker running process
                 break;
             case DISPATCHED:
-                event = ResponseEvent.build(ResponseStatus.GRANTED).withMessage(GRANTED_MESSAGE);
+                event = ResponseEvent.build(ResponseStatus.GRANTED, request.getRequestId(), getRequestTypeForSds()).withMessage(GRANTED_MESSAGE);
                 break;
             case NO_WORKER_AVAILABLE:
-                event = ResponseEvent.build(ResponseStatus.DELAYED)
+                event = ResponseEvent.build(ResponseStatus.DELAYED, request.getRequestId(), getRequestTypeForSds())
                         .withMessage(String.format(DELAYED_MESSAGE, request.getContentType()));
                 break;
             case INVALID_CONTENT:
-                event = ResponseEvent.build(ResponseStatus.INVALID_CONTENT)
+                event = ResponseEvent.build(ResponseStatus.INVALID_CONTENT, request.getRequestId(), getRequestTypeForSds())
                         .withMessage(String.format(INVALID_MESSAGE, request.getDispatchedWorkerType()));
                 break;
             case SUCCESS:
-                event = ResponseEvent.build(ResponseStatus.SUCCESS)
+                event = ResponseEvent.build(ResponseStatus.SUCCESS, request.getRequestId(), getRequestTypeForSds())
                         .withMessage(String.format(SUCCESS_MESSAGE, request.getDispatchedWorkerType()));
                 break;
             case ERROR:
-                event = ResponseEvent.build(ResponseStatus.ERROR).withMessage(
+                event = ResponseEvent.build(ResponseStatus.ERROR, request.getRequestId(), getRequestTypeForSds()).withMessage(
                         String.format(ERROR_MESSAGE, request.getDispatchedWorkerType(), request.getError()));
                 break;
             case TO_DISPATCH:
@@ -504,13 +519,17 @@ public class RequestService {
             default:
                 throw new RuntimeException(String.format("Invalid request status %s", request.getStatus().toString()));
         }
-        if (event != null) {
-            event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , request.getRequestId());
-            event.setHeader(EventHeadersHelper.OWNER_HEADER , request.getSource());
-            event.setHeader(EventHeadersHelper.SESSION_HEADER , request.getSession());
-            event.setHeader(EventHeadersHelper.WORKER_ID , request.getDispatchedWorkerType());
-        }
+        addResponseHeaders(event,  request.getRequestId(), request.getSource(), request.getSession(), request.getDispatchedWorkerType());
         return Optional.ofNullable(event);
+    }
+
+    private void addResponseHeaders(ResponseEvent event, String requestId, String owner, String session, String workerId) {
+        if (event != null) {
+            event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
+            event.setHeader(EventHeadersHelper.OWNER_HEADER , owner);
+            event.setHeader(EventHeadersHelper.SESSION_HEADER , session);
+            event.setHeader(EventHeadersHelper.WORKER_ID , workerId);
+        }
     }
 
     public Page<LightRequest> searchLightRequests(SearchRequestParameters filters, Pageable pageable) {
