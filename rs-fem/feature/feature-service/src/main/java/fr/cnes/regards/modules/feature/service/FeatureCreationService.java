@@ -252,6 +252,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity.build(sessionOwner, session, sessionMetadata.getStorages(), sessionMetadata.isOverride());
             FeatureCreationRequest request = FeatureCreationRequest.build(requestId, requestOwner, item.getRequestDate(), RequestState.GRANTED, null,
                                                                           feature, metadata, FeatureRequestStep.LOCAL_DELAYED, sessionMetadata.getPriority());
+            request.setUrn(urn);
             // Monitoring log
             FeatureLogger.creationGranted(request.getRequestOwner(), request.getRequestId(), request.getProviderId());
             // Publish GRANTED request

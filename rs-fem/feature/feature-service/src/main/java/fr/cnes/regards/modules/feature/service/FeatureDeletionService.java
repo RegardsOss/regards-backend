@@ -181,9 +181,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         Set<Long> requestIds = new HashSet<>();
         List<FeatureDeletionRequest> requestsToSchedule = new ArrayList<>();
 
-        Page<FeatureDeletionRequest> dbRequests = this.deletionRepo
-                .findByStep(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
-                        .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
+        Page<FeatureDeletionRequest> dbRequests = deletionRepo.findRequestsToSchedule(
+                FeatureRequestStep.LOCAL_DELAYED,
+                OffsetDateTime.now(),
+                PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
 
         if (!dbRequests.isEmpty()) {
 

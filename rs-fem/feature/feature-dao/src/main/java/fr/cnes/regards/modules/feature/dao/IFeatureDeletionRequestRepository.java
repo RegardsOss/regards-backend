@@ -41,14 +41,15 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
     Set<FeatureDeletionRequest> findByGroupIdIn(Set<String> groupId);
 
     @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
-    Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
-            @Param("now") OffsetDateTime offsetDateTime);
+    Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step, @Param("now") OffsetDateTime offsetDateTime);
 
     @Query("select fdr from FeatureDeletionRequest fdr where fdr.step in (:steps) and fdr.requestDate <= :now")
-    Set<FeatureDeletionRequest> findByStepIn(@Param("steps") Collection<FeatureRequestStep> steps,
-            @Param("now") OffsetDateTime offsetDateTime);
+    Set<FeatureDeletionRequest> findByStepIn(@Param("steps") Collection<FeatureRequestStep> steps, @Param("now") OffsetDateTime offsetDateTime);
 
-    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
-    Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step, @Param("now") OffsetDateTime now,
-            Pageable page);
+    @Query("select fdr from FeatureDeletionRequest fdr  " +
+            "where fdr.step = :step " +
+            "and fdr.requestDate <= :now " +
+            "and fdr.urn not in (select urn from FeatureCreationRequest)")
+    Page<FeatureDeletionRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step, @Param("now") OffsetDateTime now, Pageable page);
+
 }

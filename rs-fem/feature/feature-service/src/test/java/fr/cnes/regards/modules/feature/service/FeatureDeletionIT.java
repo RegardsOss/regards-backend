@@ -25,17 +25,22 @@ import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropert
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import org.elasticsearch.action.search.SearchTask;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -51,7 +56,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -437,6 +445,39 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         checkKey(0, "deleteRequests", sessionStepProperties);
         checkKey(0, "runningDeleteRequests", sessionStepProperties);
         checkKey(0, "inErrorDeleteRequests", sessionStepProperties);
+    }
+
+    @Test
+    public void testDeletionWithCreationPendingWithURN() {
+
+        List<FeatureCreationRequestEvent> featureCreationRequestEvents = initFeatureCreationRequestEvent(1, false, false);
+        FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "tenant", UUID.randomUUID(), 1);
+        featureCreationRequestEvents.get(0).getFeature().setUrn(urn);
+        featureCreationService.registerRequests(featureCreationRequestEvents);
+
+        FeatureDeletionRequestEvent featureDeletionRequestEvent = FeatureDeletionRequestEvent.build(owner, urn, PriorityLevel.NORMAL);
+
+        featureDeletionService.registerRequests(Collections.singletonList(featureDeletionRequestEvent));
+        featureDeletionService.scheduleRequests();
+
+        Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
+        assertEquals(1, notScheduled.size());
+    }
+
+    @Test
+    public void testDeletionWithCreationPendingWithoutURN() throws InterruptedException {
+
+        prepareCreationTestData(false, 1, false, false, false);
+
+        FeatureUniformResourceName urn = featureCreationRequestRepo.findAll().get(0).getUrn();
+
+        FeatureDeletionRequestEvent featureDeletionRequestEvent = FeatureDeletionRequestEvent.build(owner, urn, PriorityLevel.NORMAL);
+
+        featureDeletionService.registerRequests(Collections.singletonList(featureDeletionRequestEvent));
+        featureDeletionService.scheduleRequests();
+
+        Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
+        assertEquals(1, notScheduled.size());
     }
 
     private void checkOneDeletion() throws InterruptedException {
