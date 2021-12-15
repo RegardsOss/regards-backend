@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerRequestDlqEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
@@ -40,7 +41,7 @@ import java.util.List;
  */
 @Component
 public class WorkerRequestDlqHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<WorkerRequestEvent> {
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<WorkerRequestDlqEvent> {
 
     /**
      * Bulk size limit to handle messages
@@ -59,8 +60,8 @@ public class WorkerRequestDlqHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(WorkerRequestEvent.class, this, service.getWorkerRequestDlqName(),
-                               service.getWorkerRequestDlqName(), false);
+        subscriber.subscribeTo(WorkerRequestDlqEvent.class, this, service.getWorkerRequestDlqName(),
+                               service.getWorkerRequestDlxName(), false);
     }
 
     @Override
@@ -69,17 +70,17 @@ public class WorkerRequestDlqHandler
     }
 
     @Override
-    public Class<WorkerRequestEvent> getMType() {
-        return WorkerRequestEvent.class;
+    public Class<WorkerRequestDlqEvent> getMType() {
+        return WorkerRequestDlqEvent.class;
     }
 
     @Override
-    public Errors validate(WorkerRequestEvent message) {
+    public Errors validate(WorkerRequestDlqEvent message) {
         return EventHeadersHelper.validateHeader(message);
     }
 
     @Override
-    public void handleBatch(List<WorkerRequestEvent> events) {
+    public void handleBatch(List<WorkerRequestDlqEvent> events) {
         long start = System.currentTimeMillis();
         LOGGER.info("Handling {} workers request dlq", events.size());
         service.handleRequestErrors(events);

@@ -68,9 +68,9 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
     public static final String DLQ_SUFFIX = ".DLQ";
 
-    private static final String REGARDS_DLX = "regards" + DLX_SUFFIX;
+    public static final String REGARDS_DLX = "regards" + DLX_SUFFIX;
 
-    private static final String REGARDS_DLQ = "regards" + DLQ_SUFFIX;
+    public static final String REGARDS_DLQ = "regards" + DLQ_SUFFIX;
 
     /**
      * Bean allowing us to declare queue, exchange, binding
@@ -220,9 +220,12 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
             case UNICAST:
                 // Useful for publishing unicast event and subscribe to a unicast exchange
                 builder = QueueBuilder.durable(channel.getQueueName().orElse(
-                        getUnicastQueueName(tenant, channel.getEventType(), channel.getTarget())))
-                        .deadLetterExchange(dlx)
-                        .deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY);
+                        getUnicastQueueName(tenant, channel.getEventType(), channel.getTarget())));
+                if (channel.isDeclareDlq()) {
+                    builder = builder
+                            .deadLetterExchange(dlx)
+                            .deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY);
+                }
                 break;
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
@@ -231,14 +234,17 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
                     String qn = channel.getQueueName().orElse(
                             getSubscriptionQueueName(channel.getHandlerType().get(), channel.getTarget()));
 
-                    // Dedicated DLQ creation
-                    if (channel.isDedicatedDLQEnabled()) {
-                        dlrk = channel.getDeadLetterQueueRoutingKey().orElse(getDedicatedDLRKFromQueueName(qn));
-                        declareDedicatedDeadLetter(getDedicatedDLQFromQueueName(qn), dlrk);
-                    }
+                    builder = QueueBuilder.durable(qn).maxPriority(MAX_PRIORITY);
 
-                    builder = QueueBuilder.durable(qn).deadLetterExchange(dlx).deadLetterRoutingKey(dlrk)
-                            .maxPriority(MAX_PRIORITY);
+                    // Needs a DLQ
+                    if (channel.isDeclareDlq()) {
+                        // Dedicated DLQ creation
+                        if (channel.isDedicatedDLQEnabled()) {
+                            dlrk = channel.getDeadLetterQueueRoutingKey().orElse(getDedicatedDLRKFromQueueName(qn));
+                            declareDedicatedDeadLetter(getDedicatedDLQFromQueueName(qn), dlrk);
+                        }
+                        builder = builder.deadLetterExchange(dlx).deadLetterRoutingKey(dlrk);
+                    }
                 } else {
                     throw new IllegalArgumentException("Missing event handler for broadcasted event");
                 }

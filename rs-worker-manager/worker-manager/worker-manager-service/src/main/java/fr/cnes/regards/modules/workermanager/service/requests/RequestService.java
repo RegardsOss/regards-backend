@@ -18,21 +18,8 @@
  */
 package fr.cnes.regards.modules.workermanager.service.requests;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
-import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.*;
+import com.rabbitmq.client.LongString;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -45,22 +32,37 @@ import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
-import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerRequestDlqEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.WorkerManagerJobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import fr.cnes.regards.modules.workermanager.service.requests.job.ScanRequestJob;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
+import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle : <ul>
@@ -123,7 +125,7 @@ public class RequestService {
     @Value("${worker.response.queue.name:regards.worker.manager.response}")
     private String WORKER_RESPONSE_QUEUE_NAME;
 
-    @Value("${worker.request.dlq.name:regards.worker.manager.request.errors}")
+    @Value("${worker.request.dlq.name:regards.worker.manager.request.dlq}")
     private String WORKER_REQUEST_DLQ_NAME;
 
     @Value("${worker.routing.key:#}")
@@ -154,6 +156,15 @@ public class RequestService {
      * @return
      */
     public String getWorkerRequestDlqName() {
+        return WORKER_REQUEST_DLQ_NAME;
+    }
+
+    /**
+     * Return name of the AMQP dead letter exchange.
+     *
+     * @return
+     */
+    public String getWorkerRequestDlxName() {
         return WORKER_REQUEST_DLQ_NAME;
     }
 
@@ -322,46 +333,51 @@ public class RequestService {
      *
      * @param requestEvents {@link WorkerRequestEvent}s
      */
-    public void handleRequestErrors(List<WorkerRequestEvent> requestEvents) {
+    public void handleRequestErrors(List<WorkerRequestDlqEvent> requestEvents) {
         SessionsRequestsInfo requestInfo = new SessionsRequestsInfo();
         SessionsRequestsInfo newRequestInfo = new SessionsRequestsInfo();
+
         // Dispatch events in a Pair of RequestId / error
         List<Pair<String, String>> requestErrors = requestEvents.stream()
-                .map(m -> Pair.of((String) m.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER ),
-                                  (String) m.getMessageProperties()
-                                          .getHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER )))
+                .map(event -> Pair.of(
+                        (String) event.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER),
+                        getErrorStackTraceHeader(event)))
                 .collect(Collectors.toList());
+
         // Retrieve existing requests from database
-        List<Request> requests = requestRepository.findByRequestIdIn(
-                requestErrors.stream().map(r -> r.getFirst()).collect(Collectors.toList()));
+        List<Request> requests = requestRepository.findByRequestIdIn(requestErrors.stream().map(Pair::getFirst).collect(Collectors.toList()));
         requestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
+
         // For each request update it with error status and error cause.
         for (Pair<String, String> requestError : requestErrors) {
             String requestId = requestError.getFirst();
-            String error = Optional.ofNullable(requestError.getSecond()).orElse("Unknown error from worker");
-            requests.stream().filter(r -> r.getRequestId().equals(requestId)).findFirst().ifPresent(request -> {
-                switch (request.getStatus()) {
-                    case DISPATCHED:
-                    case NO_WORKER_AVAILABLE:
-                    case RUNNING:
-                    case INVALID_CONTENT:
-                    case SUCCESS:
-                    case ERROR:
-                        LOGGER.error("Request error detected from workers dlq for request {} : {}", error);
-                        request.setStatus(RequestStatus.ERROR);
-                        request.setError(error);
-                        break;
-                    case TO_DISPATCH:
-                    case TO_DELETE:
-                    default:
-                        LOGGER.error(
-                                "Request error detected from workers dlq for request {} but request is in {} status. Error is skipped.",
-                                request.getStatus());
-                        LOGGER.error("Skipped error is : {}", error);
-                        break;
-                }
-            });
+            String error = requestError.getSecond();
+            requests.stream()
+                    .filter(r -> r.getRequestId().equals(requestId))
+                    .findFirst()
+                    .ifPresent(request -> {
+                        switch (request.getStatus()) {
+                            case DISPATCHED:
+                            case NO_WORKER_AVAILABLE:
+                            case RUNNING:
+                            case INVALID_CONTENT:
+                            case SUCCESS:
+                            case ERROR:
+                                LOGGER.error("Request error detected from workers dlq for request {} : {}", request.getRequestId(), error);
+                                request.setStatus(RequestStatus.ERROR);
+                                request.setError(error);
+                                break;
+                            case TO_DISPATCH:
+                            case TO_DELETE:
+                            default:
+                                LOGGER.error("Request error detected from workers dlq for request {} but request is in {} status. Error is skipped.", request.getRequestId(),
+                                        request.getStatus());
+                                LOGGER.error("Skipped error is : {}", error);
+                                break;
+                        }
+                    });
         }
+
         newRequestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         sessionService.notifySessions(requestInfo, newRequestInfo);
     }
@@ -571,4 +587,19 @@ public class RequestService {
         Set<Long> requestsIds = requests.stream().map(Request::getId).collect(Collectors.toSet());
         requestRepository.updateStatus(newRequestStatus, requestsIds);
     }
+
+    private String getErrorStackTraceHeader(WorkerRequestEvent workerRequestEvent) {
+        String error = "Unknown error from worker";
+        Object errorHeader = workerRequestEvent.getMessageProperties().getHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER);
+        if (errorHeader != null) {
+            if (errorHeader instanceof LongString) {
+                byte[] errorArray = ((LongString) errorHeader).getBytes();
+                error = new String(errorArray, StandardCharsets.UTF_8);
+            } else if (errorHeader instanceof String) {
+                error = ((String) errorHeader);
+            }
+        }
+        return error;
+    }
+
 }

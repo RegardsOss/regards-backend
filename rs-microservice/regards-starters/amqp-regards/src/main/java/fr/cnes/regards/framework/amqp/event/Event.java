@@ -89,4 +89,10 @@ public @interface Event {
      * @return
      */
     boolean autoDelete() default false;
+
+    /**
+     * Use to disable dlq creation
+     * @return
+     */
+    boolean declareDlq() default true;
 }

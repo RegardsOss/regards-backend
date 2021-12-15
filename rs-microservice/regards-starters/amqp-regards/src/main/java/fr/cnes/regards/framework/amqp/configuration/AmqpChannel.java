@@ -87,6 +87,12 @@ public class AmqpChannel {
     private boolean isDedicatedDLQEnabled = false;
 
     /**
+     * Does channel needs to declare a dlq on the created queue
+     * default: true
+     */
+    private boolean declareDlq = true;
+
+    /**
      * Indicates the routing key assoiated to the dlq of the current queue.
      */
     private Optional<String> deadLetterQueueRoutingKey = Optional.empty();
@@ -125,6 +131,7 @@ public class AmqpChannel {
         conf.workerMode = EventUtils.getWorkerMode(eventType);
         conf.target = EventUtils.getTargetRestriction(eventType);
         conf.routingKey = Optional.ofNullable(EventUtils.getRoutingKey(eventType));
+        conf.declareDlq = EventUtils.isDeclareDlq(eventType);
         return conf;
     }
 
@@ -140,6 +147,11 @@ public class AmqpChannel {
 
     public AmqpChannel autoDelete() {
         this.autoDeleteQueue = true;
+        return this;
+    }
+
+    public AmqpChannel declareDlq() {
+        this.declareDlq = true;
         return this;
     }
 
@@ -255,5 +267,9 @@ public class AmqpChannel {
 
     public void setRoutingKey(Optional<String> routingKey) {
         this.routingKey = routingKey;
+    }
+
+    public boolean isDeclareDlq() {
+        return declareDlq;
     }
 }

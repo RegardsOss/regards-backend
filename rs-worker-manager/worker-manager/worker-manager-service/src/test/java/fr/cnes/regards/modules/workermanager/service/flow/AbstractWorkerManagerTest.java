@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerRequestDlqEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
@@ -130,8 +131,8 @@ public abstract class AbstractWorkerManagerTest extends AbstractRegardsServiceIT
         return event;
     }
 
-    protected WorkerRequestEvent createWorkerDlqRequestEvent(String requestId, String stackStrace) {
-        WorkerRequestEvent event = new WorkerRequestEvent();
+    protected WorkerRequestDlqEvent createWorkerDlqRequestEvent(String requestId, String stackStrace) {
+        WorkerRequestDlqEvent event = new WorkerRequestDlqEvent();
         event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
         event.setHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER , stackStrace);
         return event;

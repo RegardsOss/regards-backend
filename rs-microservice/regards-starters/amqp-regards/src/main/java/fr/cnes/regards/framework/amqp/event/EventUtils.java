@@ -73,6 +73,14 @@ public final class EventUtils {
 
     /**
      * @param eventType {@link Event} annotated class
+     * @return boolean
+     */
+    public static boolean isDeclareDlq(Class<?> eventType) {
+        return EventUtils.getEventProperties(eventType).declareDlq();
+    }
+
+    /**
+     * @param eventType {@link Event} annotated class
      * @return {@link JsonMessageConverter}
      */
     public static JsonMessageConverter getMessageConverter(Class<?> eventType) {
