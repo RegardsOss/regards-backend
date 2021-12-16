@@ -42,15 +42,12 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     private String dispatchedWorkerType;
 
     @Valid
-    @NotNull
     private ValuesRestriction<String> contentTypes;
 
     @Valid
-    @NotNull
     private ValuesRestriction<RequestStatus> statuses;
 
     @Valid
-    @NotNull
     private ValuesRestriction<Long> ids;
 
     @Valid

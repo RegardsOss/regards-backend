@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.workermanager.rest;
 
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -31,6 +32,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -45,21 +47,17 @@ import java.util.List;
  * @author Théo Lasserre
  *
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=request_controller_it" })
-@ContextConfiguration(classes = { RequestControllerIT.Config.class })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_controller_it" })
 public class RequestControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private IRequestRepository requestRepository;
 
-    @Configuration
-    static class Config {
-
-    }
-
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @MockBean
+    private IAmqpAdmin amqpAdmin;
 
     @Before
     public void init() {
@@ -115,14 +113,22 @@ public class RequestControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expectStatusOk();
         performDefaultPost(RequestController.TYPE_MAPPING + RequestController.REQUEST_RETRY_PATH,
-                           SearchRequestParameters.build(), requestBuilderCustomizer, "Error retry requests");
+                SearchRequestParameters.build(), requestBuilderCustomizer, "Error retry requests");
     }
 
     @Test
-    public  void deleteRequests() {
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer();
-        requestBuilderCustomizer.expectStatusOk();
+    public void deleteAllRequests() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultDelete(RequestController.TYPE_MAPPING + RequestController.REQUEST_DELETE_PATH,
-                             SearchRequestParameters.build(), requestBuilderCustomizer, "Error delete requests");
+                new SearchRequestParameters().withIdsExcluded(), requestBuilderCustomizer, "Error delete all requests");
     }
+
+    @Test
+    public void deleteOneRequests() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        Long id = requestRepository.findAll().stream().findAny().get().getId();
+        performDefaultDelete(RequestController.TYPE_MAPPING + RequestController.REQUEST_DELETE_PATH,
+                new SearchRequestParameters().withIdsIncluded(id), requestBuilderCustomizer, "Error delete one request");
+    }
+
 }

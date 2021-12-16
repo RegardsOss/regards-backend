@@ -21,11 +21,13 @@ package fr.cnes.regards.modules.workermanager.rest;
 import java.time.OffsetDateTime;
 import java.util.*;
 
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -48,9 +50,7 @@ import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
 /**
  * @author Théo Lasserre
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=worker_controller_it" })
-@ContextConfiguration(classes = { RequestControllerIT.Config.class })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_controller_it" })
 public class WorkerControllerIT extends AbstractRegardsIT {
 
     private final String workerType1 = "workerType1";
@@ -74,13 +74,11 @@ public class WorkerControllerIT extends AbstractRegardsIT {
     @Autowired
     private WorkerConfigCacheService workerConfigCacheService;
 
-    @Configuration
-    static class Config {
-
-    }
-
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @MockBean
+    private IAmqpAdmin amqpAdmin;
 
     @Test
     public void retrieveWorkerList() {
