@@ -108,7 +108,7 @@ public class NotificationConfigurationService {
                 }
 
                 // Check target recipient(s)
-                for (String recipientLabel : asso.getRecipientLabels()) {
+                for (String recipientLabel : asso.getRecipientIds()) {
                     PluginConfiguration recipientConf = recipientPluginConfs.get(recipientLabel);
                     if (recipientConf == null) {
                         String errorMessage = String
@@ -120,7 +120,7 @@ public class NotificationConfigurationService {
                 }
 
                 // Create or update association
-                ruleService.createOrUpdateRule(RuleDTO.build(ruleConf, asso.getRecipientLabels()));
+                ruleService.createOrUpdateRule(RuleDTO.build(ruleConf, asso.getRecipientIds()));
             }
         }
     }

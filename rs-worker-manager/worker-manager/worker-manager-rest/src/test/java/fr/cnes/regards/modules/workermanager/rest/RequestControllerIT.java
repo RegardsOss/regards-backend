@@ -36,6 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -113,15 +114,15 @@ public class RequestControllerIT extends AbstractRegardsIT {
     public  void retryRequests() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expectStatusOk();
-        SearchRequestParameters body = new SearchRequestParameters();
-        performDefaultPost(RequestController.TYPE_MAPPING + RequestController.REQUEST_RETRY_PATH, body, requestBuilderCustomizer, "Error retry requests");
+        performDefaultPost(RequestController.TYPE_MAPPING + RequestController.REQUEST_RETRY_PATH,
+                           SearchRequestParameters.build(), requestBuilderCustomizer, "Error retry requests");
     }
 
     @Test
     public  void deleteRequests() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expectStatusOk();
-        SearchRequestParameters body = new SearchRequestParameters();
-        performDefaultDelete(RequestController.TYPE_MAPPING + RequestController.REQUEST_DELETE_PATH, body, requestBuilderCustomizer, "Error delete requests");
+        performDefaultDelete(RequestController.TYPE_MAPPING + RequestController.REQUEST_DELETE_PATH,
+                             SearchRequestParameters.build(), requestBuilderCustomizer, "Error delete requests");
     }
 }

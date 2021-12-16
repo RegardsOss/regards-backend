@@ -391,6 +391,17 @@ public abstract class AbstractPublisher implements IPublisherContract {
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event, message -> {
             MessageProperties messageProperties = message.getMessageProperties();
+            
+            // Add default tenant if missing
+            if (messageProperties.getHeader(AmqpConstants.REGARDS_TENANT_HEADER) == null) {
+                messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
+            }
+
+            // Add headers from parameter
+            if (headers != null) {
+                headers.forEach(messageProperties::setHeader);
+            }
+            
             // Add headers from event
             if (IMessagePropertiesAware.class.isAssignableFrom(event.getClass())) {
                 MessageProperties mp = ((IMessagePropertiesAware) event).getMessageProperties();
@@ -398,12 +409,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
                     mp.getHeaders().forEach(messageProperties::setHeader);
                 }
             }
-            // Add default tenant
-            messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
-            // Add headers from parameter
-            if (headers != null) {
-                headers.forEach(messageProperties::setHeader);
-            }
+
             messageProperties.setPriority(priority);
             return new Message(message.getBody(), messageProperties);
         });
@@ -440,5 +446,17 @@ public abstract class AbstractPublisher implements IPublisherContract {
         public int hashCode() {
             return Objects.hash(exchange, routingKey);
         }
+    }
+
+    @Override
+    public void initExchange(Set<String> tenants, Class<? extends ISubscribable> event) {
+        tenants.stream().map(this::resolveVirtualHost).distinct().forEach(tenant -> {
+            try {
+                rabbitVirtualHostAdmin.bind(resolveVirtualHost(tenant));
+                amqpAdmin.declareExchange(AmqpChannel.build(event));
+            } finally {
+                rabbitVirtualHostAdmin.unbind();
+            }
+        });
     }
 }

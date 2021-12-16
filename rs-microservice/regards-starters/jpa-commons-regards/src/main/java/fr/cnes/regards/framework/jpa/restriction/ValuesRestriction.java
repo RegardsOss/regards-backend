@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.framework.jpa.restriction;
 
+import com.sun.istack.NotNull;
+
+import javax.validation.Valid;
 import java.util.Collection;
 
 /**
@@ -28,7 +31,12 @@ import java.util.Collection;
  */
 public class ValuesRestriction<T> {
 
+    @Valid
+    @NotNull
     private Collection<T> values;
+
+    @Valid
+    @NotNull
     private ValuesRestrictionMode mode;
 
     public ValuesRestriction() {

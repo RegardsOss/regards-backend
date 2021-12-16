@@ -40,9 +40,7 @@ public class FeatureMetadata {
 
     protected static final String MISSING_PRIORITY_LEVEL = "Priority level is required";
 
-    @Valid
-    @NotNull(message = MISSING_STORAGE_METADATA)
-    private List<StorageMetadata> storages = new ArrayList<>();
+    private List<@Valid StorageMetadata> storages = new ArrayList<>();
 
     @NotNull(message = MISSING_PRIORITY_LEVEL)
     private PriorityLevel priority = PriorityLevel.NORMAL;

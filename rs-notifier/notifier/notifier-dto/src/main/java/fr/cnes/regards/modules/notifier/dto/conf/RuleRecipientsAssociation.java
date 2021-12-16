@@ -40,11 +40,11 @@ public class RuleRecipientsAssociation {
     /**
      * Recipient labels of the {@link IRecipientNotifier}/{@link PluginConfiguration}s
      */
-    private Set<String> recipientLabels;
+    private Set<String> recipientIds;
 
     public static RuleRecipientsAssociation build(String ruleId, Collection<String> recipientLabels) {
         RuleRecipientsAssociation assoc = new RuleRecipientsAssociation();
-        assoc.recipientLabels = Sets.newHashSet(recipientLabels);
+        assoc.recipientIds = Sets.newHashSet(recipientLabels);
         assoc.ruleId = ruleId;
         return assoc;
     }
@@ -53,8 +53,8 @@ public class RuleRecipientsAssociation {
         return ruleId;
     }
 
-    public Set<String> getRecipientLabels() {
-        return recipientLabels;
+    public Set<String> getRecipientIds() {
+        return recipientIds;
     }
 
 }

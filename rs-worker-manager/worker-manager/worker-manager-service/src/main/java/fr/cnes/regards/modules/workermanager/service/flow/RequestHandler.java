@@ -18,10 +18,15 @@
  */
 package fr.cnes.regards.modules.workermanager.service.flow;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
+import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
@@ -62,9 +67,17 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
     @Autowired
     private RequestService workerManagerService;
 
+    @Autowired
+    private IPublisher publisher;
+
+    @Autowired
+    private ITenantResolver tenantResolver;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(RequestEvent.class, this);
+        // Init response out exchange
+        publisher.initExchange(tenantResolver.getAllActiveTenants(), ResponseEvent.class);
     }
 
     @Override
@@ -110,6 +123,8 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
 
     @Override
     public boolean isDedicatedDLQEnabled() {
-        return true;
+        // Warning : Do not set dedicated DLQ for queue creation consistency with Notifier plugins when sending message
+        // from feature notifier to workerManager with WorkerMangerSender
+        return false;
     }
 }

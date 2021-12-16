@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,21 +36,39 @@ import java.util.Collection;
  */
 public class SearchRequestParameters implements AbstractSearchParameters<Request> {
 
-    private String sessionOwner;
+    private String source;
     private String session;
     private String requestId;
     private String dispatchedWorkerType;
+
+    @Valid
+    @NotNull
     private ValuesRestriction<String> contentTypes;
+
+    @Valid
+    @NotNull
     private ValuesRestriction<RequestStatus> statuses;
+
+    @Valid
+    @NotNull
     private ValuesRestriction<Long> ids;
+
+    @Valid
     private DatesRangeRestriction creationDate = new DatesRangeRestriction();
 
-    public String getSessionOwner() {
-        return sessionOwner;
+    public String getSource() {
+        return source;
     }
 
-    public SearchRequestParameters withSessionOwner(String sessionOwner) {
-        this.sessionOwner = sessionOwner;
+    public static SearchRequestParameters build() {
+        return new SearchRequestParameters()
+                .withContentTypesExcluded()
+                .withStatusesExcluded()
+                .withIdsExcluded();
+    }
+
+    public SearchRequestParameters withSource(String source) {
+        this.source = source;
         return this;
     }
 

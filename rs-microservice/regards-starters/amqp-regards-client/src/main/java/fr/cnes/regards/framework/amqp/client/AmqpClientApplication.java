@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.amqp.client;
 
 import java.util.Map;
 import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +36,15 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 public class AmqpClientApplication implements ApplicationRunner {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
 
     private static final String ARG_NS = "regards.amqp.";
 
     private static final String ARG_EXCHANGE_NAME = ARG_NS + "exchange";
 
     private static final String ARG_QUEUE_NAME = ARG_NS + "queue";
+
+    private static final String ARG_ROUTING_KEY = ARG_NS + "routingKey";
 
     private static final String ARG_PRIORITY = ARG_NS + "priority";
 
@@ -58,6 +59,9 @@ public class AmqpClientApplication implements ApplicationRunner {
 
     @Value("${" + ARG_QUEUE_NAME + ":}")
     private String queueName;
+
+    @Value("${" + ARG_ROUTING_KEY + ":#{null}}")
+    String routingKey;
 
     @Value("${" + ARG_PRIORITY + ":0}")
     private Integer priority;
@@ -91,12 +95,13 @@ public class AmqpClientApplication implements ApplicationRunner {
      * right before the Spring Application main method is completed.
      */
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         LOGGER.info("EXECUTING : command line runner");
         Optional<String> queue = Optional.empty();
         if ((queueName != null) && !queueName.isEmpty()) {
             queue = Optional.of(queueName);
         }
-        publisher.publish(exchangeName, queue, Optional.empty(), Optional.empty(), priority, headers, jsonPathString, iterations);
+        publisher.publish(exchangeName, queue, Optional.ofNullable(routingKey), Optional.empty(), priority, headers,
+                          jsonPathString, iterations);
     }
 }

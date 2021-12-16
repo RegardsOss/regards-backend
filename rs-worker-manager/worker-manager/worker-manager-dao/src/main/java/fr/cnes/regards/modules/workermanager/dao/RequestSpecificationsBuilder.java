@@ -31,7 +31,7 @@ public class RequestSpecificationsBuilder extends AbstractSpecificationsBuilder<
     protected void addSpecificationsFromParameters() {
         if (parameters != null) {
             specifications.add(useDatesRestriction("creationDate", parameters.getCreationDate()));
-            specifications.add(like("sessionOwner", parameters.getSessionOwner()));
+            specifications.add(like("source", parameters.getSource()));
             specifications.add(like("session", parameters.getSession()));
             specifications.add(like("dispatchedWorkerType", parameters.getDispatchedWorkerType()));
             specifications.add(useValuesRestriction("status", parameters.getStatuses()));

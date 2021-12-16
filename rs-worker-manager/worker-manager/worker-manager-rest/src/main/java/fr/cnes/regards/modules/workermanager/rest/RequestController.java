@@ -18,14 +18,22 @@
  */
 package fr.cnes.regards.modules.workermanager.rest;
 
-import javax.validation.Valid;
-
-import org.springframework.data.domain.Pageable;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+import fr.cnes.regards.modules.workermanager.service.requests.scan.RequestScanTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -36,17 +44,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
-import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
+import javax.validation.Valid;
 
 /**
  * This controller manages Worker requests.
@@ -118,7 +116,7 @@ public class RequestController implements IResourceController<LightRequest> {
                                 MethodParamFactory.build(String.class, element.getRequestId()));
         resourceService.addLink(resource, RequestController.class, "retrieveLightRequest", LinkRels.LIST,
                                 MethodParamFactory.build(String.class, element.getRequestId()));
-        if (element.getStatus().equals(RequestStatus.ERROR) || element.getStatus().equals(RequestStatus.NO_WORKER_AVAILABLE)) {
+        if (RequestScanTask.BLOCKED_REQUESTS_STATUSES.contains(element.getStatus())) {
             resourceService.addLink(resource, RequestController.class, "retryRequests", LinkRelation.of("retry"),
                                     MethodParamFactory.build(SearchRequestParameters.class));
             resourceService.addLink(resource, RequestController.class, "deleteRequests", LinkRels.DELETE,

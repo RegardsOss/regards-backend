@@ -43,7 +43,7 @@
           "key": "fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation",
           "value": {
             "ruleId": "RuleByType",
-            "recipientLabels" : ["RecipientSender"]
+            "recipientIds" : ["RecipientSender"]
           }
         }
       ]

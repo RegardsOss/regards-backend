@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import org.springframework.amqp.core.Message;
 import org.springframework.boot.actuate.health.Health.Builder;
@@ -162,4 +159,7 @@ public interface IPublisherContract {
      * @param message message to send
      */
     void basicPublish(String tenant, String exchange, String routingKey, Message message);
+
+
+    void initExchange(Set<String> tenants, Class<? extends ISubscribable> event);
 }

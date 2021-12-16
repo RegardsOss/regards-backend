@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.microservice.rest;
 
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
+import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +32,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
-import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
-import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -54,6 +53,7 @@ public class MaintenanceExceptionManager {
 
     /**
      * Exception handler catching {@link MaintenanceException} that are not already handled
+     *
      * @param pException exception thrown
      * @return response
      */
@@ -67,14 +67,17 @@ public class MaintenanceExceptionManager {
 
     /**
      * Exception handler catching any exception that are not already handled
+     *
      * @param throwable exception thrown
      * @return response
      */
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ServerErrorResponse> handleThrowable(Throwable throwable) {
         LOGGER.error("Unexpected server error", throwable);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ServerErrorResponse(throwable.getMessage(), throwable));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ServerErrorResponse(String.format(
+                "An unexpected error occurred, please consult the microservice log for more information. "
+                        + "Cause: %s, message: %s", throwable.getClass().getSimpleName(), throwable.getMessage()),
+                                                                                                    throwable));
     }
 
 }

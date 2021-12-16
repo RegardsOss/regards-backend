@@ -139,4 +139,13 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsTest {
         Assert.assertEquals("Error searching a collection of requestId", 20, requests.getTotalElements());
         LOGGER.info("=========================> END SEARCH REQUESTS <=====================");
     }
+
+    @Test
+    public void testSourceSearchFilter() {
+        Page<LightRequest> requests = requestService.searchLightRequests(
+                new SearchRequestParameters().withSource("source2"),
+                PageRequest.of(0, 100));
+        Assert.assertEquals("Error searching a collection of requestId", 2, requests.getTotalElements());
+    }
+
 }

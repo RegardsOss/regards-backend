@@ -25,7 +25,7 @@ import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Scans requests to update their state to an intermediate status before launching update/delete job
@@ -34,6 +34,10 @@ import java.util.ArrayList;
  * @author Léo Mieulet
  */
 public class RequestScanTask implements Task {
+
+    // Statuses of requests that can are deletable/re-dispatchable
+    public static final List<RequestStatus> BLOCKED_REQUESTS_STATUSES = Lists.newArrayList(RequestStatus.ERROR, RequestStatus.NO_WORKER_AVAILABLE,
+                                                                                           RequestStatus.INVALID_CONTENT);
 
     private final RequestScanService requestScanService;
 
@@ -55,16 +59,13 @@ public class RequestScanTask implements Task {
         if (filters.getCreationDate().getBefore() == null) {
             filters.withCreationDateBefore(OffsetDateTime.now());
         }
-        // Ensure the research is boxed to deletable/re-dispatchable entities using its status
-        ArrayList<RequestStatus> allowedStatuses = Lists.newArrayList(RequestStatus.ERROR,
-                                                                      RequestStatus.NO_WORKER_AVAILABLE);
 
         // Override filter's status when:
         // - no status or empty status
         // - status invalid
         if (filters.getStatuses() == null ||
                 filters.getStatuses().getValues().isEmpty() ||
-                filters.getStatuses().getValues().stream().anyMatch(status -> !allowedStatuses.contains(status))) {
+                filters.getStatuses().getValues().stream().anyMatch(status -> !BLOCKED_REQUESTS_STATUSES.contains(status))) {
             filters.withStatusesIncluded(RequestStatus.NO_WORKER_AVAILABLE, RequestStatus.ERROR);
         }
 

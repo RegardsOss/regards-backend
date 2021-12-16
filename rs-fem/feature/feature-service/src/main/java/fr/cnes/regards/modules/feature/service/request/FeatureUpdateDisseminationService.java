@@ -95,8 +95,10 @@ public class FeatureUpdateDisseminationService {
                 self.handleFeatureUpdateDisseminationRequests(results);
             }
             totalHandled += results.getNumberOfElements();
-            LOG.info("Handled {} update dissemination request (remaining {}).", results.getNumberOfElements(),
-                     results.getTotalElements() - results.getNumberOfElements());
+            if (results.getNumberOfElements() > 0) {
+                LOG.info("Handled {} update dissemination request (remaining {}).", results.getNumberOfElements(),
+                         results.getTotalElements() - results.getNumberOfElements());
+            }
         } while (results.hasNext());
         return totalHandled;
     }
@@ -251,8 +253,12 @@ public class FeatureUpdateDisseminationService {
             Set<FeatureUpdateDisseminationRequest> putRequestNoAckRequired = featureUpdateDisseminationRequestPUT.stream()
                     .filter(request -> !request.getAckRequired()).collect(Collectors.toSet());
 
-            int nbPending = featureUpdateDisseminationRequestPUT.size();
+            // Pending requests are only ACKRequired requests
+            int nbPending = featureUpdateDisseminationRequestPUT.size() - putRequestNoAckRequired.size();
+            // Done requests are NoACKRequired requests + done requests
             int nbDone = featureUpdateDisseminationRequestACK.size() + putRequestNoAckRequired.size();
+            // Need to remove all requests from pending when they go to DONE
+            int nbPendingToRemove = featureUpdateDisseminationRequestACK.size();
 
             if (nbPending > 0) {
                 FeatureSessionProperty property = FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS;
@@ -263,6 +269,11 @@ public class FeatureUpdateDisseminationService {
                 FeatureSessionProperty property = FeatureSessionProperty.DISSEMINATED_PRODUCTS;
                 StepProperty stepProperty = getStepProperty(source, session, property, recipientLabel, nbDone);
                 sessionNotificationClient.increment(stepProperty);
+            }
+            if (nbPendingToRemove > 0) {
+                FeatureSessionProperty property = FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS;
+                StepProperty stepProperty = getStepProperty(source, session, property, recipientLabel, nbPending);
+                sessionNotificationClient.decrement(stepProperty);
             }
         });
     }

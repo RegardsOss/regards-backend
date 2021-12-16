@@ -18,11 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.service.flow;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import org.slf4j.Logger;
@@ -55,7 +60,13 @@ public class FeatureCreationRequestEventHandler extends AbstractFeatureRequestEv
     private ISubscriber subscriber;
 
     @Autowired
+    private IPublisher publisher;
+
+    @Autowired
     private IFeatureCreationService featureService;
+
+    @Autowired
+    private ITenantResolver tenantResolver;
 
     public FeatureCreationRequestEventHandler() {
         super(FeatureCreationRequestEvent.class);
@@ -64,6 +75,8 @@ public class FeatureCreationRequestEventHandler extends AbstractFeatureRequestEv
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(FeatureCreationRequestEvent.class, this);
+        // Init feature response out exchange
+        publisher.initExchange(tenantResolver.getAllActiveTenants(), FeatureRequestEvent.class);
     }
 
     @Override

@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
  */
 public class LightRequest {
 
+    private final Long id;
     private final String requestId;
     private final OffsetDateTime creationDate;
     private final String contentType;
@@ -39,8 +40,9 @@ public class LightRequest {
     private final String dispatchedWorkerType;
     private final String error;
 
-    public LightRequest(String requestId, OffsetDateTime creationDate, String contentType, String source,
+    public LightRequest(Long id, String requestId, OffsetDateTime creationDate, String contentType, String source,
             String session, RequestStatus status, String dispatchedWorkerType, String error) {
+        this.id = id;
         this.requestId = requestId;
         this.creationDate = creationDate;
         this.contentType = contentType;
@@ -60,6 +62,7 @@ public class LightRequest {
         this.status = request.getStatus();
         this.dispatchedWorkerType = request.getDispatchedWorkerType();
         this.error = request.getError();
+        this.id = request.getId();
     }
 
     public String getRequestId() {

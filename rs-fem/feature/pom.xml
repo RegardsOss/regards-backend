@@ -61,7 +61,6 @@
 		<module>feature-service</module>
 		<module>feature-dto</module>
 		<module>feature-rest</module>
-		<module>feature-client</module>
 	</modules>
 
 </project>

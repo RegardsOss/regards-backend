@@ -41,10 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -84,7 +81,11 @@ public class FeatureFilesService {
             // For each file from feature update information, check if it's a new file or if the file already exists if there
             // is some new locations.
             for (FeatureFile fileToUpdate : request.getFeature().getFiles()) {
-                handleFeatureUpdateFile(entity, fileToUpdate, request.getMetadata().getStorages(), request.getRequestOwner(),
+                List<StorageMetadata> storageLocations = new ArrayList<>();
+                if (request.getMetadata() != null && !CollectionUtils.isEmpty(request.getMetadata().getStorages())) {
+                    storageLocations = request.getMetadata().getStorages();
+                }
+                handleFeatureUpdateFile(entity, fileToUpdate, storageLocations, request.getRequestOwner(),
                                         referenceRequests, storageRequests);
             }
 

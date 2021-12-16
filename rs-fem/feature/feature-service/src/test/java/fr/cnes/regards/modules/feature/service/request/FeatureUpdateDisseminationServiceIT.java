@@ -219,11 +219,11 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         Assert.assertNotNull("should be ack", featureDisseminationNotRequired.getAckDate());
 
         checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
-                     recipientLabelRequired, 2, 1, 14);
+                     recipientLabelRequired, 2, 1, 13);
         checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
-                     recipientLabelAnotherRequired, 1, 0, 14);
+                     recipientLabelAnotherRequired, 1, 0, 13);
         checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
-                     recipientLabelNotRequired, 2, 2, 14);
+                     recipientLabelNotRequired, 0, 2, 13);
     }
 
     private FeatureUniformResourceName initValidFeatureThatHasBeenNotifiedToTwoRecipients() {
