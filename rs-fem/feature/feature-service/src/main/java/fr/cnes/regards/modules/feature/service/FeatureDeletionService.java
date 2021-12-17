@@ -217,7 +217,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
         // Retrieve features
         Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
-                .findByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toList()))
+                .findCompleteByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toList()))
                 .stream().collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
 
         // Dispatch requests
@@ -371,7 +371,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
         // Retrieve features
         Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
-                .findByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toList()))
+                .findCompleteByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toList()))
                 .stream().collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
 
         Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests = new HashMap<>();

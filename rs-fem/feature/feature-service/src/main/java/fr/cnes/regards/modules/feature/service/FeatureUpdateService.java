@@ -308,7 +308,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         Set<FeatureUpdateRequest> storagePendingRequests = new HashSet<>();
         List<FeatureUpdateRequest> errorRequests = new ArrayList<>();
 
-        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo.findByUrnIn(
+        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo.findCompleteByUrnIn(
                         requests.stream().map(FeatureUpdateRequest::getUrn).collect(Collectors.toList())).stream()
                 .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
         // Update feature

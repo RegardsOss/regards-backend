@@ -589,6 +589,9 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         featureCreationService.registerRequests(Collections.singletonList(event1));
         featureCreationService.scheduleRequests();
         waitForFeatures(1);
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
+        mockNotificationSuccess();
+        waitRequest(featureCreationRequestRepo, 0, 20_000);
         // When
         FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent("ùlajzlke", 1, true);
         event2.setRequestId("request2");

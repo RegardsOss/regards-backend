@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -42,9 +43,13 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
 
     Page<FeatureCreationRequest> findByStep(FeatureRequestStep step, Pageable page);
 
+    @Query("select urn from FeatureCreationRequest where urn in :urnList")
+    Set<FeatureUniformResourceName> findUrnByUrnIn(@Param("urnList") Collection<FeatureUniformResourceName> urnList);
+
     /**
      * Get a page of {@link ILightFeatureCreationRequest} with specified step.
      * A creation request cannot be scheduled if one is already scheduled with same provider id.
+     *
      * @param now current date we not schedule future request
      * @return a list of {@link ILightFeatureCreationRequest}
      */

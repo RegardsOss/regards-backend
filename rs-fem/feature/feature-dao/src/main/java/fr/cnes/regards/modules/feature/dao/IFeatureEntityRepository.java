@@ -43,8 +43,6 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
 
     boolean existsByUrn(FeatureUniformResourceName featureUniformResourceName);
 
-    List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
-
     long countByLastUpdateGreaterThan(OffsetDateTime from);
 
     /**
@@ -60,7 +58,7 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
 
     Page<FeatureEntity> findByLastUpdateLessThan(OffsetDateTime now, Pageable pageable);
 
-    List<ILightFeatureEntity> findByUrnIn(Collection<FeatureUniformResourceName> uniformResourceNames);
+    List<ILightFeatureEntity> findLightByUrnIn(Collection<FeatureUniformResourceName> uniformResourceNames);
 
     List<FeatureEntity> findCompleteByUrnIn(Collection<FeatureUniformResourceName> uniformResourceNames);
 

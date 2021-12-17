@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
@@ -147,11 +148,17 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         List<FeatureCreationRequest> grantedRequests = new ArrayList<>();
         List<FeatureUpdateRequestEvent> newUpdateRequests = new ArrayList<>();
         RequestInfo<String> requestInfo = new RequestInfo<>();
+
         // Only retrieve from database requestIds matching the events to check if requests already exists.
-        Set<String> existingRequestIds = this.featureCreationRequestRepo.findRequestIdByRequestIdIn(
+        Set<String> existingRequestIds = featureCreationRequestRepo.findRequestIdByRequestIdIn(
                 events.stream().map(FeatureCreationRequestEvent::getRequestId).collect(Collectors.toList()));
 
-        events.forEach(item -> prepareFeatureCreationRequest(item, grantedRequests, requestInfo, existingRequestIds, newUpdateRequests));
+        Set<FeatureUniformResourceName> eventsUrn = events.stream().map(event -> event.getFeature().getUrn()).collect(Collectors.toSet());
+        Set<FeatureUniformResourceName> existingRequestUrns = featureCreationRequestRepo.findUrnByUrnIn(eventsUrn);
+        Set<FeatureUniformResourceName> existingEntityUrns =
+                featureEntityRepository.findLightByUrnIn(eventsUrn).stream().map(ILightFeatureEntity::getUrn).collect(Collectors.toSet());
+
+        events.forEach(item -> prepareFeatureCreationRequest(item, grantedRequests, requestInfo, existingRequestIds, existingRequestUrns, existingEntityUrns, newUpdateRequests));
         LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(), System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureCreationRequest from a list of FeatureCreationRequestEvent
@@ -160,8 +167,8 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         if (!newUpdateRequests.isEmpty()) {
             RequestInfo<FeatureUniformResourceName> updateInfo = updateService.registerRequests(newUpdateRequests);
-            updateInfo.getGranted().forEach((urn,requestId) -> requestInfo.addGrantedRequest(urn.toString(),requestId));
-            updateInfo.getDenied().forEach((urn,requestId) -> requestInfo.addDeniedRequest(urn.toString(),requestId));
+            updateInfo.getGranted().forEach((urn, requestId) -> requestInfo.addGrantedRequest(urn.toString(), requestId));
+            updateInfo.getDenied().forEach((urn, requestId) -> requestInfo.addDeniedRequest(urn.toString(), requestId));
         }
 
         return requestInfo;
@@ -181,13 +188,17 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
      * Validate a list of {@link FeatureCreationRequestEvent}
      * and if validated create a list of {@link FeatureCreationRequest}
      *
-     * @param item               request to manage
-     * @param grantedRequests    collection of granted requests to populate
-     * @param requestInfo        store request registration state
-     * @param existingRequestIds list of existing request ids in database (its a unique constraint)
+     * @param item                request to manage
+     * @param grantedRequests     collection of granted requests to populate
+     * @param requestInfo         store request registration state
+     * @param existingRequestIds  list of existing request ids in database (its a unique constraint)
+     * @param existingEntityUrns  list of URNs from existing feature entities
+     * @param existingRequestUrns list of URNs from existing feature creation requests
+     * @param newUpdateRequests   list of update requests already prepared
      */
     private void prepareFeatureCreationRequest(FeatureCreationRequestEvent item, List<FeatureCreationRequest> grantedRequests, RequestInfo<String> requestInfo,
-                                               Set<String> existingRequestIds, List<FeatureUpdateRequestEvent> newUpdateRequests
+            Set<String> existingRequestIds, Set<FeatureUniformResourceName> existingRequestUrns, Set<FeatureUniformResourceName> existingEntityUrns,
+            List<FeatureUpdateRequestEvent> newUpdateRequests
     ) {
 
         // Validate event
@@ -199,7 +210,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         String requestOwner = item.getRequestOwner();
         Feature feature = item.getFeature();
         FeatureUniformResourceName urn = feature.getUrn();
-        String featureId = feature != null ? feature.getId() : null;
+        String featureId = feature.getId();
         FeatureCreationSessionMetadata sessionMetadata = item.getMetadata();
         String sessionOwner = sessionMetadata.getSessionOwner();
         String session = sessionMetadata.getSession();
@@ -213,20 +224,27 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         // Validate provided URN
         if (urn != null) {
-            // Check if provided URN match an existing feature
-            if (featureEntityRepository.existsByUrn(urn)) {
-                if (sessionMetadata.isUpdateIfExists()) {
-                    // if updateIfExists option is enabled, register an update request instead of a creation one.
-                    newUpdateRequests.add(buidUpdateEventFromCreationEvent(item));
-                    return;
-                } else {
-                    errors.rejectValue("urn", "feature.urn.already.exists.error.message", "URN already exists");
-                }
+            if (existingRequestUrns.contains(urn)
+                    || grantedRequests.stream().anyMatch(request -> request.getUrn().equals(urn))
+                    || newUpdateRequests.stream().anyMatch(request -> request.getFeature().getUrn().equals(urn))
+            ) {
+                errors.rejectValue("urn", "feature.request.urn.already.exists.error.message", "Creation request with this URN already exists");
             } else {
-                // New version should be greater than previous one
-                List<IUrnVersionByProvider> previousVersions = featureEntityRepository.findByProviderIdInOrderByVersionDesc(Collections.singletonList(feature.getId()));
-                if (!previousVersions.isEmpty() && previousVersions.get(0).getVersion() >= urn.getVersion()) {
-                    errors.rejectValue("urn", "feature.urn.version.invalid.error.message", "Version is invalid");
+                // Check if provided URN match an existing feature
+                if (existingEntityUrns.contains(urn)) {
+                    if (sessionMetadata.isUpdateIfExists()) {
+                        // if updateIfExists option is enabled, register an update request instead of a creation one.
+                        newUpdateRequests.add(buidUpdateEventFromCreationEvent(item));
+                        return;
+                    } else {
+                        errors.rejectValue("urn", "feature.urn.already.exists.error.message", "URN already exists");
+                    }
+                } else {
+                    // New version should be greater than previous one
+                    List<IUrnVersionByProvider> previousVersions = featureEntityRepository.findByProviderIdInOrderByVersionDesc(Collections.singletonList(feature.getId()));
+                    if (!previousVersions.isEmpty() && previousVersions.get(0).getVersion() >= urn.getVersion()) {
+                        errors.rejectValue("urn", "feature.urn.version.invalid.error.message", "Version is invalid");
+                    }
                 }
             }
         }

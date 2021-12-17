@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.feature.service;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
@@ -33,10 +32,6 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.storage.client.IStorageClient;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -191,7 +186,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     @Override
     public Map<FeatureUniformResourceName, ILightFeatureEntity> getSessionInfoByUrn(
             Collection<FeatureUniformResourceName> uniformResourceNames) {
-        return featureEntityRepository.findByUrnIn(uniformResourceNames).stream()
+        return featureEntityRepository.findLightByUrnIn(uniformResourceNames).stream()
                 .collect(Collectors.toMap(ILightFeatureEntity::getUrn, Function.identity()));
     }
 

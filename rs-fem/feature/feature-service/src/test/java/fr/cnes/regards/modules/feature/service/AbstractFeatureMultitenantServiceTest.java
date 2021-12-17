@@ -625,7 +625,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     }
 
     protected List<FeatureUpdateRequestEvent> prepareUpdateRequests(List<FeatureUniformResourceName> urns) {
-        return featureRepo.findByUrnIn(urns).stream()
+        return featureRepo.findCompleteByUrnIn(urns).stream()
                 .map(f -> FeatureUpdateRequestEvent.build("test", FeatureMetadata.build(PriorityLevel.NORMAL),
                                                           f.getFeature())).map(e -> {
                     e.getFeature().getProperties().clear();

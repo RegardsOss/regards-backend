@@ -174,7 +174,7 @@ public class FeatureUpdateDisseminationService {
                 .map(f -> FeatureUniformResourceName.fromString(f.getUrn()))
                 .collect(Collectors.toList());
 
-        List<ILightFeatureEntity> lightFeatureEntities = featureEntityRepository.findByUrnIn(urnList);
+        List<ILightFeatureEntity> lightFeatureEntities = featureEntityRepository.findLightByUrnIn(urnList);
         List<FeatureUpdateDisseminationRequest> updateAckRequests = new ArrayList<>();
 
         for (DisseminationAckEvent disseminationAckEvent : messages) {
@@ -200,7 +200,7 @@ public class FeatureUpdateDisseminationService {
         // Retrieve features related to these events
         Collection<FeatureUniformResourceName> urnList = associatedFeatureRequest.stream()
                 .map(AbstractFeatureRequest::getUrn).collect(Collectors.toSet());
-        List<ILightFeatureEntity> lightFeatureEntities = featureEntityRepository.findByUrnIn(urnList);
+        List<ILightFeatureEntity> lightFeatureEntities = featureEntityRepository.findLightByUrnIn(urnList);
         List<FeatureUpdateDisseminationRequest> putAckRequests = new ArrayList<>();
 
         // Update features recipients

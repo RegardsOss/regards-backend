@@ -188,7 +188,7 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
         Set<FeatureCopyRequest> successCopyRequest = new HashSet<>();
         // map of FeatureEntity by urn
         Map<FeatureUniformResourceName, FeatureEntity> entitiesToUpdate = this.featureRepo
-                .findByUrnIn(requests.stream().map(FeatureCopyRequest::getUrn).collect(Collectors.toList())).stream()
+                .findCompleteByUrnIn(requests.stream().map(FeatureCopyRequest::getUrn).collect(Collectors.toList())).stream()
                 .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
         for (FeatureCopyRequest request : requests) {
             if (entitiesToUpdate.get(request.getUrn()) != null) {
