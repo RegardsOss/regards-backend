@@ -294,7 +294,7 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
         public void handle(TenantWrapper<AttributeModelCreated> pWrapper) {
             try {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-                LOGGER.info("New attribute model created, refreshing the cache",
+                LOGGER.info("Invalidates attributes cache for current tenant as there is a new attribute model {}",
                             pWrapper.getContent().getAttributeName());
                 computePropertyMap(pWrapper.getTenant());
             } finally {
@@ -313,7 +313,7 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
         public void handle(TenantWrapper<AttributeModelDeleted> pWrapper) {
             try {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-                LOGGER.info("New attribute model deleted, refreshing the cache",
+                LOGGER.info("Invalidates attributes cache for current tenant as the attribute model {} was deleted",
                             pWrapper.getContent().getAttributeName());
                 computePropertyMap(pWrapper.getTenant());
             } finally {
