@@ -272,7 +272,7 @@ public class FeatureUpdateDisseminationService {
             }
             if (nbPendingToRemove > 0) {
                 FeatureSessionProperty property = FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS;
-                StepProperty stepProperty = getStepProperty(source, session, property, recipientLabel, nbPending);
+                StepProperty stepProperty = getStepProperty(source, session, property, recipientLabel, nbPendingToRemove);
                 sessionNotificationClient.decrement(stepProperty);
             }
         });

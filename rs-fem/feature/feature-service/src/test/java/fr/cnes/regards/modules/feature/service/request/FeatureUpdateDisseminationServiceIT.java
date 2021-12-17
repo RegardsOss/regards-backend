@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.*;
@@ -66,7 +67,7 @@ import static org.junit.Assert.*;
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_notifier_listener",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_dissemination_it",
         "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
@@ -219,7 +220,7 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         Assert.assertNotNull("should be ack", featureDisseminationNotRequired.getAckDate());
 
         checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
-                     recipientLabelRequired, 2, 1, 13);
+                     recipientLabelRequired, 1, 1, 13);
         checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
                      recipientLabelAnotherRequired, 1, 0, 13);
         checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
@@ -384,7 +385,10 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
             int expected) {
         String propertyName = this.featureUpdateDisseminationService.getSessionPropertyName(property, recipientLabel);
         int count = stepProperties.getOrDefault(propertyName, new ArrayList<>()).stream()
-                .mapToInt(s -> Integer.parseInt(s.getStepPropertyInfo().getValue()))
+                .mapToInt(s -> s.getType() == StepPropertyEventTypeEnum.DEC ?
+                        -Integer.parseInt(s.getStepPropertyInfo().getValue()) :
+                        Integer.parseInt(s.getStepPropertyInfo().getValue())
+                )
                 .reduce(0, (total, value) -> total + value);
         Assert.assertEquals(String.format("Invalid number of %s requests in session", property), expected, count);
     }
