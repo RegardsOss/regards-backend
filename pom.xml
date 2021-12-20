@@ -54,7 +54,7 @@
 
 		<maven-deploy.skip>true</maven-deploy.skip>
 
-		<regards.version>1.7.0</regards.version>
+		<regards.version>1.7.1</regards.version>
 
 		<!-- Parent modules -->
 		<regards.parent.version>${regards.version}</regards.parent.version>
