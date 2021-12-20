@@ -953,6 +953,11 @@
 				<artifactId>feature-rest</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.feature</groupId>
+				<artifactId>feature-client</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- Crawler -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.crawler</groupId>
