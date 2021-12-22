@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.processing.plugins.impl;
+package fr.cnes.regards.modules.processing.plugins.impl.sample;
 
 import com.zaxxer.nuprocess.NuAbstractProcessHandler;
 import com.zaxxer.nuprocess.NuProcess;
@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.processing.order.Cardinality;
 import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
 import fr.cnes.regards.modules.processing.order.Scope;
 import fr.cnes.regards.modules.processing.order.SizeLimit;
+import fr.cnes.regards.modules.processing.plugins.impl.AbstractBaseForecastedStorageAwareProcessPlugin;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import io.vavr.Function1;
 import io.vavr.Tuple;

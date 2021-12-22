@@ -42,8 +42,11 @@ public enum ExecutionStatus {
 
     CLEANUP(List.of(SUCCESS)),
 
+    /** Execution is paused */
+    PENDING(List.of(CLEANUP, SUCCESS, FAILURE, TIMED_OUT, CANCELLED)),
+
     /** Launched. */
-    RUNNING(List.of(CLEANUP, SUCCESS, FAILURE, TIMED_OUT, CANCELLED)),
+    RUNNING(List.of(PENDING, CLEANUP, SUCCESS, FAILURE, TIMED_OUT, CANCELLED)),
 
     /** Execution is being prepared (copying input files to working directory, etc.). */
     PREPARE(List.of(RUNNING)),

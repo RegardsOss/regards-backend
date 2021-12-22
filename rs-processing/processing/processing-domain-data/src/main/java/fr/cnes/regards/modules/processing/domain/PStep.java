@@ -63,6 +63,10 @@ public abstract class PStep {
         return new PStepIntermediary(RUNNING, nowUtc(), message);
     }
 
+    public static PStepIntermediary pending(String message) {
+        return new PStepIntermediary(PENDING, nowUtc(), message);
+    }
+
     public static PStepIntermediary cleanup(String message) {
         return new PStepIntermediary(CLEANUP, nowUtc(), message);
     }

@@ -87,9 +87,9 @@ public class AbstractProcessingTest {
 
     protected static final String R2DBCDB_NAME = "r2dbcdb";
 
-    protected static final String TENANT_PROJECTA = "projecta";
+    public static final String TENANT_PROJECTA = "projecta";
 
-    protected static final String TENANT_PROJECTB = "projectb";
+    public static final String TENANT_PROJECTB = "projectb";
 
     protected static final String PGSQL_USER = "azertyuiop123456789";
 

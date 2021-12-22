@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.processing.ProcessingConstants;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
-import fr.cnes.regards.modules.processing.plugins.impl.UselessProcessPlugin;
+import fr.cnes.regards.modules.processing.plugins.impl.sample.UselessProcessPlugin;
 import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingEncoder;

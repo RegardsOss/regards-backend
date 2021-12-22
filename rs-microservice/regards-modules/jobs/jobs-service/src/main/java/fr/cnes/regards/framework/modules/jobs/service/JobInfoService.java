@@ -170,7 +170,7 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
         List<JobInfo> jobInfoToBeTriggered = jobInfoRepository.findByStatusStatusAndTriggerAfterDateLessThan(
                 JobStatus.PENDING, startSearching, pageToRequest);
         jobInfoToBeTriggered.forEach(jobInfo -> jobInfo.updateStatus(JobStatus.QUEUED));
-        LOGGER.debug("{} jobs status updated from PENDING to QUEUED.", jobInfoToBeTriggered.size());
+        LOGGER.debug("{} jobs to be triggerred updated from PENDING to QUEUED.", jobInfoToBeTriggered.size());
         return jobInfoToBeTriggered;
     }
 

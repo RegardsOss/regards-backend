@@ -15,56 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 */
-package fr.cnes.regards.modules.processing.plugins.impl;
+package fr.cnes.regards.modules.processing.plugins.impl.sample;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.processing.domain.*;
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.POutputFile;
+import fr.cnes.regards.modules.processing.domain.PProcess;
+import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.PREPARE;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.SUCCESS;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
-import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.order.Cardinality;
 import fr.cnes.regards.modules.processing.order.Scope;
-import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
+import static fr.cnes.regards.modules.processing.plugins.impl.sample.SimpleProcessPluginTestUtils.*;
 import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import fr.cnes.regards.modules.processing.storage.SharedStorageService;
-import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
-import static fr.cnes.regards.modules.processing.utils.OrderInputFileMetadataUtils.inputMetadataAsMap;
 import static java.util.concurrent.TimeUnit.MINUTES;
+import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.io.FileUtils;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class SimpleShellProcessManyToOnePluginTest {
 
@@ -90,7 +81,7 @@ public class SimpleShellProcessManyToOnePluginTest {
         OrderProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
         SimpleShellProcessPlugin shellProcessPlugin = makePlugin(workdirService, storageService);
 
-        RightsPluginConfiguration rpc = makeRightsPluginConfig();
+        RightsPluginConfiguration rpc = makeRightsPluginConfig(SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN);
         PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin, "tenant").block();
         PBatch batch = makeBatch(batchId, process);
         PExecution exec = makeExec(execId, batchId, batch.getProcessBusinessId());
@@ -142,59 +133,8 @@ public class SimpleShellProcessManyToOnePluginTest {
         LOGGER.info("Steps during execution: {}", steps.get());
     }
 
-    @NotNull public RightsPluginConfiguration makeRightsPluginConfig() {
-        UUID bid = UUID.randomUUID();
-        PluginConfiguration pc = new PluginConfiguration("label",
-                                                            SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN);
-        pc.setBusinessId(bid.toString());
-
-        return new RightsPluginConfiguration(
-                1L, pc, bid,
-                "EXPLOIT",
-                new String[]{},
-                false
-        );
-    }
-
-    private OrderProcessRepositoryImpl makeProcessRepo(IWorkloadEngineRepository engineRepo) throws Exception {
-        IRightsPluginConfigurationRepository rightsRepo = Mockito.mock(IRightsPluginConfigurationRepository.class);
-        when(rightsRepo.findByPluginConfiguration(any())).thenAnswer(i -> makeRightsPluginConfig());
-        IPUserAuthService authFactory = Mockito.mock(IPUserAuthService.class);
-        when(authFactory.authFromUserEmailAndRole(anyString(), anyString(), anyString()))
-                .thenAnswer(i -> new PUserAuth(i.getArgument(0), i.getArgument(1), i.getArgument(2), "authToken"));
-
-        return new OrderProcessRepositoryImpl(
-                Mockito.mock(IPluginService.class),
-                engineRepo,
-                rightsRepo,
-                Mockito.mock(IRuntimeTenantResolver.class)
-        );
-    }
-
-    private IWorkloadEngineRepository makeEngineRepo(IWorkloadEngine engine) {
-        return new IWorkloadEngineRepository() {
-            @Override public Mono<IWorkloadEngine> findByName(String name) {
-                return Mono.just(engine);
-            }
-            @Override public Mono<IWorkloadEngine> register(IWorkloadEngine engine) {
-                return Mono.just(engine);
-            }
-        };
-    }
-
-    private IWorkloadEngine makeEngine() {
-        return new IWorkloadEngine() {
-            @Override public String name() {
-                return "JOB";
-            }
-            @Override public void selfRegisterInRepo() { }
-            @Override public Mono<PExecution> run(ExecutionContext context) {
-                return Mono.just(context.getExec());
-            }
-        };
-    }
-
-    private SimpleShellProcessPlugin makePlugin(IExecutionLocalWorkdirService workdirService, ISharedStorageService storageService) {
+    private SimpleShellProcessPlugin makePlugin(IExecutionLocalWorkdirService workdirService,
+            ISharedStorageService storageService) {
         SimpleShellProcessPlugin shellProcessPlugin = new SimpleShellProcessPlugin();
 
         shellProcessPlugin.setWorkdirService(workdirService);
@@ -214,36 +154,4 @@ public class SimpleShellProcessManyToOnePluginTest {
         return shellProcessPlugin;
 
     }
-
-    private PExecution makeExec(UUID execId, UUID batchId, UUID processBusinessId) throws Exception {
-        return new PExecution(
-            execId, "exec cid",  batchId, "batch cid",
-            Duration.ofSeconds(10),
-            List.of(
-                    new PInputFile("one", "one.raw", "text/plain", Paths.get("src/test/resources/one.raw").toUri().toURL(), 3L, "checksum", inputMetadataAsMap(false, "urn"), "one"),
-                    new PInputFile("two", "two.raw", "text/plain", Paths.get("src/test/resources/two.raw").toUri().toURL(), 3L, "checksum", inputMetadataAsMap(false, "urn"), "two")
-            ),
-            List.empty(),
-            "tenant",
-            "user@ema.il",
-            processBusinessId,
-            OffsetDateTime.now().minusMinutes(2),
-            OffsetDateTime.now().minusMinutes(1),
-            0,
-            true
-        );
-    }
-
-    private PBatch makeBatch(UUID batchId, PProcess process) {
-        return new PBatch(
-            "corr",
-            batchId,
-            process.getProcessId(),
-            "tenant", "user", "role",
-            List.of(),
-            HashMap.empty(),
-            true
-        );
-    }
-
 }

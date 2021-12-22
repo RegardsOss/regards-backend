@@ -62,7 +62,7 @@ public class OutputFileServiceImpl implements IOutputFileService {
     @Override
     public void scheduledDeleteDownloadedFiles() {
         outFileRepo
-                .save(outFileRepo.findByDownloadedIsTrueAndDeletedIsFalse().flatMap(storageService::delete)
+                .save(outFileRepo.findByDownloadedIsTrueAndDeletedIsFalse().flatMap(storageService::deleteFile)
                         .map(outfile -> outfile.withDeleted(true)))
                 .subscribe(outfile -> LOGGER.debug("Deleted output file {}", outfile),
                            error -> LOGGER.error("Failed to delete output files: {}", error.getMessage(), error));

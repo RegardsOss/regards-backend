@@ -129,6 +129,7 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>

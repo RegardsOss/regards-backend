@@ -35,9 +35,15 @@ import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
+import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import io.vavr.collection.Seq;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import lombok.Value;
 import lombok.With;
 import org.slf4j.Logger;
@@ -47,14 +53,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import reactor.core.publisher.Mono;
-
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
 
 /**
  * This class is a base abstract class for process plugins which interact with the
