@@ -76,6 +76,7 @@ public class Request {
     private byte[] content;
 
     @Column(name = "error")
+    @Type(type = "text")
     private String error;
 
     public Request() {
