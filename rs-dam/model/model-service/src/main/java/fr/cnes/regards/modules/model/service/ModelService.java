@@ -226,7 +226,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
         Page<ModelAttrAssoc> assocs = modelAttributeRepository.findAllByModelNameIn(modelNames, pageable);
-        List<AttributeModel> atts = assocs.getContent().stream().map(assoc -> assoc.getAttribute())
+        List<AttributeModel> atts = assocs.getContent().stream().map(ModelAttrAssoc::getAttribute).distinct()
                 .collect(Collectors.toList());
         return new PageImpl<>(atts, pageable, assocs.getTotalElements());
     }
