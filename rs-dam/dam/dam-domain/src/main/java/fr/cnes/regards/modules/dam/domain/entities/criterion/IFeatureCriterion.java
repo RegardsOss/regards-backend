@@ -107,6 +107,10 @@ public interface IFeatureCriterion extends ICriterion {
         return ICriterion.in(att.getFullJsonPath(), values);
     }
 
+    static ICriterion in(AttributeModel att, double[] values, double precision) {
+        return ICriterion.in(att.getFullJsonPath(), values, precision);
+    }
+
     static ICriterion eq(AttributeModel att, double value, double precision) {
         return ICriterion.eq(att.getFullJsonPath(), value, precision);
     }

@@ -25,10 +25,7 @@ import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 /**
  * Search criterion
@@ -174,6 +171,13 @@ public interface ICriterion {
                 .collect(Collectors.toList()));
     }
 
+    static ICriterion in(String attName, double[] values, double precision) {
+        if (values.length == 0) {
+            return new NotCriterion(all());
+        }
+        return new OrCriterion(DoubleStream.of(values).mapToObj(val -> eq(attName, val, precision))
+                                       .collect(Collectors.toList()));
+    }
 
     static ICriterion eq(String attName, double value, double precision) {
         RangeCriterion<Double> crit = new RangeCriterion<>(attName);
