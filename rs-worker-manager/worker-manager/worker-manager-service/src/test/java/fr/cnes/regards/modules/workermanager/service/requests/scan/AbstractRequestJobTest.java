@@ -81,7 +81,7 @@ public abstract class AbstractRequestJobTest extends AbstractMultitenantServiceW
 
     @After
     public void doAfter() {
-        cleanRepository();
+        // cleanRepository();
     }
 
     public void cleanRepository() {

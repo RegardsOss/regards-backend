@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
@@ -51,6 +52,8 @@ import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,6 +65,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public abstract class AbstractWorkerManagerTest extends AbstractRegardsServiceIT  {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorkerManagerTest.class);
 
     public static final String BODY_CONTENT = "{\"test\":\"value\",\"map\": { \"values\": [1,2,3]}}";
 
@@ -100,10 +105,14 @@ public abstract class AbstractWorkerManagerTest extends AbstractRegardsServiceIT
     @Autowired
     protected ISnapshotProcessRepository sessionSnapshotRepository;
 
+    @Autowired
+    protected IJobInfoRepository jobInfoRepo;
+
     @Before
     public void initTests() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         requestRepository.deleteAll();
+        jobInfoRepo.deleteAll();
         stepPropertyUpdateRepository.deleteAll();
         sessionSnapshotRepository.deleteAll();
         sessionStepRepository.deleteAll();
@@ -120,7 +129,9 @@ public abstract class AbstractWorkerManagerTest extends AbstractRegardsServiceIT
         request.setSession(DEFAULT_SESSION);
         request.setSource(DEFAULT_SOURCE);
         request.setCreationDate(OffsetDateTime.now());
-        request.setDispatchedWorkerType(DEFAULT_WORKER);
+        if (status != RequestStatus.NO_WORKER_AVAILABLE) {
+            request.setDispatchedWorkerType(DEFAULT_WORKER);
+        }
         return request;
     }
 
@@ -183,6 +194,8 @@ public abstract class AbstractWorkerManagerTest extends AbstractRegardsServiceIT
             });
             return requestRepository.findByStatus(status).size() == expected;
         } catch (ConditionTimeoutException e) {
+            LOGGER.error("ERROR waiting for {} requests in status {}. Git {} after {}{} ",
+                         expected,status.toString(), requestRepository.findByStatus(status).size(), count, timeUnit.toString());
             return false;
         }
     }

@@ -26,47 +26,57 @@ import java.util.Optional;
 
 public enum WorkerStepPropertyEnum {
 
-    TOTAL_REQUESTS("workers.requests", null, StepPropertyStateEnum.INFO,
-                   true, false),
-    NO_WORKER_AVAILABLE("workers.no_worker_available",RequestStatus.NO_WORKER_AVAILABLE,
-                        StepPropertyStateEnum.WAITING, false, false),
-    RUNNING("workers.%s.running",RequestStatus.RUNNING, StepPropertyStateEnum.RUNNING,
-            false, false),
-    DISPATCHED("workers.%s.dispatched",RequestStatus.DISPATCHED, StepPropertyStateEnum.RUNNING,
-               false, false),
-    ERROR("workers.%s.error",RequestStatus.ERROR, StepPropertyStateEnum.ERROR,
-          false, false),
-    INVALID_CONTENT("workers.%s.invalid",RequestStatus.INVALID_CONTENT, StepPropertyStateEnum.ERROR,
-          false, false),
-    DONE("workers.%s.done",RequestStatus.SUCCESS, StepPropertyStateEnum.SUCCESS,
-         false, true),
-    RETRY_PENDING("workers.%s.retry",RequestStatus.TO_DISPATCH, StepPropertyStateEnum.INFO,
-                  false, false),
-    DELETION_PENDING("workers.%s.deletion",RequestStatus.TO_DELETE, StepPropertyStateEnum.INFO,
-                     false, false);
+    TOTAL_REQUESTS("workers.requests", null, StepPropertyStateEnum.INFO, false, true, false),
+    NO_WORKER_AVAILABLE("workers.no_worker_available", RequestStatus.NO_WORKER_AVAILABLE, StepPropertyStateEnum.WAITING,
+                        false, false, false),
+    RUNNING("workers.%s.running", RequestStatus.RUNNING, StepPropertyStateEnum.RUNNING, true, false, false),
+    DISPATCHED("workers.%s.dispatched", RequestStatus.DISPATCHED, StepPropertyStateEnum.RUNNING, true, false, false),
+    ERROR("workers.%s.error", RequestStatus.ERROR, StepPropertyStateEnum.ERROR, true, false, false),
+    INVALID_CONTENT("workers.%s.invalid", RequestStatus.INVALID_CONTENT, StepPropertyStateEnum.ERROR, true, false,
+                    false),
+    DONE("workers.%s.done", RequestStatus.SUCCESS, StepPropertyStateEnum.SUCCESS, true, false, true),
+    RETRY_PENDING("workers.%s.retry", RequestStatus.TO_DISPATCH, StepPropertyStateEnum.INFO, true, false, false),
+    DELETION_PENDING("workers.%s.deletion", RequestStatus.TO_DELETE, StepPropertyStateEnum.INFO, true, false, false);
 
     private final String propertyPath;
+
+    private final boolean workerTypeRequired;
+
     private final RequestStatus requestStatus;
+
     private final StepPropertyStateEnum propertyState;
+
     private final boolean inputRelated;
+
     private final boolean outputRelated;
 
-    WorkerStepPropertyEnum(String propertyPath, RequestStatus requestStatus,
-            StepPropertyStateEnum propertyState, boolean inputRelated, boolean outputRelated) {
+    WorkerStepPropertyEnum(String propertyPath, RequestStatus requestStatus, StepPropertyStateEnum propertyState,
+            boolean workerTypeRequired, boolean inputRelated, boolean outputRelated) {
         this.propertyPath = propertyPath;
         this.requestStatus = requestStatus;
         this.propertyState = propertyState;
+        this.workerTypeRequired = workerTypeRequired;
         this.inputRelated = inputRelated;
         this.outputRelated = outputRelated;
+    }
+
+    public static Optional<WorkerStepPropertyEnum> parse(RequestStatus status) {
+        Optional<WorkerStepPropertyEnum> oStep = Arrays.stream(WorkerStepPropertyEnum.values())
+                .filter(step -> step.getRequestStatus() != null && status == step.getRequestStatus()).findFirst();
+        return oStep;
     }
 
     public String getPropertyPath() {
         return this.propertyPath;
     }
 
-    public RequestStatus getRequestStatus() { return this.requestStatus; }
+    public RequestStatus getRequestStatus() {
+        return this.requestStatus;
+    }
 
-    public StepPropertyStateEnum getPropertyState() { return this.propertyState; }
+    public StepPropertyStateEnum getPropertyState() {
+        return this.propertyState;
+    }
 
     public boolean isInputRelated() {
         return inputRelated;
@@ -76,10 +86,8 @@ public enum WorkerStepPropertyEnum {
         return outputRelated;
     }
 
-    public static Optional<WorkerStepPropertyEnum> parse(RequestStatus status) {
-        Optional<WorkerStepPropertyEnum> oStep = Arrays.stream(WorkerStepPropertyEnum.values())
-                .filter(step -> step.getRequestStatus() != null && status == step.getRequestStatus()).findFirst();
-        return oStep;
+    public boolean isWorkerTypeRequired() {
+        return workerTypeRequired;
     }
 
 }

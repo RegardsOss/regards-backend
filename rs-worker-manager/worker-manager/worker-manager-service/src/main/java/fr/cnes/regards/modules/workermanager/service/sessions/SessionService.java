@@ -28,10 +28,7 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestsInfo;
 import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,8 +42,11 @@ public class SessionService {
         this.sessionNotificationClient = sessionNotificationClient;
     }
 
-    public static String getSessionPropertyName(RequestDTO request, WorkerStepPropertyEnum property) {
-        return getSessionPropertyName(request.getDispatchedWorkerType(), property);
+    public static Optional<String> getSessionPropertyName(RequestDTO request, WorkerStepPropertyEnum property) {
+        if (!property.isWorkerTypeRequired() || request.getDispatchedWorkerType() != null) {
+            return Optional.of(getSessionPropertyName(request.getDispatchedWorkerType(), property));
+        }
+        return Optional.empty();
     }
 
     public static String getSessionPropertyName(String workerType, WorkerStepPropertyEnum property) {
@@ -138,7 +138,9 @@ public class SessionService {
 
     private void preparePropertyStepForRequest(String source, String session, RequestDTO request,
             WorkerStepPropertyEnum propertyType, Map<String, StepProperty> propertySteps, boolean inc) {
-        preparePropertyStepForRequest(source, session, getSessionPropertyName(request, propertyType), propertyType, propertySteps, inc);
+        getSessionPropertyName(request, propertyType).ifPresent(property ->
+            preparePropertyStepForRequest(source, session, property, propertyType, propertySteps, inc)
+        );
     }
 
     private void preparePropertyStepForRequest(String source, String session, String newPropertyPath,

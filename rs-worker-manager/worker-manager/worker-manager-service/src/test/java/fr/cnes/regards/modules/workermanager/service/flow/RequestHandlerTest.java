@@ -19,21 +19,28 @@
 
 package fr.cnes.regards.modules.workermanager.service.flow;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
+import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
+import fr.cnes.regards.modules.workermanager.service.requests.scan.RequestScanService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
+import fr.cnes.regards.modules.workermanager.task.NoWorkerAvailableScanRequestTaskScheduler;
 import org.bouncycastle.cert.ocsp.Req;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,12 +69,22 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
     @Autowired
     private DynamicTenantSettingService tenantSettingService;
 
+    @Autowired
+    private RequestScanService requestScanService;
+
+    @Autowired
+    private WorkerConfigService workerConfigService;
+
+    @Autowired
+    private IWorkerConfigRepository workerConfigRepo;
+
     private final static String CONTENT_TYPE_TO_SKIP = "toskip";
 
     @Before
     public void init() throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME , Arrays.asList(CONTENT_TYPE_TO_SKIP));
+        workerConfigRepo.deleteAll();
     }
 
     @Test
@@ -108,6 +125,39 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
 
         SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 0,0,0,
                      0, 0, 0,0,0,0);
+    }
+
+    @Test
+    public void dispatchAvailableRequests() throws Throwable {
+        List<Request> requests = new ArrayList<>();
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.ERROR));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.ERROR));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.NO_WORKER_AVAILABLE));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.NO_WORKER_AVAILABLE));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.RUNNING));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.DISPATCHED));
+        requests.add(createRequest(UUID.randomUUID().toString(), RequestStatus.INVALID_CONTENT));
+        requestRepository.saveAll(requests);
+
+        // Simulate new conf for worker. So request in status NO_WORKER_AVAILABLE can be sent
+        Assert.assertTrue("Error during worker conf import", workerConfigService.importConfiguration(Sets.newHashSet(
+                new WorkerConfigDto(RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE,
+                                    Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE)))).isEmpty());
+
+        // Scan
+        requestScanService.scanNoWorkerAvailableRequests();
+
+        Assert.assertTrue(waitForRequests(2, RequestStatus.TO_DISPATCH, 10, TimeUnit.SECONDS));
+        Assert.assertTrue(waitForRequests(3, RequestStatus.DISPATCHED, 30, TimeUnit.SECONDS));
+
+        // Wait for all session properties update received :
+        // -2 NO_WORKER_AVAILABLE
+        // +2 TO_DISPATCH
+        // -2 TO_DISPATCH
+        // +2 DISPATCHED
+        waitForSessionProperties(4, 5, TimeUnit.SECONDS);
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 0,0,-2,
+                                   2, 0, 0,0,0,0);
     }
 
     @Test
