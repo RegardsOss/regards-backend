@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.workermanager.domain.cache;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -27,6 +30,8 @@ import java.util.Set;
  * @author Léo Mieulet
  */
 public class CacheEntry {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CacheEntry.class);
 
     /**
      * The duration before assuming the last heartbeat of a workerIns is useless to store here
@@ -65,8 +70,13 @@ public class CacheEntry {
      * @return
      */
     public static boolean isValidHeartBeat(OffsetDateTime lastHeartBeatDate, long expireInCacheDuration) {
-        return lastHeartBeatDate.plusSeconds(expireInCacheDuration)
-                .isAfter(OffsetDateTime.now());
+        OffsetDateTime now = OffsetDateTime.now();
+        boolean valid = lastHeartBeatDate.plusSeconds(expireInCacheDuration)
+                .isAfter(now);
+        if (!valid) {
+            LOGGER.warn("Invalid heartbeat from {} received at {}", lastHeartBeatDate, now);
+        }
+        return valid;
     }
 
     public Long getNbWorkerIns() {
