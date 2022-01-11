@@ -102,10 +102,9 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      */
     private boolean instanceIdGenerated = false;
 
-    public RegardsAmqpAdmin(String namespace, String microserviceTypeId, String microserviceInstanceId) {
+    public RegardsAmqpAdmin(String namespace, String microserviceTypeId) {
         this.namespace = namespace;
         this.microserviceTypeId = microserviceTypeId;
-        this.microserviceInstanceId = microserviceInstanceId;
     }
 
     @PostConstruct
@@ -116,7 +115,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         }
         if (microserviceInstanceId == null) {
             this.instanceIdGenerated = true;
-            this.microserviceInstanceId = microserviceName + UUID.randomUUID();
+            this.microserviceInstanceId = UUID.randomUUID().toString();
         }
     }
 
@@ -235,6 +234,13 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
                             getSubscriptionQueueName(channel.getHandlerType().get(), channel.getTarget()));
 
                     builder = QueueBuilder.durable(qn).maxPriority(MAX_PRIORITY);
+
+                    // If  target is ALL, queue name is specific for the current instance of microservice.
+                    // The instance id is a random uuid so the queue must be autoDelete to be deleted after instance stop.
+                    // Auto delete option force rabbitmq server to delete queues with no consumer associated.
+                    if (Target.ALL.equals(channel.getTarget()) || Target.MICROSERVICE.equals(channel.getTarget())) {
+                        builder.autoDelete();
+                    }
 
                     // Needs a DLQ
                     if (channel.isDeclareDlq()) {
