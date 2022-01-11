@@ -187,14 +187,15 @@ public abstract class AbstractWorkerManagerTest extends AbstractRegardsServiceIT
     }
 
     protected boolean waitForRequests(int expected, RequestStatus status, long count, TimeUnit timeUnit) {
+        String tenant = getDefaultTenant();
         try {
             Awaitility.await().atMost(count, timeUnit).until(() -> {
-                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                runtimeTenantResolver.forceTenant(tenant);
                 return requestRepository.findByStatus(status).size() == expected;
             });
             return requestRepository.findByStatus(status).size() == expected;
         } catch (ConditionTimeoutException e) {
-            LOGGER.error("ERROR waiting for {} requests in status {}. Git {} after {}{} ",
+            LOGGER.error("ERROR waiting for {} requests in status {}. Got {} after {}{} ",
                          expected,status.toString(), requestRepository.findByStatus(status).size(), count, timeUnit.toString());
             return false;
         }

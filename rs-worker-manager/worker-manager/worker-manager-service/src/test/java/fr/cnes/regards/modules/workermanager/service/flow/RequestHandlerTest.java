@@ -147,7 +147,10 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         // Scan
         requestScanService.scanNoWorkerAvailableRequests();
 
-        Assert.assertTrue(waitForRequests(2, RequestStatus.TO_DISPATCH, 30, TimeUnit.SECONDS));
+        Assert.assertTrue(waitForRequests(0, RequestStatus.NO_WORKER_AVAILABLE, 30, TimeUnit.SECONDS));
+        Assert.assertTrue(waitForRequests(1, RequestStatus.RUNNING, 30, TimeUnit.SECONDS));
+        Assert.assertTrue(waitForRequests(1, RequestStatus.INVALID_CONTENT, 30, TimeUnit.SECONDS));
+        Assert.assertTrue(waitForRequests(2, RequestStatus.ERROR, 30, TimeUnit.SECONDS));
         Assert.assertTrue(waitForRequests(3, RequestStatus.DISPATCHED, 30, TimeUnit.SECONDS));
 
         // Wait for all session properties update received :
