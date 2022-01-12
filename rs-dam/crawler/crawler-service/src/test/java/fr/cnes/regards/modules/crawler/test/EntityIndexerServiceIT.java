@@ -661,7 +661,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         List<StepPropertyUpdateRequestEvent> stepEventsInit = argumentCaptor.getAllValues().stream()
                 .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
                 .map(event -> (StepPropertyUpdateRequestEvent) event).collect(Collectors.toList());
-        stepHandlerService.createStepRequests(stepEventsInit);
+        Set<String> sources = stepHandlerService.createStepRequests(stepEventsInit);
+        stepHandlerService.createMissingSnapshotProcesses(sources);
         // then generate sessionSteps from steps
         agentSnapshotService.generateSessionStep(new SnapshotProcess(SESSION_OWNER, null, null), OffsetDateTime.now());
 

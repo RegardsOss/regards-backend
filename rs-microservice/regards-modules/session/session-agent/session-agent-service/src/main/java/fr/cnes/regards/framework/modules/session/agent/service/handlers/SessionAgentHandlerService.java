@@ -27,10 +27,12 @@ import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Service for {@link SessionAgentEventHandler}. It handles new amqp events received and saves new
@@ -40,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Iliana Ghazali
  **/
 @MultitenantTransactional
+@Service
 public class SessionAgentHandlerService {
 
     /**
@@ -61,7 +64,7 @@ public class SessionAgentHandlerService {
      *
      * @param events {@link StepPropertyUpdateRequestEvent}s
      */
-    public void createStepRequests(List<StepPropertyUpdateRequestEvent> events) {
+    public Set<String> createStepRequests(List<StepPropertyUpdateRequestEvent> events) {
         Set<StepPropertyUpdateRequest> stepPropertiesToSave = new HashSet<>();
         Set<String> sourcesToBeUpdated = new HashSet<>();
         // create stepPropertyUpdateRequest with all stepPropertyUpdateRequestEvent received
@@ -70,30 +73,29 @@ public class SessionAgentHandlerService {
             StepProperty step = e.getStepProperty();
             String source = step.getSource();
             StepPropertyInfo stepInfo = e.getStepProperty().getStepPropertyInfo();
-            stepPropertiesToSave
-                    .add(new StepPropertyUpdateRequest(step.getStepId(), source, step.getSession(), e.getDate(),
-                                                       e.getType(),
-                                                       new StepPropertyUpdateRequestInfo(stepInfo.getStepType(),
-                                                                                         stepInfo.getState(),
-                                                                                         stepInfo.getProperty(),
-                                                                                         stepInfo.getValue(),
-                                                                                         stepInfo.isInputRelated(),
-                                                                                         stepInfo.isOutputRelated())));
+            stepPropertiesToSave.add(new StepPropertyUpdateRequest(step.getStepId(), source, step.getSession(), e.getDate(), e.getType(),
+                                                                   new StepPropertyUpdateRequestInfo(stepInfo.getStepType(),
+                                                                                                     stepInfo.getState(),
+                                                                                                     stepInfo.getProperty(),
+                                                                                                     stepInfo.getValue(),
+                                                                                                     stepInfo.isInputRelated(),
+                                                                                                     stepInfo.isOutputRelated())));
             sourcesToBeUpdated.add(source);
         }
+        this.stepPropertyRepo.saveAll(stepPropertiesToSave);
+        return sourcesToBeUpdated;
+    }
 
-        // get the list of snapshot processes from the database
-        Set<SnapshotProcess> snapshotProcessesRetrieved = snapshotRepo.findBySourceIn(sourcesToBeUpdated);
+    public void createMissingSnapshotProcesses(Set<String> sources) {
+        Set<SnapshotProcess> snapshotProcessesRetrieved = snapshotRepo.findBySourceIn(sources);
         Set<SnapshotProcess> snapshotProcessesToBeCreated = new HashSet<>();
         // loop on every source impacted and create snapshot process if not existing
-        for (String source : sourcesToBeUpdated) {
+        for (String source : sources) {
             if (snapshotProcessesRetrieved.stream().noneMatch(s -> s.getSource().equals(source))) {
                 snapshotProcessesToBeCreated.add(new SnapshotProcess(source, null, null));
             }
         }
-
-        // save changes
-        this.stepPropertyRepo.saveAll(stepPropertiesToSave);
         this.snapshotRepo.saveAll(snapshotProcessesToBeCreated);
     }
+
 }

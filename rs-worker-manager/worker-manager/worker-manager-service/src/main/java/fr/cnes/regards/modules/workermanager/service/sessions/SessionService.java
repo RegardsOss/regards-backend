@@ -26,6 +26,8 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestsInfo;
 import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -33,6 +35,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class SessionService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SessionService.class);
 
     private static final String GLOBAL_SESSION_STEP = "workers";
 
@@ -178,9 +182,11 @@ public class SessionService {
                 .forEach(ppt -> {
                     int value = Integer.parseInt(ppt.getStepPropertyInfo().getValue());
                     if (value > 0 ) {
+                        LOGGER.debug("Send session update INC : {}",ppt.toString());
                         sessionNotificationClient.increment(ppt);
                     } else {
                         ppt.getStepPropertyInfo().setValue(String.valueOf(-value));
+                        LOGGER.debug("Send session update DEC : {}",ppt.toString());
                         sessionNotificationClient.decrement(ppt);
                     }
                 } );
