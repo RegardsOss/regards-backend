@@ -66,7 +66,7 @@ public class RequestScanTask implements Task {
         if (filters.getStatuses() == null ||
                 filters.getStatuses().getValues().isEmpty() ||
                 filters.getStatuses().getValues().stream().anyMatch(status -> !BLOCKED_REQUESTS_STATUSES.contains(status))) {
-            filters.withStatusesIncluded(RequestStatus.NO_WORKER_AVAILABLE, RequestStatus.ERROR);
+            filters.withStatusesIncluded(BLOCKED_REQUESTS_STATUSES);
         }
 
         requestScanService.updateRequestsToStatusAndScheduleJob(filters, newStatus);
