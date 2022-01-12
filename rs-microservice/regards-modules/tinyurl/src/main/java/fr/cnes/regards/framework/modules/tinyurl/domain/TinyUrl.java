@@ -40,7 +40,7 @@ import java.time.OffsetDateTime;
 public class TinyUrl {
 
     @Id
-    @SequenceGenerator(name = "tinyurlSequence", initialValue = 1, sequenceName = "seq_tinyurl", allocationSize = 1000)
+    @SequenceGenerator(name = "tinyurlSequence", initialValue = 1, sequenceName = "seq_tinyurl")
     @GeneratedValue(generator = "tinyurlSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
