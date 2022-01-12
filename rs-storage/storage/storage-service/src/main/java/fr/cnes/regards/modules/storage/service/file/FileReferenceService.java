@@ -18,11 +18,16 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,15 +38,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
-import fr.cnes.regards.modules.storage.domain.database.FileLocation;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.StorageMonitoringAggregation;
-import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service to handle actions on {@link FileReference}s entities.
@@ -179,6 +178,17 @@ public class FileReferenceService {
     @Transactional(readOnly = true)
     public Optional<FileReference> search(String storage, String checksum) {
         return fileRefRepo.findByLocationStorageAndMetaInfoChecksum(storage, checksum);
+    }
+
+    /**
+     * Search for all {@link FileReference}s with matching checksums on the given storage location.
+     * @param storage
+     * @param checksums
+     * @return {@link FileReference}s
+     */
+    @Transactional(readOnly = true)
+    public Set<FileReference> search(String storage, Collection<String> checksums) {
+        return fileRefRepo.findByLocationStorageAndMetaInfoChecksumIn(storage, checksums);
     }
 
     @Transactional(readOnly = true)

@@ -20,16 +20,15 @@ package fr.cnes.regards.modules.storage.client;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * REST Client to to access storage microservice
@@ -46,6 +45,8 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
 
     public static final String EXPORT_PATH = "/csv";
 
+    public static final String LOCATIONS_PATH = "/{storage}/locations";
+
     /**
      * Download a file by his checksum.
      * @param checksum file to download
@@ -61,4 +62,6 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
     @RequestMapping(method = RequestMethod.GET, path = FILE_PATH + EXPORT_PATH, produces = MediaType.ALL_VALUE)
     Response export();
 
+    @RequestMapping(method = RequestMethod.POST, path = FILE_PATH + LOCATIONS_PATH, consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(@PathVariable(name = "storage") final String storage, @RequestBody final Set<String> checksums);
 }

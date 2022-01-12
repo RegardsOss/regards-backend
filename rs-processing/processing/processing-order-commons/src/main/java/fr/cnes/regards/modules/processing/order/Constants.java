@@ -42,6 +42,8 @@ public interface Constants {
 
     String FEATURE_ID = "featureId";
 
+    String STORED_PATH = "storedPath";
+
     String PROCESS_INFO_TENANT_PARAM_NAME = "regards.tenant";
 
     String PROCESS_INFO_ROLE_PARAM_NAME = "regards.userRole";

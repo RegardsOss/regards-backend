@@ -18,33 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import org.springframework.util.Assert;
+
+import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Set;
-
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.ElementCollection;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import org.springframework.util.Assert;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
  * Database POJO definition for referenced files
@@ -52,6 +34,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  * @author Sébastien Binda
  */
 @Entity
+@JsonFilter("owners")
 @Table(name = "t_file_reference",
         indexes = { @Index(name = "idx_file_reference_checksum", columnList = "checksum"),
                 @Index(name = "idx_file_reference_storage", columnList = "storage"),

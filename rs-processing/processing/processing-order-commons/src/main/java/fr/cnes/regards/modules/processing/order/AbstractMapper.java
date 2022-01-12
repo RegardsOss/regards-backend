@@ -58,4 +58,8 @@ public abstract class AbstractMapper<T> {
 
     }
 
+    protected final Option<String> parseString(Map<String, String> map, String propName) {
+        return map.get(propName).flatMap(propValue -> Try.of(() -> propValue).toOption());
+    }
+
 }

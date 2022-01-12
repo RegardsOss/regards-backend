@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.StorageMonitoringAggregation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,8 +28,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.StorageMonitoringAggregation;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link FileReference} entities.
@@ -45,6 +44,8 @@ public interface IFileReferenceRepository
     Page<FileReference> findByLocationStorage(String storage, Pageable page);
 
     Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
+
+    Set<FileReference> findByLocationStorageAndMetaInfoChecksumIn(String storage, Collection<String> checksums);
 
     Page<FileReference> findByLocationStorageAndMetaInfoTypeIn(String storage, Collection<String> type,
             Pageable pageable);

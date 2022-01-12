@@ -16,8 +16,8 @@ public class OrderInputFileMetadataMapperTest {
     @Test
     public void testFromTo() {
         UniformResourceName urn = UniformResourceName.build("theidentifier", EntityType.DATA, "theTenant", UUID.randomUUID(), 5, 5L, "test");
-        OrderInputFileMetadata oifmdTrue = new OrderInputFileMetadata(true, urn);
-        OrderInputFileMetadata oifmdFalse = new OrderInputFileMetadata(false, urn);
+        OrderInputFileMetadata oifmdTrue = new OrderInputFileMetadata(true, urn, null);
+        OrderInputFileMetadata oifmdFalse = new OrderInputFileMetadata(false, urn, null);
 
         List<OrderInputFileMetadata> rands = List.of(oifmdTrue, oifmdFalse);
 

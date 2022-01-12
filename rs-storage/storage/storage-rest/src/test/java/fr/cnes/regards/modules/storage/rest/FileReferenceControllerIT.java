@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -81,6 +82,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -133,6 +135,9 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
     private IDownloadQuotaRepository quotaRepository;
 
     @Autowired
+    private IFileStorageRequestRepository fileStoreReqRepository;
+
+    @Autowired
     private ISubscriber subscriber;
 
     @Autowired
@@ -146,6 +151,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         quotaRepository.deleteAll();
         reqInfoRepository.deleteAll();
         fileRepo.deleteAll();
+        fileStoreReqRepository.deleteAll();
         prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
             try {
                 prioritizedDataStorageService.delete(c.getId());
@@ -204,6 +210,25 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         subscriber.unsubscribeFrom(NotificationEvent.class, true);
         subscriber.purgeQueue(NotificationEvent.class, FileReferenceControllerIT.class);
         notificationEvents.set(0);
+    }
+
+
+    @Test
+    public void getLocationsWithChecksums() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectToHaveSize("$.*", 1);
+        Set<String> checksums = new HashSet<>();
+        checksums.add(storedFileChecksum);
+        performDefaultPost(FileReferenceController.FILE_PATH + FileReferenceController.LOCATIONS_PATH, checksums,requestBuilderCustomizer,
+                "File reference should have been found", TARGET_STORAGE);
+    }
+
+    @Test
+    public void getLocationsWithUnknownChecksums() {
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectIsEmpty("$");
+        Set<String> checksums = new HashSet<>();
+        checksums.add(UUID.randomUUID().toString());
+        performDefaultPost(FileReferenceController.FILE_PATH + FileReferenceController.LOCATIONS_PATH, checksums,requestBuilderCustomizer,
+                "File reference should have been found", TARGET_STORAGE);
     }
 
     @Test

@@ -18,31 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import feign.Response;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
@@ -58,11 +35,36 @@ import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Test class for REST Client
@@ -106,9 +108,9 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         fileRepo.deleteAll();
         client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IStorageRestClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+                new TokenClientProvider<>(IStorageRestClient.class,
+                        "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
+                gson, requestTemplate -> requestTemplate.header("Content-Type", MediaType.APPLICATION_JSON_VALUE));
         if (!storageLocationConfService.search(ONLINE_CONF).isPresent()) {
             initDataStoragePluginConfiguration();
         }
@@ -153,6 +155,22 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         Assert.assertTrue(response.getBody().stream().anyMatch(s -> s.getContent().getName().equals(ONLINE_CONF)));
         Assert.assertTrue(response.getBody().stream()
                 .anyMatch(s -> s.getContent().getName().equals(CacheService.CACHE_NAME)));
+    }
+
+    @Test
+    public void getFileReferencesWithoutOwners() {
+        String storageName = "somewhere";
+        Set<String> checksums = Sets.newHashSet(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        for (String checksum : checksums) {
+            fileRefService.create(Sets.newHashSet("someone", "someone-else"),
+                    new FileReferenceMetaInfo(checksum, "MD5", "file_ref.txt", 1L,
+                            MediaType.APPLICATION_JSON),
+                    new FileLocation("somewhere", "file://sample/file_ref.txt"), true);
+        }
+        ResponseEntity<Set<FileReferenceDTO>> response = client.getFileReferencesWithoutOwners(storageName, checksums);
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertEquals("Unexpected number of file references found", checksums.size(), Objects.requireNonNull(response.getBody()).size());
+        Assert.assertEquals("Unexpected checksums retrieved", checksums, response.getBody().stream().map(f -> f.getMetaInfo().getChecksum()).collect(Collectors.toSet()));
     }
 
     private StorageLocationConfiguration initDataStoragePluginConfiguration() {

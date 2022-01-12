@@ -23,8 +23,7 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
 
-import static fr.cnes.regards.modules.processing.order.Constants.FEATURE_ID;
-import static fr.cnes.regards.modules.processing.order.Constants.INTERNAL;
+import static fr.cnes.regards.modules.processing.order.Constants.*;
 
 /**
  * This class is a mapper for {@link OrderInputFileMetadata}.
@@ -35,13 +34,15 @@ public class OrderInputFileMetadataMapper extends AbstractMapper<OrderInputFileM
 
     @Override
     public Map<String, String> toMap(OrderInputFileMetadata params) {
-        return HashMap.of(INTERNAL, params.getInternal().toString(), FEATURE_ID, params.getFeatureId().toString());
+        return HashMap.of(INTERNAL, params.getInternal().toString(), FEATURE_ID, params.getFeatureId().toString(), STORED_PATH, params.getStoredPath());
     }
 
     @Override
     public Option<OrderInputFileMetadata> fromMap(Map<String, String> map) {
-        return parseBoolean(map, INTERNAL)
-                .flatMap(internal -> parseUrn(map, FEATURE_ID).map(urn -> new OrderInputFileMetadata(internal, urn)));
+        return parseBoolean(map, INTERNAL).flatMap(internal ->
+                parseUrn(map, FEATURE_ID).flatMap(urn -> parseString(map, STORED_PATH).map(storedPath ->
+                        new OrderInputFileMetadata(internal, urn, storedPath)
+                )));
     }
 
 }

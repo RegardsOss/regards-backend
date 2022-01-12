@@ -8,6 +8,7 @@ import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import org.springframework.context.annotation.Primary;
@@ -18,10 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Primary
 @Service
@@ -75,6 +73,11 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     @Override
     public Response export() {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
         return null;
     }
 

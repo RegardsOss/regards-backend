@@ -18,18 +18,19 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
-
 import com.google.gson.Gson;
-
 import feign.Client;
 import feign.Feign;
+import feign.RequestInterceptor;
 import feign.Target;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.jaxb.JAXBContextFactory;
 import feign.jaxb.JAXBDecoder;
 import feign.jaxb.JAXBEncoder;
+import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
+
+import java.util.Arrays;
 
 /**
  * Helper class for building Feign client programmatically
@@ -59,6 +60,19 @@ public final class FeignClientBuilder {
      */
     public static <T> T build(final Target<T> pTarget, Gson gson) {
         return Feign.builder() // Feign customization
+                .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
+                .target(pTarget);
+    }
+
+    /**
+     * Generate client
+     * @param pTarget Target to add informations in header like Autorization.
+     * @param requestInterceptors Add custom headers to all requests
+     * @return IResourcesClient a client instance
+     */
+    public static <T> T build(final Target<T> pTarget, Gson gson, RequestInterceptor... requestInterceptors) {
+        return Feign.builder().requestInterceptors(Arrays.asList(requestInterceptors)) // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);

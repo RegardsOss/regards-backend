@@ -17,19 +17,14 @@
 */
 package fr.cnes.regards.modules.order.rest.mock;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.validation.Valid;
-
+import com.google.common.collect.Maps;
+import feign.Request;
+import feign.Response;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import org.assertj.core.util.Lists;
 import org.eclipse.jetty.http.HttpHeader;
 import org.springframework.context.annotation.Primary;
@@ -39,16 +34,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Maps;
-
-import feign.Request;
-import feign.Response;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import javax.validation.Valid;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 @Component
 @Primary
@@ -90,6 +82,11 @@ public class StorageClientMock implements IStorageRestClient {
 
     @Override
     public Response export() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(String storage, Set<String> checksums) {
         return null;
     }
 

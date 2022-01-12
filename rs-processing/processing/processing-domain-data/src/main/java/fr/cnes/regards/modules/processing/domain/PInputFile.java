@@ -18,7 +18,9 @@
 package fr.cnes.regards.modules.processing.domain;
 
 import io.vavr.collection.Map;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.With;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -28,11 +30,11 @@ import java.net.URL;
 /**
  * This class represents an execution input file.
  *
- * An input file is immutable.
- *
  * @author gandrieu
  */
-@Value @With
+@Data @With
+@AllArgsConstructor
+@NoArgsConstructor
 public class PInputFile {
 
     /** Parameter name in the dynamic execution parameters for this file. */

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import com.google.common.net.HttpHeaders;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -30,6 +31,9 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
+import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -38,6 +42,7 @@ import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
 import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
 import io.vavr.control.Try;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
@@ -60,6 +65,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -80,6 +86,8 @@ public class FileReferenceController {
     public static final String STORE_PATH = "/store";
 
     public static final String EXPORT_PATH = "/csv";
+
+    public static final String LOCATIONS_PATH = "/{storage}/locations";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceController.class);
 
@@ -244,6 +252,17 @@ public class FileReferenceController {
         } while (results.hasNext());
         printer.close();
         writer.close();
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = LOCATIONS_PATH)
+    @ResourceAccess(description = "Get file references with matching checksums on a storage", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(@PathVariable(name = "storage") final String storage,
+                                                                                @RequestBody final Set<String> checksums) {
+        Set<FileReferenceDTO> fileRefDtos = Sets.newHashSet();
+        Set<FileReference> fileRefs = fileRefService.search(storage, checksums);
+        fileRefs.forEach(fileRef -> fileRefDtos.add(FileReferenceDTO.build(fileRef.getStorageDate(),
+                FileReferenceMetaInfoDTO.build(fileRef.getMetaInfo()), FileLocationDTO.build(fileRef.getLocation()), Lists.newArrayList())));
+        return ResponseEntity.ok(fileRefDtos);
     }
 
     @RequestMapping(method = RequestMethod.POST, path = STORE_PATH)

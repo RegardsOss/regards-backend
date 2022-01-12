@@ -20,13 +20,18 @@
 package fr.cnes.regards.modules.processing.order;
 
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.With;
 
 /**
  * This class defines how to interpret PInputFile metadata field for rs-order use of processing.
  *
  * @author gandrieu
  */
-@lombok.Value
+@lombok.Data @With
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderInputFileMetadata {
 
     /** Whether the input file is internal (URL pointing to storage) or external (free URL) */
@@ -35,4 +40,6 @@ public class OrderInputFileMetadata {
     /** The ID for feature the data file came from. */
     UniformResourceName featureId;
 
+    /** If a location is provided (in case the input is not a file) */
+    String storedPath;
 }

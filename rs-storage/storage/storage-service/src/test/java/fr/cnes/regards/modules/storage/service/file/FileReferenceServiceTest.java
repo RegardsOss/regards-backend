@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
-import java.time.OffsetDateTime;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.storage.dao.FileReferenceSpecification;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,13 +32,11 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.storage.dao.FileReferenceSpecification;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Test class
@@ -127,7 +129,35 @@ public class FileReferenceServiceTest extends AbstractStorageTest {
                                                                               afterFirstDate, afterEndDate, page),
                                             page)
                                     .getTotalElements());
+    }
 
+    @Test
+    public void search_by_storage_checksums() {
+        // --- GIVEN ---
+        // Add reference for search tests
+        Set<String> checksums = new HashSet<>();
+        String owner = "someone";
+        String type = "";
+        String fileName = "file_";
+        String storage = "somewhere";
+        String sessionOwner = "sessionOwner";
+        String session = "session";
+        int nbFiles = 5;
+        for (int i = 0; i < nbFiles; i++) {
+            String checksum = UUID.randomUUID().toString();
+            checksums.add(checksum);
+            referenceFile(checksum, owner, type, fileName + i, storage, sessionOwner, session);
+        }
+        // reference other file
+        referenceFile(UUID.randomUUID().toString(), owner, type, fileName + "other", storage, sessionOwner, session);
+
+        // --- WHEN ---
+        Set<FileReference> filesReferenced = fileRefService.search(storage, checksums);
+
+        // --- THEN ---
+        Assert.assertEquals("Unexpected number of file references", nbFiles, filesReferenced.size());
+        Set<String> checksumsFound = filesReferenced.stream().map(fileRef -> fileRef.getMetaInfo().getChecksum()).collect(Collectors.toSet());
+        Assert.assertEquals("Unexpected checksums returned", checksums, checksumsFound);
     }
 
 }
