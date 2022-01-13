@@ -183,12 +183,13 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         // Wait for all session properties update received :
         // -2 NO_WORKER_AVAILABLE
         // -2 ERROR
-        // +4 TO_DISPATCH
-        // -4 TO_DISPATCH
-        // +4 DISPATCHED
+        // -1 INVALID_CONTENT
+        // +5 TO_DISPATCH
+        // -5 TO_DISPATCH
+        // +5 DISPATCHED
         waitForSessionProperties(5, 5, TimeUnit.SECONDS);
         SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, 0,0,-2,
-                                   4, 0, -2,0,0,0);
+                                   5, 0, -2,-1,0,0);
 
     }
 
@@ -211,12 +212,13 @@ public class RequestHandlerTest extends AbstractWorkerManagerTest {
         // Wait for all session properties update received :
         // -2 NO_WORKER_AVAILABLE
         // -2 ERROR
-        // +4 TO_DELETE
-        // -4 TO_DELETE
-        // -4 TOTAL
+        // -1 INVALID_CONTENT
+        // +5 TO_DELETE
+        // -5 TO_DELETE
+        // -5 TOTAL
         waitForSessionProperties(5, 5, TimeUnit.SECONDS);
-        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, -4,0,-2,
-                                   0, 0, -2,0,0,0);
+        SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER, -5,0,-2,
+                                   0, 0, -2,-1,0,0);
     }
 
     @Test
