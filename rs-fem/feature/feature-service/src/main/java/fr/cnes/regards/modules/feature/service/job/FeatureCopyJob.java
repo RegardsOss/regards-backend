@@ -42,9 +42,7 @@ import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
  * @author Kevin Marchois
  *
  */
-public class FeatureCopyJob extends AbstractJob<Void> {
-
-    public static final String IDS_PARAMETER = "ids";
+public class FeatureCopyJob extends AbstractFeatureJob {
 
     private List<FeatureCopyRequest> featureCopyRequests;
 

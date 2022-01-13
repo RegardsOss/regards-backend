@@ -47,9 +47,7 @@ import io.micrometer.core.instrument.Timer;
  * @author Marc SORDI
  *
  */
-public class FeatureCreationJob extends AbstractJob<Void> {
-
-    public static final String IDS_PARAMETER = "ids";
+public class FeatureCreationJob extends AbstractFeatureJob {
 
     private Set<Long> featureCreationRequestIds;
 

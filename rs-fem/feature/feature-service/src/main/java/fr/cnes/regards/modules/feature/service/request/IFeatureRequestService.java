@@ -19,8 +19,11 @@
 package fr.cnes.regards.modules.feature.service.request;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -96,4 +99,10 @@ public interface IFeatureRequestService {
      */
     public RequestHandledResponse retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
 
+    /**
+     * Update status of given requests
+     * @param requestIds
+     * @param status
+     */
+    public void  updateRequestsStatus(Set<Long> requestIds, RequestState status);
 }

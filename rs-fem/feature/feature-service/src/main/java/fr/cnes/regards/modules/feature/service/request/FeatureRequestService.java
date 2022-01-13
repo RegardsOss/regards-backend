@@ -185,6 +185,11 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
+    public void updateRequestsStatus(Set<Long> requestIds, RequestState status) {
+        this.abstractFeatureRequestRepo.updateState(status, requestIds);
+    }
+
+    @Override
     public void handleStorageSuccess(Set<RequestResultInfoDTO> requestsInfo) {
         long scheduleStart = System.currentTimeMillis();
         LOGGER.trace("Handling {} storage success responses from storage",requestsInfo.size());
