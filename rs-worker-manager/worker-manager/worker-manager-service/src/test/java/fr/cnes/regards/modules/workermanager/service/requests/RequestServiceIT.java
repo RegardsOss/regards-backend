@@ -126,6 +126,11 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsTest {
         Assert.assertEquals("Error searching request between dates", 0, requests.getTotalElements());
 
         createdAfter = OffsetDateTime.now().minusDays(1);
+        srp.withCreateDateBeforeAndAfter(createdBefore, createdAfter);
+        requests = requestService.searchLightRequests(srp, pr);
+        Assert.assertEquals("Error searching request between dates", 21, requests.getTotalElements());
+
+        createdAfter = OffsetDateTime.now().minusDays(1);
         srp.withCreationDateAfter(createdAfter);
         requests = requestService.searchLightRequests(srp, pr);
         Assert.assertEquals("Error searching request after date", 21, requests.getTotalElements());

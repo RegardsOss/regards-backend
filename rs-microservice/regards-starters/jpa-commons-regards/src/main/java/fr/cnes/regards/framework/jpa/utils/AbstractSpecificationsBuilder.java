@@ -115,7 +115,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         if (dateBefore == null) {
             return after(field, dateAfter);
         }
-        return ((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get(field), dateBefore, dateAfter));
+        return ((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get(field), dateAfter, dateBefore));
     }
 
     protected Specification<T> before(String field, OffsetDateTime date) {
