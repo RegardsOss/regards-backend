@@ -52,12 +52,13 @@ public class NotificationRegistrationService extends AbstractNotificationService
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRegistrationService.class);
 
     private final Validator validator;
+
     private final INotificationClient notificationClient;
+
     private final RuleCache ruleCache;
 
-    public NotificationRegistrationService(INotificationRequestRepository notificationRequestRepository, IPublisher publisher, Validator validator,
-            INotificationClient notificationClient, RuleCache ruleCache, ApplicationContext applicationContext
-    ) {
+    public NotificationRegistrationService(INotificationRequestRepository notificationRequestRepository, IPublisher publisher,
+            Validator validator, INotificationClient notificationClient, RuleCache ruleCache, ApplicationContext applicationContext) {
         super(notificationRequestRepository, publisher, applicationContext);
         this.validator = validator;
         this.notificationClient = notificationClient;
@@ -78,7 +79,8 @@ public class NotificationRegistrationService extends AbstractNotificationService
             // then check validity
             try {
                 Set<Rule> rules = ruleCache.getRules();
-                Set<NotificationRequest> notificationToRegister = notRetryEvents.stream().map(event -> initNotificationRequest(event, rules)).collect(Collectors.toSet());
+                Set<NotificationRequest> notificationToRegister = notRetryEvents.stream()
+                        .map(event -> initNotificationRequest(event, rules)).collect(Collectors.toSet());
                 notificationToRegister.remove(null);
                 notificationRequestRepository.saveAll(notificationToRegister);
                 LOGGER.debug("------------->>> {} notifications registered", notificationToRegister.size());
@@ -107,7 +109,8 @@ public class NotificationRegistrationService extends AbstractNotificationService
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Set<NotificationRequestEvent> handleRetryRequestsConcurrent(List<NotificationRequestEvent> events) {
 
-        Map<String, NotificationRequestEvent> eventsPerRequestId = events.stream().collect(Collectors.toMap(NotificationRequestEvent::getRequestId, Function.identity()));
+        Map<String, NotificationRequestEvent> eventsPerRequestId = events.stream()
+                .collect(Collectors.toMap(NotificationRequestEvent::getRequestId, Function.identity()));
         Set<NotificationRequest> alreadyKnownRequests = notificationRequestRepository.findAllByRequestIdIn(eventsPerRequestId.keySet());
         Set<NotificationRequest> updated = new HashSet<>();
         Set<NotifierEvent> responseToSend = new HashSet<>();
@@ -116,6 +119,7 @@ public class NotificationRegistrationService extends AbstractNotificationService
         int nbRequestRetriedForRulesError = 0;
 
         for (NotificationRequest known : alreadyKnownRequests) {
+
             if (!known.getRecipientsInError().isEmpty()) {
                 // This is a retry, let's prepare everything so that it can be retried properly
                 known.getRecipientsToSchedule().addAll(known.getRecipientsInError());
@@ -142,13 +146,15 @@ public class NotificationRegistrationService extends AbstractNotificationService
         }
         publisher.publish(new ArrayList<>(responseToSend));
         notificationRequestRepository.saveAll(updated);
-        LOGGER.debug("Out of {} request retried, {} have been handle for retry following recipient error, {} have been handle for retry following rule matching error",
+        LOGGER.debug(
+                "Out of {} request retried, {} have been handle for retry following recipient error, {} have been handle for retry following rule matching error",
                 updated.size(), nbRequestRetriedForRecipientError, nbRequestRetriedForRulesError);
         return eventsPerRequestId.values().stream().filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     /**
      * Check if a notification event is valid and create a request publish an error otherwise
+     *
      * @return a implemented {@link NotificationRequest} or null if invalid
      */
     private NotificationRequest initNotificationRequest(NotificationRequestEvent event, Set<Rule> rules) {
@@ -158,10 +164,11 @@ public class NotificationRegistrationService extends AbstractNotificationService
 
         if (!errors.hasErrors()) {
             publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), NotificationState.GRANTED));
-            return new NotificationRequest(event.getPayload(), event.getMetadata(), event.getRequestId(), event.getRequestOwner(), event.getRequestDate(),
-                    NotificationState.GRANTED, rules);
+            return new NotificationRequest(event.getPayload(), event.getMetadata(), event.getRequestId(), event.getRequestOwner(),
+                                           event.getRequestDate(), NotificationState.GRANTED, rules);
         }
-        notificationClient.notify(errors.toString(), "A NotificationRequestEvent received is invalid", NotificationLevel.ERROR, DefaultRole.ADMIN);
+        notificationClient.notify(errors.toString(), "A NotificationRequestEvent received is invalid", NotificationLevel.ERROR,
+                                  DefaultRole.ADMIN);
         publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), NotificationState.DENIED));
         return null;
     }

@@ -84,6 +84,13 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
             @Param("recipient") PluginConfiguration recipient, Pageable pageable
     );
 
+    /**
+     * Retrieve requests with no recipients scheduled. That means that all recipients are processed with success or error
+     * result for each one. Those requests are interpreted as completed.
+     * @param state states to search for request completed
+     * @param pageable pagination information
+     * @return completed requests
+     */
     @Query("select nr from NotificationRequest nr " +
             "where nr.state in :state " +
             "and nr.recipientsScheduled is empty " +

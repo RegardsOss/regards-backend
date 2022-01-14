@@ -61,7 +61,7 @@ public class NotificationProcessingService extends AbstractNotificationService<N
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationProcessingService.class);
 
-    public static final NotificationState[] COMPLETED_STATES = { NotificationState.SCHEDULED, NotificationState.ERROR };
+    public static final NotificationState[] RUNNING_STATES = { NotificationState.SCHEDULED };
 
     private final IPluginService pluginService;
     private final NotificationConfigurationProperties properties;
@@ -123,11 +123,6 @@ public class NotificationProcessingService extends AbstractNotificationService<N
             if (notificationsInError.contains(notificationRequest)) {
                 notificationRequest.getRecipientsScheduled().remove(recipient);
                 notificationRequest.getRecipientsInError().add(recipient);
-                // because of concurrency and retries we can actually end with a process failing,
-                // but the request cannot be set to ERROR in order to continue handling other recipients to schedule or rules to match
-                if (notificationRequest.getState() != NotificationState.TO_SCHEDULE_BY_RECIPIENT && notificationRequest.getState() != NotificationState.GRANTED) {
-                    notificationRequest.setState(NotificationState.ERROR);
-                }
             } else {
                 notificationRequest.getSuccessRecipients().add(recipient);
                 notificationRequest.getRecipientsScheduled().remove(recipient);
@@ -228,6 +223,9 @@ public class NotificationProcessingService extends AbstractNotificationService<N
 
             // Delete all successful requests
             notificationRequestRepository.deleteInBatch(successRequests);
+            // Update state to ERROR for all completed request in error
+            notificationRequestRepository.updateState(NotificationState.ERROR,
+                                                      errorRequests.stream().map(r -> r.getId()).collect(Collectors.toSet()));
 
             result = Pair.of(successRequests.size(), errorRequests.size());
 
@@ -239,7 +237,7 @@ public class NotificationProcessingService extends AbstractNotificationService<N
     }
 
     private Page<NotificationRequest> findCompletedRequests() {
-        return notificationRequestRepository.findCompletedRequests(COMPLETED_STATES, PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc(
+        return notificationRequestRepository.findCompletedRequests(RUNNING_STATES, PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc(
                 NotificationRequest.REQUEST_DATE_JPQL_NAME))));
     }
 

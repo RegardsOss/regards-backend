@@ -345,8 +345,10 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
 
     @Override
     public void doOnError(Collection<FeatureNotificationRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
-                .map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
+        // Only notify session for requests not already in error state.
+        Set<FeatureUniformResourceName> newErrorRequestsFeatureUrn = requests.stream().filter(r -> r.getState() != RequestState.ERROR)
+                .map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet());
+        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(newErrorRequestsFeatureUrn);
         sessionInfoByUrn.forEach((urn, entity) -> {
             featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.IN_ERROR_NOTIFY_REQUESTS);
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS);

@@ -83,7 +83,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 "spring.jpa.properties.hibernate.default_schema=notification_service_it",
                 "regards.amqp.enabled=true",
                 "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
-                "spring.jpa.properties.hibernate.order_inserts=true"
+                "spring.jpa.properties.hibernate.order_inserts=true",
+                "regards.notifier.max.bulk.size=20"
         })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class NotificationServiceIT extends AbstractNotificationMultitenantServiceTest {
@@ -157,7 +158,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR1_1 = twoRules3Recipients.getRecipientR1_1();
         Rule rule1 = twoRules3Recipients.getRule1();
         Rule rule2 = twoRules3Recipients.getRule2();
-        int nbEventForRetry = properties.getMaxBulkSize() / 2;
+        int nbEventForRetry = 10;
         List<NotificationRequest> notificationRequestsToRetry_AllRuleMatchOneRecipientError = new ArrayList<>(
                 nbEventForRetry / 3);
         Set<NotificationRequestEvent> eventForRetry = new HashSet<>(nbEventForRetry);
@@ -180,8 +181,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         }
         notificationRequestsToRetry_AllRuleMatchOneRecipientError = notificationRequestRepository
                 .saveAll(notificationRequestsToRetry_AllRuleMatchOneRecipientError);
-        // we want to simulate that some requests could not be matched by all rules but no recipients was in error
-        List<NotificationRequest> notificationRequestsToRetry_RuleNotMatchedNoRecipientError = new ArrayList<>(
+        // we want to simulate that some requests are still pending and cannot be retried
+        List<NotificationRequest> notRetriableRequests = new ArrayList<>(
                 nbEventForRetry / 3);
         for (int i = 0; i < nbEventForRetry / 3; i++) {
             NotificationRequest toRetry = new NotificationRequest(payloadMatchR1,
@@ -191,14 +192,14 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   OffsetDateTime.now(),
                                                                   NotificationState.SCHEDULED,
                                                                   Sets.newHashSet(rule2));
-            notificationRequestsToRetry_RuleNotMatchedNoRecipientError.add(toRetry);
+            notRetriableRequests.add(toRetry);
             eventForRetry.add(new NotificationRequestEvent(toRetry.getPayload(),
                                                            toRetry.getMetadata(),
                                                            toRetry.getRequestId(),
                                                            REQUEST_OWNER));
         }
-        notificationRequestsToRetry_RuleNotMatchedNoRecipientError = notificationRequestRepository
-                .saveAll(notificationRequestsToRetry_RuleNotMatchedNoRecipientError);
+        notRetriableRequests = notificationRequestRepository
+                .saveAll(notRetriableRequests);
         // we want to simulate that some requests could not be matched by all rules and one recipient was in error
         List<NotificationRequest> notificationRequestsToRetry_RuleNotMatchedOneRecipientError = new ArrayList<>(
                 nbEventForRetry / 3 + nbEventForRetry % 3);
@@ -209,7 +210,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   AbstractRequestEvent.generateRequestId(),
                                                                   this.getClass().getSimpleName(),
                                                                   OffsetDateTime.now(),
-                                                                  NotificationState.SCHEDULED,
+                                                                  NotificationState.ERROR,
                                                                   Sets.newHashSet(rule2));
             toRetry.getRecipientsInError().add(recipientR1_1);
             notificationRequestsToRetry_RuleNotMatchedOneRecipientError.add(toRetry);
@@ -255,13 +256,13 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
             Assert.assertTrue("There should be no rule to match", toRetry.getRulesToMatch().isEmpty());
         }
         // requests that could not be matched by all rules but no recipients in error
-        notificationRequestsToRetry_RuleNotMatchedNoRecipientError = notificationRequestRepository
-                .findAllById(notificationRequestsToRetry_RuleNotMatchedNoRecipientError.stream()
+        notRetriableRequests = notificationRequestRepository
+                .findAllById(notRetriableRequests.stream()
                         .map(NotificationRequest::getId).collect(Collectors.toList()));
         Assert.assertTrue("All notification to retry should be in state " + NotificationState.GRANTED,
-                notificationRequestsToRetry_RuleNotMatchedNoRecipientError.stream()
+                          notRetriableRequests.stream()
                         .allMatch(r -> r.getState() == NotificationState.GRANTED));
-        for (NotificationRequest toRetry : notificationRequestsToRetry_RuleNotMatchedNoRecipientError) {
+        for (NotificationRequest toRetry : notRetriableRequests) {
             Assert.assertTrue("There should be no recipient to schedule", toRetry.getRecipientsToSchedule().isEmpty());
             Assert.assertTrue("There should be no more errors among retries", toRetry.getRecipientsInError().isEmpty());
             Assert.assertTrue("There should be no recipient already scheduled among retries",
@@ -653,8 +654,9 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 new HashSet<>(),
                 RecipientSender3.PLUGIN_ID));
         JsonObject matchR1 = initElement("elementRule1.json");
+        Integer nbRequests = 10; //properties.getMaxBulkSize();
         List<NotificationRequest> toProcess = new ArrayList<>(properties.getMaxBulkSize());
-        for (int i = 0; i < properties.getMaxBulkSize(); i++) {
+        for (int i = 0; i < nbRequests ; i++) {
             NotificationRequest toSchedule = new NotificationRequest(matchR1,
                                                                      gson.toJsonTree(globalMetadata).getAsJsonObject(),
                                                                      AbstractRequestEvent.generateRequestId(),
@@ -668,7 +670,10 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         }
         toProcess = notificationRequestRepository.saveAll(toProcess);
         // then process only for recipientR1_1
-        notificationProcessingService.processRequests(toProcess, recipientR1_1);
+        Pair<Integer, Integer> result = notificationProcessingService.processRequests(toProcess, recipientR1_1);
+        Assert.assertEquals("Invalid number of successes recipients",0 , result.getFirst().intValue());
+        Assert.assertEquals("Invalid number of errors recipients", nbRequests , result.getSecond());
+        notificationProcessingService.checkCompletedRequests();
         // check that requests are still in state NotificationState.TO_SCHEDULE_BY_RECIPIENT
         List<NotificationRequest> requestsProcessed = notificationRequestRepository
                 .findAllById(toProcess.stream().map(NotificationRequest::getId).collect(Collectors.toSet()));
@@ -676,8 +681,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                           requestsProcessed.containsAll(toProcess));
         Assert.assertTrue("Requests to schedule requests should contains all scheduled requests",
                           toProcess.containsAll(requestsProcessed));
-        Assert.assertTrue("All scheduled requests should still be in state " + NotificationState.ERROR,
-                          requestsProcessed.stream().allMatch(r -> r.getState() == NotificationState.ERROR));
+        Assert.assertTrue("All scheduled requests should still be in state " + NotificationState.SCHEDULED,
+                          requestsProcessed.stream().allMatch(r -> r.getState() == NotificationState.SCHEDULED));
         for (NotificationRequest processed : requestsProcessed) {
             Assert.assertEquals("There should be one error", 1, processed.getRecipientsInError().size());
             Assert.assertTrue("The error should be recipientR1_1",
@@ -709,7 +714,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 RecipientSender3.PLUGIN_ID));
         JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> toProcess = new ArrayList<>(properties.getMaxBulkSize());
-        for (int i = 0; i < properties.getMaxBulkSize(); i++) {
+        for (int i = 0; i < configuration.getMaxBulkSize() / 2; i++) {
             NotificationRequest toSchedule = new NotificationRequest(matchR1,
                                                                      gson.toJsonTree(globalMetadata).getAsJsonObject(),
                                                                      AbstractRequestEvent.generateRequestId(),
@@ -734,7 +739,8 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
             notificationProcessingService.processRequests(finalToProcess, recipientR1_2);
         });
         executor.shutdown();
-        executor.awaitTermination(1, TimeUnit.MINUTES);
+        Assert.assertTrue("Time out waiting for requests processed", executor.awaitTermination(1, TimeUnit.MINUTES));
+        notificationProcessingService.checkCompletedRequests();
         Mockito.verify(notificationProcessingService, Mockito.times(3))
                 .handleRecipientResults(Mockito.any(), Mockito.any(), Mockito.any());
         // check that requests are still in state NotificationState.TO_SCHEDULE_BY_RECIPIENT
@@ -789,7 +795,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 case 2:
                 default:
                     NotificationRequest inError = new NotificationRequest(matchR1, metadata.getAsJsonObject(), AbstractRequestEvent.generateRequestId(), REQUEST_OWNER,
-                                                                            OffsetDateTime.now(), NotificationState.ERROR, new HashSet<>());
+                                                                            OffsetDateTime.now(), NotificationState.SCHEDULED, new HashSet<>());
                     inError.getRecipientsInError().add(recipientR1_2);
                     completed.add(inError);
                     nbError++;
@@ -1317,7 +1323,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         JsonElement metadata = gson.toJsonTree(globalMetadata);
         List<NotificationRequest> beingScheduled = new ArrayList<>();
         List<NotificationRequestEvent> beingRetriedEvents = new ArrayList<>();
-        for (int i = 0; i < properties.getMaxBulkSize() / 2; i++) {
+        for (int i = 0; i < 10 / 2; i++) {
             NotificationRequest request = new NotificationRequest(elementBothRules,
                                                                   metadata.getAsJsonObject(),
                                                                   AbstractRequestEvent.generateRequestId(),
@@ -1680,10 +1686,10 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         List<NotificationRequest> scheduledWhileFailedRequests = notificationRequestRepository
                 .findAllById(beingProcessed.stream().map(NotificationRequest::getId).collect(Collectors.toSet()));
         Assert.assertTrue(
-                "Requests scheduled while one recipient fails should all be in state " + NotificationState.ERROR
+                "Requests scheduled while one recipient fails should all be in state " + NotificationState.SCHEDULED
                         + " and not " + scheduledWhileFailedRequests.get(0).getState(),
                 scheduledWhileFailedRequests.stream()
-                        .allMatch(request -> request.getState() == NotificationState.ERROR));
+                        .allMatch(request -> request.getState() == NotificationState.SCHEDULED));
         for (NotificationRequest scheduledWhileFailed : scheduledWhileFailedRequests) {
             //no rules to match
             Assert.assertTrue("Requests scheduled while one recipient fails should have no rules to match",
@@ -1744,6 +1750,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                                                                   Sets.newHashSet(rule2));
             request.getRecipientsScheduled().add(recipientR1_1);
             request.getRecipientsScheduled().add(recipientR1_2);
+            request.setState(NotificationState.ERROR);
             beingRetried.add(request);
             beingRetriedEvents.add(new NotificationRequestEvent(request.getPayload(),
                                                                 request.getMetadata(),
@@ -1964,7 +1971,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         NotificationRequest successRequest = new NotificationRequest(payload, metadata, successId, owner2, now, NotificationState.SCHEDULED, rules);
         successRequest.getSuccessRecipients().addAll(Arrays.asList(recipient1, recipient2));
 
-        NotificationRequest errorRequest = new NotificationRequest(payload, metadata, errorId, owner2, now, NotificationState.ERROR, rules);
+        NotificationRequest errorRequest = new NotificationRequest(payload, metadata, errorId, owner2, now, NotificationState.SCHEDULED, rules);
         errorRequest.getRecipientsInError().addAll(Arrays.asList(recipient1, recipient2));
 
         notificationRequestRepository.saveAll(Arrays.asList(successRequest, errorRequest, halfSuccessRequest));
