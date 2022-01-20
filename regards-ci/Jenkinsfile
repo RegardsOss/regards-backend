@@ -37,7 +37,7 @@ pipeline {
     environment {
         PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
         REGARDS_HOME="${WORKSPACE}"
-        MVN_IMAGE="172.26.46.158/rs-maven-ci"
+        MVN_IMAGE="172.26.46.158/rs-maven-jdk8"
         BRANCH_NAME_VERSION="${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
     }
     agent { label 'unix-integration' }
