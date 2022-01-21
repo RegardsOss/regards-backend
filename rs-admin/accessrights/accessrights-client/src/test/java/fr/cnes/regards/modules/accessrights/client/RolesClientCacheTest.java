@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.accessrights.client;
 /*
- * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
