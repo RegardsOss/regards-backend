@@ -247,6 +247,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
                 fileUrl,
                 df.getFilesize(),
                 df.getChecksum(),
+                df.getFilename(),
                 metadataMap,
                 inputCorrelationId
         );

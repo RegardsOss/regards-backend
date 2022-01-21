@@ -74,10 +74,10 @@ public class SimpleProcessPluginTestUtils {
                 Duration.ofSeconds(10),
                 List.of(new PInputFile("one", "one.raw", "text/plain",
                                        resourceFileBasePath.resolve("one.raw").toUri().toURL(), 3L,
-                                       "checksum", inputMetadataAsMap(false, "urn"), "one"),
+                                       "checksum", "one.raw", inputMetadataAsMap(false, "urn"), "one"),
                         new PInputFile("two", "two.raw", "text/plain",
                                        resourceFileBasePath.resolve("two.raw")
-                                               .toUri().toURL(), 3L, "checksum", inputMetadataAsMap(false, "urn"),
+                                               .toUri().toURL(), 3L, "checksum", "two.raw",inputMetadataAsMap(false, "urn"),
                                        "two")), List.empty(),
                 "tenant",
                 "user@ema.il",

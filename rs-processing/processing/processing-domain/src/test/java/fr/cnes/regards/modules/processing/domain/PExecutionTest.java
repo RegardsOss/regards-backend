@@ -55,6 +55,7 @@ public class PExecutionTest extends AbstractMarshallingTest<PExecution> {
                     new URL("http://0.0.0.0:1000/file.raw"),
                     512L,
                     "checksum",
+                    "file.raw",
                     HashMap.empty(),
                     "file.raw"
                 )),

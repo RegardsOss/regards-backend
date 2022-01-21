@@ -56,6 +56,9 @@ public class PInputFile {
     /** The file checksum */
     @NonNull String checksum;
 
+    /** The original file name (can be different to the real stored file **/
+    @NonNull String fileName;
+
     /** Free metadata corresponding to the input */
     @NonNull Map<String,String> metadata;
 
