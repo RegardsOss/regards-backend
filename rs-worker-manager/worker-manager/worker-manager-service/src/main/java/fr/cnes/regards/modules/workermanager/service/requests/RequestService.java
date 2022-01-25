@@ -59,6 +59,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -137,6 +139,7 @@ public class RequestService {
      * @param workerType
      * @return exchange name
      */
+    @Transactional(propagation = Propagation.SUPPORTS)
     public String getExchangeName(String workerType) {
         return String.format(WORKER_REQUEST_QUEUE_NAME_TEMPLATE, workerType.toLowerCase());
     }
@@ -146,6 +149,7 @@ public class RequestService {
      *
      * @return
      */
+    @Transactional(propagation = Propagation.SUPPORTS)
     public String getWorkerResponseQueueName() {
         return WORKER_RESPONSE_QUEUE_NAME;
     }
@@ -155,6 +159,7 @@ public class RequestService {
      *
      * @return
      */
+    @Transactional(propagation = Propagation.SUPPORTS)
     public String getWorkerRequestDlqName() {
         return WORKER_REQUEST_DLQ_NAME;
     }
@@ -164,6 +169,7 @@ public class RequestService {
      *
      * @return
      */
+    @Transactional(propagation = Propagation.SUPPORTS)
     public String getWorkerRequestDlxName() {
         return WORKER_REQUEST_DLQ_NAME;
     }
