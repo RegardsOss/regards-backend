@@ -147,7 +147,7 @@ public class AccountsController implements IResourceController<Account> {
     public ResponseEntity<EntityModel<Account>> createAccount(@Valid @RequestBody AccountNPassword accountNPassword) throws EntityException {
         Account account = accountNPassword.getAccount();
         account.setPassword(accountNPassword.getPassword());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new EntityModel<>(accountService.createAccount(account, accountNPassword.getProject())));
+        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(accountService.createAccount(account, accountNPassword.getProject())));
     }
 
     /**

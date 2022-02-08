@@ -236,7 +236,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // Manage project
         Project project = new Project(1L, "Solar system project", "http://plop/icon.png", true, "SolarSystem");
         project.setHost("http://regards/solarsystem");
-        ResponseEntity<EntityModel<Project>> response = ResponseEntity.ok(new EntityModel<>(project));
+        ResponseEntity<EntityModel<Project>> response = ResponseEntity.ok(EntityModel.of(project));
         Mockito.when(projectsClientMock.retrieveProject(Mockito.anyString())).thenReturn(response);
 
         // Bypass method access rights
@@ -305,7 +305,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(Mockito.any())).thenAnswer(invocation -> {
             String modelName = invocation.getArgument(0);
             return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName).stream()
-                    .map(a -> new EntityModel<ModelAttrAssoc>(a)).collect(Collectors.toList()));
+                    .map(EntityModel::of).collect(Collectors.toList()));
         });
 
         // - Refresh attribute factory
@@ -315,7 +315,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         // - Manage attribute cache
         List<EntityModel<AttributeModel>> resAtts = new ArrayList<>();
-        atts.forEach(att -> resAtts.add(new EntityModel<AttributeModel>(att)));
+        atts.forEach(att -> resAtts.add(EntityModel.of(att)));
         Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
         finder.refresh(getDefaultTenant());
 

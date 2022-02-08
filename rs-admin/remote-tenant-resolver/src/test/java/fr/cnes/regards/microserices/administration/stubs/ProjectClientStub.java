@@ -51,8 +51,8 @@ public class ProjectClientStub implements IProjectsClient {
     @Override
     public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(final int pPage, final int pSize) {
         List<EntityModel<Project>> resources = new ArrayList<>();
-        resources.add(new EntityModel<>(PROJECT));
-        PagedModel<EntityModel<Project>> page = new PagedModel<>(resources, new PageMetadata(pSize, pPage, 1),
+        resources.add(EntityModel.of(PROJECT));
+        PagedModel<EntityModel<Project>> page = PagedModel.of(resources, new PageMetadata(pSize, pPage, 1),
                 new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
@@ -69,7 +69,7 @@ public class ProjectClientStub implements IProjectsClient {
 
     @Override
     public ResponseEntity<EntityModel<Project>> retrieveProject(String pProjectName) {
-        return new ResponseEntity<>(new EntityModel<>(PROJECT), HttpStatus.OK);
+        return new ResponseEntity<>(EntityModel.of(PROJECT), HttpStatus.OK);
     }
 
     @Override

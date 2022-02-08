@@ -160,7 +160,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             }
         }
 
-        List<EntityModel<PluginMetaData>> resources = metadaData.stream().map(EntityModel::new)
+        List<EntityModel<PluginMetaData>> resources = metadaData.stream().map(EntityModel::of)
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -176,11 +176,11 @@ public class PluginController implements IResourceController<PluginConfiguration
             @RequestParam(name = "available", required = false) Boolean available) {
         if ((available != null) && available) {
             Set<String> types = pluginService.getAvailablePluginTypes();
-            List<EntityModel<String>> resources = types.stream().map(EntityModel::new).collect(Collectors.toList());
+            List<EntityModel<String>> resources = types.stream().map(EntityModel::of).collect(Collectors.toList());
             return new ResponseEntity<>(resources, HttpStatus.OK);
         }
         Set<String> types = pluginService.getPluginTypes();
-        List<EntityModel<String>> resources = types.stream().map(EntityModel::new).collect(Collectors.toList());
+        List<EntityModel<String>> resources = types.stream().map(EntityModel::of).collect(Collectors.toList());
 
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -195,7 +195,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     public ResponseEntity<EntityModel<PluginMetaData>> getPluginMetaDataById(
             @PathVariable("pluginId") String pluginId) {
         PluginMetaData metaData = pluginService.getPluginMetaDataById(pluginId);
-        EntityModel<PluginMetaData> resource = new EntityModel<>(metaData);
+        EntityModel<PluginMetaData> resource = EntityModel.of(metaData);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -291,7 +291,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(description = "Get a the plugin configuration", role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<PluginConfiguration>> getPluginConfigurationDirectAccess(
             @PathVariable("configBusinessId") String configBusinessId) throws ModuleException {
-        return new ResponseEntity<>(new EntityModel<>(pluginService.getPluginConfiguration(configBusinessId)),
+        return new ResponseEntity<>(EntityModel.of(pluginService.getPluginConfiguration(configBusinessId)),
                 HttpStatus.OK);
     }
 

@@ -19,37 +19,23 @@
 package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.processing.AbstractOrderProcessingServiceIT;
 import fr.cnes.regards.modules.order.test.SearchClientMock;
-import static fr.cnes.regards.modules.order.test.SearchClientMock.DS1_IP_ID;
-import static fr.cnes.regards.modules.order.test.SearchClientMock.DS2_IP_ID;
-import static fr.cnes.regards.modules.order.test.SearchClientMock.DS3_IP_ID;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.processing.forecast.MultiplierResultSizeForecast;
-import fr.cnes.regards.modules.processing.order.Cardinality;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
-import fr.cnes.regards.modules.processing.order.Scope;
-import fr.cnes.regards.modules.processing.order.SizeLimit;
+import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.collection.List;
-import java.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,11 +43,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +51,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.order.test.SearchClientMock.*;
 
 /**
  * @author oroussel
@@ -91,7 +76,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
     }
 
     @After

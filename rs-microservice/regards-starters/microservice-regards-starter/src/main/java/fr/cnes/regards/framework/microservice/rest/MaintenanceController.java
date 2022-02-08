@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.framework.microservice.rest;
 
-import java.util.Map;
-
+import fr.cnes.regards.framework.microservice.manager.MaintenanceInfo;
+import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
@@ -30,10 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.microservice.manager.MaintenanceInfo;
-import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import java.util.Map;
 
 /**
  * API REST allowing to manually handle maintenances
@@ -66,7 +65,7 @@ public class MaintenanceController {
             role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Map<String, MaintenanceInfo>>> retrieveTenantsInMaintenance() {
         final Map<String, MaintenanceInfo> maintenaceMap = MaintenanceManager.getMaintenanceMap();
-        return new ResponseEntity<>(new EntityModel<>(maintenaceMap), HttpStatus.OK);
+        return new ResponseEntity<>(EntityModel.of(maintenaceMap), HttpStatus.OK);
     }
 
     /**

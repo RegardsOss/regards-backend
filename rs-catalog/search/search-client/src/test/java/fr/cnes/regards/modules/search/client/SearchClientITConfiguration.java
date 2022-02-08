@@ -62,7 +62,7 @@ public class SearchClientITConfiguration {
 
         // Build accessGroupMock mock
         final PagedModel.PageMetadata md = new PagedModel.PageMetadata(0, 0, 0);
-        final PagedModel<EntityModel<AccessGroup>> pagedResources = new PagedModel<>(new ArrayList<>(), md,
+        final PagedModel<EntityModel<AccessGroup>> pagedResources = PagedModel.of(new ArrayList<>(), md,
                 new ArrayList<>());
         final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> pageResponseEntity = ResponseEntity
                 .ok(pagedResources);

@@ -167,7 +167,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     @Value("${regards.dam.store.files.plugin:fr.cnes.regards.modules.dam.service.entities.plugins.StoragePlugin}")
     private String storeEntityFilesPlugin;
 
-    @Value("${zuul.prefix}")
+    @Value("${prefix.path}")
     private String urlPrefix;
 
     private final IAbstractEntityRequestRepository abstractEntityRequestRepo;

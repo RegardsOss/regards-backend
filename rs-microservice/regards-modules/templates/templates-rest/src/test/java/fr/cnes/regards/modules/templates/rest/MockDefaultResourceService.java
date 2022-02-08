@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import java.lang.reflect.Method;
-import java.net.URI;
-
+import fr.cnes.regards.framework.hateoas.DefaultResourceService;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.server.core.AnnotationMappingDiscoverer;
@@ -30,7 +28,8 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UriTemplate;
 
-import fr.cnes.regards.framework.hateoas.DefaultResourceService;
+import java.lang.reflect.Method;
+import java.net.URI;
 
 /**
  * Mock default resource service to avoid bad servlet context issue *
@@ -55,6 +54,6 @@ public class MockDefaultResourceService extends DefaultResourceService {
         final UriTemplate template = new UriTemplate(DISCOVERER.getMapping(pMethod.getDeclaringClass(), pMethod));
         final URI uri = template.expand(pParameterValues);
 
-        return new Link(uri.toString(), pRel);
+        return Link.of(uri.toString(), pRel);
     }
 }

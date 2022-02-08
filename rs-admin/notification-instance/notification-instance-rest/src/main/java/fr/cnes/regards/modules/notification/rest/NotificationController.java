@@ -140,7 +140,7 @@ public class NotificationController implements IResourceController<Notification>
 
     public EntityModel<INotificationWithoutMessage> notifWithoutMsgToResource(INotificationWithoutMessage element,
             Object... extras) {
-        EntityModel<INotificationWithoutMessage> resource = new EntityModel<>(element);
+        EntityModel<INotificationWithoutMessage> resource = EntityModel.of(element);
         resourceService.addLink(resource, this.getClass(), "retrieveNotification", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "deleteNotification", LinkRels.DELETE,

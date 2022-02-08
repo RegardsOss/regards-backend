@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.framework.feign.annotation;
 
+import feign.Headers;
+import fr.cnes.regards.framework.feign.FeignClientConfiguration;
+import fr.cnes.regards.framework.feign.security.FeignSecurityConfiguration;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.core.annotation.AliasFor;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.core.annotation.AliasFor;
-
-import feign.Headers;
-import fr.cnes.regards.framework.feign.FeignClientConfiguration;
-import fr.cnes.regards.framework.feign.security.FeignSecurityConfiguration;
 
 /**
  * Class RestClient

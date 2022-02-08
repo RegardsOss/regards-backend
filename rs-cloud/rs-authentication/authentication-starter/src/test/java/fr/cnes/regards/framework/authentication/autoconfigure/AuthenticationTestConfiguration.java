@@ -75,7 +75,7 @@ public class AuthenticationTestConfiguration {
         testUser.setStatus(UserStatus.ACCESS_GRANTED);
 
         final ResponseEntity<EntityModel<ProjectUser>> response = new ResponseEntity<>(
-                new EntityModel<>(testUser, new ArrayList<>()), HttpStatus.OK);
+                EntityModel.of(testUser, new ArrayList<>()), HttpStatus.OK);
         Mockito.when(client.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(response);
 
         return client;
@@ -87,7 +87,7 @@ public class AuthenticationTestConfiguration {
         final IProjectsClient client = Mockito.mock(IProjectsClient.class);
 
         final ResponseEntity<EntityModel<Project>> response = new ResponseEntity<>(
-                new EntityModel<>(new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
+                EntityModel.of(new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
         Mockito.when(client.retrieveProject(Mockito.anyString())).thenReturn(response);
         return client;
     }

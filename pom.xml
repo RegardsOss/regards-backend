@@ -49,81 +49,115 @@
 	</developers>
 
 	<properties>
+		<!-- REGARDS -->
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
 		<maven-deploy.skip>true</maven-deploy.skip>
-
 		<regards.version>1.9.0-SNAPSHOT</regards.version>
 		<revision>${regards.version}</revision>
 
 		<!-- COTS -->
-		<!-- Flywaydb dependency from spring-boot -->
-		<flyway.version>7.5.0</flyway.version>
-		<io.jsonwebtoken.jjwt.version>0.10.7</io.jsonwebtoken.jjwt.version>
-		<springdoc-openapi.version>1.3.0</springdoc-openapi.version>
-		<io.springfox.springfox-swagger2.version>2.9.2</io.springfox.springfox-swagger2.version>
-		<io.springfox.springfox-swagger-ui.version>2.9.2</io.springfox.springfox-swagger-ui.version>
-		<org.hibernate.javax.persistence.version>1.0.2.Final</org.hibernate.javax.persistence.version>
-		<!-- hsqldb is into spring-boot dependencies with version 2.4.1, but some
-            dao use it without spring-boot -->
-		<hsqldb.hsqldb.version>2.4.1</hsqldb.hsqldb.version>
-		<spring.cloud.version>2020.0.4</spring.cloud.version>
-		<spring.cloud.netflix>2.2.9.RELEASE</spring.cloud.netflix>
+		<!-- jakarta -->
+		<jakarta.annotation.version>2.0.0</jakarta.annotation.version>
+
+		<!-- jakarta xmL -->
+		<jakarta.activation.version>2.0.1</jakarta.activation.version>
+		<jakarta.xml.bind-api.version>3.0.1</jakarta.xml.bind-api.version>
+		<org.codehaus.mojo.jaxb2-maven-plugin.version>2.5.0</org.codehaus.mojo.jaxb2-maven-plugin.version>
+		<com.sun.xml.bind.jaxb-xjc.version>3.0.2</com.sun.xml.bind.jaxb-xjc.version>
+		<com.sun.xml.bind.jaxb-impl.version>3.0.2</com.sun.xml.bind.jaxb-impl.version>
+		<org.jvnet.jaxb2_commons.jaxb2-namespace-prefix.version>2.0</org.jvnet.jaxb2_commons.jaxb2-namespace-prefix.version>
+
+		<!-- spring -->
+		<spring.version>5.1.4.RELEASE</spring.version>
+		<springdoc-openapi.version>1.6.5</springdoc-openapi.version>
+		<spring-cloud-dependencies.version>2021.0.0</spring-cloud-dependencies.version>
+		<io.springfox.springfox-swagger2.version>3.0.0</io.springfox.springfox-swagger2.version>
+		<io.springfox.springfox-swagger-ui.version>3.0.0</io.springfox.springfox-swagger-ui.version>
+		<com.icegreen.greenmail-spring.version>1.6.5</com.icegreen.greenmail-spring.version>
 		<!-- Take a version that retrieve a version of Hibernate that correctly
-            manage uk naming while inheriting classes with JOINED strategy -->
-		<spring.boot.version>2.5.5</spring.boot.version>
-		<!-- Spring OAuth is no more into spring-boot, only client is (From what
-            i understood) -->
-		<spring-security-oauth2-autoconfigure>2.2.0.RELEASE</spring-security-oauth2-autoconfigure>
-		<org.springframework.security.oauth.version>2.4.0.RELEASE</org.springframework.security.oauth.version>
-		<org.springframework.security.jwt.version>1.0.9.RELEASE</org.springframework.security.jwt.version>
+                manage uk naming while inheriting classes with JOINED strategy -->
+		<spring.boot.version>2.6.3</spring.boot.version>
+		<!-- spring relies on junit5 for testing. add junit vintage to ensure retro-compatibility for older versions of junit -->
+		<junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>
+		<!-- Spring OAuth is no more into spring-boot, only client -->
+		<spring-security-oauth2-autoconfigure>2.6.3</spring-security-oauth2-autoconfigure>
+		<org.springframework.security.oauth.version>2.5.1.RELEASE</org.springframework.security.oauth.version>
+		<org.springframework.security.jwt.version>1.1.1.RELEASE</org.springframework.security.jwt.version>
 		<!-- use same version the one provided by spring-boot. This is mandatory,
             i don't know why but hateoas-spring override spring-core version given by
             spring-boot -->
 		<!--  <org.springframework.spring-core.version>5.1.10.RELEASE</org.springframework.spring-core.version> -->
 		<!--         <org.springframework.spring-restdocs.version>2.0.2.RELEASE</org.springframework.spring-restdocs.version> -->
-		<javax.el.version>3.0.0</javax.el.version>
-		<org.apache.poi.poi-ooxml.version>3.15</org.apache.poi.poi-ooxml.version>
-		<org.apache.maven.maven-plugin-api.version>3.0</org.apache.maven.maven-plugin-api.version>
-		<org.apache.maven.plugin-tools.maven-plugin-annotations.version>3.4
-		</org.apache.maven.plugin-tools.maven-plugin-annotations.version>
-		<org.apache.maven.plugins.maven-enforcer-plugin.version>3.8.1
-		</org.apache.maven.plugins.maven-enforcer-plugin.version>
-		<org.reflections.reflections.version>0.9.10</org.reflections.reflections.version>
-		<com.icegreen.greenmail-spring.version>1.5.2</com.icegreen.greenmail-spring.version>
-		<javax.mail.mail.version>1.4.7</javax.mail.mail.version>
-		<org.freemarker.freemarker.version>2.3.25-incubating</org.freemarker.freemarker.version>
+
+		<!-- hibernate -->
+		<org.hibernate.javax.persistence.version>1.0.2.Final</org.hibernate.javax.persistence.version>
+
+		<!-- flywaydb dependency from spring-boot -->
+		<flyway.version>8.4.3</flyway.version>
+		<!-- hsqldb is into spring-boot dependencies with version 2.4.1, but some dao use it without spring-boot -->
+		<hsqldb.hsqldb.version>2.6.1</hsqldb.hsqldb.version>
+
+		<!-- elastic search -->
 		<org.elasticsearch.version>6.5.0</org.elasticsearch.version>
-		<!-- Specify version to avoid incompatibility between elasticsearch and
-            spring bring ones -->
+
+		<!-- Maven -->
+		<org.apache.maven.maven-plugin-api.version>3.8.4</org.apache.maven.maven-plugin-api.version>
+		<org.apache.maven.plugin-tools.maven-plugin-annotations.version>3.6.2</org.apache.maven.plugin-tools.maven-plugin-annotations.version>
+		<org.apache.maven.plugins.maven-enforcer-plugin.version>3.0.0</org.apache.maven.plugins.maven-enforcer-plugin.version>
+		<org.apache.maven.plugins.maven-surefire-plugin.version>2.22.2</org.apache.maven.plugins.maven-surefire-plugin.version>
+		<org.apache.maven.plugins.maven-failsafe-plugin.version>2.22.2</org.apache.maven.plugins.maven-failsafe-plugin.version>
+		<org.apache.maven.plugins.maven-jar-plugin.version>3.2.2</org.apache.maven.plugins.maven-jar-plugin.version>
+		<org.apache.maven.plugins.maven-deploy-plugin.version>2.8.2</org.apache.maven.plugins.maven-deploy-plugin.version>
+		<org.apache.maven.plugins.maven-compiler-plugin.version>3.9.0</org.apache.maven.plugins.maven-compiler-plugin.version>
+		<org.apache.maven.plugins.maven-source-plugin.version>3.2.1</org.apache.maven.plugins.maven-source-plugin.version>
+		<org.codehaus.mojo.flatten-maven-plugin.version>1.2.7</org.codehaus.mojo.flatten-maven-plugin.version>
+		<org.codehaus.mojo.versions-maven-plugin.version>2.8.1</org.codehaus.mojo.versions-maven-plugin.version>
+		<org.jacoco.jacoco-maven-plugin.version>0.8.7</org.jacoco.jacoco-maven-plugin.version>
+		<org.apache.maven.plugin.maven-shade-plugin.version>3.3.1-SNAPSHOT</org.apache.maven.plugin.maven-shade-plugin.version>
+		<org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version>5.6.5.Final</org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version>
+
+		<!-- Specify version to avoid incompatibility between elasticsearch and spring ones -->
+		<!-- log -->
+		<logback-ext-spring.version>0.1.4</logback-ext-spring.version>
+		<org.sl4j.version>1.7.35</org.sl4j.version>
+		<org.ch.qos.logback.version>1.2.10</org.ch.qos.logback.version>
+		<!-- server -->
 		<io.netty.version>4.1.29.Final</io.netty.version>
-		<org.locationtech.jts.version>1.16.0</org.locationtech.jts.version>
-		<org.locationtech.spatial4j.version>0.7</org.locationtech.spatial4j.version>
-		<com.google.guava.version>27.0.1-jre</com.google.guava.version>
-		<com.google.code.gson.version>2.8.5</com.google.code.gson.version>
-		<com.jsoniter.version>0.9.23</com.jsoniter.version>
 		<com.mchange.c3p0.version>0.9.5.2</com.mchange.c3p0.version>
 		<org.mockftpserver.version>2.7.1</org.mockftpserver.version>
-		<!-- Permit to use same Hibernate version as which spring use -->
-		<spring.hibernate.version>${hibernate.version}</spring.hibernate.version>
-		<logback-ext-spring.version>0.1.4</logback-ext-spring.version>
-		<log4j.version>1.2.17</log4j.version>
-		<org.apache.commons.compress.version>1.20</org.apache.commons.compress.version>
-		<org.apache.commons.lang3.version>3.8.1</org.apache.commons.lang3.version>
-		<org.apache.commons.io.version>2.6</org.apache.commons.io.version>
-		<org.apache.commons.digester.version>3.2</org.apache.commons.digester.version>
-		<org.apache.commons.bean-utils.version>1.9.3</org.apache.commons.bean-utils.version>
-		<org.hipparchus.version>1.3</org.hipparchus.version>
-		<org.geotools.version>19.1</org.geotools.version>
-		<org.mapstruct.version>1.3.0.Final</org.mapstruct.version>
 		<schedlock.version>4.8.0</schedlock.version>
 		<net.sf.expectit.expectit-core.version>0.9.0</net.sf.expectit.expectit-core.version>
-		<com.jcraft.jsch.version>0.1.55</com.jcraft.jsch.version>
-		<com.networknt.json.schema.validation>1.0.49</com.networknt.json.schema.validation>
-		<awaitility.version>4.1.0</awaitility.version>
 		<wiremock.version>2.27.2</wiremock.version>
-		<lombok.version>1.18.10</lombok.version>
+		<com.jcraft.jsch.version>0.1.55</com.jcraft.jsch.version>
+		<!-- geo -->
+		<org.locationtech.jts.version>1.16.0</org.locationtech.jts.version>
+		<org.locationtech.spatial4j.version>0.7</org.locationtech.spatial4j.version>
+		<org.geotools.version>19.1</org.geotools.version>
+		<org.hipparchus.version>1.3</org.hipparchus.version>
+		<!-- json -->
+		<com.jsoniter.version>0.9.23</com.jsoniter.version>
+		<com.networknt.json.schema.validation>1.0.49</com.networknt.json.schema.validation>
+		<!-- google -->
+		<com.google.guava.version>27.0.1-jre</com.google.guava.version>
+		<com.google.code.gson.version>2.8.9</com.google.code.gson.version>
+		<!-- apache -->
+		<org.apache.commons.compress.version>1.20</org.apache.commons.compress.version>
+		<org.apache.commons.lang3.version>3.12.0</org.apache.commons.lang3.version>
+		<org.apache.commons.io.version>2.11.0</org.apache.commons.io.version>
+		<org.apache.commons.digester.version>3.2</org.apache.commons.digester.version>
+		<org.apache.commons.bean-utils.version>1.9.4</org.apache.commons.bean-utils.version>
+		<org.apache.poi.poi-ooxml.version>3.15</org.apache.poi.poi-ooxml.version>
+		<!-- utils -->
+		<org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
+		<lombok.version>1.18.22</lombok.version>
+		<awaitility.version>4.1.0</awaitility.version>
+		<io.jsonwebtoken.jjwt.version>0.11.2</io.jsonwebtoken.jjwt.version>
+		<javax.el.version>3.0.0</javax.el.version>
+		<org.reflections.reflections.version>0.9.10</org.reflections.reflections.version>
+		<javax.mail.mail.version>1.4.7</javax.mail.mail.version>
+		<org.freemarker.freemarker.version>2.3.25-incubating</org.freemarker.freemarker.version>
+		<resilience4j.version>1.7.1</resilience4j.version>
 
 		<!-- Default compilation parameters -->
 		<!-- Skip executing tests -->
@@ -131,7 +165,6 @@
 		<!-- Generics -->
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
 		<resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
@@ -148,9 +181,6 @@
 		<jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
 		<!-- Tells Sonar where the Jacoco coverage result file is located for IT -->
 		<sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
-		<spring.hibernate.version>5.3.12.Final</spring.hibernate.version>
-		<spring.version>5.1.4.RELEASE</spring.version>
-		<org.mapstruct.version>1.3.0.Final</org.mapstruct.version>
 		<!-- Test properties -->
 		<regards.maven.test.env>-Duser.timezone=GMT0</regards.maven.test.env>
 		<regards.cots.properties>LT.properties</regards.cots.properties>
@@ -174,7 +204,7 @@
 		<module>rs-order</module>
 		<module>rs-processing</module>
 		<module>rs-storage</module>
-        <module>rs-worker-manager</module>
+		<module>rs-worker-manager</module>
 	</modules>
 
 	<dependencies>
@@ -182,10 +212,24 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
+			<version>${org.ch.qos.logback.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${org.sl4j.version}</version>
+		</dependency>
+		<!-- jakarta -->
+		<dependency>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+			<version>${jakarta.annotation.version}</version>
+		</dependency>
+		<!-- lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -471,11 +515,6 @@
 				<artifactId>regards-test-aggregation</artifactId>
 				<version>${revision}</version>
 			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework</groupId>
-				<artifactId>worker-regards-starter</artifactId>
-				<version>${revision}</version>
-			</dependency>
 			<!-- Test dependencies -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.test</groupId>
@@ -646,9 +685,9 @@
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
-					<groupId>fr.cnes.regards.modules.templates</groupId>
-					<artifactId>templates-domain</artifactId>
-					<version>${revision}</version>
+				<groupId>fr.cnes.regards.modules.templates</groupId>
+				<artifactId>templates-domain</artifactId>
+				<version>${revision}</version>
 			</dependency>
 			<!-- Tenant Setting -->
 			<dependency>
@@ -1702,15 +1741,48 @@
 				<classifier>shaded</classifier>
 			</dependency>
 			<!-- COTS -->
+			<!-- java -->
 			<dependency>
-				<groupId>org.flywaydb</groupId>
-				<artifactId>flyway-core</artifactId>
-				<version>${flyway.version}</version>
+				<groupId>jakarta.annotation</groupId>
+				<artifactId>jakarta.annotation-api</artifactId>
+				<version>${jakarta.annotation.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
 				<version>${org.reflections.reflections.version}</version>
+			</dependency>
+			<!-- jakarta xml -->
+			<dependency>
+				<groupId>jakarta.activation</groupId>
+				<artifactId>jakarta.activation-api</artifactId>
+				<version>${jakarta.activation.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.xml.bind</groupId>
+				<artifactId>jakarta.xml.bind-api</artifactId>
+				<version>${jakarta.xml.bind-api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.xml.bind</groupId>
+				<artifactId>jaxb-xjc</artifactId>
+				<version>${com.sun.xml.bind.jaxb-xjc.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.xml.bind</groupId>
+				<artifactId>jaxb-impl</artifactId>
+				<version>${com.sun.xml.bind.jaxb-impl.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jvnet.jaxb2_commons</groupId>
+				<artifactId>jaxb2-namespace-prefix</artifactId>
+				<version>${org.jvnet.jaxb2_commons.jaxb2-namespace-prefix.version}</version>
+			</dependency>
+			<!-- Flyway -->
+			<dependency>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-core</artifactId>
+				<version>${flyway.version}</version>
 			</dependency>
 			<!-- JWT -->
 			<dependency>
@@ -1771,21 +1843,9 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring.cloud.version}</version>
+				<version>${spring-cloud-dependencies.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-			<!-- Remove from cloud scope : use Spring Cloud Gateway instead -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-netflix-zuul</artifactId>
-				<version>${spring.cloud.netflix}</version>
-			</dependency>
-			<!-- Remove from cloud scope : use Spring Cloud Loadbalancer instead -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
-				<version>${spring.cloud.netflix}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
@@ -1936,11 +1996,6 @@
 				<version>${com.mchange.c3p0.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>${log4j.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-compress</artifactId>
 				<version>${org.apache.commons.compress.version}</version>
@@ -2086,7 +2141,7 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.microservices.processing</groupId>
-    		<artifactId>bootstrap-processing</artifactId>
+				<artifactId>bootstrap-processing</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
@@ -2143,6 +2198,27 @@
 				<version>${org.assertj.version}</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.junit.vintage</groupId>
+				<artifactId>junit-vintage-engine</artifactId>
+				<version>${junit-vintage-engine.version}</version>
+			</dependency>
+			<!-- resilience4j (circuit breaker) -->
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-circuitbreaker</artifactId>
+				<version>${resilience4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-spring-boot2</artifactId>
+				<version>${resilience4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-feign</artifactId>
+				<version>${resilience4j.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -2185,6 +2261,21 @@
 			</snapshots>
 		</repository>
 	</repositories>
+	<!-- temporary configure apache snapshot because of maven-shade-plugin snapshot, which does not handle java 17 -->
+	<!-- to be removed as soon as a new official version is released -->
+	<pluginRepositories>
+		<pluginRepository>
+			<id>apache.snapshots</id>
+			<name>Apache Development Snapshot Repository</name>
+			<url>https://repository.apache.org/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<profiles>
 		<profile>
@@ -2196,7 +2287,11 @@
 				<testResources>
 					<testResource>
 						<directory>src/test/resources</directory>
-						<filtering>true</filtering>
+						<filtering>false</filtering>
+						<excludes>
+							<exclude>**/application*.yml</exclude>
+							<exclude>**/application*.properties</exclude>
+						</excludes>
 					</testResource>
 				</testResources>
 				<resources>
@@ -2216,7 +2311,11 @@
 				<testResources>
 					<testResource>
 						<directory>src/test/resources</directory>
-						<filtering>true</filtering>
+						<filtering>false</filtering>
+						<excludes>
+							<exclude>**/application*.yml</exclude>
+							<exclude>**/application*.properties</exclude>
+						</excludes>
 					</testResource>
 				</testResources>
 				<resources>
@@ -2255,13 +2354,14 @@
 				</excludes>
 			</resource>
 		</resources>
+
 		<pluginManagement>
 			<plugins>
 				<!-- docker image generator -->
 				<plugin>
 					<groupId>com.spotify</groupId>
 					<artifactId>docker-maven-plugin</artifactId>
-					<version>0.4.11</version>
+					<version>1.2.2</version>
 					<configuration>
 						<skipDockerBuild>true</skipDockerBuild>
 					</configuration>
@@ -2269,7 +2369,7 @@
 				<plugin>
 					<groupId>com.spotify</groupId>
 					<artifactId>dockerfile-maven-plugin</artifactId>
-					<version>1.4.0</version>
+					<version>1.4.13</version>
 					<configuration>
 						<skip>true</skip>
 					</configuration>
@@ -2278,22 +2378,22 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.0.1</version>
+					<version>${org.codehaus.mojo.flatten-maven-plugin.version}</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>bom</flattenMode>
 						<pomElements>
-						    <pluginManagement>keep</pluginManagement>
-						    <dependencyManagement>keep</dependencyManagement>
-						    <build>keep</build>
-						    <profiles>expand</profiles>
-						    <!--
-						    <parent>keep</parent>
-						    <properties>keep</properties>
-						    <modules>keep</modules>
-						    <build>keep</build>
-						    <reporting>keep</reporting>
-						    -->
+							<pluginManagement>keep</pluginManagement>
+							<dependencyManagement>keep</dependencyManagement>
+							<build>keep</build>
+							<profiles>expand</profiles>
+							<!--
+                            <parent>keep</parent>
+                            <properties>keep</properties>
+                            <modules>keep</modules>
+                            <build>keep</build>
+                            <reporting>keep</reporting>
+                            -->
 						</pomElements>
 					</configuration>
 					<executions>
@@ -2317,7 +2417,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>versions-maven-plugin</artifactId>
-					<version>2.3</version>
+					<version>${org.codehaus.mojo.versions-maven-plugin.version}</version>
 					<configuration>
 						<rulesUri>file://${basedir}/maven-version-rules.xml</rulesUri>
 					</configuration>
@@ -2333,7 +2433,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.6</version>
+					<version>3.2.0</version>
 					<configuration>
 						<delimiters>
 							<delimiter>${resource.delimiter}</delimiter>
@@ -2343,7 +2443,7 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-deploy-plugin</artifactId>
-					<version>2.8.2</version>
+					<version>${org.apache.maven.plugins.maven-deploy-plugin.version}</version>
 					<configuration>
 						<skip>${maven-deploy.skip}</skip>
 					</configuration>
@@ -2351,7 +2451,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>2.5</version>
+					<version>3.3.2</version>
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
 						<archive>
@@ -2366,7 +2466,7 @@
 				<plugin>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
-					<version>1.4.0.RELEASE</version>
+					<version>2.6.3</version>
 					<executions>
 						<execution>
 							<goals>
@@ -2382,7 +2482,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>2.18.1</version>
+					<version>${org.apache.maven.plugins.maven-failsafe-plugin.version}</version>
 					<configuration>
 						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when integration tests are run. -->
@@ -2414,7 +2514,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.7.7.201606060606</version>
+					<version>${org.jacoco.jacoco-maven-plugin.version}</version>
 					<executions>
 						<!-- Prepares the property pointing to the JaCoCo runtime agent which
 							is passed as VM argument when Maven the Surefire plugin is executed. -->
@@ -2454,7 +2554,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>2.6</version>
+					<version>${org.apache.maven.plugins.maven-jar-plugin.version}</version>
 					<configuration>
 						<archive>
 							<manifest>
@@ -2467,7 +2567,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.18.1</version>
+					<version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
 					<configuration>
 						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when unit tests are run. -->
@@ -2495,7 +2595,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-plugin-plugin</artifactId>
-					<version>3.5</version>
+					<version>3.6.2</version>
 					<executions>
 						<execution>
 							<id>default-descriptor</id>
@@ -2506,7 +2606,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
 					<configuration>
 						<source>${java.version}</source>
 						<target>${java.version}</target>
@@ -2524,14 +2624,14 @@
 							<!-- other annotation processors -->
 						</annotationProcessorPaths>
 						<compilerArgs>
-						    <arg>-Xpkginfo:always</arg>
+							<arg>-Xpkginfo:always</arg>
 						</compilerArgs>
 					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.0.1</version>
+					<version>${org.apache.maven.plugins.maven-source-plugin.version}</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
@@ -2545,12 +2645,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.3.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
-					<version>3.1.1</version>
+					<version>${org.apache.maven.plugin.maven-shade-plugin.version}</version>
 					<executions>
 						<execution>
 							<phase>package</phase>
@@ -2578,7 +2678,7 @@
 				<plugin>
 					<groupId>org.asciidoctor</groupId>
 					<artifactId>asciidoctor-maven-plugin</artifactId>
-					<version>1.5.3</version>
+					<version>2.2.1</version>
 					<executions>
 						<execution>
 							<id>generate-docs</id>
@@ -2590,8 +2690,8 @@
 							<configuration>
 								<backend>html</backend>
 								<doctype>book</doctype>
-								<sourceHighlighter>highlight.js</sourceHighlighter>
 								<attributes>
+									<sourceHighlighter>highlight.js</sourceHighlighter>
 									<icons>font</icons>
 									<sectnums>true</sectnums>
 									<sectlinks>true</sectlinks>
@@ -2605,14 +2705,14 @@
 						<dependency>
 							<groupId>org.springframework.restdocs</groupId>
 							<artifactId>spring-restdocs-asciidoctor</artifactId>
-							<version>1.2.4.RELEASE</version>
+							<version>2.0.4.RELEASE</version>
 						</dependency>
 					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.hibernate.orm.tooling</groupId>
 					<artifactId>hibernate-enhance-maven-plugin</artifactId>
-					<version>${spring.hibernate.version}</version>
+					<version>${org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version}</version>
 					<executions>
 						<execution>
 							<configuration>
@@ -2627,42 +2727,52 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.8.2</version>
+				<version>${org.apache.maven.plugins.maven-deploy-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>flatten-maven-plugin</artifactId>
+				<version>${org.codehaus.mojo.flatten-maven-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
+				<version>${org.codehaus.mojo.versions-maven-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${org.apache.maven.plugins.maven-failsafe-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>${org.apache.maven.plugins.maven-jar-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${org.jacoco.jacoco-maven-plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
+				<version>${org.apache.maven.plugins.maven-source-plugin.version}</version>
 			</plugin>
 		</plugins>
 	</build>

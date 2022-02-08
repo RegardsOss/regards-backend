@@ -343,7 +343,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     @Override
     public EntityModel<StorageLocationDTO> toResource(StorageLocationDTO location, Object... extras) {
-        EntityModel<StorageLocationDTO> resource = new EntityModel<>(location);
+        EntityModel<StorageLocationDTO> resource = EntityModel.of(location);
         if (location == null) {
             return resource;
         }

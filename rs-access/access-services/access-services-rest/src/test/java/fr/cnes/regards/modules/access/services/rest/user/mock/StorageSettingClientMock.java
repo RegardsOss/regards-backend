@@ -1,21 +1,20 @@
 package fr.cnes.regards.modules.access.services.rest.user.mock;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
+import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
-import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
-import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -41,7 +40,7 @@ public class StorageSettingClientMock implements IStorageSettingClient {
 
     @Override
     public ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(String name, DynamicTenantSettingDto setting) {
-        return new ResponseEntity<>(new EntityModel<>(setting), HttpStatus.OK);
+        return new ResponseEntity<>(EntityModel.of(setting), HttpStatus.OK);
     }
 
 }

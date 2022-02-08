@@ -18,19 +18,28 @@
  */
 package fr.cnes.regards.framework.feign;
 
+import com.google.gson.Gson;
+import feign.Contract;
+import feign.Feign;
+import feign.Logger;
+import feign.Request;
+import feign.codec.Decoder;
+import feign.codec.Encoder;
+import feign.gson.GsonDecoder;
+import feign.gson.GsonEncoder;
+import io.github.resilience4j.bulkhead.Bulkhead;
+import io.github.resilience4j.bulkhead.BulkheadConfig;
+import io.github.resilience4j.feign.FeignDecorators;
+import io.github.resilience4j.feign.Resilience4jFeign;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.gson.Gson;
-import feign.Contract;
-import feign.Feign;
-import feign.Logger;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-import feign.gson.GsonDecoder;
-import feign.gson.GsonEncoder;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Common client configuration between sys and user.<br/>
@@ -98,8 +107,27 @@ public class FeignClientConfiguration {
      */
     @Bean
     public Feign.Builder builder() {
-        Feign.Builder builder = Feign.builder();
+        // configure feign with custom rate limiter
+        RateLimiter rateLimitConfig = RateLimiter.of("customRateLimiter",
+                                             RateLimiterConfig.custom()
+                                                           .limitRefreshPeriod(Duration.ofMillis(1L))
+                                                           .limitForPeriod(50)
+                                                           .timeoutDuration(Duration.ofSeconds(60L))
+                                                           .build());
+        // configure feign with semaphore-based bulkhead
+        Bulkhead bulkhead = Bulkhead.of("customBulkhead",
+                              BulkheadConfig.custom()
+                                    .maxConcurrentCalls(100000)
+                                    .maxWaitDuration(Duration.ofSeconds(1L))
+                                    .build());
+        FeignDecorators feignDecorators = FeignDecorators.builder()
+                                                         .withRateLimiter(rateLimitConfig)
+                                                         .withBulkhead(bulkhead).build();
+
+        // return custom feign builder and allow 404 responses to be processed without errors
+        Resilience4jFeign.Builder builder =  Resilience4jFeign.builder(feignDecorators);
         builder.decode404();
+        builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, 5000, TimeUnit.MILLISECONDS, false));
         return builder;
     }
 }

@@ -162,7 +162,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(new ProjectUser()), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
                         passwordResetService, accountUnlockTokenService));
@@ -217,7 +217,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(new ProjectUser()), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
                         passwordResetService, accountUnlockTokenService));

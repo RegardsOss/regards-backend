@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.cloud.gateway.cors;
 
-import java.util.Arrays;
-
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
 
 /**
  * Configuration class for gateway CORS policy
@@ -36,7 +36,7 @@ import org.springframework.web.filter.CorsFilter;
 public class DefaultCorsConfiguration {
 
     /**
-     * Enable cors for Zuul proxy
+     * Enable cors for proxy
      * @return {@link CorsFilter} configuration
      */
     @Bean

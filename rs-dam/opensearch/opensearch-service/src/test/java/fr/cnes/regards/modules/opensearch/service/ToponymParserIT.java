@@ -19,23 +19,6 @@
 
 package fr.cnes.regards.modules.opensearch.service;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -47,6 +30,22 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseExcep
 import fr.cnes.regards.modules.opensearch.service.parser.ToponymParser;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test for {@link ToponymParser}
@@ -75,7 +74,7 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
 
         // Build toponym mock
         when(toponymClient.get(anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(toponym), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(toponym), HttpStatus.OK));
 
         // Test parsing function
         String request = URLEncoder.encode("id", "UTF-8");
@@ -100,7 +99,7 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
 
         // Build toponym mock
         when(toponymClient.get(anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(toponym), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(toponym), HttpStatus.OK));
 
         // Test parsing function
         String request = URLEncoder.encode("id", "UTF-8");

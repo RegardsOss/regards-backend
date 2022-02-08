@@ -65,8 +65,8 @@ public class SwaggerAutoConfiguration {
     @Value("${spring.application.name}")
     private String springAppName;
 
-    @Value("${zuul.prefix}")
-    private String zuulPrefix;
+    @Value("${prefix.path}")
+    private String prefixPath;
 
     @Value("${regards.instance.tenant.name:instance}")
     private String instanceTenant;
@@ -94,7 +94,7 @@ public class SwaggerAutoConfiguration {
                 .components(new Components().addSecuritySchemes(AUTHENTICATION_KEY, new SecurityScheme()
                         .type(SecurityScheme.Type.OAUTH2)
                         .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl(String
-                                .format("%s%s/rs-authentication/oauth/token", regardsSwaggerHost, zuulPrefix))
+                                .format("%s%s/rs-authentication/oauth/token", regardsSwaggerHost, prefixPath))
                                 .scopes(getScopes())))))
                 .addSecurityItem(new SecurityRequirement().addList(AUTHENTICATION_KEY))
                 .info(new Info().title(properties.getApiTitle()).version(properties.getApiVersion())

@@ -73,8 +73,8 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         ProjectUser projectUser = new ProjectUser().setAccessGroups(Collections.singleton(ACCESS_GROUP));
         AccessGroup accessGroup = new AccessGroup(ACCESS_GROUP);
         Mockito.when(projectUserClientMock.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(Boolean.FALSE));
-        Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(any())).thenReturn(ResponseEntity.ok(new EntityModel<>(projectUser)));
-        Mockito.when(accessGroupClient.retrieveAccessGroup(ACCESS_GROUP)).thenReturn(ResponseEntity.ok(new EntityModel<>(accessGroup)));
+        Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(any())).thenReturn(ResponseEntity.ok(EntityModel.of(projectUser)));
+        Mockito.when(accessGroupClient.retrieveAccessGroup(ACCESS_GROUP)).thenReturn(ResponseEntity.ok(EntityModel.of(accessGroup)));
     }
 
     @Override

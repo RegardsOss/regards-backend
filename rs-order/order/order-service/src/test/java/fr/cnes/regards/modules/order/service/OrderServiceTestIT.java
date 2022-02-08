@@ -29,16 +29,8 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IDatasetTaskRepository;
-import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
-import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.dao.*;
+import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRestartOrderException;
@@ -48,18 +40,10 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.order.test.StorageClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +58,16 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * @author Sébastien Binda
@@ -140,14 +134,14 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
         Project project = new Project();
         project.setHost("regardsHost");
-        Mockito.when(projectsClient.retrieveProject(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+        Mockito.when(projectsClient.retrieveProject(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
 
         Role role = new Role();
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
         Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(false));
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
         simulateApplicationReadyEvent();
         simulateApplicationStartedEvent();
     }

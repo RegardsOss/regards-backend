@@ -48,7 +48,7 @@ public class OrderHelperService {
 
     @Value("${regards.order.secret}")
     private String secret;
-    @Value("${zuul.prefix}")
+    @Value("${prefix.path}")
     private String urlPrefix;
     @Value("${spring.application.name}")
     private String microserviceName;

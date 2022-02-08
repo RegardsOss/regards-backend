@@ -72,7 +72,7 @@ class AccountUtilsServiceTest {
     @Test
     void retrieveAccount() throws EntityInvalidException {
         // Given
-        Mockito.when(accountsClient.retrieveAccounByEmail(EMAIL)).thenReturn(ResponseEntity.ok(new EntityModel<>(expectedAccount)));
+        Mockito.when(accountsClient.retrieveAccounByEmail(EMAIL)).thenReturn(ResponseEntity.ok(EntityModel.of(expectedAccount)));
         // When
         Account retrievedAccount = accountUtilsService.retrieveAccount(EMAIL);
         // Then
@@ -173,7 +173,7 @@ class AccountUtilsServiceTest {
             project.setName(accountNPassword.getProject());
             account.setProjects(Collections.singleton(project));
             account.setPassword(accountNPassword.getPassword());
-            return ResponseEntity.ok(new EntityModel<>(account));
+            return ResponseEntity.ok(EntityModel.of(account));
         });
     }
 

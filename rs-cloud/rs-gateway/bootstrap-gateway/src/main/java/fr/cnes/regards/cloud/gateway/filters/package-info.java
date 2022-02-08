@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Package for Regards Gateway Zuul filters
+ * Package for Regards Gateway filters
  * @author Sébastien Binda
  */
 package fr.cnes.regards.cloud.gateway.filters;

@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.dto.hateoas;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Extend the {@link PagedModel} to add a "info" field.
@@ -56,7 +56,7 @@ public class RequestsPagedModel<T> extends PagedModel<T> {
         if (content != null) {
             for (S element : content) {
                 if (element != null) {
-                    resources.add((T) new EntityModel<S>(element));
+                    resources.add((T) EntityModel.of(element));
                 }
             }
         }

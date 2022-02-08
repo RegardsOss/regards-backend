@@ -120,7 +120,7 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
         Project project = new Project();
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
 
         Mockito.when(searchClient.searchDataObjects(Mockito.any())).thenAnswer(invocation -> {
             ComplexSearchRequest r = invocation.getArgument(0);
@@ -148,7 +148,7 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
                         fileMultimap.put(DataType.RAWDATA, dataFile);
 
                         feature.setFiles(fileMultimap);
-                        list.add(new EntityModel<>(feature));
+                        list.add(EntityModel.of(feature));
                         nbDataPerPage++;
                     } while (nbDataPerPage < r.getSize());
                     LOGGER.info("Getting page " + page + " done !");

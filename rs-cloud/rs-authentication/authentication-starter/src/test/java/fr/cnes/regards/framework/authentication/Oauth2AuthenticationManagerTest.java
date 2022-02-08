@@ -150,9 +150,9 @@ public class Oauth2AuthenticationManagerTest {
 
         // Mock Administration Projects client
         accountsClientMock = Mockito.mock(IAccountsClient.class);
-        final EntityModel<Account> EntityModel = new EntityModel<>(validAccount);
+        final EntityModel<Account> entityModel = EntityModel.of(validAccount);
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(EntityModel, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
 
         userAccountManagerMock = Mockito.mock(IUserAccountManager.class);
 
@@ -160,8 +160,8 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(beanFactoryMock.getBean(IUserAccountManager.class)).thenReturn(userAccountManagerMock);
 
         projectUsersClientMock = Mockito.mock(IProjectUsersClient.class);
-        final EntityModel<ProjectUser> EntityModelUser = new EntityModel<>(validUser);
-        final ResponseEntity<EntityModel<ProjectUser>> resp = new ResponseEntity<>(EntityModelUser, HttpStatus.OK);
+        final EntityModel<ProjectUser> entityModelUser = EntityModel.of(validUser);
+        final ResponseEntity<EntityModel<ProjectUser>> resp = new ResponseEntity<>(entityModelUser, HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
         Mockito.when(beanFactoryMock.getBean(IProjectUsersClient.class)).thenReturn(projectUsersClientMock);
 
@@ -222,14 +222,14 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(auth.getDetails()).thenReturn(mockedDetails);
 
         // Mock a valid project user
-        final EntityModel<ProjectUser> EntityModelUser = new EntityModel<>(validUser);
-        final ResponseEntity<EntityModel<ProjectUser>> resp = new ResponseEntity<>(EntityModelUser, HttpStatus.OK);
+        final EntityModel<ProjectUser> entityModelUser = EntityModel.of(validUser);
+        final ResponseEntity<EntityModel<ProjectUser>> resp = new ResponseEntity<>(entityModelUser, HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
 
         // Mock a valid account
-        final EntityModel<Account> EntityModel = new EntityModel<>(validAccount);
+        final EntityModel<Account> entityModel = EntityModel.of(validAccount);
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(EntityModel, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
 
         // Run authentication process
         manager.authenticate(auth);
@@ -287,9 +287,9 @@ public class Oauth2AuthenticationManagerTest {
         user.setRole(new Role());
         user.setStatus(UserStatus.WAITING_ACCESS);
 
-        final EntityModel<ProjectUser> EntityModel = new EntityModel<>(user);
+        final EntityModel<ProjectUser> entityModel = EntityModel.of(user);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(EntityModel, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
 
         // Run authentication process
         try {

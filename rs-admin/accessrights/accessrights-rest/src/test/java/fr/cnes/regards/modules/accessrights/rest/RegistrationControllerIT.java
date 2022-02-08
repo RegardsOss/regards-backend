@@ -170,10 +170,10 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
         Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
-                            new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
+                            new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
         Mockito.when(accountsClient.createAccount(accountNPassword))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.CREATED));
 
         performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusCreated(), ERROR_MESSAGE);
     }
@@ -226,7 +226,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         Account account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
 
         Mockito.when(accountsClient.retrieveAccounByEmail(account.getEmail()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         performDefaultPut(apiAccessDeny, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }
@@ -280,7 +280,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                 "projectUser.getPassword()");
 
         Mockito.when(accountsClient.retrieveAccounByEmail(projectUser.getEmail()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         // Endpoint
         String endpoint = RegistrationController.REQUEST_MAPPING_ROOT

@@ -84,7 +84,7 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
 
     @Override
     public ResponseEntity<EntityModel<EntityFeature>> getDataset(UniformResourceName urn, HttpHeaders headers) {
-        return new ResponseEntity<>(new EntityModel<>(SearchClientMock.DS_MAP.get(urn)), HttpStatus.OK);
+        return new ResponseEntity<>(EntityModel.of(SearchClientMock.DS_MAP.get(urn)), HttpStatus.OK);
     }
 
     @Override

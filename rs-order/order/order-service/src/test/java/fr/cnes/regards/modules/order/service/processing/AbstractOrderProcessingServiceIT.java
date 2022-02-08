@@ -149,7 +149,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         Project project = new Project();
         project.setHost("regardsHost");
         when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
         simulateApplicationReadyEvent();
         simulateApplicationStartedEvent();
     }

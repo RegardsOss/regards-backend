@@ -18,43 +18,16 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.departments;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
-import javax.xml.xpath.XPathExpressionException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.FeatureCollection;
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.adapters.ClassAdapter;
 import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
 import fr.cnes.regards.framework.microservice.manager.MicroserviceConfiguration;
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.module.manager.IModuleManager;
-import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapter;
+import fr.cnes.regards.framework.module.manager.*;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -74,6 +47,26 @@ import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.AbstractEngineIT;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
+
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author Marc Sordi
@@ -159,7 +152,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
 
         // - Manage attribute cache
         List<EntityModel<AttributeModel>> resAtts = new ArrayList<>();
-        atts.forEach(att -> resAtts.add(new EntityModel<AttributeModel>(att)));
+        atts.forEach(att -> resAtts.add(EntityModel.of(att)));
         Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
         finder.refresh(getDefaultTenant());
 

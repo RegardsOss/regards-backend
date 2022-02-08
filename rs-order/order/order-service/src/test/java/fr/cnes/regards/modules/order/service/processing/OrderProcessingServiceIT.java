@@ -31,21 +31,9 @@ import fr.cnes.regards.modules.order.service.OrderServiceTestIT;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.processing.forecast.MultiplierResultSizeForecast;
-import fr.cnes.regards.modules.processing.order.Cardinality;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
-import fr.cnes.regards.modules.processing.order.Scope;
-import fr.cnes.regards.modules.processing.order.SizeLimit;
+import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -55,6 +43,16 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @TestPropertySource(properties = {
         "spring.jpa.properties.hibernate.default_schema=order_processing_test_it_scope_item",
@@ -71,7 +69,7 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
     }
 
     @Test

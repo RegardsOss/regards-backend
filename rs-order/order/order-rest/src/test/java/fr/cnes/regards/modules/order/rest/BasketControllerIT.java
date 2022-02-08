@@ -113,7 +113,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         Project project = new Project();
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
-                .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
+                .thenReturn(ResponseEntity.ok(EntityModel.of(project)));
         authResolver = Mockito.spy(authResolver);
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());

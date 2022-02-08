@@ -18,23 +18,20 @@
  */
 package fr.cnes.regards.cloud.gateway.filters;
 
-import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
-import org.springframework.stereotype.Component;
-
-import javax.servlet.http.HttpServletRequest;
-
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 /**
  * This filter detects JWT in the URL query params and if found set it into the header.<br/>
  * Source URL query param : token<br/>
  * Target header : Bearer : Authorization
+ *
  * @author Marc Sordi
  */
-@Component
-public class UrlToHeaderTokenFilter extends ZuulFilter {
+public class UrlToHeaderTokenFilter implements GlobalFilter {
 
     /**
      * Authorization header
@@ -51,37 +48,18 @@ public class UrlToHeaderTokenFilter extends ZuulFilter {
      */
     public static final String TOKEN = "token";
 
-    protected static final int ORDER = PRE_DECORATION_FILTER_ORDER;
 
     @Override
-    public String filterType() {
-        return PRE_TYPE;
-    }
-
-    @Override
-    public int filterOrder() {
-        return ORDER;
-    }
-
-    @Override
-    public boolean shouldFilter() {
-        return true;
-    }
-
-    @Override
-    public Object run() {
-        RequestContext ctx = RequestContext.getCurrentContext();
-        HttpServletRequest request = ctx.getRequest();
-
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         // Try to retrieve JWT
-        String jwt = request.getParameter(TOKEN);
-
+        ServerHttpRequest request = exchange.getRequest();
+        String jwt = request.getQueryParams().getFirst(TOKEN);
         // Inject into header if not null and bearer not already set
-        if ((jwt != null) && (request.getParameter(BEARER) == null)) {
-            ctx.getZuulRequestHeaders().put(AUTHORIZATION, BEARER + " " + jwt);
+        if ((jwt != null) && (request.getQueryParams().getFirst(BEARER) == null)) {
+            ServerHttpRequest requestModified = request.mutate().header(AUTHORIZATION, BEARER + " " + jwt).build();
+            return chain.filter(exchange.mutate().request(requestModified).build());
+        } else {
+            return chain.filter(exchange);
         }
-
-        return null;
     }
-
 }

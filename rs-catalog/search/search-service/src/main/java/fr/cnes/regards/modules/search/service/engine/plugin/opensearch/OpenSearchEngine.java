@@ -435,12 +435,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     }
 
     @Override
-    public ResponseEntity<List<EntityModel<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+    public ResponseEntity<List<EntityModel<? extends PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
             throws ModuleException {
         List<PropertyBound<?>> bounds = catalogSearchService
                 .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
-        return ResponseEntity.ok(bounds.stream().map(EntityModel<PropertyBound<?>>::new)
-                .collect(Collectors.toList()));
+        return ResponseEntity.ok(bounds.stream().map(EntityModel::of).collect(Collectors.toList()));
     }
 
     @Override

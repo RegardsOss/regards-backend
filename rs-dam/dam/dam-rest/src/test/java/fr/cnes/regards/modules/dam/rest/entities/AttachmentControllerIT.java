@@ -102,7 +102,7 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         collectionService.create(collection);
         Project defaultProjectMock = new Project("defaultTenantMock", "", true, getDefaultTenant());
         defaultProjectMock.setHost("http://localhost");
-        Mockito.when(projectsClient.retrieveProject(getDefaultTenant())).thenReturn(ResponseEntity.ok(new EntityModel<>(defaultProjectMock)));
+        Mockito.when(projectsClient.retrieveProject(getDefaultTenant())).thenReturn(ResponseEntity.ok(EntityModel.of(defaultProjectMock)));
     }
 
     private MockMultipartFile getMultipartFile(String originalFilename, String contentType) throws IOException {

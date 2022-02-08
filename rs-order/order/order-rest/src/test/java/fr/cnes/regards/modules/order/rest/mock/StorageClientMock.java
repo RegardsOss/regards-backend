@@ -56,7 +56,7 @@ public class StorageClientMock implements IStorageRestClient {
     public Response downloadFile(String checksum, Boolean isContentInline) {
 
         Map<String, Collection<String>> map = new HashMap<>();
-        Request request = Request.create(Request.HttpMethod.GET, "test", map, Request.Body.empty());
+        Request request = Request.create(Request.HttpMethod.GET, "test", map, Request.Body.empty(), null);
         if (TEST_FILE_CHECKSUM.equals(checksum)) {
             try {
                 File testFile = new File("src/test/resources/files/file1.txt");

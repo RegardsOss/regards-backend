@@ -196,7 +196,7 @@ public class AccessRightController implements IResourceController<AccessRight> {
 
     @Override
     public EntityModel<AccessRight> toResource(AccessRight accessRight, Object... extras) {
-        EntityModel<AccessRight> resource = new EntityModel<>(accessRight);
+        EntityModel<AccessRight> resource = EntityModel.of(accessRight);
         resourceService.addLink(resource, this.getClass(), "createAccessRight", LinkRels.CREATE,
                                 MethodParamFactory.build(AccessRight.class, accessRight));
         resourceService.addLink(resource, this.getClass(), "deleteAccessRight", LinkRels.DELETE,

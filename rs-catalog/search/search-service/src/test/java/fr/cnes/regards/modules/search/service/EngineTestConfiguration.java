@@ -78,7 +78,7 @@ public class EngineTestConfiguration {
 
         // Build accessGroupMock mock
         PagedModel.PageMetadata md = new PagedModel.PageMetadata(0, 0, 0);
-        PagedModel<EntityModel<AccessGroup>> pagedResources = new PagedModel<>(new ArrayList<>(), md,
+        PagedModel<EntityModel<AccessGroup>> pagedResources = PagedModel.of(new ArrayList<>(), md,
                 new ArrayList<>());
         ResponseEntity<PagedModel<EntityModel<AccessGroup>>> pageResponseEntity = ResponseEntity.ok(pagedResources);
         Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(),

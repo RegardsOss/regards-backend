@@ -56,12 +56,12 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
 
         Mockito.when(accountsClient.retrieveAccounByEmail("sebastien.binda@c-s.fr"))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
-                            new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
+                            new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
 
         Mockito.when(accountsClient.createAccount(accountNPassword))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.CREATED));
 
         String accessRequest = readJsonContract("request-access.json");
 

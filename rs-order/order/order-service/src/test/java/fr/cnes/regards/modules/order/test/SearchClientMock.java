@@ -680,7 +680,7 @@ public class SearchClientMock implements IComplexSearchClient {
                 fileMultimap.put(getDataType(file.getName()), dataFile);
             }
             feature.setFiles(fileMultimap);
-            list.add(new EntityModel<>(feature));
+            list.add(EntityModel.of(feature));
         }
     }
 }

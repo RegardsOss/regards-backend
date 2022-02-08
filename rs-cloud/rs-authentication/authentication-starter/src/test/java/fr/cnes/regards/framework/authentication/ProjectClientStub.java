@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.authentication;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -29,9 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Primary
@@ -43,7 +42,7 @@ public class ProjectClientStub implements IProjectsClient {
 
     @Override
     public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(final int pPage, final int pSize) {
-        final PagedModel<EntityModel<Project>> page = new PagedModel<>(HateoasUtils.wrapList(projects),
+        final PagedModel<EntityModel<Project>> page = PagedModel.of(HateoasUtils.wrapList(projects),
                 new PageMetadata(pSize, pPage, 1), new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }

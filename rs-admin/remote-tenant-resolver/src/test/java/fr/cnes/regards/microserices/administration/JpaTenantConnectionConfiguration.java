@@ -147,7 +147,7 @@ public class JpaTenantConnectionConfiguration {
         Mockito.when(mock.registerMicroserviceEndpoints(Mockito.anyString(), Mockito.any())).thenReturn(response);
 
         final PageMetadata md = new PageMetadata(0, 0, 0);
-        final PagedModel<EntityModel<ResourcesAccess>> pagedResources = new PagedModel<>(new ArrayList<>(), md,
+        final PagedModel<EntityModel<ResourcesAccess>> pagedResources = PagedModel.of(new ArrayList<>(), md,
                 new ArrayList<>());
         final ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> resourcesResponse = ResponseEntity
                 .ok(pagedResources);

@@ -48,26 +48,11 @@ import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.regex.Pattern;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.ArgumentCaptor;
-import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -86,6 +71,19 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MimeType;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
+
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * @author oroussel
@@ -157,12 +155,12 @@ public class OrderServiceIT {
         Project project = new Project();
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
         Role role = new Role();
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
     }
 
     public void clean() {

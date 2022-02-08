@@ -52,7 +52,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     @Override
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, int pPage, int pSize) {
         final PageMetadata metadata = new PageMetadata(pSize, pPage, users.size());
-        final PagedModel<EntityModel<ProjectUser>> resource = new PagedModel<>(HateoasUtils.wrapList(users), metadata,
+        final PagedModel<EntityModel<ProjectUser>> resource = PagedModel.of(HateoasUtils.wrapList(users), metadata,
                 new ArrayList<>());
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }

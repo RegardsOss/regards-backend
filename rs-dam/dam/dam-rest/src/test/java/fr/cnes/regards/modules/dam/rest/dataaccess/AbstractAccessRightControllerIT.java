@@ -184,7 +184,7 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
         projectUser.setEmail(email);
         projectUser.setAccessGroups(Collections.singleton(ag1Name));
 
-        ResponseEntity<EntityModel<ProjectUser>> response = ResponseEntity.ok(new EntityModel<>(projectUser));
+        ResponseEntity<EntityModel<ProjectUser>> response = ResponseEntity.ok(EntityModel.of(projectUser));
         Mockito.when(projectUserClientMock.retrieveProjectUser(ArgumentMatchers.any())).thenReturn(response);
         Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(email)).thenReturn(response);
     }

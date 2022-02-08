@@ -18,32 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.google.common.net.HttpHeaders;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -56,6 +31,23 @@ import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.dam.service.entities.IEntityService;
 import fr.cnes.regards.modules.dam.service.entities.LocalStorageService;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manage attachments for all entities in a generic way
@@ -112,7 +104,7 @@ public class AttachmentController {
         // Attach files to the entity
         AbstractEntity<?> entity = getEntityService(urn).attachFiles(urn, dataType, attachments, dataFileRefs,
                 controllerLinkBuilder.toUri().toString());
-        return ResponseEntity.ok(new EntityModel<>(entity));
+        return ResponseEntity.ok(EntityModel.of(entity));
     }
 
     @RequestMapping(method = RequestMethod.GET, value = ATTACHMENT_MAPPING)
@@ -172,7 +164,7 @@ public class AttachmentController {
 
         // Attach files to the entity
         AbstractEntity<?> entity = getEntityService(urn).removeFile(urn, checksum);
-        return ResponseEntity.ok(new EntityModel<>(entity));
+        return ResponseEntity.ok(EntityModel.of(entity));
     }
 
     @SuppressWarnings("unchecked")

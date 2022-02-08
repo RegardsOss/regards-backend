@@ -160,7 +160,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         Project project = new Project();
         project.setHost("regards.org");
-        Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString())).thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
+        Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString())).thenReturn(ResponseEntity.ok(EntityModel.of(project)));
         authResolver = Mockito.spy(authResolver);
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
@@ -171,7 +171,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         projectUser.setRole(role);
         Mockito.when(projectUsersClient.isAdmin(getDefaultUserEmail())).thenReturn(ResponseEntity.ok(false));
         Mockito.when(projectUsersClient.isAdmin(adminEmail)).thenReturn(ResponseEntity.ok(true));
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
 
         JWTService service = new JWTService();
         service.setSecret("!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
@@ -358,7 +358,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             int page = cSR == null ? 0 : cSR.getPage();
             return new ResponseEntity<>(
                     new FacettedPagedModel<>(new HashSet<>(),
-                            page == 0 ? Lists.newArrayList(new EntityModel<>(feat1), new EntityModel<>(feat2))
+                            page == 0 ? Lists.newArrayList(EntityModel.of(feat1), EntityModel.of(feat2))
                                     : Collections.emptyList(),
                             new PagedModel.PageMetadata(page == 0 ? 2 : 0, page, 2, 1)),
                     page == 0 ? HttpStatus.OK : HttpStatus.NO_CONTENT);

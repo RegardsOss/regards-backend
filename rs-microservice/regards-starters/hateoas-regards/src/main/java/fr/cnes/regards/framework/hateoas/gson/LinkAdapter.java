@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.framework.hateoas.gson;
 
-import java.io.IOException;
-
-import org.springframework.hateoas.Link;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
+import org.springframework.hateoas.Link;
+
+import java.io.IOException;
 
 /**
  * {@link Link} adapter
@@ -67,7 +65,7 @@ public class LinkAdapter extends TypeAdapter<Link> {
             }
         }
         in.endObject();
-        return new Link(href, rel);
+        return Link.of(href, rel);
     }
 
 }

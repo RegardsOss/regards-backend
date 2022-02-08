@@ -48,7 +48,7 @@ public class StorageRestClientMock implements IStorageRestClient {
                 true
         );
         List<EntityModel<StorageLocationDTO>> list = new ArrayList<>();
-        list.add(new EntityModel<>(storageLocationDTO));
+        list.add(EntityModel.of(storageLocationDTO));
         return ResponseEntity.ok(list);
     }
 

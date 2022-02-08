@@ -1,36 +1,7 @@
 package fr.cnes.regards.cloud.gateway.filters;
 
-import com.netflix.zuul.context.RequestContext;
-import feign.FeignException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.UUID;
-
-import static fr.cnes.regards.framework.security.utils.HttpConstants.BEARER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 public class ExternalTokenVerificationFilterTest {
-
+/*
     public static final String TENANT = "DEFAULT";
 
     @Mock
@@ -255,5 +226,5 @@ public class ExternalTokenVerificationFilterTest {
             .verifyAndAuthenticate(anyString());
         assertThatThrownBy(() -> filter.verifyAndAuthenticate("plop", "plop"))
             .isExactlyInstanceOf(InsufficientAuthenticationException.class);
-    }
+    }*/
 }

@@ -22,8 +22,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -37,42 +35,38 @@ import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Predicates.instanceOf;
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 
 /**
  * This filter detects invalid Regards JWT tokens, check if it is an allowed external token and tades it with a Regarfs token if so.<br/>
  * Target header : Bearer : Authorization
+ *
+ * @author Arnaud Bos
  */
-@Component
-public class ExternalTokenVerificationFilter extends ZuulFilter {
+public class ExternalTokenVerificationFilter implements GlobalFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExternalTokenVerificationFilter.class);
 
-    /**
-     * Authorization header
-     */
     public static final String AUTHORIZATION = "Authorization";
 
-    /**
-     * Authorization header scheme
-     */
     public static final String BEARER = "Bearer";
-
-    protected static final int ORDER = UrlToHeaderTokenFilter.ORDER + 1;
 
     @Autowired
     private JWTService jwtService;
@@ -82,13 +76,6 @@ public class ExternalTokenVerificationFilter extends ZuulFilter {
 
     @Autowired
     private IExternalAuthenticationClient externalAuthenticationClient;
-
-    @VisibleForTesting
-    public ExternalTokenVerificationFilter(JWTService jwtService, IRuntimeTenantResolver runtimeTenantResolver, IExternalAuthenticationClient externalAuthenticationClient) {
-        this.jwtService = jwtService;
-        this.runtimeTenantResolver = runtimeTenantResolver;
-        this.externalAuthenticationClient = externalAuthenticationClient;
-    }
 
     private final Cache<String, String> invalid = Caffeine.newBuilder()
         .expireAfterAccess(30, TimeUnit.MINUTES)
@@ -102,57 +89,35 @@ public class ExternalTokenVerificationFilter extends ZuulFilter {
         .maximumSize(10000)
         .build();
 
-    @Override
-    public String filterType() {
-        return PRE_TYPE;
-    }
 
     @Override
-    public int filterOrder() {
-        return ORDER;
-    }
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        ServerHttpRequest request = exchange.getRequest();
 
-    @Override
-    public boolean shouldFilter() {
-        return true;
-    }
-
-    @Override
-    public Object run() {
-        RequestContext ctx = RequestContext.getCurrentContext();
-        HttpServletRequest request = ctx.getRequest();
-
-        filter(ctx, request);
-
-        return null;
-    }
-
-    @VisibleForTesting
-    protected void filter(RequestContext ctx, HttpServletRequest request) {
-        String authHeader = request.getHeader(HttpConstants.AUTHORIZATION);
+        String authHeader = request.getHeaders().getFirst(HttpConstants.AUTHORIZATION);
 
         if (!Strings.isNullOrEmpty(authHeader) && authHeader.startsWith(HttpConstants.BEARER)) {
             final String jwtKey = authHeader.substring(HttpConstants.BEARER.length()).trim();
 
             // if token invalid, no need to check, just exit
             if (invalid.asMap().containsKey(jwtKey)) {
-                return;
+                return Mono.empty();
             }
 
             // if token valid, return its mapped value
             if (valid.asMap().containsKey(jwtKey)) {
                 String jwtVal = valid.getIfPresent(jwtKey);
-                ctx.getZuulRequestHeaders().put(AUTHORIZATION, BEARER + " " + jwtVal);
+                request.getHeaders().put(AUTHORIZATION, Collections.singletonList(BEARER + " " + jwtVal));
                 // Even if it's an expired Regards token, pass it along, it will be invalidated by the JWTAuthenticationProvider down stream
-                return;
+                return chain.filter(exchange);
             }
 
             JWTAuthentication authentication = new JWTAuthentication(jwtKey);
 
             // Try to retrieve target tenant from request
-            String tenant = request.getHeader(HttpConstants.SCOPE);
-            if (Strings.isNullOrEmpty(tenant) && request.getParameter(HttpConstants.SCOPE) != null) {
-                tenant = request.getParameter(HttpConstants.SCOPE);
+            String tenant = request.getHeaders().getFirst(HttpConstants.SCOPE);
+            if (Strings.isNullOrEmpty(tenant) && request.getQueryParams().containsKey(HttpConstants.SCOPE)) {
+                tenant = request.getQueryParams().getFirst(HttpConstants.SCOPE);
             }
             if (!Strings.isNullOrEmpty(tenant)) {
                 authentication.setTenant(tenant);
@@ -171,9 +136,16 @@ public class ExternalTokenVerificationFilter extends ZuulFilter {
                 // 1) either because it was already a valid Regards token
                 // 2) or because it was a valid external token which was traded against a valid Regards token by the external "resolver".
                 // So we can cache it and pass along.
-                .peek(regardsToken -> valid.put(jwtKey, regardsToken))
-                .andThen(regardsToken -> ctx.getZuulRequestHeaders().put(AUTHORIZATION, BEARER + " " + regardsToken));
+                .peek(regardsToken -> valid.put(jwtKey, regardsToken));
+/*
+            if (valid.asMap().containsKey(jwtKey)) {
+                valid.getIfPresent(jwtKey)
+                ServerHttpRequest modifiedRequest = request.mutate().header(AUTHORIZATION, BEARER + " " + valid.g).build();
+
+
+            return chain.filter(exchange.mutate().request(modifiedRequest).build());*/
         }
+        return chain.filter(exchange);
     }
 
     @VisibleForTesting

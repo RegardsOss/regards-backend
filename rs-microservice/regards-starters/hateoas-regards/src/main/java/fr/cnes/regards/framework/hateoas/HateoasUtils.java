@@ -54,7 +54,7 @@ public final class HateoasUtils {
      * @return The wrap resource
      */
     public static <T> EntityModel<T> wrap(T toWrap, Link... links) {
-        return new EntityModel<>(toWrap, links);
+        return EntityModel.of(toWrap, links);
     }
 
     /**
@@ -66,7 +66,7 @@ public final class HateoasUtils {
     public static <T> List<EntityModel<T>> wrapList(List<T> toWrap) {
         List<EntityModel<T>> asResources = new ArrayList<>();
         for (T item : toWrap) {
-            asResources.add(new EntityModel<>(item));
+            asResources.add(EntityModel.of(item));
         }
         return asResources;
     }
@@ -80,7 +80,7 @@ public final class HateoasUtils {
     public static <T> Collection<EntityModel<T>> wrapCollection(Collection<T> toWrap) {
         Collection<EntityModel<T>> asResources = new ArrayList<>();
         for (T item : toWrap) {
-            asResources.add(new EntityModel<>(item));
+            asResources.add(EntityModel.of(item));
         }
         return asResources;
     }
@@ -133,8 +133,8 @@ public final class HateoasUtils {
      * @return PagedModel<Resource                                                               <                                                               ?>> of one page containing all base elements
      */
     public static <T> PagedModel<EntityModel<T>> wrapToPagedResources(Collection<T> elements) {
-        List<EntityModel<T>> elementResources = elements.stream().map(EntityModel<T>::new).collect(Collectors.toList());
-        return new PagedModel<>(elementResources, new PageMetadata(elements.size(), 0, elements.size()));
+        List<EntityModel<T>> elementResources = elements.stream().map(EntityModel::of).collect(Collectors.toList());
+        return PagedModel.of(elementResources, new PageMetadata(elements.size(), 0, elements.size()));
     }
 
     /**

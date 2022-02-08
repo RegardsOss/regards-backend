@@ -144,7 +144,7 @@ public class CatalogSearchServiceTest {
                 .thenAnswer(invocation -> invocation.getArguments()[0]);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(SampleDataUtils.TENANT);
         Mockito.when(resourceService.toResource(Mockito.any()))
-                .thenAnswer(invocation -> new EntityModel<>(invocation.getArguments()[0]));
+                .thenAnswer(invocation -> EntityModel.of(invocation.getArguments()[0]));
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,

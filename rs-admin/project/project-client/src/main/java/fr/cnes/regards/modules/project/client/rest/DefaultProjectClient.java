@@ -66,7 +66,7 @@ public class DefaultProjectClient implements IProjectsClient {
     public ResponseEntity<EntityModel<Project>> retrieveProject(String pProjectName) {
         Project project = new Project("desc", null, true, pProjectName);
         project.setHost(host);
-        return ResponseEntity.ok(new EntityModel<>(project));
+        return ResponseEntity.ok(EntityModel.of(project));
     }
 
     @Override

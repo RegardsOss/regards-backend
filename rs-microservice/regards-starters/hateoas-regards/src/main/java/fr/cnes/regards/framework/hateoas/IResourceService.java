@@ -39,7 +39,7 @@ public interface IResourceService {
      */
     default <T> EntityModel<T> toResource(T object) {
         Assert.notNull(object, "Object is required");
-        return new EntityModel<>(object);
+        return EntityModel.of(object);
     }
 
     /**

@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin.legacy;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-
+import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 
-import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Extend the {@link PagedModel} to add a "facets" field.
@@ -63,7 +62,7 @@ public class FacettedPagedModel<T> extends PagedModel<T> {
         if (content != null) {
             for (S element : content) {
                 if (element != null) {
-                    resources.add((T) new EntityModel<S>(element));
+                    resources.add((T) EntityModel.of(element));
                 }
             }
         }

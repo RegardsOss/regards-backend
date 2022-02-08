@@ -126,12 +126,12 @@ public class OrderServiceUnavailableFilesIT {
         Project project = new Project();
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
         Role role = new Role();
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(new EntityModel<>(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
     }
 
     public void clean() {

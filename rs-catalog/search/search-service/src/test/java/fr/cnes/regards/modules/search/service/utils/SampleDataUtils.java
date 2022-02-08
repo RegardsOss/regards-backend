@@ -290,14 +290,12 @@ public class SampleDataUtils {
     /**
      * A dummy paged resources of dataobjects
      */
-    public static final PagedModel<EntityModel<DataObject>> PAGED_RESOURCES_DATAOBJECT = new PagedModel<EntityModel<DataObject>>(
-            new ArrayList<>(), null, new Link("href"));
+    public static final PagedModel<EntityModel<DataObject>> PAGED_RESOURCES_DATAOBJECT = PagedModel.of(new ArrayList<>(), (PagedModel.PageMetadata) null, Link.of("href"));
 
     /**
      * A dummy paged resources of dataset
      */
-    public static final PagedModel<EntityModel<Dataset>> PAGED_RESOURCES_DATASET = new PagedModel<EntityModel<Dataset>>(
-            new ArrayList<>(), null, new Link("href"));
+    public static final PagedModel<EntityModel<Dataset>> PAGED_RESOURCES_DATASET = PagedModel.of(new ArrayList<>(), (PagedModel.PageMetadata) null, Link.of("href"));
 
     /**
      * A criterion string match

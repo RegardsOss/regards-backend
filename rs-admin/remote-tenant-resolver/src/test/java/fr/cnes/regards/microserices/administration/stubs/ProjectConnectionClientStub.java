@@ -44,9 +44,9 @@ public class ProjectConnectionClientStub implements IProjectConnectionClient {
         List<EntityModel<ProjectConnection>> resources = new ArrayList<>();
         ProjectConnection connection = new ProjectConnection(0L, ProjectClientStub.PROJECT, "MICROSERVICE", "", "", "",
                 "");
-        resources.add(new EntityModel<>(connection));
+        resources.add(EntityModel.of(connection));
 
-        PagedModel<EntityModel<ProjectConnection>> page = new PagedModel<>(resources, new PageMetadata(1, 1, 1),
+        PagedModel<EntityModel<ProjectConnection>> page = PagedModel.of(resources, new PageMetadata(1, 1, 1),
                 new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }

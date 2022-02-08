@@ -31,7 +31,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 
@@ -128,7 +128,7 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
                 return true;
             }
         };
-        Mockito.when(appContext.getBean(Matchers.eq(ProjectGeoSettings.class))).thenReturn(settings);
+        Mockito.when(appContext.getBean(ArgumentMatchers.eq(ProjectGeoSettings.class))).thenReturn(settings);
         springContext.setApplicationContext(appContext);
     }
 

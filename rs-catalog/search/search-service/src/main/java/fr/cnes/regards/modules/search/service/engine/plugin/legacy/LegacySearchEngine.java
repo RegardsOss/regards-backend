@@ -241,11 +241,10 @@ public class LegacySearchEngine implements
     }
 
     @Override
-    public ResponseEntity<List<EntityModel<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+    public ResponseEntity<List<EntityModel<? extends PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
             throws ModuleException {
         List<PropertyBound<?>> bounds = catalogSearchService
                 .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
-        return ResponseEntity.ok(bounds.stream().map(bound -> new EntityModel<PropertyBound<?>>(bound))
-                .collect(Collectors.toList()));
+        return ResponseEntity.ok(bounds.stream().map(EntityModel::of).collect(Collectors.toList()));
     }
 }

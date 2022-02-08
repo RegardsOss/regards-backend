@@ -169,7 +169,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * </ol>
      * @throws ModuleException
      */
-    default ResponseEntity<List<EntityModel<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+    default ResponseEntity<List<EntityModel<? extends PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
             throws ModuleException {
         throw new UnsupportedOperationException(
                 "Bound calculation not implemented for engine " + context.getEngineType());

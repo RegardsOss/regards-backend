@@ -18,19 +18,6 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDecisionManager;
-
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -40,6 +27,18 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDecisionManager;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Templates controller unit test
@@ -208,9 +207,9 @@ public class TemplateControllerTest {
         // Define expected
         template.setId(TemplateTestConstants.ID);
         final List<Link> links = new ArrayList<>();
-        links.add(new Link("/templates/" + TemplateTestConstants.ID, "self"));
-        links.add(new Link("/templates/" + TemplateTestConstants.ID, "update"));
-        final EntityModel<Template> expected = new EntityModel<>(template, links);
+        links.add(Link.of("/templates/" + TemplateTestConstants.ID, "self"));
+        links.add(Link.of("/templates/" + TemplateTestConstants.ID, "update"));
+        final EntityModel<Template> expected = EntityModel.of(template, links);
 
         // Define actual
         final EntityModel<Template> actual = templateController.toResource(template);

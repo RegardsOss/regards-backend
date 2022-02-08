@@ -84,9 +84,9 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
         runtimetenantResolver.forceTenant(getDefaultTenant());
         // Replace stubs by mocks
         Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(ArgumentMatchers.any()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(new ProjectUser()), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(ArgumentMatchers.any()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(new ProjectUser()), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         ag1 = new AccessGroup(AG1_NAME);
         ag1 = dao.save(ag1);
         AccessGroup ag2 = new AccessGroup(AG2_NAME);

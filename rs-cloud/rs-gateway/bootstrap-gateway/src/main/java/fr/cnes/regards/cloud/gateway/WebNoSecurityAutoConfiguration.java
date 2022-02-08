@@ -27,7 +27,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 /**
- * Web security auto configuration to bypass spring security filters, we only want zuul filters and no auth here.
+ * Web security auto configuration to bypass spring security filters, we only want gateway filters and no auth here.
  */
 @Configuration
 @EnableWebSecurity

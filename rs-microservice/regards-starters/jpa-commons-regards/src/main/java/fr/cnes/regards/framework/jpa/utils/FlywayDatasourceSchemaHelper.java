@@ -115,8 +115,10 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                 classLoader,
                 Charset.defaultCharset(),
                 false,
+                false,
                 new ResourceNameCache(),
-                new LocationScannerCache());
+                new LocationScannerCache(),
+                false);
 
         // Scan all sql scripts without considering modules (into resources/scripts, there are one dir per module)
         Collection<LoadableResource> sqlScripts = scanner.getResources("", SQL_MIGRATION_SUFFIX);

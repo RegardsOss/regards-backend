@@ -364,7 +364,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             List<EntityModel<ModelAttrAssoc>> resources = new ArrayList<>();
             for (ModelAttrAssoc assoc : assocs) {
                 atts.add(assoc.getAttribute());
-                resources.add(new EntityModel<>(assoc));
+                resources.add(EntityModel.of(assoc));
                 if (modelName == null) {
                     modelName = assoc.getModel().getName();
                 }
@@ -377,7 +377,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             List<EntityModel<Model>> models = new ArrayList<>();
             Model mockModel = Mockito.mock(Model.class);
             Mockito.when(mockModel.getName()).thenReturn(modelName);
-            models.add(new EntityModel<Model>(mockModel));
+            models.add(EntityModel.of(mockModel));
             Mockito.when(modelClientMock.getModels(null)).thenReturn(ResponseEntity.ok(models));
             Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(modelName))
                     .thenReturn(ResponseEntity.ok(resources));

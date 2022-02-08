@@ -52,9 +52,9 @@ public class HateoasUtilsTest {
     @Purpose("Check that the wrapping method correctly wraps objects.")
     public void wrap() {
         final Object input = new Object();
-        final Link link = new Link(HREF);
+        final Link link = Link.of(HREF);
 
-        final EntityModel<Object> expected = new EntityModel<>(input, link);
+        final EntityModel<Object> expected = EntityModel.of(input, link);
 
         Assert.assertEquals(expected, HateoasUtils.wrap(input, link));
     }
@@ -71,7 +71,7 @@ public class HateoasUtilsTest {
         input.add(object);
 
         final List<EntityModel<Object>> expected = new ArrayList<>();
-        expected.add(new EntityModel<>(object));
+        expected.add(EntityModel.of(object));
 
         Assert.assertEquals(expected, HateoasUtils.wrapList(input));
     }
@@ -85,7 +85,7 @@ public class HateoasUtilsTest {
     public void unwrap() {
         final Object expected = new Object();
 
-        final EntityModel<Object> input = new EntityModel<>(expected);
+        final EntityModel<Object> input = EntityModel.of(expected);
 
         Assert.assertEquals(expected, HateoasUtils.unwrap(input));
     }
@@ -104,7 +104,7 @@ public class HateoasUtilsTest {
         expected.add(o0);
         expected.add(o1);
 
-        final List<EntityModel<Object>> actual = expected.stream().map(o -> new EntityModel<>(o))
+        final List<EntityModel<Object>> actual = expected.stream().map(o -> EntityModel.of(o))
                 .collect(Collectors.toList());
 
         Assert.assertEquals(expected, HateoasUtils.unwrapList(actual));
@@ -124,7 +124,7 @@ public class HateoasUtilsTest {
                 entities.add("value_" + pageable.getOffset() + i);
             }
             PageMetadata metadata = new PageMetadata(pageable.getPageSize(), pageable.getPageNumber(), 20);
-            PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), metadata, new ArrayList<>());
+            PagedModel<EntityModel<String>> resources = PagedModel.of(HateoasUtils.wrapList(entities), metadata, new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 
@@ -137,7 +137,7 @@ public class HateoasUtilsTest {
         allResults = HateoasUtils.retrieveAllPages(5, (final Pageable pPageable) -> {
             List<String> entities = new ArrayList<>();
             PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 0);
-            PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md, new ArrayList<>());
+            PagedModel<EntityModel<String>> resources = PagedModel.of(HateoasUtils.wrapList(entities), md, new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 
@@ -149,7 +149,7 @@ public class HateoasUtilsTest {
             List<String> entities = new ArrayList<>();
             entities.add("value_" + pageable.getOffset());
             PageMetadata md = new PageMetadata(pageable.getPageSize(), pageable.getPageNumber(), 1);
-            PagedModel<EntityModel<String>> resources = new PagedModel<>(HateoasUtils.wrapList(entities), md, new ArrayList<>());
+            PagedModel<EntityModel<String>> resources = PagedModel.of(HateoasUtils.wrapList(entities), md, new ArrayList<>());
             return ResponseEntity.ok(resources);
         });
 
