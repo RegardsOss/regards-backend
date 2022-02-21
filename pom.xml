@@ -140,7 +140,7 @@
 		<com.networknt.json.schema.validation>1.0.49</com.networknt.json.schema.validation>
 		<!-- google -->
 		<com.google.guava.version>27.0.1-jre</com.google.guava.version>
-		<com.google.code.gson.version>2.8.9</com.google.code.gson.version>
+		<com.google.code.gson.version>2.9.0</com.google.code.gson.version>
 		<!-- apache -->
 		<org.apache.commons.compress.version>1.20</org.apache.commons.compress.version>
 		<org.apache.commons.lang3.version>3.12.0</org.apache.commons.lang3.version>
@@ -2203,7 +2203,7 @@
 				<artifactId>junit-vintage-engine</artifactId>
 				<version>${junit-vintage-engine.version}</version>
 			</dependency>
-			<!-- resilience4j (circuit breaker) -->
+		<!--	&lt;!&ndash; resilience4j (circuit breaker) &ndash;&gt;
 			<dependency>
 				<groupId>io.github.resilience4j</groupId>
 				<artifactId>resilience4j-circuitbreaker</artifactId>
@@ -2218,7 +2218,7 @@
 				<groupId>io.github.resilience4j</groupId>
 				<artifactId>resilience4j-feign</artifactId>
 				<version>${resilience4j.version}</version>
-			</dependency>
+			</dependency>-->
 		</dependencies>
 	</dependencyManagement>
 

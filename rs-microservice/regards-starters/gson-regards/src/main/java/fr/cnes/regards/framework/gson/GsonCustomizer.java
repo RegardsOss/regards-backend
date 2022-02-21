@@ -18,11 +18,20 @@
  */
 package fr.cnes.regards.framework.gson;
 
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.Map;
-import java.util.Optional;
-
+import com.google.common.collect.Multimap;
+import com.google.gson.*;
+import fr.cnes.regards.framework.gson.adapters.*;
+import fr.cnes.regards.framework.gson.adapters.actuator.ApplicationMappingsAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.SystemHealthAdapter;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
+import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
+import fr.cnes.regards.framework.gson.strategy.PagedModelExclusionStrategy;
+import io.vavr.gson.VavrGson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.beans.BeansEndpoint.BeanDescriptor;
@@ -33,26 +42,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
 
-import com.google.common.collect.Multimap;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-
-import fr.cnes.regards.framework.gson.adapters.MimeTypeAdapter;
-import fr.cnes.regards.framework.gson.adapters.MultiValueMapAdapter;
-import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.gson.adapters.PathAdapter;
-import fr.cnes.regards.framework.gson.adapters.actuator.ApplicationMappingsAdapter;
-import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
-import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
-import fr.cnes.regards.framework.gson.adapters.actuator.SystemHealthAdapter;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
-import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
-import io.vavr.gson.VavrGson;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Static Gson customizer
@@ -83,7 +76,8 @@ public final class GsonCustomizer {
         builder.registerTypeAdapter(MimeType.class, new MimeTypeAdapter().nullSafe());
         builder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
         builder.registerTypeHierarchyAdapter(MultiValueMap.class, new MultiValueMapAdapter());
-        builder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
+        builder.setExclusionStrategies(new GsonIgnoreExclusionStrategy(), new PagedModelExclusionStrategy());
+
         // Custom actuator deserialization
         builder.registerTypeAdapter(Health.class, new HealthAdapter());
         builder.registerTypeAdapter(SystemHealth.class, new SystemHealthAdapter());
