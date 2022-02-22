@@ -18,26 +18,22 @@
  */
 package fr.cnes.regards.modules.model.client;
 
-import java.util.List;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * Feign client handling {@link AttributeModel}s
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-dam", contextId = "rs-dam.attribute-model.client")
-@RequestMapping(value = IAttributeModelClient.PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IAttributeModelClient {
 
     /**
@@ -61,7 +57,7 @@ public interface IAttributeModelClient {
      * @param fragmentName the fragment to filter on
      * @return the list wrapped in an HTTP response
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path =PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<AttributeModel>>> getAttributes(
             @RequestParam(value = PARAM_TYPE, required = false) PropertyType type,
             @RequestParam(value = PARAM_FRAGMENT_NAME, required = false) String fragmentName);

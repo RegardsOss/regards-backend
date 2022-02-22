@@ -22,46 +22,48 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
-import java.util.List;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
- *
  * Client to search for Toponyms.
  *
  * @author Sébastien Binda
- *
  */
 @RestClient(name = "rs-access-instance", contextId = "rs-access-project.toponyms-client")
-@RequestMapping(value = ToponymsRestConfiguration.ROOT_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IToponymsClient {
 
-    @RequestMapping(value = ToponymsRestConfiguration.SEARCH, method = RequestMethod.GET)
-    public ResponseEntity<List<EntityModel<ToponymDTO>>> search(
+    @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.SEARCH,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<EntityModel<ToponymDTO>>> search(
             @RequestParam(name = "partialLabel") String partialLabel, @RequestParam(name = "locale") String locale);
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(@RequestParam(name = "page") int page,
-            @RequestParam(name = "size") int size);
+    @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(@RequestParam(name = "page") int page,
+                                                             @RequestParam(name = "size") int size);
 
-    @PostMapping
-    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson);
+    @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
+                                                @RequestParam(name = "simplified", required = false) Boolean simplified);
 
-    @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET)
-    public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
-            @RequestParam(name = "simplified", required = false) Boolean simplified);
+    @GetMapping(value = ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId);
 
-    @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET)
-    public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId);
+    @PostMapping(value = ToponymsRestConfiguration.ROOT_MAPPING,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson);
 
 }

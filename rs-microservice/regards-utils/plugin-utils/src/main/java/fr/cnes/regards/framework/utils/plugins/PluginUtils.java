@@ -19,29 +19,9 @@
 
 package fr.cnes.regards.framework.utils.plugins;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.reflections.Configuration;
-import org.reflections.Reflections;
-import org.reflections.util.ConfigurationBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -52,6 +32,16 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import org.reflections.Configuration;
+import org.reflections.Reflections;
+import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class contains all the utilities to create a {@link Plugin} instance, to retrieve all annotated plugins and to
@@ -293,11 +283,11 @@ public final class PluginUtils {
 
     private static <T> void autowirePlugin(T plugin) {
         // Autowire Spring bean in Spring IOC context
-        if (PluginUtilsBean.getInstance() != null) {
+        if (PluginUtilsBean.isBeanFactoryInitialized()) {
             try {
-                PluginUtilsBean.getInstance().processAutowiredBean(plugin);
+                PluginUtilsBean.processAutowiredBean(plugin);
             } catch (Exception e) {
-                throw new PluginUtilsRuntimeException("Error during plugin instanciation", e);
+                throw new PluginUtilsRuntimeException("Error during plugin instantiation", e);
             }
         }
     }

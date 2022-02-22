@@ -26,23 +26,23 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestClient(name = "rs-authentication", contextId = "rs-authentication.external-authentication-client")
-@RequestMapping(
-        path = "/serviceproviders",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE
-)
 public interface IExternalAuthenticationClient {
+
+    String ROOT_PATH = "/serviceproviders";
 
     String ACCEPT_ACCOUNT_RELATIVE_PATH = "/verify";
 
-    @GetMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH)
+    @GetMapping(value = ROOT_PATH + ACCEPT_ACCOUNT_RELATIVE_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Authentication> verifyAndAuthenticate(@RequestParam String externalToken);
 
-    @GetMapping
+    @GetMapping(value = ROOT_PATH,
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ServiceProviderDto>>> getServiceProviders();
 
 }

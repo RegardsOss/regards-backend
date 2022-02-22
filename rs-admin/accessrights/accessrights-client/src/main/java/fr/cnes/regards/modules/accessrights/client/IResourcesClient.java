@@ -18,30 +18,23 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import javax.validation.Valid;
 
 @RestClient(name = "rs-admin", contextId = "rs-admin.resources-client")
-@RequestMapping(value = IResourcesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IResourcesClient {
 
     /**
      * Root mapping for requests of this rest controller
      */
-    String TYPE_MAPPING = "/resources";
+    String ROOT_TYPE_MAPPING = "/resources";
 
     /**
      * Single resource mapping
@@ -57,7 +50,7 @@ public interface IResourcesClient {
      *            page assembler
      * @return list of user resource accesses
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccesses(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
@@ -69,7 +62,7 @@ public interface IResourcesClient {
      *            resource id
      * @return {@link ResourcesAccess}
      */
-    @RequestMapping(method = RequestMethod.GET, value = RESOURCE_MAPPING)
+    @GetMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") final Long pResourceId);
 
     /**
@@ -82,7 +75,7 @@ public interface IResourcesClient {
      *            Resource access to update
      * @return updated ResourcesAccess
      */
-    @RequestMapping(method = RequestMethod.PUT, value = RESOURCE_MAPPING)
+    @PutMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ResourcesAccess>> updateResourceAccess(
             @PathVariable("resource_id") final Long pResourceId,
             @Valid @RequestBody final ResourcesAccess pResourceAccessToUpdate);

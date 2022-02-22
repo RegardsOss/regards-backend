@@ -35,8 +35,9 @@ import static fr.cnes.regards.modules.accessrights.client.IRegistrationClient.TA
  * @author CS
  */
 @RestClient(name = TARGET_NAME, contextId = "rs-admin.registration-client")
-@RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IRegistrationClient {
+
+    String ROOT_PATH = "/accesses";
 
     String TARGET_NAME = "rs-admin";
 
@@ -46,7 +47,7 @@ public interface IRegistrationClient {
      * @param pAccessRequest A Dto containing all information for creating a new project user
      * @return the passed Dto
      */
-    @PostMapping
+    @PostMapping(value = ROOT_PATH + ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<AccessRequestDto>> requestAccess(@Valid @RequestBody AccessRequestDto pAccessRequest);
 
     /**
@@ -55,7 +56,7 @@ public interface IRegistrationClient {
      * @param pAccessRequest A Dto containing all information for creating a new project user
      * @return the passed Dto
      */
-    @PostMapping("/external")
+    @PostMapping(value = ROOT_PATH + "/external", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<AccessRequestDto>> requestExternalAccess(@Valid @RequestBody AccessRequestDto pAccessRequest);
 
     /**
@@ -64,7 +65,7 @@ public interface IRegistrationClient {
      * @param token the token
      * @return void
      */
-    @GetMapping("/verifyEmail/{token}")
+    @GetMapping(value = ROOT_PATH + "/verifyEmail/{token}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> verifyEmail(@PathVariable("token") final String token);
 
     /**
@@ -73,7 +74,7 @@ public interface IRegistrationClient {
      * @param pAccessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping("/{access_id}/accept")
+    @PutMapping(value = ROOT_PATH + "/{access_id}/accept", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId);
 
     /**
@@ -82,7 +83,7 @@ public interface IRegistrationClient {
      * @param pAccessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping("/{access_id}/deny")
+    @PutMapping(value = ROOT_PATH + "/{access_id}/deny", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId);
 
     /**
@@ -91,7 +92,7 @@ public interface IRegistrationClient {
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping("/{access_id}/active")
+    @PutMapping(value = ROOT_PATH + "/{access_id}/active", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> activeAccess(@PathVariable("access_id") Long accessId);
 
     /**
@@ -100,7 +101,7 @@ public interface IRegistrationClient {
      * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping("/{access_id}/inactive")
+    @PutMapping(value = ROOT_PATH + "/{access_id}/inactive", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") Long accessId);
 
     /**
@@ -109,7 +110,7 @@ public interface IRegistrationClient {
      * @param pAccessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @DeleteMapping("/{access_id}")
+    @DeleteMapping(value = ROOT_PATH + "/{access_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId);
 
 }

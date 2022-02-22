@@ -18,20 +18,15 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Role resource management API client
@@ -40,24 +35,22 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.role-resource-client")
-@RequestMapping(value = IRoleResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IRoleResourceClient {
 
     /**
      * Controller base mapping
      */
-    String TYPE_MAPPING = "/roles/{role_name}/resources";
+    String ROOT_TYPE_MAPPING = "/roles/{role_name}/resources";
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ResourcesAccess>>> getRoleResources(
             @PathVariable("role_name") final String pRoleName);
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ResourcesAccess>> addRoleResource(@PathVariable("role_name") final String pRoleName,
             @RequestBody @Valid final ResourcesAccess pNewResourcesAccess);
 
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{resources_access_id}")
+    @DeleteMapping(value = ROOT_TYPE_MAPPING + "/{resources_access_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> deleteRoleResource(@PathVariable("role_name") final String pRoleName,
             @PathVariable("resources_access_id") final Long pResourcesAccessId);
 

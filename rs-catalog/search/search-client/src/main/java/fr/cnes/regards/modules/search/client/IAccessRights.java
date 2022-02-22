@@ -18,20 +18,15 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import java.util.Collection;
-import java.util.Set;
-
-import javax.validation.Valid;
-
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * API to request data access rights
@@ -40,11 +35,9 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
  *
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.access-rights.client")
-@RequestMapping(value = IAccessRights.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface IAccessRights {
 
-    String TYPE_MAPPING = "/entities";
+    String ROOT_TYPE_MAPPING = "/entities";
 
     /**
      * To check access rights
@@ -60,9 +53,9 @@ public interface IAccessRights {
 
     String ENTITY_HAS_ACCESS_MAPPING = URN_MAPPING + ACCESS_RIGHTS_MAPPING;
 
-    @RequestMapping(method = RequestMethod.GET, value = ENTITY_HAS_ACCESS_MAPPING)
+    @GetMapping(path = ROOT_TYPE_MAPPING + ENTITY_HAS_ACCESS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Boolean> hasAccess(@Valid @PathVariable("urn") UniformResourceName urn);
 
-    @RequestMapping(method = RequestMethod.POST, value = HAS_ACCESS_MAPPING)
+    @PostMapping(path = ROOT_TYPE_MAPPING + HAS_ACCESS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody Collection<UniformResourceName> inUrns);
 }

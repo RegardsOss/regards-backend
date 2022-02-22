@@ -18,23 +18,17 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  *
@@ -43,14 +37,12 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.ms-resources-client")
-@RequestMapping(value = IMicroserviceResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IMicroserviceResourceClient {
 
     /**
      * Controller base mapping
      */
-    String TYPE_MAPPING = "/resources/microservices/{microservicename}";
+    String ROOT_TYPE_MAPPING = "/resources/microservices/{microservicename}";
 
     /**
      * Root to retreive resources by microservice and controller name
@@ -73,7 +65,7 @@ public interface IMicroserviceResourceClient {
      *            page assembler
      * @return list of user resource accesses for given microservice
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
             @PathVariable("microservicename") final String pMicroserviceName, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
@@ -86,7 +78,7 @@ public interface IMicroserviceResourceClient {
      *            resource to register for the specified microservice
      * @return {@link Void}
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> registerMicroserviceEndpoints(@PathVariable("microservicename") final String pMicroserviceName,
             @RequestBody @Valid final List<ResourceMapping> pResourcesToRegister);
 
@@ -97,7 +89,7 @@ public interface IMicroserviceResourceClient {
      *            microservice
      * @return list of all controllers associated to the specified microservice
      */
-    @RequestMapping(method = RequestMethod.GET, value = CONTROLLERS_MAPPING)
+    @GetMapping(value = ROOT_TYPE_MAPPING + CONTROLLERS_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<String>> retrieveMicroserviceControllers(
             @PathVariable("microservicename") final String pMicroserviceName);
 
@@ -110,7 +102,7 @@ public interface IMicroserviceResourceClient {
      *            controller
      * @return List of accessible resources for the specified microservice and controller
      */
-    @RequestMapping(method = RequestMethod.GET, value = CONTROLLER_MAPPING)
+    @RequestMapping(value = ROOT_TYPE_MAPPING + CONTROLLER_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
             @PathVariable("controllername") final String pControllerName);

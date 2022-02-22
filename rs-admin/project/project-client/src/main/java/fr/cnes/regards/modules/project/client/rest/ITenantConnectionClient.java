@@ -18,19 +18,14 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  *
@@ -40,9 +35,9 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  *
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.tenant-connection-client")
-@RequestMapping(value = "/connections/{microservice}", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ITenantConnectionClient {
+
+    String ROOT_PATH = "/connections/{microservice}";
 
     /**
      * Allows the system to register a tenant connection
@@ -50,7 +45,7 @@ public interface ITenantConnectionClient {
      * @param tenantConnection connection to register
      * @return registered connection
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
             @Valid @RequestBody TenantConnection tenantConnection);
 
@@ -60,7 +55,7 @@ public interface ITenantConnectionClient {
      * @param tenantConnection connection to update
      * @return updated connection
      */
-    @RequestMapping(method = RequestMethod.PUT)
+    @PutMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<TenantConnection> updateState(@PathVariable("microservice") String microservice,
             @Valid @RequestBody TenantConnection tenantConnection);
 
@@ -69,7 +64,7 @@ public interface ITenantConnectionClient {
      * @param microservice target microservice
      * @return list of connections
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable("microservice") String microservice);
 
 }

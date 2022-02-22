@@ -26,32 +26,31 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 /**
  * Feign client for calling ServicesAggregatorController methods
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
 @RestClient(name = "rs-access-project", contextId = "rs-access-project.service-agg-client")
-@RequestMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IServiceAggregatorClient {
 
     /**
      * Returns all services applied to all datasets plus those of the given dataset
-     * @param datasetIpId the id of the Dataset
+     *
+     * @param datasetIpId       the id of the Dataset
      * @param applicationMode
      * @param pApplicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
     @Cacheable(value = ServiceAggregatorKeyGenerator.CACHE_NAME,
             keyGenerator = ServiceAggregatorKeyGenerator.KEY_GENERATOR, sync = true)
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpId,
             @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationMode);

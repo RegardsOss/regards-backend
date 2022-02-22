@@ -18,21 +18,15 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.project.domain.Project;
+import javax.validation.Valid;
 
 /**
  * Feign client allowing access to the module with REST requests.
@@ -42,10 +36,9 @@ import fr.cnes.regards.modules.project.domain.Project;
 
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.projects-client")
-@RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IProjectsClient {
 
+    String ROOT_PATH = "/projects";
     // Projects Requests
     // -----------------
 
@@ -61,7 +54,7 @@ public interface IProjectsClient {
      * @return List of projects
 
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
@@ -69,7 +62,7 @@ public interface IProjectsClient {
     /**
      * Same than {@link IProjectsClient#retrieveProjectList(int, int)} but only for public projects
      */
-    @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
+    @GetMapping(path = ROOT_PATH + "/public", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(@RequestParam("page") int page,
             @RequestParam("size") int size);
@@ -83,7 +76,7 @@ public interface IProjectsClient {
      * @return Created project
 
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<Project>> createProject(@Valid @RequestBody Project pNewProject);
 
@@ -96,7 +89,7 @@ public interface IProjectsClient {
      * @return Project
 
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/{project_name}")
+    @GetMapping(path = ROOT_PATH + "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<Project>> retrieveProject(@PathVariable("project_name") String pProjectName);
 
@@ -111,7 +104,7 @@ public interface IProjectsClient {
      * @return Updated Project
 
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
+    @PutMapping(path =ROOT_PATH + "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<EntityModel<Project>> updateProject(@PathVariable("project_name") String pProjectName,
             @RequestBody Project pProjectToUpdate);
@@ -125,7 +118,7 @@ public interface IProjectsClient {
      * @return Void
 
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}")
+    @DeleteMapping(path = ROOT_PATH + "/{project_name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<Void> deleteProject(@PathVariable("project_name") String pProjectName);
 }

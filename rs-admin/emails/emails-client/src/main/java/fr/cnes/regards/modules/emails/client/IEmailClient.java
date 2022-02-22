@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.emails.client;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.emails.domain.Email;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.emails.domain.Email;
+import java.util.List;
 
 /**
  * Feign client exposing the emails module endpoints to other microservices plugged through Eureka.
@@ -36,22 +34,22 @@ import fr.cnes.regards.modules.emails.domain.Email;
  */
 
 @RestClient(name = "rs-admin", contextId = "rs-admin.emails-client")
-@RequestMapping(value = "/emails", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IEmailClient {
+
+    String ROOT_PATH = "/emails";
 
     /**
      * Define the endpoint for retrieving the list of sent emails
      * @return A {@link List} of emails as {@link Email} wrapped in an {@link ResponseEntity}
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<Email>> retrieveEmails();
 
     /**
      * Define the endpoint for sending an email to recipients.<br>Prefer using {@link #sendEmail(String, String, String, String...)}
      * @param pMessage The email in a simple representation.
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> sendEmail(SimpleMailMessage pMessage);
 
     /**
@@ -75,19 +73,19 @@ public interface IEmailClient {
      * @param pId The email id
      * @return The email as a {@link Email} wrapped in an {@link ResponseEntity}
      */
-    @RequestMapping(value = "/{mail_id}", method = RequestMethod.GET)
+    @GetMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Email> retrieveEmail(Long pId);
 
     /**
      * Define the endpoint for re-sending an email
      */
-    @RequestMapping(value = "/{mail_id}", method = RequestMethod.PUT)
+    @PutMapping(path =  ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     void resendEmail(Long pId);
 
     /**
      * Define the endpoint for deleting an email
      * @param pId The email id
      */
-    @RequestMapping(value = "/{mail_id}", method = RequestMethod.DELETE)
+    @DeleteMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     void deleteEmail(Long pId);
 }

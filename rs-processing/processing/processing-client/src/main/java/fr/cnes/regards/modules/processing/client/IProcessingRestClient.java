@@ -17,20 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.client;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BATCH_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_PATH;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
@@ -38,6 +24,12 @@ import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import io.vavr.collection.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
 
 /**
  * Rest client to access the process endpoints allowing to
@@ -49,23 +41,21 @@ import io.vavr.collection.List;
  * @author gandrieu
  */
 @RestClient(name = "rs-processing", contextId = "rs-processing.rest.client")
-@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
 public interface IProcessingRestClient {
 
-    @GetMapping(path = PROCESS_PATH)
+    @GetMapping(path = PROCESS_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<PProcessDTO>> listAll();
 
-    @GetMapping(path = PROCESS_PATH + "/{name}")
+    @GetMapping(path = PROCESS_PATH + "/{name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PProcessDTO> findByName(@PathVariable("name") String processName);
 
-    @GetMapping(path = PROCESS_PATH + "/{uuid}")
+    @GetMapping(path = PROCESS_PATH + "/{uuid}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PProcessDTO> findByUuid(@PathVariable("uuid") String processName);
 
-    @PostMapping(path = BATCH_PATH)
+    @PostMapping(path = BATCH_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PBatchResponse> createBatch(@RequestBody PBatchRequest request);
 
-    @GetMapping(path = MONITORING_EXECUTIONS_PATH)
+    @GetMapping(path = MONITORING_EXECUTIONS_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<PExecution>> executions(@RequestParam String tenant,
             @RequestParam java.util.List<ExecutionStatus> status, Pageable page);
 }

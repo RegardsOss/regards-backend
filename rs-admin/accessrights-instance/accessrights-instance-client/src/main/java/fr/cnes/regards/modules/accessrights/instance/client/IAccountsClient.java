@@ -41,10 +41,12 @@ import javax.validation.Valid;
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.accounts-client")
-@RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IAccountsClient {
 
+    String ROOT_PATH = "/accounts";
+
     String ACCEPT_ACCOUNT_RELATIVE_PATH = "/{account_email}/accept";
+
     String REFUSE_ACCOUNT_RELATIVE_PATH = "/{account_email}/refuse";
 
     /**
@@ -52,7 +54,7 @@ public interface IAccountsClient {
      *
      * @return The accounts list
      */
-    @GetMapping
+    @GetMapping(value = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<Account>>> retrieveAccountList(
             @RequestParam AccountSearchParameters parameters, @RequestParam("page") int page, @RequestParam("size") int size
     );
@@ -63,7 +65,7 @@ public interface IAccountsClient {
      * @param accountNPassword The data transfer object containing values to create the account from
      * @return the created account
      */
-    @PostMapping
+    @PostMapping(value = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Account>> createAccount(@Valid @RequestBody AccountNPassword accountNPassword);
 
     /**
@@ -72,7 +74,7 @@ public interface IAccountsClient {
      * @param id The {@link Account}'s <code>id</code>
      * @return The account
      */
-    @GetMapping("/{account_id}")
+    @GetMapping(value = ROOT_PATH + "/{account_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Account>> retrieveAccount(@PathVariable("account_id") Long id);
 
     /**
@@ -81,7 +83,7 @@ public interface IAccountsClient {
      * @param email email of the account to retrieve
      * @return Account
      */
-    @GetMapping("/account/{account_email}")
+    @GetMapping(value = ROOT_PATH + "/account/{account_email}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Account>> retrieveAccounByEmail(@PathVariable("account_email") String email);
 
     /**
@@ -90,7 +92,7 @@ public interface IAccountsClient {
      * @param id             The <code>id</code> of the {@link Account} to update
      * @param updatedAccount The new values to set
      */
-    @PutMapping("/{account_id}")
+    @PutMapping(value = ROOT_PATH + "/{account_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Account>> updateAccount(@PathVariable("account_id") Long id, @Valid @RequestBody Account updatedAccount);
 
     /**
@@ -99,7 +101,7 @@ public interface IAccountsClient {
      *
      * @param id The account <code>id</code>
      */
-    @DeleteMapping("/{account_id}")
+    @DeleteMapping(value = ROOT_PATH + "/{account_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long id);
 
     /**
@@ -109,7 +111,7 @@ public interface IAccountsClient {
      * @param unlockCode the unlock code
      * @return void
      */
-    @GetMapping("/{account_id}/unlock/{unlock_code}")
+    @GetMapping(value = ROOT_PATH + "/{account_id}/unlock/{unlock_code}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> unlockAccount(@PathVariable("account_id") Long id, @PathVariable("unlock_code") String unlockCode);
 
     /**
@@ -122,7 +124,7 @@ public interface IAccountsClient {
      * @return void
      * @throws EntityNotFoundException
      */
-    @PostMapping("/{account_email}/resetPassword")
+    @PostMapping(value = ROOT_PATH + "/{account_email}/resetPassword", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") String email, @Valid @RequestBody RequestResetPasswordDto dto);
 
     /**
@@ -132,7 +134,7 @@ public interface IAccountsClient {
      * @param dto   The DTO containing : 1) the token 2) the new password
      * @return void
      */
-    @PutMapping("/{account_email}/resetPassword")
+    @PutMapping(value = ROOT_PATH + "/{account_email}/resetPassword", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> performResetPassword(@PathVariable("account_email") String email, @Valid @RequestBody PerformResetPasswordDto dto);
 
     /**
@@ -143,7 +145,7 @@ public interface IAccountsClient {
      * @param email The {@link Account}'s <code>email</code>
      * @param type  The type of code
      */
-    @GetMapping("/code")
+    @GetMapping(value = ROOT_PATH + "/code", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> sendAccountCode(@RequestParam("email") String email, @RequestParam("type") CodeType type);
 
     /**
@@ -154,7 +156,7 @@ public interface IAccountsClient {
      * @param password The password to check
      * @return <code>true</code> if the password is valid, else <code>false</code>
      */
-    @GetMapping("/{account_email}/validate")
+    @GetMapping(value = ROOT_PATH + "/{account_email}/validate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Boolean> validatePassword(@PathVariable("account_email") String email, @RequestParam("password") String password);
 
     /**
@@ -163,7 +165,7 @@ public interface IAccountsClient {
      * @param email account email
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping(ACCEPT_ACCOUNT_RELATIVE_PATH)
+    @PutMapping(value = ROOT_PATH + ACCEPT_ACCOUNT_RELATIVE_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> acceptAccount(@PathVariable("account_email") String email);
 
     /**
@@ -172,7 +174,7 @@ public interface IAccountsClient {
      * @param email account email
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
-    @PutMapping(REFUSE_ACCOUNT_RELATIVE_PATH)
+    @PutMapping(value = ROOT_PATH + REFUSE_ACCOUNT_RELATIVE_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> refuseAccount(@PathVariable("account_email") String email);
 
     /**
@@ -181,7 +183,7 @@ public interface IAccountsClient {
      * @param email   email of the account to link
      * @param project name of the project to link
      */
-    @PutMapping("/{account_email}/link/{project}")
+    @PutMapping(value = ROOT_PATH + "/{account_email}/link/{project}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> link(@PathVariable("account_email") String email, @PathVariable("project") String project);
 
     /**
@@ -190,10 +192,10 @@ public interface IAccountsClient {
      * @param email   email of the account to link
      * @param project name of the project to link
      */
-    @PutMapping("/{account_email}/unlink/{project}")
+    @PutMapping(value = ROOT_PATH + "/{account_email}/unlink/{project}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> unlink(@PathVariable("account_email") String email, @PathVariable("project") String project);
 
-    @PutMapping("/{account_email}/origin/{origin}")
+    @PutMapping(value = ROOT_PATH + "/{account_email}/origin/{origin}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> updateOrigin(@PathVariable("account_email") String accountEmail, @PathVariable("origin") String origin);
 
 }

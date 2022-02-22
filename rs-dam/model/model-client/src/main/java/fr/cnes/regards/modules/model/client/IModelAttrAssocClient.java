@@ -18,26 +18,20 @@
  */
 package fr.cnes.regards.modules.model.client;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
 @RestClient(name = "rs-dam", contextId = "rs-dam.model-att-assoc.client")
-@RequestMapping(IModelAttrAssocClient.BASE_MAPPING)
 public interface IModelAttrAssocClient {
 
     /**
@@ -55,14 +49,14 @@ public interface IModelAttrAssocClient {
      */
     String ASSOCS_MAPPING = "/assocs";
 
-    @RequestMapping(path = TYPE_MAPPING, method = RequestMethod.GET)
+    @GetMapping(path = BASE_MAPPING + TYPE_MAPPING)
     ResponseEntity<List<EntityModel<ModelAttrAssoc>>> getModelAttrAssocs(@PathVariable("modelName") String modelName);
 
     /**
      * Retrieve model attribute associations for a given entity type (optional)
      * @return the model attribute associations
      */
-    @RequestMapping(path = ASSOCS_MAPPING, method = RequestMethod.GET)
+    @GetMapping(path = BASE_MAPPING + ASSOCS_MAPPING)
     ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsFor(
             @RequestParam(name = "type", required = false) EntityType type);
 

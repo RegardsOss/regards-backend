@@ -18,23 +18,20 @@
  */
 package fr.cnes.regards.modules.model.client;
 
-import java.util.List;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
 @RestClient(name = "rs-dam", contextId = "rs-dam.model.client")
-@RequestMapping(IModelClient.TYPE_MAPPING)
 public interface IModelClient {
 
     /**
@@ -46,7 +43,7 @@ public interface IModelClient {
      * Retrieve the models of a given type (optional)
      * @return the models
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = IModelClient.TYPE_MAPPING)
     ResponseEntity<List<EntityModel<Model>>> getModels(
             @RequestParam(value = "type", required = false) EntityType pType);
 }

@@ -18,35 +18,35 @@
  */
 package fr.cnes.regards.modules.catalog.services.client;
 
-import java.util.List;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * Feign client for calling rs-catalog's CatalogServicesController
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.services-client")
-@RequestMapping(value = "/services", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ICatalogServicesClient {
+
+    String ROOT_PATH = "/services";
 
     /**
      * Call rs-catalog's CatalogServicesController#retrieveServices
-     * @param datasetId the id of the Dataset. Can be <code>null</code>.
+     *
+     * @param datasetId    the id of the Dataset. Can be <code>null</code>.
      * @param serviceScope the applicable mode. Can be <code>null</code>.
      * @return the list of services
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<PluginConfigurationDto>>> retrieveServices(
             @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIds,
             @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> serviceScopes);

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.utils.plugins.bean;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
 
@@ -28,25 +27,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class PluginUtilsBean {
 
-    private static PluginUtilsBean instance;
+    private static AutowireCapableBeanFactory beanFactory;
 
-    @Autowired
-    private AutowireCapableBeanFactory beanFactory;
-
-    public static PluginUtilsBean getInstance() {
-        return instance;
+    private PluginUtilsBean(AutowireCapableBeanFactory autowireCapableBeanFactory) {
+        PluginUtilsBean.beanFactory = autowireCapableBeanFactory;
     }
-
-    // This method can be synchronized (and must be !!!) because it will be called only once (at init) by spring
-    @Autowired
-    public synchronized void setInstance(PluginUtilsBean bean) {
-        instance = bean;
-    }
-
     /**
      * Allows to autowire bean into a plugin instance
      */
-    public <T> void processAutowiredBean(final T plugin) {
+    public static <T> void processAutowiredBean(final T plugin) {
         beanFactory.autowireBean(plugin);
+    }
+
+    public static boolean isBeanFactoryInitialized(){
+        return beanFactory != null;
     }
 }

@@ -18,34 +18,28 @@
  */
 package fr.cnes.regards.modules.dam.client.entities;
 
-import java.util.Collection;
-import java.util.Set;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
  */
 @RestClient(name = "rs-dam", contextId = "rs-dam.dataset.client")
-@RequestMapping(value = IDatasetClient.DATASET_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IDatasetClient {
 
-    String DATASET_PATH = "/datasets";
+    String ROOT_DATASET_PATH = "/datasets";
 
     String DATASET_ID_PATH = "/{dataset_id}";
 
@@ -64,32 +58,32 @@ public interface IDatasetClient {
      * Retrieve a page of datasets
      * @return a page of datasets
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = ROOT_DATASET_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<Dataset>>> retrieveDatasets(@RequestParam("page") int page,
             @RequestParam("size") int size);
 
     /**
      * Retrieve a dataset using its id
      */
-    @RequestMapping(method = RequestMethod.GET, value = DATASET_ID_PATH)
+    @GetMapping(path = ROOT_DATASET_PATH + DATASET_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Dataset>> retrieveDataset(@PathVariable("dataset_id") Long datasetId);
 
     /**
      * Retrieve a dataset using its ip id
      */
-    @RequestMapping(method = RequestMethod.GET, value = DATASET_IP_ID_PATH)
+    @GetMapping(path = ROOT_DATASET_PATH + DATASET_IP_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Dataset>> retrieveDataset(@PathVariable("dataset_ipId") String datasetIpId);
 
     /**
      * Delete dataset
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = DATASET_ID_PATH)
+    @DeleteMapping(path = ROOT_DATASET_PATH + DATASET_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> deleteDataset(@PathVariable("dataset_id") Long datasetId);
 
     /**
      * Update dataset
      */
-    @RequestMapping(method = RequestMethod.PUT, value = DATASET_ID_PATH)
+    @PutMapping(path = ROOT_DATASET_PATH + DATASET_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Dataset>> updateDataset(@PathVariable("dataset_id") Long datasetId,
             @RequestBody Dataset dataset);
 
@@ -99,7 +93,7 @@ public interface IDatasetClient {
      * @param toBeDissociated entity to dissociate
      * @return {@link Dataset} as a {@link EntityModel}
      */
-    @RequestMapping(method = RequestMethod.PUT, value = DATASET_ID_DISSOCIATE_PATH)
+    @PutMapping(path = ROOT_DATASET_PATH + DATASET_ID_DISSOCIATE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Dataset>> dissociateDataset(@PathVariable("dataset_id") Long datasetId,
             @RequestBody Set<OaisUniformResourceName> toBeDissociated);
 
@@ -109,11 +103,11 @@ public interface IDatasetClient {
      * @param toBeAssociatedWith entities to be associated
      * @return {@link Dataset} as a {@link EntityModel}
      */
-    @RequestMapping(method = RequestMethod.PUT, value = DATASET_ID_ASSOCIATE_PATH)
+    @PutMapping(path = ROOT_DATASET_PATH + DATASET_ID_ASSOCIATE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Dataset>> associateDataset(@PathVariable("dataset_id") Long datasetId,
             @RequestBody Set<OaisUniformResourceName> toBeAssociatedWith);
 
-    @RequestMapping(path = ENTITY_ASSOCS_MAPPING, method = RequestMethod.GET)
-    public ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsForDataInDataset(
+    @GetMapping(path = ROOT_DATASET_PATH + ENTITY_ASSOCS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsForDataInDataset(
             @RequestParam(name = "datasetUrn") UniformResourceName datasetUrn);
 }

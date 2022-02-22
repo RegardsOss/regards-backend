@@ -18,12 +18,19 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import javax.persistence.Entity;
-import javax.sql.DataSource;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
+import fr.cnes.regards.framework.jpa.utils.DaoUtils;
+import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
@@ -47,19 +54,11 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import com.google.gson.Gson;
-import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
-import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
-import fr.cnes.regards.framework.jpa.json.GsonUtil;
-import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
-import fr.cnes.regards.framework.jpa.utils.DaoUtils;
-import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import javax.persistence.Entity;
+import javax.sql.DataSource;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Configuration class to define hibernate/jpa multitenancy databases strategy
@@ -100,18 +99,6 @@ public class MultitenantJpaAutoConfiguration {
     private IDatasourceSchemaHelper datasourceSchemaHelper;
 
     /**
-     * Multitenant connection provider
-     */
-    @Autowired
-    private MultiTenantConnectionProvider multiTenantConnectionProvider;
-
-    /**
-     * Tenant resolver.
-     */
-    @Autowired
-    private CurrentTenantIdentifierResolver currentTenantIdentifierResolver;
-
-    /**
      * Transaction manager builder
      */
     @Autowired
@@ -131,8 +118,7 @@ public class MultitenantJpaAutoConfiguration {
     @Bean
     public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(
             IRuntimeTenantResolver threadTenantResolver) {
-        this.currentTenantIdentifierResolver = new CurrentTenantIdentifierResolverImpl(threadTenantResolver);
-        return currentTenantIdentifierResolver;
+        return new CurrentTenantIdentifierResolverImpl(threadTenantResolver);
     }
 
     /**
@@ -151,9 +137,10 @@ public class MultitenantJpaAutoConfiguration {
     @Bean(name = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @Primary
-    public PlatformTransactionManager multitenantsJpaTransactionManager() throws JpaMultitenantException {
+    public PlatformTransactionManager multitenantsJpaTransactionManager(MultiTenantConnectionProvider multiTenantConnectionProvider,
+                                                                        CurrentTenantIdentifierResolver currentTenantIdentifierResolver) throws JpaMultitenantException {
         final JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setEntityManagerFactory(multitenantsEntityManagerFactory().getObject());
+        jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(multiTenantConnectionProvider, currentTenantIdentifierResolver).getObject());
         return jtm;
     }
 
@@ -162,7 +149,8 @@ public class MultitenantJpaAutoConfiguration {
      * @return {@link LocalContainerEntityManagerFactoryBean}
      */
     @Bean(name = "multitenantsEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory() {
+    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory(MultiTenantConnectionProvider multiTenantConnectionProvider,
+                                                                                   CurrentTenantIdentifierResolver currentTenantIdentifierResolver) {
         // Use the first dataSource configuration to init the entityManagerFactory
         if (dataSources.isEmpty()) {
             throw new ApplicationContextException("No datasource defined. JPA is not able to start."

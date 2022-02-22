@@ -18,19 +18,15 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import javax.validation.Valid;
 
 /**
  * Class ProjectsClient
@@ -39,9 +35,9 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author sbinda
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.project-connection-client")
-@RequestMapping(value = "/projects/{projectName}/connections", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IProjectConnectionClient {
+
+    String ROOT_PATH = "/projects/{projectName}/connections";
 
     /**
      * Retrieve all project connections
@@ -50,7 +46,7 @@ public interface IProjectConnectionClient {
      * @param pAssembler assembler
      * @return all project connections
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(
             @PathVariable("projectName") String projectName);
 
@@ -60,7 +56,7 @@ public interface IProjectConnectionClient {
      * @param connectionId connection identifier
      * @return a project connection
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/{connectionId}")
+    @GetMapping(path = ROOT_PATH + "/{connectionId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ProjectConnection>> getProjectConnection(@PathVariable("projectName") String projectName,
             @PathVariable("connectionId") Long connectionId);
 
@@ -70,7 +66,7 @@ public interface IProjectConnectionClient {
      * @param pProjectConnection connection to create
      * @return the create project connection
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ProjectConnection>> createProjectConnection(
             @PathVariable("projectName") String projectName,
             @Valid @RequestBody final ProjectConnection pProjectConnection);
@@ -82,7 +78,7 @@ public interface IProjectConnectionClient {
      * @param pProjectConnection project connection
      * @return updated connection
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/{connectionId}")
+    @PutMapping(path = ROOT_PATH + "/{connectionId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ProjectConnection>> updateProjectConnection(
             @PathVariable("projectName") String projectName, @PathVariable("connectionId") Long connectionId,
             @Valid @RequestBody final ProjectConnection pProjectConnection);
@@ -93,7 +89,7 @@ public interface IProjectConnectionClient {
      * @param connectionId project connection identifier
      * @return {@link Void}
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{connectionId}")
+    @DeleteMapping(path = ROOT_PATH + "/{connectionId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> deleteProjectConnection(@PathVariable("projectName") String projectName,
             @PathVariable("connectionId") Long connectionId);
 }

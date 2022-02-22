@@ -28,20 +28,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 
 @RestClient(name = "open-id-connect", contextId = "open-id-connect")
-@RequestMapping(
-    consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE
-)
 public interface OpenIdConnectClient/*<UserInfoResponse extends OpenIdUserInfoResponse>*/ {
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<OpenIdTokenResponse> token(@RequestBody OpenIdTokenRequest request);
 
-    @GetMapping
+    @GetMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<HashMap<String, String>> userInfo();
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> revoke(@RequestBody RevokeBody revokeToken);
 }

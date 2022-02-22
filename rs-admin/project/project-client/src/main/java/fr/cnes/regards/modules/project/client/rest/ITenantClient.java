@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import java.util.Set;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
+import java.util.Set;
 
 /**
  *
@@ -36,13 +34,13 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
  *
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.tenant-client")
-@RequestMapping(value = "/tenants", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ITenantClient {
 
-    @RequestMapping(method = RequestMethod.GET)
+    String ROOT_PATH = "/tenants";
+
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<String>> getAllTenants();
 
-    @RequestMapping(method = RequestMethod.GET, value = "/{pMicroserviceName}")
+    @GetMapping(path = ROOT_PATH + "/{pMicroserviceName}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE )
     ResponseEntity<Set<String>> getAllActiveTenants(@PathVariable("pMicroserviceName") String pMicroserviceName);
 }

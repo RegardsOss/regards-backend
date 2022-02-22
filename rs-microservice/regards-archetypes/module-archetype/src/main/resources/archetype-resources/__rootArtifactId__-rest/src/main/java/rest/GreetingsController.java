@@ -55,7 +55,7 @@ public class GreetingsController implements IResourceController<Greeting> {
     @Autowired
     private GreetingsService myService;
 
-    @RequestMapping(value = "/greeting", method = RequestMethod.GET)
+    @GetMapping(path = "/greeting")
     @ResponseBody
     @ResourceAccess(description = "send 'greeting' as response")
     public HttpEntity<Resource<Greeting>> greeting(@RequestParam(value = "name", defaultValue = "World") String pName) {
@@ -63,7 +63,7 @@ public class GreetingsController implements IResourceController<Greeting> {
         return new ResponseEntity<>(new Resource<Greeting>(greeting), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/me", method = RequestMethod.GET)
+    @GetMapping(path = "/me")
     @ResponseBody
     @ResourceAccess(description = "send 'me' as response")
     public HttpEntity<Resource<Greeting>> me(@RequestParam(value = "name", defaultValue = "me") String pName) {

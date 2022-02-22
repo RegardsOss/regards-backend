@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * Complex search client. Handle complex searches on catalog with :
@@ -44,11 +42,9 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
  *
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.complex-search.client")
-@RequestMapping(value = IComplexSearchClient.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface IComplexSearchClient {
 
-    String TYPE_MAPPING = "/complex/search";
+    String ROOT_TYPE_MAPPING = "/complex/search";
 
     String SUMMARY_MAPPING = "/summary";
 
@@ -56,14 +52,14 @@ public interface IComplexSearchClient {
      * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
      * {@link DataType})
      */
-    @RequestMapping(method = RequestMethod.POST, value = IComplexSearchClient.SUMMARY_MAPPING)
+    @PostMapping(path = ROOT_TYPE_MAPPING + SUMMARY_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestBody ComplexSearchRequest complexSearchRequest);
 
     /**
      * Compute a complex search
      * {@link DataType})
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(path = ROOT_TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(
             @RequestBody ComplexSearchRequest complexSearchRequest);
 

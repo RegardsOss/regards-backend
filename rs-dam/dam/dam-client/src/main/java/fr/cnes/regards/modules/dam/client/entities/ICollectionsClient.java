@@ -18,36 +18,31 @@
  */
 package fr.cnes.regards.modules.dam.client.entities;
 
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  * @author Léo Mieulet
  */
 @RestClient(name = "rs-dam", contextId = "rs-dam.collections.client")
-@RequestMapping(value = "/collections", consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ICollectionsClient {
+
+    String ROOT_PATH = "/collections";
 
     /**
      * @return list of all {@link Collection}
      * Entry point to retrieve all collections
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<EntityModel<Collection>>> retrieveCollections();
 
@@ -56,7 +51,7 @@ public interface ICollectionsClient {
      * @return the specified {@link Collection}
      * Entry point to retrieve a {@link Collection} using its id
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/{collection_id}")
+    @GetMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public HttpEntity<EntityModel<Collection>> retrieveCollection(@PathVariable("collection_id") Long collectionId);
 
@@ -66,7 +61,7 @@ public interface ICollectionsClient {
      * @return Updated {@link Collection}
      * Entry point to update a {@link Collection} using its id
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/{collection_id}")
+    @PutMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<EntityModel<Collection>> updateCollection(@PathVariable("collection_id") Long collectionId,
             @RequestBody Collection collection);
@@ -76,7 +71,7 @@ public interface ICollectionsClient {
      * @return Void
      * Entry point to delete a collection using its id
      */
-    @RequestMapping(method = RequestMethod.DELETE, value = "/{collection_id}")
+    @DeleteMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> deleteCollection(@PathVariable("collection_id") Long collectionId);
 
@@ -85,7 +80,7 @@ public interface ICollectionsClient {
      * @return created {@link Collection}
      * Entry point to create a collection
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<EntityModel<Collection>> createCollection(@RequestBody Collection collection);
 
@@ -95,7 +90,7 @@ public interface ICollectionsClient {
      * @param toBeDissociated entity to dissociate
      * @return {@link Collection} as a {@link EntityModel}
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/{collection_id}/dissociate")
+    @PutMapping(path = ROOT_PATH + "/{collection_id}/dissociate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<EntityModel<Collection>> dissociateCollection(@PathVariable("collection_id") Long collectionId,
             @RequestBody Set<OaisUniformResourceName> toBeDissociated);
@@ -106,7 +101,7 @@ public interface ICollectionsClient {
      * @param toBeAssociatedWith entities to be associated
      * @return {@link Collection} as a {@link EntityModel}
      */
-    @RequestMapping(method = RequestMethod.PUT, value = "/{collection_id}/associate")
+    @PutMapping(path = ROOT_PATH + "/{collection_id}/associate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<EntityModel<Collection>> associateCollections(@PathVariable("collection_id") Long collectionId,
             @RequestBody Set<OaisUniformResourceName> toBeAssociatedWith);

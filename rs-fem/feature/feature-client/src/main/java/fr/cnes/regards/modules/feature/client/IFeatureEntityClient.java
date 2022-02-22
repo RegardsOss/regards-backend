@@ -18,31 +18,27 @@ package fr.cnes.regards.modules.feature.client;
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import java.time.OffsetDateTime;
 
 /**
  * @author Kevin Marchois
  */
 @RestClient(name = "rs-fem", contextId = "rs-fem.model-att-assoc.client")
-@RequestMapping(value = IFeatureEntityClient.PATH_DATA_FEATURE_OBJECT, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IFeatureEntityClient {
 
-    static final String PATH_DATA_FEATURE_OBJECT = "/admin/features";
+    String PATH_DATA_FEATURE_OBJECT = "/admin/features";
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = PATH_DATA_FEATURE_OBJECT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(@RequestParam("model") String model,
             @RequestParam("from") OffsetDateTime lastUpdateDate, @RequestParam("page") int page,

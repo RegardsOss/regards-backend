@@ -32,10 +32,10 @@ import javax.validation.Valid;
  * @author Sylvain Vissiere-Guerinet
  */
 @RestClient(name = "rs-dam", contextId = "rs-dam.access-group.client")
-@RequestMapping(value = IAccessGroupClient.PATH_ACCESS_GROUPS, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IAccessGroupClient {
 
-    String PATH_ACCESS_GROUPS = "/accessgroups";
+    String ROOT_PATH_ACCESS_GROUPS = "/accessgroups";
+
     String PATH_ACCESS_GROUPS_NAME = "/{name}";
 
     /**
@@ -45,25 +45,25 @@ public interface IAccessGroupClient {
      * @param size which page size
      * @return a page of access group
      */
-    @GetMapping
+    @GetMapping(path = ROOT_PATH_ACCESS_GROUPS, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<AccessGroup>>> retrieveAccessGroupsList(
             @RequestParam(name = "public", required = false) Boolean isPublic, @RequestParam("page") int page,
             @RequestParam("size") int size);
 
-    @PostMapping
+    @PostMapping(path = ROOT_PATH_ACCESS_GROUPS, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<AccessGroup>> createAccessGroup(@Valid @RequestBody AccessGroup toBeCreated);
 
     /**
      * Retrieve an access group by its name
      * @return the retrieved access group
      */
-    @GetMapping(PATH_ACCESS_GROUPS_NAME)
+    @GetMapping(path = ROOT_PATH_ACCESS_GROUPS + PATH_ACCESS_GROUPS_NAME, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<AccessGroup>> retrieveAccessGroup(@Valid @PathVariable("name") String groupName);
 
     /**
      * Delete an access group by its name
      */
-    @DeleteMapping(PATH_ACCESS_GROUPS_NAME)
+    @DeleteMapping(path = ROOT_PATH_ACCESS_GROUPS + PATH_ACCESS_GROUPS_NAME, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> deleteAccessGroup(@Valid @PathVariable("name") String groupName);
 
 }

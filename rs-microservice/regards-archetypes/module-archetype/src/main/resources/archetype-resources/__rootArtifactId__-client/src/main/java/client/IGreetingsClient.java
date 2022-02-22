@@ -24,9 +24,7 @@ package ${package}.client;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 
@@ -37,21 +35,20 @@ import ${package}.domain.Greeting;
  * @author TODO
  */
 @RestClient(name = "MyMicroServiceName") // TODO: change name
-@RequestMapping(value = "/api", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IGreetingsClient {
 
+    ROOT_PATH = value = "/api";
     /**
      * Rest resource /api/greeting/{name} Method GET
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/greeting")
+    @GetMapping(value = "/greeting", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public HttpEntity<Resource<Greeting>> greeting(String pName);
 
     /**
      * Rest resource /api/me/{name} Method GET
      */
-    @RequestMapping(method = RequestMethod.GET, value = "/me")
+    @GetMapping(value = "/me", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ResponseBody
     public HttpEntity<Resource<Greeting>> me(String pName);
 

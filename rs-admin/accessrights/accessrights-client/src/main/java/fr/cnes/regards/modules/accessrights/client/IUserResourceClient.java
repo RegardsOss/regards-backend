@@ -18,25 +18,19 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * User resource management API client
@@ -45,14 +39,12 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.user-resource-client")
-@RequestMapping(value = IUserResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IUserResourceClient {
 
     /**
      * Controller base mapping
      */
-    String TYPE_MAPPING = "/users/{user_email}/resources";
+    String ROOT_TYPE_MAPPING = "/users/{user_email}/resources";
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the account of passed <code>email</code>.
@@ -64,7 +56,7 @@ public interface IUserResourceClient {
      * @return the {@link List} list of resources access
      *
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(
             @PathVariable("user_email") final String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName);
@@ -78,7 +70,7 @@ public interface IUserResourceClient {
      *            The {@link List} of {@link ResourcesAccess} to set
      * @return void
      */
-    @RequestMapping(method = RequestMethod.PUT)
+    @PutMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Update the list of specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     ResponseEntity<Void> updateProjectUserResources(@PathVariable("user_email") final String pLogin,
             @Valid @RequestBody final List<ResourcesAccess> pUpdatedUserAccessRights);
@@ -90,7 +82,7 @@ public interface IUserResourceClient {
      *            user email
      * @return {@link Void}
      */
-    @RequestMapping(method = RequestMethod.DELETE)
+    @DeleteMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Remove all specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     ResponseEntity<Void> removeProjectUserResources(@PathVariable("user_email") final String pUserLogin);
 }
