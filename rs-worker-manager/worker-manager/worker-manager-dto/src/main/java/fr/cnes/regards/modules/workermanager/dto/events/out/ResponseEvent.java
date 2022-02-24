@@ -40,24 +40,26 @@ public class ResponseEvent implements ISubscribable, IMessagePropertiesAware {
     @NotNull(message = "Message properties is required")
     protected MessageProperties messageProperties;
 
-    private ResponseStatus status;
+    private ResponseStatus state;
 
     private Collection<String> messages = Lists.newArrayList();
 
     private String requestId;
 
     /**
-     * FIXME : Remove when SDS is updated.
+     * FIXME : Remove type and requestOwner when SDS is updated.
      * To avoid modifying interface with SDS by replacing featureFactory wit workerManager for extraction requests
      * we add the type parameter to EXTRACTION as it was in previous version of regards.
      */
     private String type;
+    private String requestOwner;
 
-    public static ResponseEvent build(ResponseStatus status, String requestId, String type) {
+    public static ResponseEvent build(ResponseStatus state, String requestId, String type, String requestOwner) {
         ResponseEvent event = new ResponseEvent();
-        event.status = status;
+        event.state = state;
         event.requestId = requestId;
         event.type = type;
+        event.requestOwner = requestOwner;
         return event;
     }
 
@@ -84,8 +86,8 @@ public class ResponseEvent implements ISubscribable, IMessagePropertiesAware {
         this.messageProperties = messageProperties;
     }
 
-    public ResponseStatus getStatus() {
-        return status;
+    public ResponseStatus getState() {
+        return state;
     }
 
     public Collection<String> getMessage() {

@@ -19,20 +19,15 @@
 package fr.cnes.regards.modules.workermanager.service.flow;
 
 import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
-import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -84,7 +79,7 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
         Assert.assertFalse("Request should noy exists anymore",dto.isPresent());
         Assert.assertEquals("Invalid number of response event sent",1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status", ResponseStatus.SUCCESS,
-                            responseMock.getEvents().stream().findFirst().get().getStatus());
+                            responseMock.getEvents().stream().findFirst().get().getState());
 
         SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
                                    0,-1,0,0, 1, 0,0,0,0);
@@ -107,7 +102,7 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
         Assert.assertEquals("Requests status invalid", RequestStatus.INVALID_CONTENT, dto.get().getStatus());
         Assert.assertEquals("Invalid number of response event sent",1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status", ResponseStatus.INVALID_CONTENT,
-                            responseMock.getEvents().stream().findFirst().get().getStatus());
+                            responseMock.getEvents().stream().findFirst().get().getState());
 
         SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
                                    0,-1,0,0, 0, 0,1,0,0);
@@ -130,7 +125,7 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
         Assert.assertEquals("Requests status invalid", RequestStatus.ERROR, dto.get().getStatus());
         Assert.assertEquals("Invalid number of response event sent",1L, responseMock.getEvents().size());
         Assert.assertEquals("Invalid response event status", ResponseStatus.ERROR,
-                            responseMock.getEvents().stream().findFirst().get().getStatus());
+                            responseMock.getEvents().stream().findFirst().get().getState());
 
         SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
                                    0,-1,0,0, 0, 1,0,0,0);
@@ -199,7 +194,7 @@ public class WorkerResponseHandlerTest extends AbstractWorkerManagerTest {
 
         Assert.assertEquals("Invalid number of response event sent",1_000L, responseMock.getEvents().size());
         Assert.assertFalse("Invalid response event status",
-                           responseMock.getEvents().stream().anyMatch(e -> e.getStatus() != ResponseStatus.SUCCESS));
+                           responseMock.getEvents().stream().anyMatch(e -> e.getState() != ResponseStatus.SUCCESS));
 
         SessionHelper.checkSession(stepPropertyUpdateRepository, DEFAULT_SOURCE, DEFAULT_SESSION, DEFAULT_WORKER,
                                    0,-1_000,0,0, 1_000, 0,0,0,0);
