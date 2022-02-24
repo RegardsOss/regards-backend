@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,6 +61,7 @@ import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest
  */
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class AIPMetadataService implements IAIPMetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPMetadataService.class);
@@ -66,21 +69,26 @@ public class AIPMetadataService implements IAIPMetadataService {
     // Limit number of AIPs to retrieve in one page
     @Value("${regards.aip.dump.zip-limit:1000}")
     private int zipLimit;
-
-    @Autowired
+    
     private IAIPSaveMetadataRequestRepository metadataRequestRepository;
 
-    @Autowired
     private IAIPRepository aipRepository;
 
-    @Autowired
     private DumpService dumpService;
 
-    @Autowired
     private IAIPMetadataService self;
 
-    @Autowired
     private INotificationClient notificationClient;
+
+    public AIPMetadataService(IAIPSaveMetadataRequestRepository metadataRequestRepository, 
+                              IAIPRepository aipRepository, DumpService dumpService, IAIPMetadataService iaipMetadataService, 
+                              INotificationClient notificationClient) {
+        this.metadataRequestRepository = metadataRequestRepository;
+        this.aipRepository = aipRepository;
+        this.dumpService = dumpService;
+        this.self = iaipMetadataService;
+        this.notificationClient = notificationClient;
+    }
 
     @Override
     public void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation)

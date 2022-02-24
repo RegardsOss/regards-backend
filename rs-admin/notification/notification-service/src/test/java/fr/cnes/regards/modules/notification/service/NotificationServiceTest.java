@@ -222,7 +222,8 @@ public class NotificationServiceTest {
 
         // Instanciate the tested service
         notificationService = new NotificationService(notificationRepository, roleService, projectUserService,
-                Mockito.mock(ApplicationEventPublisher.class), authenticationResolver, NotificationMode.MULTITENANT);
+                Mockito.mock(ApplicationEventPublisher.class), authenticationResolver, NotificationMode.MULTITENANT,
+                notificationService);
     }
 
     /**

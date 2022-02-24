@@ -23,17 +23,19 @@ import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRe
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Propagation;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /**
  * Service to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
@@ -46,13 +48,10 @@ public class AgentCleanSessionStepService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanSessionStepService.class);
 
-    @Autowired
     private ISessionStepRepository sessionStepRepo;
 
-    @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
 
-    @Autowired
     private AgentCleanSessionStepService self;
 
     @Value("${regards.session.agent.clean.session.step.limit.store:30}")
@@ -60,6 +59,14 @@ public class AgentCleanSessionStepService {
 
     @Value("${regards.session.agent.clean.session.step.page:100}")
     private int pageSize;
+
+    public AgentCleanSessionStepService(ISessionStepRepository sessionStepRepo,
+                                        IStepPropertyUpdateRequestRepository stepPropertyRepo,
+                                        AgentCleanSessionStepService agentCleanSessionStepService) {
+        this.sessionStepRepo = sessionStepRepo;
+        this.stepPropertyRepo = stepPropertyRepo;
+        this.self = agentCleanSessionStepService;
+    }
 
     public int clean() {
         // Init startClean with the current date minus the limit of SessionStep save configured

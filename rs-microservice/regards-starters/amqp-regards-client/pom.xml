@@ -111,7 +111,7 @@
 						</resource>
 						<resource>
 							<targetPath>/</targetPath>
-							<directory>${project.basedir}/src/main/resources</directory>
+							<directory>${project.basedir}/src/main/resources-filtered</directory>
 							<include>application.properties</include>
 						</resource>
 						<resource>

@@ -77,7 +77,7 @@ public class QuotaManagerImplTest {
                 .getTenant();
 
         quotaManager =
-                spy(new QuotaManagerImpl(gaugeExpirationTickingScheduler, gaugeSyncTickingScheduler, quotaRepository, tenantResolver, runtimeTenantResolver, publisher, env));
+                spy(new QuotaManagerImpl(gaugeExpirationTickingScheduler, gaugeSyncTickingScheduler, quotaRepository, tenantResolver, runtimeTenantResolver, publisher, env, quotaManager));
 
         ReflectionTestUtils.setField(quotaManager, "self", quotaManager);
         quotaManager.setUserDiffsByTenant(new HashMap<>());//HashMap.empty());

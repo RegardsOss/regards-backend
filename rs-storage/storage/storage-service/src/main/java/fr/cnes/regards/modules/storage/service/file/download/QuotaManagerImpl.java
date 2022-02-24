@@ -15,9 +15,10 @@ import fr.cnes.regards.modules.storage.domain.event.QuotaUpdateEvent;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,7 @@ import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfigu
 
 @Component
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class QuotaManagerImpl implements IQuotaManager {
 
     @Value("${regards.storage.rate.expiration.tick:120}")
@@ -58,8 +60,6 @@ public class QuotaManagerImpl implements IQuotaManager {
     private final IRuntimeTenantResolver runtimeTenantResolver;
     private final IPublisher publisher;
     private final Environment env;
-
-    @Autowired
     private IQuotaManager self;
 
     // not final because tests use the setter to assert
@@ -84,7 +84,7 @@ public class QuotaManagerImpl implements IQuotaManager {
 
     public QuotaManagerImpl(@Qualifier(RATE_EXPIRATION_TICKING_SCHEDULER) ThreadPoolTaskScheduler rateExpirationTickingScheduler,
             @Qualifier(SYNC_TICKING_SCHEDULER) ThreadPoolTaskScheduler syncTickingScheduler, IDownloadQuotaRepository quotaRepository, ITenantResolver tenantResolver,
-            IRuntimeTenantResolver runtimeTenantResolver, IPublisher publisher, Environment env
+            IRuntimeTenantResolver runtimeTenantResolver, IPublisher publisher, Environment env, IQuotaManager quotaManager
     ) {
         this.rateExpirationTickingScheduler = rateExpirationTickingScheduler;
         this.syncTickingScheduler = syncTickingScheduler;
@@ -93,6 +93,7 @@ public class QuotaManagerImpl implements IQuotaManager {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.publisher = publisher;
         this.env = env;
+        this.self = quotaManager;
     }
 
     @PostConstruct

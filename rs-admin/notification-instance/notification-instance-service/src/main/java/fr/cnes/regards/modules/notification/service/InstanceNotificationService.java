@@ -18,25 +18,7 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -48,6 +30,23 @@ import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@link IInstanceNotificationService} implementation
@@ -57,6 +56,7 @@ import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
  */
 @Service
 @RegardsTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class InstanceNotificationService implements IInstanceNotificationService {
 
     @SuppressWarnings("unused")
@@ -65,20 +65,24 @@ public class InstanceNotificationService implements IInstanceNotificationService
     /**
      * CRUD repository managing notifications. Autowired by Spring.
      */
-    @Autowired
     private INotificationRepository notificationRepository;
 
     /**
      * Application event publisher
      */
-    @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
-    @Autowired
     private IAuthenticationResolver authenticationResolver;
 
-    @Autowired
     private IInstanceNotificationService self;
+
+    public InstanceNotificationService(INotificationRepository notificationRepository, ApplicationEventPublisher applicationEventPublisher,
+                                       IAuthenticationResolver authenticationResolver, IInstanceNotificationService instanceNotificationService) {
+        this.notificationRepository = notificationRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.authenticationResolver = authenticationResolver;
+        this.self = instanceNotificationService;
+    }
 
     @Override
     public Notification createNotification(NotificationDTO dto) {

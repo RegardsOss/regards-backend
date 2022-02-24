@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
+import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -44,7 +45,7 @@ public class PurgeDownloadTokenScheduler {
     private static final String DEFAULT_DELAY = "7200000";
 
     @Autowired
-    private FileDownloadService downloadService;
+    private DownloadTokenService downloadTokenService;
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -58,7 +59,7 @@ public class PurgeDownloadTokenScheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
-                downloadService.purgeTokens();
+                downloadTokenService.purgeTokens();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

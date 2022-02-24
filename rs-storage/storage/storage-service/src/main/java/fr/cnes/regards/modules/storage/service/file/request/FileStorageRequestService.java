@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -85,47 +87,35 @@ import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurati
  */
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FileStorageRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestService.class);
 
-    @Autowired
     private IPluginService pluginService;
 
-    @Autowired
     private IFileStorageRequestRepository fileStorageRequestRepo;
 
-    @Autowired
     private IJobInfoService jobInfoService;
 
-    @Autowired
     private IAuthenticationResolver authResolver;
 
-    @Autowired
     private FileReferenceEventPublisher eventPublisher;
 
-    @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
-    @Autowired
     protected FileStorageRequestService self;
 
-    @Autowired
     private RequestsGroupService reqGroupService;
 
-    @Autowired
     private FileReferenceService fileRefService;
 
-    @Autowired
     private FileDeletionRequestService fileDelReqService;
 
-    @Autowired
     private FileReferenceRequestService fileRefReqService;
 
-    @Autowired
     private RequestStatusService reqStatusService;
 
-    @Autowired
     private SessionNotifier sessionNotifier;
 
     @Value("${regards.storage.storage.requests.days.before.expiration:5}")
@@ -133,6 +123,28 @@ public class FileStorageRequestService {
 
     @Value("${regards.storage.storage.requests.per.job:100}")
     private Integer nbRequestsPerJob;
+
+    public FileStorageRequestService(IPluginService pluginService, IFileStorageRequestRepository fileStorageRequestRepo, 
+                                     IJobInfoService jobInfoService, IAuthenticationResolver authResolver, 
+                                     FileReferenceEventPublisher eventPublisher, StoragePluginConfigurationHandler storageHandler, 
+                                     FileStorageRequestService fileStorageRequestService, RequestsGroupService reqGroupService, 
+                                     FileReferenceService fileRefService, FileDeletionRequestService fileDelReqService, 
+                                     FileReferenceRequestService fileRefReqService, RequestStatusService reqStatusService, 
+                                     SessionNotifier sessionNotifier) {
+        this.pluginService = pluginService;
+        this.fileStorageRequestRepo = fileStorageRequestRepo;
+        this.jobInfoService = jobInfoService;
+        this.authResolver = authResolver;
+        this.eventPublisher = eventPublisher;
+        this.storageHandler = storageHandler;
+        this.self = fileStorageRequestService;
+        this.reqGroupService = reqGroupService;
+        this.fileRefService = fileRefService;
+        this.fileDelReqService = fileDelReqService;
+        this.fileRefReqService = fileRefReqService;
+        this.reqStatusService = reqStatusService;
+        this.sessionNotifier = sessionNotifier;
+    }
 
     /**
      * Initialize new storage requests from Flow items.

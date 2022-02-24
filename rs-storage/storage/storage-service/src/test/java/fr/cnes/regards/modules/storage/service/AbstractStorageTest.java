@@ -136,6 +136,9 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     protected FileDownloadService downloadService;
 
     @Autowired
+    protected DownloadTokenService downloadTokenService;
+
+    @Autowired
     protected FileStorageRequestService stoReqService;
 
     @Autowired

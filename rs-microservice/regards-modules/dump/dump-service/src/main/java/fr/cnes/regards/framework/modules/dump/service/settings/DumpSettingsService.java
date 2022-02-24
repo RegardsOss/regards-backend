@@ -30,8 +30,9 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSetting
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
@@ -44,20 +45,21 @@ import java.util.List;
 
 @Service
 @RegardsTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class DumpSettingsService extends AbstractSettingService implements IDumpSettingsService {
 
     private final ITenantResolver tenantsResolver;
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
     private DumpSettingsService self;
 
     protected DumpSettingsService(IDynamicTenantSettingService dynamicTenantSettingService, ITenantResolver tenantsResolver,
-                                  IRuntimeTenantResolver runtimeTenantResolver
+                                  IRuntimeTenantResolver runtimeTenantResolver, DumpSettingsService dumpSettingsService
     ) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.self = dumpSettingsService;
     }
 
     @EventListener

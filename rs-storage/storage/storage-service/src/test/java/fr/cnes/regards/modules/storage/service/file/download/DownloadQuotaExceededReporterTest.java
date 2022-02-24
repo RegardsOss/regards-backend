@@ -20,7 +20,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.MimeTypeUtils;
 import org.testcontainers.shaded.com.google.common.base.Joiner;
 
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -75,7 +74,7 @@ public class DownloadQuotaExceededReporterTest {
                 tenantResolver,
                 runtimeTenantResolver,
                 applicationContext,
-                env
+                env, quotaReporter
             )
         );
 

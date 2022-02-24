@@ -18,31 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -72,8 +48,27 @@ import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestJob;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestsCreatorJob;
 import fr.cnes.regards.modules.storage.service.file.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
+import org.apache.commons.compress.utils.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle request to physically delete files thanks to {@link FileDeletionRequest}s.
@@ -82,48 +77,38 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
  */
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FileDeletionRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestService.class);
 
-    @Autowired
     private IFileDeletetionRequestRepository fileDeletionRequestRepo;
 
-    @Autowired
     private IPluginService pluginService;
 
-    @Autowired
     private IJobInfoService jobInfoService;
 
-    @Autowired
     private IAuthenticationResolver authResolver;
 
-    @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
-    @Autowired
     protected FileDeletionRequestService self;
 
-    @Autowired
     private FileReferenceEventPublisher publisher;
 
-    @Autowired
     private FileReferenceService fileRefService;
 
-    @Autowired
     private RequestsGroupService reqGroupService;
 
-    @Autowired
     private RequestStatusService reqStatusService;
 
-    @Autowired
     private FileCopyRequestService fileCopyReqService;
 
-    @Autowired
     private FileCacheRequestService fileCacheReqService;
 
-    @Autowired
     private SessionNotifier sessionNotifier;
+
+    private LockingTaskExecutors lockingTaskExecutors;
 
     @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
@@ -131,8 +116,28 @@ public class FileDeletionRequestService {
     @Value("${regards.storage.deletion.requests.per.job:100}")
     private Integer nbRequestsPerJob;
 
-    @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
+    public FileDeletionRequestService(IFileDeletetionRequestRepository fileDeletionRequestRepo, IPluginService pluginService, 
+                                      IJobInfoService jobInfoService, IAuthenticationResolver authResolver, 
+                                      StoragePluginConfigurationHandler storageHandler, FileDeletionRequestService fileDeletionRequestService, 
+                                      FileReferenceEventPublisher publisher, FileReferenceService fileRefService, 
+                                      RequestsGroupService reqGroupService, RequestStatusService reqStatusService, 
+                                      FileCopyRequestService fileCopyReqService, FileCacheRequestService fileCacheReqService, 
+                                      SessionNotifier sessionNotifier, LockingTaskExecutors lockingTaskExecutors) {
+        this.fileDeletionRequestRepo = fileDeletionRequestRepo;
+        this.pluginService = pluginService;
+        this.jobInfoService = jobInfoService;
+        this.authResolver = authResolver;
+        this.storageHandler = storageHandler;
+        this.self = fileDeletionRequestService;
+        this.publisher = publisher;
+        this.fileRefService = fileRefService;
+        this.reqGroupService = reqGroupService;
+        this.reqStatusService = reqStatusService;
+        this.fileCopyReqService = fileCopyReqService;
+        this.fileCacheReqService = fileCacheReqService;
+        this.sessionNotifier = sessionNotifier;
+        this.lockingTaskExecutors = lockingTaskExecutors;
+    }
 
     /**
      * Create a new {@link FileDeletionRequest}.

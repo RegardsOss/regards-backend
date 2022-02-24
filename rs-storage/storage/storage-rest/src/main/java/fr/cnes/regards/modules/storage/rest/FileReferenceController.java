@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaExceededReporter;
@@ -95,6 +96,9 @@ public class FileReferenceController {
     private FileDownloadService downloadService;
 
     @Autowired
+    private DownloadTokenService downloadTokenService;
+
+    @Autowired
     private FileReferenceService fileRefService;
 
     @Autowired
@@ -152,7 +156,7 @@ public class FileReferenceController {
     public ResponseEntity<StreamingResponseBody> downloadFileWithToken(@PathVariable("checksum") String checksum,
             @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token,
             boolean isContentInline, HttpServletResponse response) {
-        if (!downloadService.checkToken(checksum, token)) {
+        if (!downloadTokenService.checkToken(checksum, token)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         // Do not check for quota, because this endpoint needs to be used internally (storage -> storage) during copy process

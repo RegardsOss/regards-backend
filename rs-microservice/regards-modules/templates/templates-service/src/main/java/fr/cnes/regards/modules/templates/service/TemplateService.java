@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -59,12 +61,15 @@ import freemarker.template.TemplateExceptionHandler;
  */
 @Service
 @RegardsTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class TemplateService implements ITemplateService {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(TemplateService.class);
+
+    private ITemplateService self;
 
     /**
      * Instance microservice type
@@ -95,15 +100,13 @@ public class TemplateService implements ITemplateService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private ITemplateService self;
-
-    @Autowired
     private Set<Template> templates;
 
     @Value("${regards.microservice.type:multitenant}")
     private String microserviceType;
 
-    public TemplateService() {
+    public TemplateService(ITemplateService templateService) {
+        this.self = templateService;
         // Configure Freemarker
         configuration = new Configuration(Configuration.VERSION_2_3_25);
 

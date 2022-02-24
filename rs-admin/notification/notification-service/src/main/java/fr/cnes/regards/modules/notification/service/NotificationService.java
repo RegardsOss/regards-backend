@@ -18,26 +18,6 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -49,11 +29,27 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
-import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationMode;
-import fr.cnes.regards.modules.notification.domain.NotificationStatus;
-import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
+import fr.cnes.regards.modules.notification.domain.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@link INotificationService} implementation
@@ -63,6 +59,7 @@ import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
  */
 @Service
 @RegardsTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class NotificationService implements INotificationService {
 
     /**
@@ -89,7 +86,6 @@ public class NotificationService implements INotificationService {
 
     private final IAuthenticationResolver authenticationResolver;
 
-    @Autowired
     private INotificationService self;
 
     /**
@@ -101,13 +97,14 @@ public class NotificationService implements INotificationService {
     public NotificationService(INotificationRepository notificationRepository, IRoleService roleService,
             IProjectUserService projectUserClient, ApplicationEventPublisher applicationEventPublisher,
             IAuthenticationResolver authenticationResolver,
-            @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode) {
+            @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode, INotificationService notificationService) {
         super();
         this.notificationRepository = notificationRepository;
         this.roleService = roleService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.notificationMode = notificationMode;
         this.authenticationResolver = authenticationResolver;
+        this.self = notificationService;
     }
 
     @Override

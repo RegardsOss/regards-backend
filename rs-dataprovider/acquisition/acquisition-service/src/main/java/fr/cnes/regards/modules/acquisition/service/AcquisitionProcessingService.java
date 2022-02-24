@@ -55,8 +55,9 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -84,53 +85,65 @@ import java.util.stream.Stream;
  */
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class AcquisitionProcessingService implements IAcquisitionProcessingService {
 
     private static final int BATCH_SIZE = 1000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
 
-    @Autowired
+
     private IAcquisitionProcessingChainRepository acqChainRepository;
 
-    @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
-    @Autowired
     private IAcquisitionFileInfoRepository fileInfoRepository;
 
-    @Autowired
     private IScanDirectoriesInfoRepository scanDirInfoRepository;
 
-    @Autowired
     private IPluginService pluginService;
 
-    @Autowired
     private IProductService productService;
 
-    @Autowired
     private IJobInfoService jobInfoService;
 
-    @Autowired
     private IAuthenticationResolver authResolver;
 
-    @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
-    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
     private IAcquisitionProcessingService self;
 
-    @Autowired
     private INotificationClient notificationClient;
 
-    @Autowired
     private ITemplateService templateService;
 
-    @Autowired
     private SessionNotifier sessionNotifier;
+
+    public AcquisitionProcessingService(IAcquisitionProcessingChainRepository acqChainRepository,
+                                        IAcquisitionFileRepository acqFileRepository, IAcquisitionFileInfoRepository fileInfoRepository,
+                                        IScanDirectoriesInfoRepository scanDirInfoRepository,
+                                        IPluginService pluginService, IProductService productService, IJobInfoService jobInfoService,
+                                        IAuthenticationResolver authResolver, AutowireCapableBeanFactory beanFactory,
+                                        IRuntimeTenantResolver runtimeTenantResolver, IAcquisitionProcessingService acquisitionProcessingService,
+                                        INotificationClient notificationClient, ITemplateService templateService,
+                                        SessionNotifier sessionNotifier) {
+        this.acqChainRepository = acqChainRepository;
+        this.acqFileRepository = acqFileRepository;
+        this.fileInfoRepository = fileInfoRepository;
+        this.scanDirInfoRepository = scanDirInfoRepository;
+        this.pluginService = pluginService;
+        this.productService = productService;
+        this.jobInfoService = jobInfoService;
+        this.authResolver = authResolver;
+        this.beanFactory = beanFactory;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.self = acquisitionProcessingService;
+        this.notificationClient = notificationClient;
+        this.templateService = templateService;
+        this.sessionNotifier = sessionNotifier;
+    }
 
     @Override
     public Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) {

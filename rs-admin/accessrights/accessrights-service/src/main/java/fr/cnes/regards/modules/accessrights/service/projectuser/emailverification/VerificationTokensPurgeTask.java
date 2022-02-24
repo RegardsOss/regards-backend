@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.emailverification;
 
-import java.time.LocalDateTime;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
+import java.time.LocalDateTime;
 
 /**
  * Cron task purging the expired token repository.
@@ -39,22 +39,25 @@ import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenR
  */
 @Service
 @RegardsTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class VerificationTokensPurgeTask {
 
-    /**
-     * The verification token repository
-     */
-    @Autowired
     private IVerificationTokenRepository tokenRepository;
 
-    @Autowired
     private ITenantResolver tenantResolver;
 
-    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
     private VerificationTokensPurgeTask self;
+
+    public VerificationTokensPurgeTask(IVerificationTokenRepository tokenRepository, ITenantResolver tenantResolver,
+                                       IRuntimeTenantResolver runtimeTenantResolver, VerificationTokensPurgeTask verificationTokensPurgeTask) {
+        this.tokenRepository = tokenRepository;
+        this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.self = verificationTokensPurgeTask;
+    }
+
 
     @Scheduled(cron = "${purge.cron.expression}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)

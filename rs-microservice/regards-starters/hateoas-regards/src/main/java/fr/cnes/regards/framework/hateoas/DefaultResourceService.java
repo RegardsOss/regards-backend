@@ -18,13 +18,7 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cglib.core.Converter;
@@ -39,7 +33,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.util.SimpleMethodInvocation;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Default resource service based on security starter
@@ -92,11 +90,7 @@ public class DefaultResourceService implements IResourceService {
             parameterValues = new ArrayList<>();
             for (int i = 0; i < methodParams.length; i++) {
                 parameterTypes[i] = methodParams[i].getParameterType();
-                if (methodParams[i].getValue() != null) {
-                    parameterValues.add(Optional.ofNullable(methodParams[i].getValue()));
-                } else {
-                    parameterValues.add(Optional.empty());
-                }
+                parameterValues.add(methodParams[i].getValue());
             }
         }
 

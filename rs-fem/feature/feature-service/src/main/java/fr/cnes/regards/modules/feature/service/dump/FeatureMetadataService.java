@@ -19,25 +19,6 @@
 
 package fr.cnes.regards.modules.feature.service.dump;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.dump.service.DumpService;
 import fr.cnes.regards.framework.modules.dump.service.ObjectDump;
@@ -57,6 +38,25 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * see {@link IFeatureMetadataService}
@@ -65,6 +65,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FeatureMetadataService implements IFeatureMetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureMetadataService.class);
@@ -79,20 +80,25 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     @Value("${regards.feature.dump.zip-limit:1000}")
     private int zipLimit;
 
-    @Autowired
     private IFeatureSaveMetadataRequestRepository featureSaveMetadataRepository;
 
-    @Autowired
     private IFeatureEntityRepository featureRepository;
 
-    @Autowired
     private DumpService dumpService;
-
-    @Autowired
+    
     private IFeatureMetadataService self;
-
-    @Autowired
+    
     private INotificationClient notificationClient;
+
+    public FeatureMetadataService(IFeatureSaveMetadataRequestRepository featureSaveMetadataRepository, 
+                                  IFeatureEntityRepository featureRepository, DumpService dumpService, 
+                                  IFeatureMetadataService featureMetadataService, INotificationClient notificationClient) {
+        this.featureSaveMetadataRepository = featureSaveMetadataRepository;
+        this.featureRepository = featureRepository;
+        this.dumpService = dumpService;
+        this.self = featureMetadataService;
+        this.notificationClient = notificationClient;
+    }
 
     @Override
     public void writeDump(FeatureSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation)

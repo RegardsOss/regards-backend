@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaExceededReporter;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
@@ -62,6 +63,9 @@ public class FileDownloadController {
 
     @Autowired
     private FileDownloadService downloadService;
+
+    @Autowired
+    private DownloadTokenService downloadTokenService;
 
     @Autowired
     private IQuotaService<ResponseEntity<Resource>> downloadQuotaService;
@@ -112,7 +116,7 @@ public class FileDownloadController {
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource> downloadFileWithToken(@PathVariable("checksum") String checksum,
             @RequestParam(name = FileDownloadService.TOKEN_PARAM) String token, boolean isContentInline) {
-        if (!downloadService.checkToken(checksum, token)) {
+        if (!downloadTokenService.checkToken(checksum, token)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         // Do not check for quota, because this endpoint needs to be used internally (storage -> storage) during copy process

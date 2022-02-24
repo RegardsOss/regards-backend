@@ -29,8 +29,9 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -46,21 +47,23 @@ import java.util.List;
 
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FeatureNotificationSettingsService extends AbstractSettingService implements IFeatureNotificationSettingsService {
 
     private final ITenantResolver tenantsResolver;
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
     private FeatureNotificationSettingsService self;
 
     public FeatureNotificationSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
                                               ITenantResolver tenantsResolver,
-                                              IRuntimeTenantResolver runtimeTenantResolver
+                                              IRuntimeTenantResolver runtimeTenantResolver,
+                                              FeatureNotificationSettingsService featureNotificationSettingsService
     ) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.self = featureNotificationSettingsService;
     }
 
     @EventListener

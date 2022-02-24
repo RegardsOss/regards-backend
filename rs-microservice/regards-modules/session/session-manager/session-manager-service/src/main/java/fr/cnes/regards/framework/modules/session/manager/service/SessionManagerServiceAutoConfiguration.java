@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.session.manager.service;
 
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.service.SessionCommonsServiceAutoConfiguration;
+import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
+import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanJobService;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanScheduler;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanService;
@@ -33,9 +36,7 @@ import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerS
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotScheduler;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotService;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.*;
 
 /**
  * Autoconfiguration for session management service
@@ -82,8 +83,12 @@ public class SessionManagerServiceAutoConfiguration {
     }
 
     @Bean
-    public ManagerCleanService managerCleanService() {
-        return new ManagerCleanService();
+    @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public ManagerCleanService managerCleanService(ISessionStepRepository sessionStepRepo,
+                                                   ISessionManagerRepository sessionRepo,
+                                                   ISourceManagerRepository sourceRepo,
+                                                   ManagerCleanService managerCleanService) {
+        return new ManagerCleanService(sessionStepRepo, sessionRepo, sourceRepo, managerCleanService);
     }
 
     @Bean

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.service;
 
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepScheduler;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepService;
@@ -29,9 +30,8 @@ import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionA
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import org.springframework.context.annotation.*;
 
 /**
  * @author Iliana Ghazali
@@ -49,8 +49,11 @@ public class SessionAgentServiceAutoConfiguration {
     }
 
     @Bean
-    public AgentCleanSessionStepService agentCleanSessionStepService() {
-        return new AgentCleanSessionStepService();
+    @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public AgentCleanSessionStepService agentCleanSessionStepService(ISessionStepRepository sessionStepRepo,
+                                                                     IStepPropertyUpdateRequestRepository stepPropertyRepo,
+                                                                     AgentCleanSessionStepService agentCleanSessionStepService) {
+        return new AgentCleanSessionStepService(sessionStepRepo, stepPropertyRepo, agentCleanSessionStepService);
     }
 
     @Bean

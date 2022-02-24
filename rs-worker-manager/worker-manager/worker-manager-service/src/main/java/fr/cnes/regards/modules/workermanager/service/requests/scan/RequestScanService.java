@@ -41,8 +41,9 @@ import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -62,6 +63,7 @@ import java.util.stream.Collectors;
  * @author Léo Mieulet
  */
 @Service
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RequestScanService {
 
     public static final String REQUEST_SCAN_LOCK = "scanRequests";
@@ -72,32 +74,38 @@ public class RequestScanService {
 
     private static final int DEFAULT_SCAN_PAGE_SIZE = 400;
 
+    private IJobInfoService jobInfoService;
+
+    private IAuthenticationResolver authResolver;
+
+    private RequestService requestService;
+
+    private WorkerCacheService workerCacheService;
+
+    private IWorkerConfigRepository workerConfigRepo;
+
+    private LockingTaskExecutors lockingTaskExecutors;
+
+    private SessionService sessionService;
+
+    private RequestScanService self;
+
     @Value("${regards.workermanager.scan.page.size:" + DEFAULT_SCAN_PAGE_SIZE + "}")
     public int scanPageSize;
 
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
-    private RequestService requestService;
-
-    @Autowired
-    private WorkerCacheService workerCacheService;
-
-    @Autowired
-    private IWorkerConfigRepository workerConfigRepo;
-
-    @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
-
-    @Autowired
-    private SessionService sessionService;
-
-    @Autowired
-    private RequestScanService self;
+    public RequestScanService(IJobInfoService jobInfoService, IAuthenticationResolver authResolver, 
+                              RequestService requestService, WorkerCacheService workerCacheService, 
+                              IWorkerConfigRepository workerConfigRepo, LockingTaskExecutors lockingTaskExecutors, 
+                              SessionService sessionService, RequestScanService requestScanService) {
+        this.jobInfoService = jobInfoService;
+        this.authResolver = authResolver;
+        this.requestService = requestService;
+        this.workerCacheService = workerCacheService;
+        this.workerConfigRepo = workerConfigRepo;
+        this.lockingTaskExecutors = lockingTaskExecutors;
+        this.sessionService = sessionService;
+        this.self = requestScanService;
+    }
 
     /**
      * Check if requests with state {@link RequestStatus#NO_WORKER_AVAILABLE} and corresponding worker alive exists

@@ -27,8 +27,9 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
@@ -40,20 +41,22 @@ import java.util.Set;
 
 @Service
 @RegardsTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class AccessSettingsService extends AbstractSettingService {
 
-    @Autowired
     private AccessSettingsService self;
 
     private final ITenantResolver tenantsResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     public AccessSettingsService(IDynamicTenantSettingService dynamicTenantSettingService, ITenantResolver tenantsResolver,
-                                 IRuntimeTenantResolver runtimeTenantResolver
+                                 IRuntimeTenantResolver runtimeTenantResolver, AccessSettingsService accessSettingsService
     ) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.self = accessSettingsService;
     }
 
     @Override

@@ -39,8 +39,9 @@ import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,6 +61,7 @@ import java.util.Optional;
 
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderService implements IOrderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
@@ -73,7 +75,6 @@ public class OrderService implements IOrderService {
      */
     private static final DateTimeFormatter ORDER_GENERATED_LABEL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd 'at' HH:mm:ss");
 
-    @Autowired
     private IOrderService self;
 
     private final IOrderRepository orderRepository;
@@ -90,7 +91,8 @@ public class OrderService implements IOrderService {
 
     public OrderService(IOrderRepository orderRepository, IBasketService basketService, IOrderCreationService orderCreationService, IOrderRetryService orderRetryService,
                         IOrderDataFileService dataFileService, IJobInfoService jobInfoService, IOrderJobService orderJobService, ITenantResolver tenantResolver,
-                        IRuntimeTenantResolver runtimeTenantResolver, IOrderSettingsService orderSettingsService, OrderHelperService orderHelperService
+                        IRuntimeTenantResolver runtimeTenantResolver, IOrderSettingsService orderSettingsService, OrderHelperService orderHelperService,
+                        IOrderService orderService
     ) {
         this.basketService = basketService;
         this.orderRepository = orderRepository;
@@ -103,6 +105,7 @@ public class OrderService implements IOrderService {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.orderSettingsService = orderSettingsService;
         this.orderHelperService = orderHelperService;
+        this.self = orderService;
     }
 
     @EventListener

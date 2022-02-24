@@ -38,9 +38,9 @@ import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -56,13 +56,12 @@ import java.util.*;
 @MultitenantTransactional
 @RefreshScope
 @EnableScheduling
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderMaintenanceService.class);
 
-    @Autowired
     private IOrderMaintenanceService self;
-
     private final IOrderService orderService;
     private final IOrderRepository orderRepository;
     private final IOrderDataFileService orderDataFileService;
@@ -75,7 +74,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
 
     public OrderMaintenanceService(IOrderService orderService, IOrderRepository orderRepository, IOrderDataFileService orderDataFileService, IJobInfoService jobInfoService,
                                    ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, TemplateService templateService, IEmailClient emailClient,
-                                   IOrderSettingsService orderSettingsService
+                                   IOrderSettingsService orderSettingsService, IOrderMaintenanceService orderMaintenanceService
     ) {
         this.orderService = orderService;
         this.orderRepository = orderRepository;
@@ -86,6 +85,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         this.templateService = templateService;
         this.emailClient = emailClient;
         this.orderSettingsService = orderSettingsService;
+        this.self = orderMaintenanceService;
     }
 
 

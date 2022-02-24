@@ -30,11 +30,12 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +53,7 @@ import java.util.UUID;
 @Service
 @MultitenantTransactional
 @RefreshScope
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
 
     /**
@@ -60,20 +62,24 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
     @Value("${regards.order.max.storage.files.jobs.per.user:2}")
     private int maxJobsPerUser;
 
-    @Autowired
     private IJobInfoRepository jobInfoRepository;
 
-    @Autowired
     private IFilesTasksRepository filesTasksRepository;
 
-    @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
     private IOrderJobService self;
 
-    @Autowired
     private IRuntimeTenantResolver tenantResolver;
+
+    public OrderJobService(IJobInfoRepository jobInfoRepository, IFilesTasksRepository filesTasksRepository,
+                           ISubscriber subscriber, IOrderJobService orderJobService, IRuntimeTenantResolver tenantResolver) {
+        this.jobInfoRepository = jobInfoRepository;
+        this.filesTasksRepository = filesTasksRepository;
+        this.subscriber = subscriber;
+        this.self = orderJobService;
+        this.tenantResolver = tenantResolver;
+    }
 
     @Override
     @EventListener

@@ -18,13 +18,29 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.storage.domain.DownloadableFile;
+import fr.cnes.regards.modules.storage.domain.database.CacheFile;
+import fr.cnes.regards.modules.storage.domain.database.DownloadToken;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
+import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+import io.vavr.control.Try;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -34,28 +50,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.storage.domain.StorageSetting;
-import io.vavr.control.Try;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.storage.domain.DownloadableFile;
-import fr.cnes.regards.modules.storage.domain.database.CacheFile;
-import fr.cnes.regards.modules.storage.domain.database.DownloadToken;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
-import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class
@@ -172,12 +168,12 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     @Test
     public void testGenerateDownloadUrl() throws ModuleException {
         Assert.assertTrue(downloadTokenRepo.findAll().isEmpty());
-        downloadService.generateDownloadUrl(UUID.randomUUID().toString());
+        downloadTokenService.generateDownloadUrl(UUID.randomUUID().toString());
         assertEquals(1, downloadTokenRepo.findAll().size());
 
         downloadTokenRepo.save(DownloadToken.build("plop", "pllip", OffsetDateTime.now().minusHours(2)));
         assertEquals(2, downloadTokenRepo.findAll().size());
-        downloadService.purgeTokens();
+        downloadTokenService.purgeTokens();
         assertEquals(1, downloadTokenRepo.findAll().size());
 
     }

@@ -9,8 +9,9 @@ import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,6 +23,7 @@ import java.util.*;
 @Service
 @RefreshScope
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderRetryService implements IOrderRetryService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderRetryService.class);
@@ -30,7 +32,6 @@ public class OrderRetryService implements IOrderRetryService {
     private static final int LIMIT = 1_000;
     private static final int MAX_BUCKET_FILE_COUNT = 5_000;
 
-    @Autowired
     private IOrderRetryService self;
 
     private final IOrderDataFileRepository orderDataFileRepository;
@@ -43,7 +44,7 @@ public class OrderRetryService implements IOrderRetryService {
 
     public OrderRetryService(IOrderDataFileRepository orderDataFileRepository, IOrderRepository orderRepository, IRuntimeTenantResolver runtimeTenantResolver,
                              IOrderJobService orderJobService, IDatasetTaskService datasetTaskService, OrderHelperService orderHelperService,
-                             SuborderSizeCounter suborderSizeCounter
+                             SuborderSizeCounter suborderSizeCounter, IOrderRetryService orderRetryService
     ) {
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderRepository = orderRepository;
@@ -52,6 +53,7 @@ public class OrderRetryService implements IOrderRetryService {
         this.datasetTaskService = datasetTaskService;
         this.orderHelperService = orderHelperService;
         this.suborderSizeCounter = suborderSizeCounter;
+        this.self = orderRetryService;
     }
 
 

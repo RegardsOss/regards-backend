@@ -93,7 +93,7 @@ public class AttachmentController {
                 .linkTo(this.getClass(),
                         this.getClass().getMethod("getFile", UniformResourceName.class, String.class, String.class,
                                 Boolean.class, HttpServletResponse.class),
-                        urn, LocalStorageService.FILE_CHECKSUM_URL_TEMPLATE);
+                        urn, LocalStorageService.FILE_CHECKSUM_URL_TEMPLATE, null, null, null);
 
         // Manage reference
         List<DataFile> dataFileRefs = new ArrayList<>();

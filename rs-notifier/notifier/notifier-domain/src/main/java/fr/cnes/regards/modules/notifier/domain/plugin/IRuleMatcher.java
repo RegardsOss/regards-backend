@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import org.dom4j.rule.Rule;
 
 /**
- * Describe action to applied to a Rule
+ * Describe action to applied to a {@link Rule}
  * @author Kevin Marchois
  *
  */

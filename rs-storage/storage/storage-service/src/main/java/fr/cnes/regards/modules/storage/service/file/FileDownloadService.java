@@ -24,13 +24,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.storage.dao.IDownloadTokenRepository;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
-import fr.cnes.regards.modules.storage.domain.database.DownloadToken;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
@@ -47,9 +44,6 @@ import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
@@ -58,7 +52,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -86,12 +79,6 @@ public class FileDownloadService {
 
     public static final String TOKEN_PARAM = "t";
 
-    @Value("${spring.application.name}")
-    private String applicationName;
-
-    @Autowired
-    private IDownloadTokenRepository downTokenRepo;
-
     @Autowired
     private StorageLocationConfigurationService storageLocationConfService;
 
@@ -112,12 +99,6 @@ public class FileDownloadService {
 
     @Autowired
     private IQuotaService<DownloadableFile> downloadQuotaService;
-
-    @Autowired
-    private DiscoveryClient discoveryClient;
-
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
 
     /**
      * Download a file thanks to its checksum. If the file is stored in multiple storage location,
@@ -281,58 +262,6 @@ public class FileDownloadService {
                                           UUID.randomUUID().toString());
         throw new NearlineFileNotAvailableException(String.format("File %s is not available yet. Please try later.",
                                                                   fileToDownload.getMetaInfo().getFileName()));
-    }
-
-    /**
-     * Generate a public download URL for the file associated to the given Checksum
-     * @param checksum
-     * @return download url
-     * @throws ModuleException if the Eureka server is not reachable
-     */
-    public String generateDownloadUrl(String checksum) throws ModuleException {
-        Optional<ServiceInstance> instance = discoveryClient.getInstances(applicationName).stream().findFirst();
-        if (instance.isPresent()) {
-            String host = instance.get().getUri().toString();
-            String path = Paths.get(FILES_PATH, DOWNLOAD_TOKEN_PATH).toString();
-            String p = path.toString().replace("{checksum}", checksum);
-            p = p.charAt(0) == '/' ? p.replaceFirst("/", "") : p;
-            return String.format("%s/%s?scope=%s&%s=%s", host, p, tenantResolver.getTenant(), TOKEN_PARAM,
-                                 createDownloadToken(checksum));
-        } else {
-            throw new ModuleException("Error getting storage microservice address from eureka client");
-        }
-    }
-
-    /**
-     * Check if given token is valid to download the file associated to the given checksum.
-     * @param checksum
-     * @param token
-     */
-    public boolean checkToken(String checksum, String token) {
-        boolean accessGranted = downTokenRepo.existsByChecksumAndTokenAndExpirationDateAfter(checksum, token,
-                                                                                             OffsetDateTime.now());
-        if (!accessGranted) {
-            LOGGER.error("Access denied to file {}. Token {} is no longer valid", checksum, token);
-        }
-        return accessGranted;
-    }
-
-    /**
-     * Generate a download token for the file associated to the given checksum
-     * @param checksum
-     * @return download token
-     */
-    public String createDownloadToken(String checksum) {
-        String newToken = UUID.randomUUID().toString();
-        downTokenRepo.save(DownloadToken.build(newToken, checksum, OffsetDateTime.now().plusHours(1)));
-        return newToken;
-    }
-
-    /**
-     * Remove all expired download tokens
-     */
-    public void purgeTokens() {
-        downTokenRepo.deleteByExpirationDateBefore(OffsetDateTime.now());
     }
 
     public static class StandardDownloadableFile extends DownloadableFile {

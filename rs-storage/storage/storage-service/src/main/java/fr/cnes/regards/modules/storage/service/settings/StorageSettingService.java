@@ -1,18 +1,5 @@
 package fr.cnes.regards.modules.storage.service.settings;
 
-import java.nio.file.Paths;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -25,30 +12,48 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @Service
 @RegardsTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class StorageSettingService extends AbstractSettingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageSettingService.class);
 
-    @Autowired
     private ITenantResolver tenantsResolver;
 
-    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
     private StorageSettingService self;
 
     @Value("${regards.storage.cache.path:cache}")
     private String defaultCachePath;
 
-    protected StorageSettingService(IDynamicTenantSettingService dynamicTenantSettingService) {
+    protected StorageSettingService(IDynamicTenantSettingService dynamicTenantSettingService,
+                                    ITenantResolver tenantsResolver,
+                                    IRuntimeTenantResolver runtimeTenantResolver,
+                                    StorageSettingService storageSettingService) {
         super(dynamicTenantSettingService);
+        this.tenantsResolver = tenantsResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        self = storageSettingService;
     }
 
     @Override

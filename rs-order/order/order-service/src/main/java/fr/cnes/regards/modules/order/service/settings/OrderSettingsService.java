@@ -10,8 +10,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.order.domain.settings.OrderSettings;
 import fr.cnes.regards.modules.order.domain.settings.UserOrderParameters;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,21 +22,22 @@ import java.util.List;
 
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderSettingsService extends AbstractSettingService implements IOrderSettingsService {
 
     private final ITenantResolver tenantsResolver;
     private final IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private OrderSettingsService self;
 
     public OrderSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
                                 ITenantResolver tenantsResolver,
-                                IRuntimeTenantResolver runtimeTenantResolver
+                                IRuntimeTenantResolver runtimeTenantResolver,
+                                OrderSettingsService orderSettingsService
     ) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.self = orderSettingsService;
     }
 
     @EventListener

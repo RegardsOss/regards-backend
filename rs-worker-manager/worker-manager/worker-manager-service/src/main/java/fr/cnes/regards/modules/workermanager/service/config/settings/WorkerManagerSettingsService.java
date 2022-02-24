@@ -32,8 +32,9 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -48,21 +49,25 @@ import java.util.List;
  */
 @Service
 @RegardsTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class WorkerManagerSettingsService extends AbstractSettingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkerManagerSettingsService.class);
 
-    @Autowired
     private ITenantResolver tenantsResolver;
 
-    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
     private WorkerManagerSettingsService self;
 
-    protected WorkerManagerSettingsService(IDynamicTenantSettingService dynamicTenantSettingService) {
+    protected WorkerManagerSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
+                                           ITenantResolver tenantsResolver,
+                                           IRuntimeTenantResolver runtimeTenantResolver,
+                                           WorkerManagerSettingsService workerManagerSettingsService) {
         super(dynamicTenantSettingService);
+        this.tenantsResolver = tenantsResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.self = workerManagerSettingsService;
     }
 
     @Override

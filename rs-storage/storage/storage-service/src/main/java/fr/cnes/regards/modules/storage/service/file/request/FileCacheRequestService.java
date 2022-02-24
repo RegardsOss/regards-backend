@@ -18,39 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -76,14 +47,36 @@ import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubse
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
+import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
-import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileCacheRequestJob;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
+import org.apache.commons.compress.utils.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle {@link FileCacheRequest}s.
@@ -93,62 +86,77 @@ import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurati
  */
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FileCacheRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileCacheRequestService.class);
 
-    @Autowired
-    private IFileCacheRequestRepository repository;
-
-    @Autowired
-    private IPluginService pluginService;
-
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
-    private CacheService cacheService;
-
-    @Autowired
-    private StoragePluginConfigurationHandler storageHandler;
-
-    @Autowired
-    private EntityManager em;
-
-    @Autowired
-    protected FileCacheRequestService self;
-
-    @Autowired
-    private FileReferenceEventPublisher publisher;
-
-    @Autowired
-    private RequestsGroupService reqGrpService;
-
-    @Autowired
-    private FileReferenceService fileRefService;
-
-    @Autowired
-    private StorageLocationConfigurationService pStorageService;
-
-    @Autowired
-    private FileDownloadService downloadService;
-
-    @Autowired
-    private RequestStatusService reqStatusService;
-
-    @Autowired
-    private INotificationClient notificationClient;
+    private static boolean globalCacheLimitReached = false;
 
     @Value("${regards.storage.cache.requests.per.job:100}")
     private Integer nbRequestsPerJob;
 
+    private IFileCacheRequestRepository repository;
+    
+    private IPluginService pluginService;
+    
+    private IJobInfoService jobInfoService;
+
+    private IAuthenticationResolver authResolver;
+    
+    private CacheService cacheService;
+    
+    private StoragePluginConfigurationHandler storageHandler;
+
+    private EntityManager em;
+    
+    private FileReferenceEventPublisher publisher;
+
+    private RequestsGroupService reqGrpService;
+    
+    private FileReferenceService fileRefService;
+    
+    private StorageLocationConfigurationService pStorageService;
+    
+    private DownloadTokenService downloadTokenService;
+    
+    private RequestStatusService reqStatusService;
+
+    private INotificationClient notificationClient;
+
+    private ApplicationContext applicationContext;
+
+    protected FileCacheRequestService self;
+
+    public FileCacheRequestService(IFileCacheRequestRepository repository, IPluginService pluginService, 
+                                   IJobInfoService jobInfoService, IAuthenticationResolver authResolver, 
+                                   CacheService cacheService, StoragePluginConfigurationHandler storageHandler,
+                                   EntityManager em, FileReferenceEventPublisher publisher, RequestsGroupService reqGrpService, 
+                                   FileReferenceService fileRefService, StorageLocationConfigurationService pStorageService, 
+                                   DownloadTokenService downloadTokenService, RequestStatusService reqStatusService, 
+                                   INotificationClient notificationClient, ApplicationContext applicationContext, 
+                                   FileCacheRequestService fileCacheRequestService) {
+        this.repository = repository;
+        this.pluginService = pluginService;
+        this.jobInfoService = jobInfoService;
+        this.authResolver = authResolver;
+        this.cacheService = cacheService;
+        this.storageHandler = storageHandler;
+        this.em = em;
+        this.publisher = publisher;
+        this.reqGrpService = reqGrpService;
+        this.fileRefService = fileRefService;
+        this.pStorageService = pStorageService;
+        this.downloadTokenService = downloadTokenService;
+        this.reqStatusService = reqStatusService;
+        this.notificationClient = notificationClient;
+        this.applicationContext = applicationContext;
+        this.self = fileCacheRequestService;
+    }
+
     /**
      * Static variable to avoid sending notification of cache full event after each request.
      */
-    private static boolean globalCacheLimitReached = false;
 
     /**
      * Search for a {@link FileCacheRequest} on the file given checksum.
@@ -557,7 +565,7 @@ public class FileCacheRequestService {
             LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", checksum, message);
             try {
                 // For online files we have to generate access url though storage microservice
-                String url = downloadService.generateDownloadUrl(checksum);
+                String url = downloadTokenService.generateDownloadUrl(checksum);
                 publisher.available(checksum, storage, storage, new URL(url), fileRef.getLazzyOwners(), message,
                                     availabilityGroupId);
                 reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,

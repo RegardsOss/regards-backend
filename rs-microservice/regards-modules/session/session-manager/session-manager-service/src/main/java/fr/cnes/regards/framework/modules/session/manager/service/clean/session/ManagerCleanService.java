@@ -28,23 +28,19 @@ import fr.cnes.regards.framework.modules.session.manager.domain.DeltaSessionStep
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Propagation;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service to clean old {@link SessionStep} and {@link Session}.
@@ -57,16 +53,12 @@ public class ManagerCleanService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerCleanService.class);
 
-    @Autowired
     private ISessionStepRepository sessionStepRepo;
 
-    @Autowired
     private ISessionManagerRepository sessionRepo;
 
-    @Autowired
     private ISourceManagerRepository sourceRepo;
 
-    @Autowired
     private ManagerCleanService self;
 
     @Value("${regards.session.manager.clean.session.limit.store:30}")
@@ -74,6 +66,16 @@ public class ManagerCleanService {
 
     @Value("${regards.session.manager.clean.session.page:100}")
     private int pageSize;
+
+    public ManagerCleanService(ISessionStepRepository sessionStepRepo, 
+                               ISessionManagerRepository sessionRepo, 
+                               ISourceManagerRepository sourceRepo,
+                               ManagerCleanService managerCleanService) {
+        this.sessionStepRepo = sessionStepRepo;
+        this.sessionRepo = sessionRepo;
+        this.sourceRepo = sourceRepo;
+        this.self = managerCleanService;
+    }
 
     /**
      * The clean method performs three actions :

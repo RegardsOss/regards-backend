@@ -41,7 +41,8 @@ import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -56,6 +57,7 @@ import java.util.stream.Collectors;
  * @author Léo Mieulet
  */
 @Component
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FeatureUpdateDisseminationService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeatureUpdateDisseminationService.class);
@@ -67,20 +69,28 @@ public class FeatureUpdateDisseminationService {
 
     private static final int PAGE_SIZE = 400;
 
-    @Autowired
+    
     private IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo;
-
-    @Autowired
+    
     private IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository;
 
-    @Autowired
     private IFeatureEntityRepository featureEntityRepository;
-
-    @Autowired
+    
     private FeatureUpdateDisseminationService self;
-
-    @Autowired
+    
     private ISessionAgentClient sessionNotificationClient;
+
+    public FeatureUpdateDisseminationService(IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo, 
+                                             IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository, 
+                                             IFeatureEntityRepository featureEntityRepository, 
+                                             FeatureUpdateDisseminationService featureUpdateDisseminationService, 
+                                             ISessionAgentClient sessionNotificationClient) {
+        this.featureWithDisseminationRepo = featureWithDisseminationRepo;
+        this.featureUpdateDisseminationRequestRepository = featureUpdateDisseminationRequestRepository;
+        this.featureEntityRepository = featureEntityRepository;
+        this.self = featureUpdateDisseminationService;
+        this.sessionNotificationClient = sessionNotificationClient;
+    }
 
     public int handleRequests() {
         Pageable page = PageRequest.of(0, PAGE_SIZE);

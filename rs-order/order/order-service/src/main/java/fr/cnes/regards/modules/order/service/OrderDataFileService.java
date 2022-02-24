@@ -36,8 +36,9 @@ import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -62,32 +63,25 @@ import java.util.stream.Collectors;
  */
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderDataFileService implements IOrderDataFileService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderDataFileService.class);
 
-    @Autowired
     private IOrderDataFileRepository orderDataFileRepository;
 
-    @Autowired
     private IOrderJobService orderJobService;
 
-    @Autowired
     private IOrderDataFileService self;
 
-    @Autowired
     private IFilesTasksRepository filesTasksRepository;
 
-    @Autowired
     private IOrderRepository orderRepository;
 
-    @Autowired
     private IStorageRestClient storageClient;
 
-    @Autowired
     private IAuthenticationResolver authResolver;
 
-    @Autowired
     private IProcessingEventSender processingEventSender;
 
     @Value("${http.proxy.host:#{null}}")
@@ -102,6 +96,20 @@ public class OrderDataFileService implements IOrderDataFileService {
     private Proxy proxy;
 
     private final Set<String> noProxyHosts = Sets.newHashSet();
+
+    public OrderDataFileService(IOrderDataFileRepository orderDataFileRepository, IOrderJobService orderJobService,
+                                IOrderDataFileService orderDataFileService, IFilesTasksRepository filesTasksRepository,
+                                IOrderRepository orderRepository, IStorageRestClient storageClient,
+                                IAuthenticationResolver authResolver, IProcessingEventSender processingEventSender) {
+        this.orderDataFileRepository = orderDataFileRepository;
+        this.orderJobService = orderJobService;
+        this.self = orderDataFileService;
+        this.filesTasksRepository = filesTasksRepository;
+        this.orderRepository = orderRepository;
+        this.storageClient = storageClient;
+        this.authResolver = authResolver;
+        this.processingEventSender = processingEventSender;
+    }
 
     @PostConstruct
     public void init() {

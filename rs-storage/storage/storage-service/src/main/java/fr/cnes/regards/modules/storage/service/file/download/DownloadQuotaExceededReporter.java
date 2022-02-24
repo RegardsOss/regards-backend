@@ -2,7 +2,6 @@ package fr.cnes.regards.modules.storage.service.file.download;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -19,11 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
 
 import javax.annotation.PostConstruct;
@@ -35,6 +34,7 @@ import java.util.function.Supplier;
 import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfiguration.QuotaExceededReporterConfiguration.REPORT_TICKING_SCHEDULER;
 
 @Component
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<DownloadableFile> {
 
     public static final String TITLE = "Download quota errors";
@@ -72,7 +72,8 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
         ITenantResolver tenantResolver,
         IRuntimeTenantResolver runtimeTenantResolver,
         ApplicationContext applicationContext,
-        Environment env
+        Environment env,
+        DownloadQuotaExceededReporter downloadQuotaExceededReporter
     ) {
         this.reportTick = reportTick;
         this.reportTickingScheduler = reportTickingScheduler;
@@ -81,6 +82,7 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.applicationContext = applicationContext;
         this.env = env;
+        this.self = downloadQuotaExceededReporter;
     }
 
     @VisibleForTesting

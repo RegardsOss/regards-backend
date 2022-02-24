@@ -44,10 +44,11 @@ import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -61,15 +62,13 @@ import java.util.*;
 @Service
 @RefreshScope
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderCreationService implements IOrderCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderCreationService.class);
 
     private static final int MAX_BUCKET_FILE_COUNT = 5_000;
-
-    @Autowired
     private IOrderCreationService self;
-
     private final IOrderRepository orderRepository;
     private final IOrderDataFileService dataFileService;
     private final IOrderJobService orderJobService;
@@ -87,7 +86,8 @@ public class OrderCreationService implements IOrderCreationService {
     public OrderCreationService(IOrderRepository orderRepository, IOrderDataFileService dataFileService, IOrderJobService orderJobService,
                                 BasketSelectionPageSearch basketSelectionPageSearch, SuborderSizeCounter suborderSizeCounter, INotificationClient notificationClient,
                                 IEmailClient emailClient, OrderHelperService orderHelperService, IProjectsClient projectClient, ApplicationEventPublisher applicationEventPublisher,
-                                IRuntimeTenantResolver runtimeTenantResolver, IOrderProcessingService orderProcessingService, TemplateService templateService
+                                IRuntimeTenantResolver runtimeTenantResolver, IOrderProcessingService orderProcessingService, TemplateService templateService,
+                                IOrderCreationService orderCreationService
     ) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
@@ -102,6 +102,7 @@ public class OrderCreationService implements IOrderCreationService {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.orderProcessingService = orderProcessingService;
         this.templateService = templateService;
+        this.self = orderCreationService;
     }
 
 

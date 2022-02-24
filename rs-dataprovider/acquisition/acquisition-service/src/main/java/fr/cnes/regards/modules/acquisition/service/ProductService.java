@@ -18,34 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -62,12 +36,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.ProductSpecifications;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
+import fr.cnes.regards.modules.acquisition.domain.*;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
@@ -86,6 +55,24 @@ import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Manage acquisition {@link Product}
@@ -94,35 +81,28 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
  */
 @MultitenantTransactional
 @Service
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
 
-    @Autowired
+    
     private IPluginService pluginService;
-
-    @Autowired
+    
     private IProductRepository productRepository;
-
-    @Autowired
+    
     private IAcquisitionProcessingChainRepository acqChainRepository;
-
-    @Autowired
+    
     private IAuthenticationResolver authResolver;
-
-    @Autowired
+    
     private IJobInfoService jobInfoService;
-
-    @Autowired
+    
     private IAcquisitionFileRepository acqFileRepository;
 
-    @Autowired
     private IIngestClient ingestClient;
 
-    @Autowired
     private IProductService self;
-
-    @Autowired
+    
     private SessionNotifier sessionNotifier;
 
     @Value("${regards.acquisition.product.bulk.request.limit:2000}")
@@ -130,6 +110,21 @@ public class ProductService implements IProductService {
 
     @Value("${spring.application.name}")
     private String appName;
+
+    public ProductService(IPluginService pluginService, IProductRepository productRepository, 
+                          IAcquisitionProcessingChainRepository acqChainRepository, IAuthenticationResolver authResolver, 
+                          IJobInfoService jobInfoService, IAcquisitionFileRepository acqFileRepository, 
+                          IIngestClient ingestClient, IProductService productService, SessionNotifier sessionNotifier) {
+        this.pluginService = pluginService;
+        this.productRepository = productRepository;
+        this.acqChainRepository = acqChainRepository;
+        this.authResolver = authResolver;
+        this.jobInfoService = jobInfoService;
+        this.acqFileRepository = acqFileRepository;
+        this.ingestClient = ingestClient;
+        this.self = productService;
+        this.sessionNotifier = sessionNotifier;
+    }
 
     @Override
     public Product save(Product product) {

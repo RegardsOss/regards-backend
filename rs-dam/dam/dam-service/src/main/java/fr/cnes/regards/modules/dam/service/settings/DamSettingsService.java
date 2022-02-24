@@ -9,8 +9,9 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.dam.domain.settings.DamSettings;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,20 +21,22 @@ import java.util.List;
 
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class DamSettingsService extends AbstractSettingService implements IDamSettingsService {
 
     private final ITenantResolver tenantsResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
     private DamSettingsService self;
 
     protected DamSettingsService(IDynamicTenantSettingService dynamicTenantSettingService, ITenantResolver tenantsResolver,
-                                 IRuntimeTenantResolver runtimeTenantResolver
+                                 IRuntimeTenantResolver runtimeTenantResolver, DamSettingsService damSettingsService
     ) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.self = damSettingsService;
     }
 
     @EventListener
