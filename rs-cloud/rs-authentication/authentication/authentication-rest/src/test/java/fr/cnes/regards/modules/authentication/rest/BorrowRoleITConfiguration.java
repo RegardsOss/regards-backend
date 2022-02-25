@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author Sylvain Vissiere-Guerinet
  */
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.authentication.role" })
-//@EnableAutoConfiguration(exclude = { SwaggerAutoConfiguration.class })
 @EnableAutoConfiguration
 @Configuration
 public class BorrowRoleITConfiguration {
