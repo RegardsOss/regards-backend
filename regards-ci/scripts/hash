@@ -35,7 +35,8 @@ function dependencyTree {
         echo -e "\nBuilding dependency tree..."
         set -x
         # we just want the dependecy tree so we deactivate everything we can think of (and version is not important here so we use JOB_ID)
-        mvn -B process-classes dependency:tree -P CI -T 6 \
+        # mvn -B process-classes dependency:tree -P CI -T 6 \
+        mvn -B process-classes dependency:tree -P CI \
             -f ${SERVICES}/pom.xml \
             -Dfile.encoding=UTF-8 \
             -DcmdLineTarget=target \
