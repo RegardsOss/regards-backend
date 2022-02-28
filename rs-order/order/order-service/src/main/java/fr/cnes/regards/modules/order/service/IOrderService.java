@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import org.springframework.data.domain.Page;
@@ -94,6 +95,14 @@ public interface IOrderService {
      * @return {@link Order}s
      */
     Page<Order> findAll(String user, Pageable pageRequest, OrderStatus... excludeStatuses);
+
+    /**
+     * Find all orders thanks to filters
+     * @param filters
+     * @param pageRequest
+     * @return
+     */
+    Page<Order> searchOrders(SearchRequestParameters filters, Pageable pageRequest);
 
     /**
      * Check if the given order is really paused

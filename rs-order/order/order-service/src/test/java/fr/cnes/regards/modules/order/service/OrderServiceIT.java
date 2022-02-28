@@ -39,12 +39,7 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
@@ -79,6 +74,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -173,6 +170,60 @@ public class OrderServiceIT {
         orderRepos.deleteAll();
         dataFileRepos.deleteAll();
         jobInfoRepos.deleteAll();
+    }
+
+    @Test
+    public void testSearchOrders() {
+        Order order = new Order();
+        order.setOwner(USER_EMAIL);
+        order.setLabel("test order 1");
+        order.setStatus(OrderStatus.DONE);
+        order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(OffsetDateTime.now().plus(3, ChronoUnit.DAYS));
+        orderRepos.save(order);
+
+        PageRequest pr = PageRequest.of(0, 100);
+        SearchRequestParameters srp = new SearchRequestParameters();
+
+        srp.withOwner("test");
+        Page<Order> ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching wrong owner", 0, ordersInRepo.getTotalElements());
+
+        srp.withOwner(USER_EMAIL);
+        ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching correct owner", 1, ordersInRepo.getTotalElements());
+
+        srp.withWaitingForUser(true);
+        ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching waiting for user download", 0, ordersInRepo.getTotalElements());
+
+        srp.withWaitingForUser(false);
+        ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching not waiting for user download", 1, ordersInRepo.getTotalElements());
+
+        srp.withStatusesIncluded(OrderStatus.DONE);
+        ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching DONE orders", 1, ordersInRepo.getTotalElements());
+
+        srp.withStatusesIncluded(OrderStatus.PENDING);
+        ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching PENDING orders", 0, ordersInRepo.getTotalElements());
+
+        srp.withStatusesIncluded();
+        OffsetDateTime createdBefore = OffsetDateTime.now().plusDays(2);
+        srp.withCreationDateBefore(createdBefore);
+        ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching orders before", 1, ordersInRepo.getTotalElements());
+
+        OffsetDateTime createdAfter = OffsetDateTime.now().plusDays(1);
+        srp.withCreateDateBeforeAndAfter(createdBefore, createdAfter);
+        ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching orders after", 0, ordersInRepo.getTotalElements());
+
+        createdAfter = OffsetDateTime.now().minusDays(1);
+        srp.withCreateDateBeforeAndAfter(createdBefore, createdAfter);
+        ordersInRepo = orderService.searchOrders(srp, pr);
+        Assert.assertEquals("Error searching orders between dates", 1, ordersInRepo.getTotalElements());
     }
 
     @Test

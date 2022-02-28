@@ -54,11 +54,9 @@ public enum OrderStatus {
     DONE,
     /**
      * User asked for order deletion, everything is still available (dataset tasks, files tasks, jobs) except order
-     * data files that are removed. Only a PAUSED order can be removed (with no more running jobs)
+     * data files that are removed.
+     * Only a {@link OrderStatus#PAUSED}, {@link OrderStatus#DONE}, {@link OrderStatus#DONE_WITH_WARNING},
+     * {@link OrderStatus#FAILED} order can be {@link OrderStatus#DELETED} (with no running jobs)
      */
-    DELETED,
-    /**
-     * Order is removed from system and database. Only a DELETED order can be removed
-     */
-    REMOVED
+    DELETED
 }

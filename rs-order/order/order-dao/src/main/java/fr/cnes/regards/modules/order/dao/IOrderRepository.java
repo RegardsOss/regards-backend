@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -72,6 +73,11 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
     }
 
+    default Page<Order> findAllOrders(Specification<Order> orderSpecification, Pageable pageRequest) {
+        Page<Order> orders = findAll(orderSpecification, pageRequest);
+        return orders;
+    }
+
     @Query(value = "select o.id as id from Order o order by o.creationDate desc",
             countQuery = "select count(o.id) from Order o")
     Page<OrderIdOnly> findIdPageByOrderByCreationDateDesc(Pageable pageRequest);
@@ -109,6 +115,10 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
 
     @EntityGraph("graph.order.simple")
     List<Order> findAllByIdInOrderByCreationDateDesc(Collection<Long> ids);
+
+    @EntityGraph("graph.order.simple")
+    @Override
+    Page<Order> findAll(Specification<Order> specification, Pageable pageable);
 
     @EntityGraph("graph.order.simple")
     List<Order> findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(boolean waitingForUser,

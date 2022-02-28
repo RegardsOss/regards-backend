@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtExceptio
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
@@ -51,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -111,6 +114,8 @@ public class OrderController implements IResourceController<OrderDto> {
     public static final String CSV = "/csv";
 
     public static final String USER_ROOT_PATH = "/user/orders";
+
+    public static final String SEARCH_ORDER_PATH = ADMIN_ROOT_PATH + "/search";
 
     public static final String REMOVE_ORDER_PATH = USER_ROOT_PATH + "/remove/{orderId}";
 
@@ -247,11 +252,12 @@ public class OrderController implements IResourceController<OrderDto> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Find all specified user orders or all users orders", role = DefaultRole.EXPLOIT)
-    @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
-    public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAllAdmin(@RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
-        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ? orderService.findAll(pageRequest)
-                : orderService.findAll(user, pageRequest);
+    @ResourceAccess(description = "Find all specified user orders or all users orders matching given filters", role = DefaultRole.EXPLOIT)
+    @RequestMapping(method = RequestMethod.POST, path = SEARCH_ORDER_PATH)
+    public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAllAdmin(
+            @PageableDefault(sort = "creationDate", direction = Sort.Direction.ASC) Pageable pageRequest,
+            @RequestBody SearchRequestParameters filters) {
+        Page<Order> orderPage = orderService.searchOrders(filters, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
@@ -273,7 +279,7 @@ public class OrderController implements IResourceController<OrderDto> {
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
         return ResponseEntity.ok(toPagedResources(
-                orderService.findAll(user, pageRequest, OrderStatus.DELETED, OrderStatus.REMOVED).map(OrderDto::fromOrder),
+                orderService.findAll(user, pageRequest, OrderStatus.DELETED).map(OrderDto::fromOrder),
                 orderDtoPagedResourcesAssembler
         ));
     }
@@ -345,7 +351,6 @@ public class OrderController implements IResourceController<OrderDto> {
         String error = null;
         switch (order.getStatus()) {
             case DELETED:
-            case REMOVED:
                 error = "Order is deleted";
                 break;
             case EXPIRED:

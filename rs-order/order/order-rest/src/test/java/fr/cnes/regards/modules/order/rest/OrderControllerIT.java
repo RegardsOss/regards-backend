@@ -926,11 +926,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Test
     public void testFindAll() {
         createSeveralOrdersWithDifferentOwners();
-
-        // All orders
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(3)));
-        performDefaultGet(OrderController.ADMIN_ROOT_PATH, customizer, "errors");
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer();
+        requestBuilderCustomizer.expectStatusOk();
+        requestBuilderCustomizer.expectIsArray(JSON_PATH_CONTENT);
+        requestBuilderCustomizer.expectToHaveSize(JSON_PATH_CONTENT, 3);
+        SearchRequestParameters body = new SearchRequestParameters();
+        performDefaultPost(OrderController.SEARCH_ORDER_PATH, body, requestBuilderCustomizer, "Error retrieving all orders");
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_420")
@@ -939,29 +940,33 @@ public class OrderControllerIT extends AbstractRegardsIT {
         createSeveralOrdersWithDifferentOwners();
 
         // All specific user orders
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(1)));
-        customizer.addParameter("user", "other.user2@regards.fr");
-        customizer.addParameter("page", "0");
-        customizer.addParameter("size", "20");
-        // request parameters
-        customizer.document(RequestDocumentation
-                .relaxedRequestParameters(RequestDocumentation.parameterWithName("user").optional()
-                        .description("Optional - user email whom orders are requested, if not provided all users orders are retrieved")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")),
-                                          RequestDocumentation.parameterWithName("page").optional()
-                                                  .description("page number (from 0)")
-                                                  .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                          .value("Integer")),
-                                          RequestDocumentation.parameterWithName("size").optional()
-                                                  .description("page size").attributes(Attributes
-                                                          .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
-        // response body
-        ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
-        List<FieldDescriptor> fields = new ArrayList<>();
-        fields.add(constrainedFields.withPath("content", "orders").optional().type(JSON_ARRAY_TYPE));
-        customizer.document(PayloadDocumentation.relaxedResponseFields(fields));
-        performDefaultGet(OrderController.ADMIN_ROOT_PATH, customizer, "errors");
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer();
+        requestBuilderCustomizer.document(RequestDocumentation
+                                .requestParameters(RequestDocumentation.parameterWithName("user").optional()
+                                        .description("Optional - user email whom orders are requested, if not provided all users orders are retrieved")
+                                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")),
+                                                          RequestDocumentation.parameterWithName("statuses").optional()
+                                                                  .description("Option - list of status whom orders are requested, if not provided all orders are retrieved")
+                                                                  .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                      .value(JSON_ARRAY_TYPE), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Values must be strings")),
+                                                           RequestDocumentation.parameterWithName("creationDate").optional()
+                                                                   .description("Option - creation date whom orders are requested, if not provided all orders are retrieved")
+                                                                   .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                       .value(JSON_OBJECT_TYPE), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Values must be 2 ISO-8601 Dates")),
+                                                          RequestDocumentation.parameterWithName("page").optional()
+                                                                  .description("page number (from 0)")
+                                                                  .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                          .value("Integer")),
+                                                          RequestDocumentation.parameterWithName("size").optional()
+                                                                  .description("page size").attributes(Attributes
+                                                                          .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
+        requestBuilderCustomizer.expectStatusOk();
+        requestBuilderCustomizer.expectIsArray(JSON_PATH_CONTENT);
+        requestBuilderCustomizer.expectToHaveSize(JSON_PATH_CONTENT, 1);
+        SearchRequestParameters body = new SearchRequestParameters();
+        body.withStatusesIncluded(OrderStatus.PENDING);
+        body.withOwner("other.user2@regards.fr");
+        performDefaultPost(OrderController.SEARCH_ORDER_PATH, body, requestBuilderCustomizer, "Error retrieving all orders");
     }
 
     @Test

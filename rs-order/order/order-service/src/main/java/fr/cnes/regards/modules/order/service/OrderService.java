@@ -31,10 +31,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.dao.OrderSpecifications;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.dao.RequestSpecificationsBuilder;
+import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
@@ -150,6 +148,12 @@ public class OrderService implements IOrderService {
         } else {
             return orderRepository.findAllByOwnerAndStatusNotInOrderByCreationDateDesc(user, excludeStatuses, pageRequest);
         }
+    }
+
+    @Override
+    public Page<Order> searchOrders(SearchRequestParameters filters, Pageable pageRequest) {
+        return orderRepository.findAllOrders(new RequestSpecificationsBuilder().withParameters(filters).build(),
+                                             pageRequest);
     }
 
     @Override
