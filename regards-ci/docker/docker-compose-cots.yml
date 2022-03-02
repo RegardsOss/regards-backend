@@ -16,7 +16,8 @@ services:
       - POSTGRES_PASSWORD=azertyuiop123456789
       - POSTGRES_USER=azertyuiop123456789
     volumes:
-      - ./postgres:/docker-entrypoint-initdb.d
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres/postgresql.conf:/etc/postgresql.conf
     networks:
       - regards_IT_network
 
