@@ -77,6 +77,7 @@ pipeline {
             parallel {
                 stage('-1-') {
                     stages {
+                        // Please ensure the 4th argument passed to runMavenDockerImg is TRUE !!!
                         stage('Microservice') {
                             steps {
                                 runMavenDockerImg("sonarTests", "rs-microservice", true, true)
@@ -116,6 +117,7 @@ pipeline {
                 }
                 stage('-2-') {
                     stages {
+                        // Please ensure the 4th argument passed to runMavenDockerImg is FALSE !!!
                         stage('Admin') {
                             steps {
                                 runMavenDockerImg("sonarTests", "rs-admin", true, false)
@@ -260,7 +262,7 @@ def runMavenDockerImg(mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
     if (isRequiringCots) {
         def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
         dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432"          \
-                         --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq                      \
+                         --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq   \
                          --link ' + dockerProject + '_rs-elasticsearch_1:rs-elasticsearch            \
                          --link ' + dockerProject + '_rs-postgres_1:rs-postgres                      '
     }

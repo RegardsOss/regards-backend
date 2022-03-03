@@ -83,6 +83,7 @@ pipeline {
             parallel {
                 stage('-1-') {
                     stages {
+                        // Please ensure the 4th argument passed to runMavenDockerImg is TRUE !!!
                         stage('Bom') {
                             steps {
                                 runMavenDockerImg("tests", "rs-bom", true, true)
@@ -116,6 +117,7 @@ pipeline {
                     }
                 }
                 stage('-2-') {
+                    // Please ensure the 4th argument passed to runMavenDockerImg is FALSE !!!
                     stages {
                         stage('Admin') {
                             steps {
@@ -134,12 +136,12 @@ pipeline {
                         }
                         stage('Access') {
                             steps {
-                                runMavenDockerImg("tests", "rs-access", true, true)
+                                runMavenDockerImg("tests", "rs-access", true, false)
                             }
                         }
                         stage('Notifier') {
                             steps {
-                                runMavenDockerImg("tests", "rs-notifier", true, true)
+                                runMavenDockerImg("tests", "rs-notifier", true, false)
                             }
                         }
                         stage('Storage') {
@@ -293,7 +295,7 @@ def runMavenDockerImg(mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
     if (isRequiringCots) {
         def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
         dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432"          \
-                         --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq                      \
+                         --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq   \
                          --link ' + dockerProject + '_rs-elasticsearch_1:rs-elasticsearch            \
                          --link ' + dockerProject + '_rs-postgres_1:rs-postgres                      '
     }
