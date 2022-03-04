@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import org.slf4j.Logger;
@@ -36,7 +37,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -63,12 +63,15 @@ public class FeatureJobFailedEventHandler implements IHandler<JobEvent>, Applica
 
     private final IFeatureRequestService featureRequestService;
 
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     public FeatureJobFailedEventHandler(ISubscriber subscriber, IFeatureRequestService requestService, IJobInfoService jobService,
-            IFeatureRequestService featureRequestService) {
+            IFeatureRequestService featureRequestService, IRuntimeTenantResolver runtimeTenantResolver) {
         this.subscriber = subscriber;
         this.requestService = requestService;
         this.jobService = jobService;
         this.featureRequestService = featureRequestService;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -79,6 +82,7 @@ public class FeatureJobFailedEventHandler implements IHandler<JobEvent>, Applica
     @Override
     public void handle(String tenant, JobEvent message) {
         if (JobEventType.FAILED == message.getJobEventType()) {
+            runtimeTenantResolver.forceTenant(tenant);
             JobInfo job = jobService.retrieveJob(message.getJobId());
             if (JOB_TYPES.contains(job.getClassName())) {
                 Type type = new TypeToken<Set<Long>>() {
