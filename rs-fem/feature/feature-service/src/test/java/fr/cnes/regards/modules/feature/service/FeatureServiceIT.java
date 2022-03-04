@@ -18,12 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,15 +36,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test of {@link FeatureServiceIT}
@@ -89,7 +90,9 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
         assertEquals(2, results.getNumberOfElements());
 
-        FeatureEntityDto dof = results.getContent().get(0);
+        Optional<FeatureEntityDto> dofOpt = results.getContent().stream().filter(fed -> fed.getId().equals(secondFeature.getId())).findFirst();
+        assertTrue(dofOpt.isPresent(), "Entity researched not found");
+        FeatureEntityDto dof = dofOpt.get();
         // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same
         assertEquals(secondFeature.getFeature().getProperties(), dof.getFeature().getProperties());
         assertEquals(secondFeature.getSession(), dof.getSession());
