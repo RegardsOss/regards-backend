@@ -153,6 +153,9 @@
 		<!-- Test properties -->
 		<regards.maven.test.env>-Duser.timezone=GMT0</regards.maven.test.env>
 		<regards.cots.properties>LT.properties</regards.cots.properties>
+
+		<!-- Test dependency versions -->
+		<org.assertj.version>3.22.0</org.assertj.version>
 	</properties>
 
 	<modules>
@@ -2112,6 +2115,14 @@
 				<groupId>org.awaitility</groupId>
 				<artifactId>awaitility</artifactId>
 				<version>${awaitility.version}</version>
+				<scope>test</scope>
+			</dependency>
+<!--			Can't limit to scope test-->
+<!--			because assertj is used in test projects-->
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-core</artifactId>
+				<version>${org.assertj.version}</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>

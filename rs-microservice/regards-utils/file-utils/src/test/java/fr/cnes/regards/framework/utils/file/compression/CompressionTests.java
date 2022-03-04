@@ -18,52 +18,32 @@
  */
 package fr.cnes.regards.framework.utils.file.compression;
 
+import fr.cnes.regards.framework.utils.file.compression.impl.ZCompression;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import fr.cnes.regards.framework.utils.file.compression.impl.GZipCompression;
-import fr.cnes.regards.framework.utils.file.compression.impl.ZCompression;
-
-/**
- * Test Z decompression
- *
- * @author Marc SORDI
- *
- */
 public class CompressionTests {
 
-    /**
-     * Decompress a Z compressed file
-     * @throws IOException
-     */
+    @Rule
+    public TemporaryFolder extractFolder = new TemporaryFolder();
+
     @Test
     public void decompressZFile() throws CompressionException, IOException {
-
         Path filePath = Paths.get("src", "test", "resources", "h2adata998.dat.Z");
-        Path outputPath = Paths.get("target", "z");
-        Files.createDirectories(outputPath);
+        File outputPath = extractFolder.newFolder("z");
 
         ZCompression util = new ZCompression();
-        util.uncompress(filePath.toFile(), outputPath.toFile());
+        util.uncompress(filePath.toFile(), outputPath);
+
+        Path extractedFile = outputPath.toPath().resolve("h2adata998.dat");
+        assertThat(extractedFile).exists();
     }
-
-    /**
-     * Decompress a Z compressed file
-     * @throws IOException
-     */
-    @Test
-    public void decompressGZipFile() throws CompressionException, IOException {
-
-        Path filePath = Paths.get("src", "test", "resources", "RINEX_0120.tar.gz");
-        Path outputPath = Paths.get("target", "gzip");
-        Files.createDirectories(outputPath);
-
-        GZipCompression util = new GZipCompression();
-        util.uncompress(filePath.toFile(), outputPath.toFile());
-    }
-
 }
