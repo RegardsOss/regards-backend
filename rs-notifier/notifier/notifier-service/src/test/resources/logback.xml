@@ -28,6 +28,7 @@
 	</appender>
 
 	<logger name="org.springframework" level="ERROR" />
+	<logger name="fr.cnes.regards.framework.test.util" level="INFO"/>
 	<logger name="io.micrometer" level="ERROR" />
 	<logger name="fr.cnes.regards.modules" level="INFO" />
 	<logger name="fr.cnes.regards.modules.model.gson" level="ERROR"/>

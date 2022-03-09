@@ -37,6 +37,7 @@
 	<logger name="org.hibernate" level="INFO" />
 	<logger name="fr.cnes.regards.modules.acquisition.service.ProductService" level="DEBUG" />
 	<logger name="fr.cnes.regards.modules.sessionmanager.client" level="INFO" />
+	<logger name="fr.cnes.regards.framework.test.util" level="INFO"/>
 	
 <!--	<logger name="org.hibernate.SQL" level="DEBUG" />-->
 <!--	<logger name="org.hibernate.type.descriptor.sql" level="TRACE" />-->

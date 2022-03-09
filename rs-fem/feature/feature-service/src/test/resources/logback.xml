@@ -23,6 +23,7 @@
     <include resource="fr/cnes/regards/framework/logbackappender/console_appender.xml"/>
     <include resource="fr/cnes/regards/framework/logbackappender/syslog_appender.xml"/>
     <include resource="fr/cnes/regards/framework/logbackappender/file_appender.xml"/>
+    <logger name="fr.cnes.regards.framework.test.util" level="INFO"/>
     <logger name="fr.cnes.regards.modules.model.dto.properties.logger" level="INFO"/>
      <logger name="fr.cnes.regards.modules.feature" level="INFO"/>
     <!--<logger name="fr.cnes.regards.modules.feature.service.request.FeatureNotfierListener" level="DEBUG"/>-->

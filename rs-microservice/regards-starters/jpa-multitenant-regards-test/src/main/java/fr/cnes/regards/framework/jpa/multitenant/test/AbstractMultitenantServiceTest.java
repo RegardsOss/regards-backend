@@ -21,7 +21,9 @@ package fr.cnes.regards.framework.jpa.multitenant.test;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.util.JUnitLogRule;
 import org.junit.After;
+import org.junit.Rule;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +95,9 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
     @Autowired
     private ApplicationEventPublisher springPublisher;
 
+    @Rule
+    public JUnitLogRule rule = new JUnitLogRule();
+    
     @After
     public void afterMultitenantServiceTest() {
         subscriber.purgeAllQueues(getDefaultTenant());

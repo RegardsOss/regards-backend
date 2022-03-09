@@ -28,6 +28,7 @@
 			</pattern>
 		</encoder>
 	</appender>
+	<logger name="fr.cnes.regards.framework.test.util" level="INFO"/>
 
 	<!-- <logger name="fr.cnes.regards" level="INFO"/> <logger name="org.springframework.security.web" 
 		level="INFO"/> -->
