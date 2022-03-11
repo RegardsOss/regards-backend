@@ -32,7 +32,6 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '2'))
         disableConcurrentBuilds()
-        parallelsAlwaysFailFast()
     }
     environment {
         PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
@@ -78,32 +77,44 @@ pipeline {
                         // Please you use here the method [...]One (runMavenDockerImgParallelOne)
                         stage('Bom') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelOne("tests", "rs-bom")
+                              }
                             }
                         }
                         stage('Microservice') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelOne("tests", "rs-microservice")
+                              }
                             }
                         }
                         stage('Cloud') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelOne("tests", "rs-cloud")
+                              }
                             }
                         }
                         stage('Ingest') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelOne("tests", "rs-ingest")
+                              }
                             }
                         }
                         stage('Fem') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelOne("tests", "rs-fem")
+                              }
                             }
                         }
                         stage('Worker manager') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelOne("tests", "rs-worker-manager")
+                              }
                             }
                         }
                     }
@@ -113,47 +124,66 @@ pipeline {
                     stages {
                         stage('Admin') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelTwo("tests", "rs-admin")
+                              }
                             }
                         }
                         stage('Dam') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                runMavenDockerImg("tests", "rs-dam", true, false)
+                              }
                                 runMavenDockerImgParallelTwo("tests", "rs-dam")
                             }
                         }
                         stage('Catalog') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelTwo("tests", "rs-catalog")
+                              }
                             }
                         }
                         stage('Access') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelTwo("tests", "rs-access")
+                              }
                             }
                         }
                         stage('Notifier') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelTwo("tests", "rs-notifier")
+                              }
                             }
                         }
                         stage('Storage') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelTwo("tests", "rs-storage")
+                              }
                             }
                         }
                         stage('Dataprovider') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelTwo("tests", "rs-dataprovider")
+                              }
                             }
                         }
                         stage('Order') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelTwo("tests", "rs-order")
+                              }
                             }
                         }
                         stage('processing') {
                             steps {
+                              catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 runMavenDockerImgParallelTwo("tests", "rs-processing")
+                              }
                             }
                         }
                     }
