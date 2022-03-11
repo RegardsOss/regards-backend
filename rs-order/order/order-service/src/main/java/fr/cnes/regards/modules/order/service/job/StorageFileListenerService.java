@@ -26,12 +26,13 @@ import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @MultitenantTransactional
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class StorageFileListenerService implements IStorageFileListener, IStorageFileListenerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageFileListenerService.class);
@@ -54,13 +56,9 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
 
     private final ApplicationContext applicationContext;
 
-    public StorageFileListenerService(ApplicationContext applicationContext){
+    public StorageFileListenerService(ApplicationContext applicationContext, StorageFileListenerService storageFileListenerService){
         this.applicationContext = applicationContext;
-    }
-
-    @PostConstruct
-    public void post() {
-        self = applicationContext.getBean(this.getClass());
+        this.self = storageFileListenerService;
     }
 
     @Override

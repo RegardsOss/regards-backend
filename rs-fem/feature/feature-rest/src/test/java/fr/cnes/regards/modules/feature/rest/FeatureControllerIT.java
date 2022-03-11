@@ -1,10 +1,18 @@
 package fr.cnes.regards.modules.feature.rest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.dto.*;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.IFeatureValidationService;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.util.collections.Sets;
@@ -21,24 +29,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.validation.MapBindingResult;
 
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
-import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.StorageMetadata;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.service.IFeatureValidationService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature",
         "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
@@ -58,6 +52,11 @@ public class FeatureControllerIT extends AbstractFeatureIT {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Before
+    public void init() {
+        runtimeTenantResolver.forceTenant(this.getDefaultTenant());
+    }
+
     @Test
     public void testCreateValidFeatureCreationRequest() throws Exception {
 
@@ -73,7 +72,6 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         collection.setMetadata(FeatureSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, metadata));
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        runtimeTenantResolver.forceTenant(this.getDefaultTenant());
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
         documentFeatureCollectionRequestBody(requestBuilderCustomizer, false);
@@ -126,7 +124,6 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         documentFeatureCollectionRequestBody(requestBuilderCustomizer, true);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
         performDefaultPatch(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
                             FEATURE_UPDATE_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());

@@ -46,13 +46,13 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     /**
      * Load Order with all lazy relations
      */
-    @EntityGraph("graph.order.complete")
+    @EntityGraph(value = "graph.order.complete", type = EntityGraph.EntityGraphType.LOAD)
     Order findCompleteById(Long id);
 
     /**
      * Load Order one level lazy relations (ie. only dataTasks)
      */
-    @EntityGraph("graph.order.simple")
+    @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     Order findSimpleById(Long id);
 
     /**
@@ -113,22 +113,22 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     Page<OrderIdOnly> findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(@Param("owner") String owner,
             @Param("excludeStatuses") OrderStatus[] excludeStatuses, Pageable pageRequest);
 
-    @EntityGraph("graph.order.simple")
+    @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     List<Order> findAllByIdInOrderByCreationDateDesc(Collection<Long> ids);
 
-    @EntityGraph("graph.order.simple")
+    @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     @Override
     Page<Order> findAll(Specification<Order> specification, Pageable pageable);
 
-    @EntityGraph("graph.order.simple")
+    @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     List<Order> findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(boolean waitingForUser,
             int minAvailableCount, OrderStatus... statuses);
 
-    @EntityGraph("graph.order.simple")
+    @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     List<Order> findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(int count,
             OffsetDateTime date, OrderStatus... statuses);
 
-    @EntityGraph("graph.order.simple")
+    @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Order> findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime date, OrderStatus... statuses);
 
     /**

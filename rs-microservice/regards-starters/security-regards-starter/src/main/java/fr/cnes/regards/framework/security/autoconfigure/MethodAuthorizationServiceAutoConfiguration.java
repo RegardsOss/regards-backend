@@ -18,28 +18,24 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.authentication.autoconfigure.AuthenticationAutoConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
 import fr.cnes.regards.framework.security.autoconfigure.test.SecureTestRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProvider;
-import fr.cnes.regards.framework.security.endpoint.DefaultPluginResourceManager;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
-import fr.cnes.regards.framework.security.endpoint.InstanceMethodAuthorizationService;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.endpoint.*;
 import fr.cnes.regards.framework.security.event.SecurityEventHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 
 /**
  * Method Authorization Service auto configuration
@@ -59,15 +55,18 @@ public class MethodAuthorizationServiceAutoConfiguration {
     @Value("${regards.instance.tenant.name:instance}")
     private String instanceTenantName;
 
+    @Autowired
+    Environment env;
+
     @ConditionalOnMissingBean
-    @ConditionalOnExpression("#{environment.getProperty('spring.profiles.active') == null || !environment.getProperty('spring.profiles.active').contains('test')}")
+    @Profile("!test")
     @Bean
     public IRuntimeTenantResolver secureThreadTenantResolver() {
         return new SecureRuntimeTenantResolver(instanceTenantName);
     }
 
     @ConditionalOnMissingBean
-    @ConditionalOnExpression("#{environment.getProperty('spring.profiles.active') != null && environment.getProperty('spring.profiles.active').contains('test')}")
+    @Profile("test")
     @Bean
     public IRuntimeTenantResolver secureTestThreadTenantResolver() {
         return new SecureTestRuntimeTenantResolver(instanceTenantName);

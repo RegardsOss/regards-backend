@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import fr.cnes.regards.modules.ingest.service.aip.utils.AIPUpdateResult;
+import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPStorageService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

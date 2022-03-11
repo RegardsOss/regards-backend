@@ -43,7 +43,6 @@ import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
-import fr.cnes.regards.modules.order.service.processing.ProcessingExecutionResultEventHandler;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -66,6 +65,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -81,6 +81,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -138,7 +139,7 @@ public class OrderServiceIT {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
     @Autowired
-    private ProcessingExecutionResultEventHandler plop;
+    private ThreadPoolTaskExecutor pool;
 
     @MockBean
     private IProjectUsersClient projectUsersClient;
@@ -231,6 +232,8 @@ public class OrderServiceIT {
         Order order = orderService.createOrder(basket, "myCommand", "http://perdu.com", 240);
         Assert.assertNotNull(order);
         Assert.assertEquals("myCommand", order.getLabel());
+        boolean awaitTermination = pool.getThreadPoolExecutor().awaitTermination(1, TimeUnit.SECONDS);
+        Assert.assertFalse(awaitTermination);
     }
 
     @Test
@@ -238,6 +241,8 @@ public class OrderServiceIT {
         Basket basket = OrderTestUtils.getBasketSingleSelection("testCreateOKLabelGen");
         basket = basketRepos.save(basket);
         Order order = orderService.createOrder(basket, null, "http://perdu.com", 240);
+        boolean awaitTermination = pool.getThreadPoolExecutor().awaitTermination(1, TimeUnit.SECONDS);
+        Assert.assertFalse(awaitTermination);
         Assert.assertTrue("Label should be generated using current date (up to second)",
                           Pattern.matches("Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}", order.getLabel()));
     }

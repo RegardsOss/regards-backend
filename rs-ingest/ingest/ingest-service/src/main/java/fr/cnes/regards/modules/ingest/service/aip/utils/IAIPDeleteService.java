@@ -16,42 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip;
+package fr.cnes.regards.modules.ingest.service.aip.utils;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 
 /**
- * Result object to inform changes in an {@link AIPEntity}.
- *
+ * AIP Service interface. Service to handle business around {@link AIPEntity}s
  * @author Sébastien Binda
- *
  */
-public class AIPUpdateResult {
+public interface IAIPDeleteService {
 
     /**
-     * {@link AIPEntity} has been updated
+     * Send a group of event to remove all referenced files, including manifests, that any {@link AIPEntity}
+     * linked to the provided {@link SIPEntity#getSipId()}
+     * Update the provided request in the same transaction
      */
-    private boolean aipEntityUpdated = false;
+    void scheduleLinkedFilesDeletion(OAISDeletionRequest request);
+
 
     /**
-     * {@link AIP} has been updated
+     * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
      */
-    private boolean aipUpdated = false;
-
-    public static AIPUpdateResult build(boolean aipEntityUpdated, boolean aipUpdated) {
-        AIPUpdateResult r = new AIPUpdateResult();
-        r.aipEntityUpdated = aipEntityUpdated;
-        r.aipUpdated = aipUpdated;
-        return r;
-    }
-
-    public boolean isAipEntityUpdated() {
-        return aipEntityUpdated;
-    }
-
-    public boolean isAipUpdated() {
-        return aipUpdated;
-    }
+    void processDeletion(String sipId, boolean deleteIrrevocably);
 
 }

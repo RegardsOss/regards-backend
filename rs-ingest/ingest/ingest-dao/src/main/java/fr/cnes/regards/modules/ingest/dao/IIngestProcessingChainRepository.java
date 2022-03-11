@@ -87,6 +87,6 @@ public interface IIngestProcessingChainRepository
                 ingestProcessingChains.getTotalElements());
     }
 
-    @EntityGraph("graph.ingest.processing.chain.complete")
+    @EntityGraph(value = "graph.ingest.processing.chain.complete", type = EntityGraph.EntityGraphType.LOAD)
     List<IngestProcessingChain> findAllByIdIn(List<Long> ingestProcChainIds, Sort sort);
 }

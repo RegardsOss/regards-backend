@@ -41,7 +41,8 @@ import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -57,23 +58,36 @@ import java.util.stream.Collectors;
 
 @Service
 @MultitenantTransactional
-public class NotificationProcessingService extends AbstractNotificationService<NotificationProcessingService> {
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class NotificationProcessingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationProcessingService.class);
+
+    protected static final String OPTIMIST_LOCK_LOG_MSG = "Another schedule has updated some of the requests handled by this method while it was running.";
 
     public static final NotificationState[] RUNNING_STATES = { NotificationState.SCHEDULED };
 
     private final IPluginService pluginService;
+
     private final NotificationConfigurationProperties properties;
+
     private final IJobInfoService jobInfoService;
 
-    public NotificationProcessingService(INotificationRequestRepository notificationRequestRepository, IPublisher publisher, IPluginService pluginService,
-            NotificationConfigurationProperties properties, IJobInfoService jobInfoService, ApplicationContext applicationContext
-    ) {
-        super(notificationRequestRepository, publisher, applicationContext);
+    private final INotificationRequestRepository notificationRequestRepository;
+
+    private final IPublisher publisher;
+
+    private final NotificationProcessingService self;
+
+    public NotificationProcessingService(INotificationRequestRepository notificationRequestRepository,
+            IPublisher publisher, IPluginService pluginService, NotificationConfigurationProperties properties,
+            IJobInfoService jobInfoService, NotificationProcessingService notificationProcessingService) {
+        this.notificationRequestRepository = notificationRequestRepository;
+        this.publisher = publisher;
         this.pluginService = pluginService;
         this.properties = properties;
         this.jobInfoService = jobInfoService;
+        this.self = notificationProcessingService;
     }
 
     public Pair<Integer, Integer> processRequests(List<NotificationRequest> notificationRequests, PluginConfiguration recipient) {

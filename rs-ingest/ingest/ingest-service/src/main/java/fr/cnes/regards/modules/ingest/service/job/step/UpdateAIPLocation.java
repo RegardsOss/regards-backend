@@ -32,8 +32,8 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocatio
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateResult;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
+import fr.cnes.regards.modules.ingest.service.aip.utils.AIPUpdateResult;
+import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPStorageService;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**

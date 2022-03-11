@@ -1,18 +1,8 @@
 package fr.cnes.regards.framework.test.integration;
 
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
 import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -42,10 +32,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import fr.cnes.regards.framework.security.utils.HttpConstants;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 
 /**
  * Allow to customize the request done thanks to {@link MockMvc}.
@@ -567,11 +562,8 @@ public class RequestBuilderCustomizer {
         // we check with HttpMethod POST because fileUpload method generates a POST request.
         checkCustomizationCoherence(HttpMethod.POST);
 
-        MockMultipartHttpServletRequestBuilder multipartRequestBuilder = RestDocumentationRequestBuilders
-                .fileUpload(urlTemplate, urlVars);
-        for (MockMultipartFile file : files) {
-            multipartRequestBuilder.file(file);
-        }
+        MockMultipartHttpServletRequestBuilder multipartRequestBuilder = RestDocumentationRequestBuilders.multipart(urlTemplate, urlVars);
+        files.forEach(multipartRequestBuilder::file);
         addSecurityHeader(multipartRequestBuilder, authToken);
         multipartRequestBuilder.headers(getHeaders());
         return multipartRequestBuilder;

@@ -18,11 +18,9 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.model.domain.Model;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -34,9 +32,10 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
-import fr.cnes.regards.modules.model.domain.Model;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Common requests on entities
@@ -53,7 +52,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
      * @return entity
      */
     @Override
-    //@EntityGraph(attributePaths = { "tags", "groups", "model" })
+    //@EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     @EntityGraph(value = "graph.full.abstract.entity", type = EntityGraphType.LOAD)
     Optional<T> findById(Long pId);
 

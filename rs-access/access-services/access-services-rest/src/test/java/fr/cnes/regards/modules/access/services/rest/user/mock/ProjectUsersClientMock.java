@@ -2,7 +2,6 @@ package fr.cnes.regards.modules.access.services.rest.user.mock;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.modules.access.services.rest.user.ProjectUsersController;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
@@ -62,9 +61,6 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     public static final int TOTAL_PAGES_STUB = 1;
     public static final int PAGE_NUMBER_STUB = 0;
     public static final int PAGE_SIZE_STUB = 1;
-
-    @Autowired
-    private ProjectUsersController projectUsersController;
 
     @Autowired
     private IResourceService resourceService;

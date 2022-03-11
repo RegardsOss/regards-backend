@@ -38,7 +38,8 @@ import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
@@ -58,23 +59,36 @@ import java.util.stream.Stream;
 
 @Service
 @MultitenantTransactional
-public class NotificationMatchingService extends AbstractNotificationService<NotificationMatchingService> {
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class NotificationMatchingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationMatchingService.class);
 
-    private final IPluginService pluginService;
-    private final NotificationConfigurationProperties properties;
-    private final INotificationClient notificationClient;
+    protected static final String OPTIMIST_LOCK_LOG_MSG = "Another schedule has updated some of the requests handled by this method while it was running.";
 
-    public NotificationMatchingService(INotificationRequestRepository notificationRequestRepository, IPublisher publisher, IPluginService pluginService,
-            NotificationConfigurationProperties properties, INotificationClient notificationClient, ApplicationContext applicationContext
-    ) {
-        super(notificationRequestRepository, publisher, applicationContext);
+    private IPluginService pluginService;
+
+    private NotificationConfigurationProperties properties;
+
+    private INotificationClient notificationClient;
+
+    private INotificationRequestRepository notificationRequestRepository;
+
+    private IPublisher publisher;
+
+    private NotificationMatchingService self;
+
+    public NotificationMatchingService(INotificationRequestRepository notificationRequestRepository,
+            IPublisher publisher, IPluginService pluginService, NotificationConfigurationProperties properties,
+            INotificationClient notificationClient, NotificationMatchingService notificationMatchingService) {
+        this.notificationRequestRepository = notificationRequestRepository;
+        this.publisher = publisher;
         this.pluginService = pluginService;
         this.properties = properties;
         this.notificationClient = notificationClient;
+        this.self = notificationMatchingService;
     }
-
+    
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Pair<Integer, Integer> matchRequestNRecipient() {
         LOGGER.debug("------------------------ Starting MATCHING");

@@ -83,7 +83,7 @@ public class AttachmentController {
     public ResponseEntity<EntityModel<AbstractEntity<?>>> attachFiles(@Valid @PathVariable UniformResourceName urn,
                                                                       @PathVariable DataType dataType,
                                                                       @Valid @RequestPart(name = "refs", required = false) List<DataFileReference> refs,
-                                                                      @RequestPart("file") MultipartFile[] attachments)
+                                                                      @RequestPart(value = "file", required = false) MultipartFile[] attachments)
             throws ModuleException, NoSuchMethodException, SecurityException {
 
         LOGGER.debug("Attaching files of type \"{}\" to entity \"{}\"", dataType, urn.toString());

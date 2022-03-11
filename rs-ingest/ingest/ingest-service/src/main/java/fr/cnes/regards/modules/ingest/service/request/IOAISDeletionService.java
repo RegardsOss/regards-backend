@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * OAIS Deletion process service.
@@ -51,12 +51,6 @@ public interface IOAISDeletionService {
      * @return {@link OAISDeletionCreatorRequest}
      */
     List<OAISDeletionRequest> searchRequests(List<Long> deleteRequestIds);
-
-    /**
-     * Update given request
-     * @param request
-     */
-    void update(OAISDeletionRequest request);
 
     /**
      * Register deletion request from flow item

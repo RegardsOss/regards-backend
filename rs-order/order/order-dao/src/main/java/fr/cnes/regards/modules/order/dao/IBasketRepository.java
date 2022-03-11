@@ -32,13 +32,13 @@ public interface IBasketRepository extends JpaRepository<Basket, Long> {
     /**
      * Load a basket with all its relations
      */
-    @EntityGraph("graph.basket")
+    @EntityGraph(value = "graph.basket", type = EntityGraph.EntityGraphType.LOAD)
     Basket findOneById(Long id);
 
     /**
      * Load a basket with all its relations
      */
-    @EntityGraph("graph.basket")
+    @EntityGraph(value = "graph.basket", type = EntityGraph.EntityGraphType.LOAD)
     Basket findByOwner(String owner);
 
 }

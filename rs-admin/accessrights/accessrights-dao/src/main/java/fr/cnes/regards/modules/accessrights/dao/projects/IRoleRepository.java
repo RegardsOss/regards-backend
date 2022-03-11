@@ -47,7 +47,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      * @param pIsDefault <code>True</code> or <code>False</code>
      * @return The found {@link Role}
      */
-    @EntityGraph(value = "graph.role.permissions")
+    @EntityGraph(value = "graph.role.permissions", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Role> findOneByIsDefault(boolean pIsDefault);
 
     /**
@@ -56,7 +56,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      * @param pName The <code>name</code>
      * @return The found {@link Role}
      */
-    @EntityGraph(value = "graph.role.permissions")
+    @EntityGraph(value = "graph.role.permissions", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Role> findOneByName(String pName);
 
     /**
@@ -64,14 +64,14 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
      * @param name role name
      * @return role
      */
-    @EntityGraph(value = "graph.role.parent")
+    @EntityGraph(value = "graph.role.parent", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Role> findByName(String name);
 
     /**
      * Find the role with its permissions
      * @param pId role identifier
      */
-    @EntityGraph(value = "graph.role.permissions")
+    @EntityGraph(value = "graph.role.permissions", type = EntityGraph.EntityGraphType.LOAD)
     Role findOneById(Long pId);
 
     /**

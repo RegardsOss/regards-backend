@@ -31,10 +31,10 @@ import java.util.stream.Stream;
  */
 public interface IFilesTasksRepository extends JpaRepository<FilesTask, Long> {
 
-    @EntityGraph("graph.filesTask.complete")
+    @EntityGraph(value = "graph.filesTask.complete", type = EntityGraph.EntityGraphType.LOAD)
     FilesTask findDistinctByFilesContaining(OrderDataFile file);
 
-    @EntityGraph("graph.filesTask.complete")
+    @EntityGraph(value = "graph.filesTask.complete", type = EntityGraph.EntityGraphType.LOAD)
     List<FilesTask> findDistinctByFilesIn(List<OrderDataFile> files);
 
     Stream<FilesTask> findByOrderId(Long orderId);
@@ -51,6 +51,6 @@ public interface IFilesTasksRepository extends JpaRepository<FilesTask, Long> {
     }
 
     // For tests
-    @EntityGraph("graph.filesTask.complete")
+    @EntityGraph(value = "graph.filesTask.complete", type = EntityGraph.EntityGraphType.LOAD)
     List<FilesTask> findDistinctByWaitingForUser(Boolean waitingForUser);
 }

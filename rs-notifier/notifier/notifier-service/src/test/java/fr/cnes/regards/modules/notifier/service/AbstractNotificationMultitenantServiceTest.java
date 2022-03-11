@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSenderFail;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
+import fr.cnes.regards.modules.notifier.mock.NotificationProcessingServiceMock;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -54,6 +55,7 @@ import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -96,15 +98,6 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     @Autowired
     protected IJobInfoRepository jobInforepo;
 
-    @SpyBean
-    protected NotificationRegistrationService notificationRegistrationService;
-
-    @SpyBean
-    protected NotificationProcessingService notificationProcessingService;
-
-    @SpyBean
-    protected NotificationMatchingService notificationMatchingService;
-
     @Autowired
     protected IRecipientService recipientService;
 
@@ -132,6 +125,16 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     @Autowired
     protected RuleCache ruleCache;
 
+    @SpyBean
+    protected NotificationProcessingServiceMock notificationProcessingService;
+
+    @SpyBean
+    protected NotificationMatchingService notificationMatchingService;
+
+    @SpyBean
+    protected NotificationRegistrationService notificationRegistrationService;
+
+
     @Before
     public void before() throws Exception {
         RECIPIENT_FAIL = true;
@@ -141,10 +144,14 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         this.ruleRepo.deleteAll();
         this.pluginConfRepo.deleteAll();
         this.jobInforepo.deleteAll();
-        notificationMatchingService.post();
-        notificationProcessingService.post();
-        notificationRegistrationService.post();
         simulateApplicationReadyEvent();
+        initMockProxyBeans();
+    }
+
+    public void initMockProxyBeans() {
+        ReflectionTestUtils.setField(notificationProcessingService, "self", notificationProcessingService);
+        ReflectionTestUtils.setField(notificationMatchingService, "self", notificationMatchingService);
+        ReflectionTestUtils.setField(notificationRegistrationService, "self", notificationRegistrationService);
     }
 
     /**

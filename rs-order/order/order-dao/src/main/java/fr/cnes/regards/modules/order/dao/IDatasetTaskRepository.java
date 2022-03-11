@@ -28,6 +28,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IDatasetTaskRepository extends JpaRepository<DatasetTask, Long> {
 
-    @EntityGraph("graph.datasetTask.complete")
+    @EntityGraph(value = "graph.datasetTask.complete", type = EntityGraph.EntityGraphType.LOAD)
     DatasetTask findCompleteById(Long id);
 }

@@ -17,25 +17,21 @@
 */
 package fr.cnes.regards.modules.processing.config;
 
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.ACQUIRE_RETRY;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.INITIAL_SIZE;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_IDLE_TIME;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_LIFE_TIME;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_SIZE;
-import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
-import static io.r2dbc.spi.ConnectionFactoryOptions.DATABASE;
-import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
-import static io.r2dbc.spi.ConnectionFactoryOptions.HOST;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PORT;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PROTOCOL;
-import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
-import static io.r2dbc.spi.ConnectionFactoryOptions.builder;
-
-import java.time.Duration;
-import java.util.Collections;
-
+import com.google.gson.Gson;
+import fr.cnes.regards.modules.processing.dao.*;
+import fr.cnes.regards.modules.processing.entity.BatchEntity;
+import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
+import fr.cnes.regards.modules.processing.entity.converter.DaoCustomConverters;
+import fr.cnes.regards.modules.processing.entity.mapping.BatchMapper;
+import io.r2dbc.pool.ConnectionPool;
+import io.r2dbc.pool.ConnectionPoolConfiguration;
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
+import name.nkonev.r2dbc.migrate.autoconfigure.R2dbcMigrateAutoConfiguration;
+import name.nkonev.r2dbc.migrate.core.Dialect;
+import name.nkonev.r2dbc.migrate.core.R2dbcMigrate;
+import name.nkonev.r2dbc.migrate.core.R2dbcMigrateProperties;
+import name.nkonev.r2dbc.migrate.reader.SpringResourceReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,26 +47,12 @@ import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.connectionfactory.R2dbcTransactionManager;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
-import com.google.gson.Gson;
+import java.time.Duration;
+import java.util.Collections;
 
-import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
-import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
-import fr.cnes.regards.modules.processing.dao.IOutputFileEntityRepository;
-import fr.cnes.regards.modules.processing.dao.PBatchRepositoryImpl;
-import fr.cnes.regards.modules.processing.dao.PExecutionRepositoryImpl;
-import fr.cnes.regards.modules.processing.entity.BatchEntity;
-import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
-import fr.cnes.regards.modules.processing.entity.converter.DaoCustomConverters;
-import fr.cnes.regards.modules.processing.entity.mapping.BatchMapper;
-import io.r2dbc.pool.ConnectionPool;
-import io.r2dbc.pool.ConnectionPoolConfiguration;
-import io.r2dbc.spi.ConnectionFactories;
-import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactoryOptions.Builder;
-import name.nkonev.r2dbc.migrate.autoconfigure.R2dbcMigrateAutoConfiguration;
-import name.nkonev.r2dbc.migrate.core.Dialect;
-import name.nkonev.r2dbc.migrate.core.R2dbcMigrate;
-import name.nkonev.r2dbc.migrate.core.R2dbcMigrateProperties;
+import static io.r2dbc.pool.PoolingConnectionFactoryProvider.*;
+import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
+import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
 /**
  * Spring configuration for the r2dbc database driver.
@@ -151,7 +133,7 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
 
         public void migrate() {
             LOGGER.info("Starting R2DBC migration");
-            R2dbcMigrate.migrate(connectionFactory, properties).block();
+            R2dbcMigrate.migrate(connectionFactory, properties, new SpringResourceReader(), null).block();
             LOGGER.info("End of R2DBC migration");
         }
 

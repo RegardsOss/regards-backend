@@ -18,9 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import com.jayway.jsonpath.JsonPath;
+import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.service.plugin.FakeAIPGenerationTestPlugin;
+import fr.cnes.regards.modules.ingest.service.plugin.FakeValidationTestPlugin;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,18 +43,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.jayway.jsonpath.JsonPath;
-
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.service.plugin.FakeAIPGenerationTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.FakeValidationTestPlugin;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  *
@@ -145,9 +143,9 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         ingestProcessingChain.setDescription("the updated description");
         String resultAsString = payload(resultActions);
 
-        Integer valPluginId = JsonPath.read(resultAsString, "$.validationPlugin.id");
+        Integer valPluginId = JsonPath.read(resultAsString, "$.content.validationPlugin.id");
         ingestProcessingChain.getValidationPlugin().setId(new Long(valPluginId));
-        Integer genPluginId = JsonPath.read(resultAsString, "$.generationPlugin.id");
+        Integer genPluginId = JsonPath.read(resultAsString, "$.content.generationPlugin.id");
         ingestProcessingChain.getGenerationPlugin().setId(new Long(genPluginId));
 
         RequestBuilderCustomizer putRequestBuilderCustomizer = customizer().expectStatusOk();

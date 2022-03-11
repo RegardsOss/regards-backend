@@ -47,7 +47,7 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
      * @since 1.0-SNAPSHOT
      */
     @Override
-    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
+    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup", type = EntityGraph.EntityGraphType.LOAD)
     Optional<AccessRight> findById(Long pId);
 
     default Page<AccessRight> findAllByDataset(Dataset dataset, Pageable pageable) {
@@ -79,10 +79,10 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
     Page<Long> findIdPageByAccessGroup(@Param("accessGroup") AccessGroup accessGroup, Pageable pageable);
 
     @Override
-    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
+    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup", type = EntityGraph.EntityGraphType.LOAD)
     List<AccessRight> findAllById(Iterable<Long> longs);
 
-    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
+    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup", type = EntityGraph.EntityGraphType.LOAD)
     List<AccessRight> findAllByDataset(Dataset dataset);
 
     /**
@@ -107,14 +107,14 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
      * @param dataset
      * @return {@link AccessRight}
      */
-    @EntityGraph(value = "graph.accessright.plugins")
+    @EntityGraph(value = "graph.accessright.plugins", type = EntityGraph.EntityGraphType.LOAD)
     Optional<AccessRight> findAccessRightByAccessGroupAndDataset(AccessGroup accessGroup, Dataset dataset);
 
     /**
      * Find all {@link AccessRight}s associated a dataAccess plugin.
      * @return {@link AccessRight}s
      */
-    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
+    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup", type = EntityGraph.EntityGraphType.LOAD)
     List<AccessRight> findByDataAccessPluginNotNull();
 
 }

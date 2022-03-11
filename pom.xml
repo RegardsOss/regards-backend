@@ -57,12 +57,7 @@
 		<revision>${regards.version}</revision>
 
 		<!-- COTS -->
-		<!-- jakarta -->
-		<jakarta.annotation.version>2.0.0</jakarta.annotation.version>
-
-		<!-- jakarta xmL -->
-		<jakarta.activation.version>2.0.1</jakarta.activation.version>
-		<jakarta.xml.bind-api.version>3.0.1</jakarta.xml.bind-api.version>
+		<!-- xml -->
 		<org.codehaus.mojo.jaxb2-maven-plugin.version>2.5.0</org.codehaus.mojo.jaxb2-maven-plugin.version>
 		<com.sun.xml.bind.jaxb-xjc.version>3.0.2</com.sun.xml.bind.jaxb-xjc.version>
 		<com.sun.xml.bind.jaxb-impl.version>3.0.2</com.sun.xml.bind.jaxb-impl.version>
@@ -71,10 +66,10 @@
 
 		<!-- spring -->
 		<spring-cloud-dependencies.version>2021.0.1</spring-cloud-dependencies.version>
-		<springdoc-openapi.version>1.6.5</springdoc-openapi.version>
+		<springdoc-openapi.version>1.6.6</springdoc-openapi.version>
 		<io.springfox.springfox-swagger2.version>3.0.0</io.springfox.springfox-swagger2.version>
 		<io.springfox.springfox-swagger-ui.version>3.0.0</io.springfox.springfox-swagger-ui.version>
-		<com.icegreen.greenmail-spring.version>1.6.5</com.icegreen.greenmail-spring.version>
+		<com.icegreen.greenmail-spring.version>1.6.6</com.icegreen.greenmail-spring.version>
 		<!-- Take a version that retrieve a version of Hibernate that correctly
                 manage uk naming while inheriting classes with JOINED strategy -->
 		<spring.boot.version>2.6.4</spring.boot.version>
@@ -84,17 +79,12 @@
 		<spring-security-oauth2-autoconfigure>2.6.4</spring-security-oauth2-autoconfigure>
 		<org.springframework.security.oauth.version>2.5.1.RELEASE</org.springframework.security.oauth.version>
 		<org.springframework.security.jwt.version>1.1.1.RELEASE</org.springframework.security.jwt.version>
-		<!-- use same version the one provided by spring-boot. This is mandatory,
-            i don't know why but hateoas-spring override spring-core version given by
-            spring-boot -->
-		<!--  <org.springframework.spring-core.version>5.1.10.RELEASE</org.springframework.spring-core.version> -->
-		<!--         <org.springframework.spring-restdocs.version>2.0.2.RELEASE</org.springframework.spring-restdocs.version> -->
 
 		<!-- hibernate -->
 		<org.hibernate.javax.persistence.version>1.0.2.Final</org.hibernate.javax.persistence.version>
 
 		<!-- flywaydb dependency from spring-boot -->
-		<flyway.version>8.5.0</flyway.version>
+		<flyway.version>8.0.5</flyway.version>
 		<!-- hsqldb is into spring-boot dependencies with version 2.4.1, but some dao use it without spring-boot -->
 		<hsqldb.hsqldb.version>2.4.1</hsqldb.hsqldb.version>
 
@@ -109,27 +99,27 @@
 		<org.apache.maven.plugins.maven-failsafe-plugin.version>2.22.2</org.apache.maven.plugins.maven-failsafe-plugin.version>
 		<org.apache.maven.plugins.maven-jar-plugin.version>3.2.2</org.apache.maven.plugins.maven-jar-plugin.version>
 		<org.apache.maven.plugins.maven-deploy-plugin.version>2.8.2</org.apache.maven.plugins.maven-deploy-plugin.version>
-		<org.apache.maven.plugins.maven-compiler-plugin.version>3.9.0</org.apache.maven.plugins.maven-compiler-plugin.version>
+		<org.apache.maven.plugins.maven-compiler-plugin.version>3.10.0</org.apache.maven.plugins.maven-compiler-plugin.version>
 		<org.apache.maven.plugins.maven-source-plugin.version>3.2.1</org.apache.maven.plugins.maven-source-plugin.version>
 		<org.apache.maven.plugins.maven-resources-plugin.version>3.2.0</org.apache.maven.plugins.maven-resources-plugin.version>
 		<org.apache.maven.plugins.maven-war-plugin.version>3.3.2</org.apache.maven.plugins.maven-war-plugin.version>
 		<org.apache.maven.plugins.maven-failsafe-plugin.version>2.22.2</org.apache.maven.plugins.maven-failsafe-plugin.version>
-		<org.apache.maven.plugins.maven-plugin-plugin.version>3.6.2</org.apache.maven.plugins.maven-plugin-plugin.version>
+		<org.apache.maven.plugins.maven-plugin-plugin.version>3.6.4</org.apache.maven.plugins.maven-plugin-plugin.version>
 		<org.apache.maven.plugins.maven-assembly-plugin.version>3.3.0</org.apache.maven.plugins.maven-assembly-plugin.version>
 		<org.codehaus.mojo.flatten-maven-plugin.version>1.2.7</org.codehaus.mojo.flatten-maven-plugin.version>
-		<org.codehaus.mojo.versions-maven-plugin.version>2.8.1</org.codehaus.mojo.versions-maven-plugin.version>
+		<org.codehaus.mojo.versions-maven-plugin.version>2.9.0</org.codehaus.mojo.versions-maven-plugin.version>
 		<org.jacoco.jacoco-maven-plugin.version>0.8.7</org.jacoco.jacoco-maven-plugin.version>
-		<org.apache.maven.plugin.maven-shade-plugin.version>3.3.1-SNAPSHOT</org.apache.maven.plugin.maven-shade-plugin.version>
+		<org.apache.maven.plugin.maven-shade-plugin.version>3.2.4</org.apache.maven.plugin.maven-shade-plugin.version>
 		<org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version>5.6.5.Final</org.hibernate.orm.tooling.hibernate-enhance-maven-plugin.version>
 		<com.spotify.docker-maven-plugin.version>1.2.2</com.spotify.docker-maven-plugin.version>
 		<com.spotify.dockerfile-maven-plugin.version>1.4.13</com.spotify.dockerfile-maven-plugin.version>
-		<org.springframework.boot.spring-boot-maven-plugin.version>2.6.3</org.springframework.boot.spring-boot-maven-plugin.version>
-		<org.asciidoctor.asciidoctor-maven-plugin.version>2.2.1</org.asciidoctor.asciidoctor-maven-plugin.version>
+		<org.springframework.boot.spring-boot-maven-plugin.version>2.6.4</org.springframework.boot.spring-boot-maven-plugin.version>
+		<org.asciidoctor.asciidoctor-maven-plugin.version>2.2.2</org.asciidoctor.asciidoctor-maven-plugin.version>
 
 		<!-- Specify version to avoid incompatibility between elasticsearch and spring ones -->
 		<!-- log -->
-		<logback-ext-spring.version>0.1.4</logback-ext-spring.version>
-		<org.sl4j.version>1.7.35</org.sl4j.version>
+		<logback-ext-spring.version>0.1.5</logback-ext-spring.version>
+		<org.sl4j.version>1.7.36</org.sl4j.version>
 		<org.ch.qos.logback.version>1.2.10</org.ch.qos.logback.version>
 		<!-- server -->
 		<io.netty.version>4.1.73.Final</io.netty.version>
@@ -232,12 +222,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>${org.sl4j.version}</version>
-		</dependency>
-		<!-- jakarta -->
-		<dependency>
-			<groupId>jakarta.annotation</groupId>
-			<artifactId>jakarta.annotation-api</artifactId>
-			<version>${jakarta.annotation.version}</version>
 		</dependency>
 		<!-- lombok -->
 		<dependency>
@@ -1756,26 +1740,11 @@
 			<!-- COTS -->
 			<!-- java -->
 			<dependency>
-				<groupId>jakarta.annotation</groupId>
-				<artifactId>jakarta.annotation-api</artifactId>
-				<version>${jakarta.annotation.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
 				<version>${org.reflections.reflections.version}</version>
 			</dependency>
-			<!-- jakarta xml -->
-			<dependency>
-				<groupId>jakarta.activation</groupId>
-				<artifactId>jakarta.activation-api</artifactId>
-				<version>${jakarta.activation.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>jakarta.xml.bind</groupId>
-				<artifactId>jakarta.xml.bind-api</artifactId>
-				<version>${jakarta.xml.bind-api.version}</version>
-			</dependency>
+			<!-- xml -->
 			<dependency>
 				<groupId>com.sun.xml.bind</groupId>
 				<artifactId>jaxb-xjc</artifactId>
@@ -2206,7 +2175,6 @@
 				<groupId>org.awaitility</groupId>
 				<artifactId>awaitility</artifactId>
 				<version>${awaitility.version}</version>
-				<scope>test</scope>
 			</dependency>
 <!--			Can't limit to scope test-->
 <!--			because assertj is used in test projects-->
@@ -2262,40 +2230,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>spring-snapshots</id>
-			<url>https://repo.spring.io/snapshot</url>
-			<snapshots><enabled>true</enabled></snapshots>
-		</repository>
-		<repository>
-			<id>spring-milestones</id>
-			<url>https://repo.spring.io/milestone</url>
-		</repository>
 	</repositories>
-
-	<!-- temporary configure apache snapshot because of maven-shade-plugin snapshot, which does not handle java 17 -->
-	<!-- to be removed as soon as a new official version is released -->
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-snapshots</id>
-			<url>https://repo.spring.io/snapshot</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<url>https://repo.spring.io/milestone</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>apache.snapshots</id>
-			<name>Apache Development Snapshot Repository</name>
-			<url>https://repository.apache.org/content/repositories/snapshots/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 
 	<profiles>
 		<profile>

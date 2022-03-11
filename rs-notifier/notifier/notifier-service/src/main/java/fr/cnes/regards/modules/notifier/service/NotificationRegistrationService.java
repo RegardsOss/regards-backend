@@ -31,7 +31,8 @@ import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -47,9 +48,12 @@ import java.util.stream.Collectors;
 
 @Service
 @MultitenantTransactional
-public class NotificationRegistrationService extends AbstractNotificationService<NotificationRegistrationService> {
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class NotificationRegistrationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRegistrationService.class);
+
+    protected static final String OPTIMIST_LOCK_LOG_MSG = "Another schedule has updated some of the requests handled by this method while it was running.";
 
     private final Validator validator;
 
@@ -57,12 +61,21 @@ public class NotificationRegistrationService extends AbstractNotificationService
 
     private final RuleCache ruleCache;
 
-    public NotificationRegistrationService(INotificationRequestRepository notificationRequestRepository, IPublisher publisher,
-            Validator validator, INotificationClient notificationClient, RuleCache ruleCache, ApplicationContext applicationContext) {
-        super(notificationRequestRepository, publisher, applicationContext);
+    private final INotificationRequestRepository notificationRequestRepository;
+
+    private final IPublisher publisher;
+
+    private final NotificationRegistrationService self;
+
+    public NotificationRegistrationService(INotificationRequestRepository notificationRequestRepository,
+            IPublisher publisher, Validator validator, INotificationClient notificationClient, RuleCache ruleCache,
+            NotificationRegistrationService notificationRegistrationService) {
+        this.notificationRequestRepository = notificationRequestRepository;
+        this.publisher = publisher;
         this.validator = validator;
         this.notificationClient = notificationClient;
         this.ruleCache = ruleCache;
+        this.self = notificationRegistrationService;
     }
 
     public void registerNotificationRequests(List<NotificationRequestEvent> events) {

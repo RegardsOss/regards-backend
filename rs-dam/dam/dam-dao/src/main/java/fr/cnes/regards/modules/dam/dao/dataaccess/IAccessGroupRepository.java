@@ -68,7 +68,7 @@ public interface IAccessGroupRepository extends JpaRepository<AccessGroup, Long>
     Page<BigInteger> findIdPageByIsPublic(@Param("isPublic") Boolean isPublic, Pageable pageable);
 
     @Override
-    @EntityGraph(value = "graph.accessgroup.users")
+    @EntityGraph(value = "graph.accessgroup.users", type = EntityGraph.EntityGraphType.LOAD)
     default Page<AccessGroup> findAll(Pageable pageable) {
         Page<Long> idPage = findIdPage(pageable);
         List<AccessGroup> accessGroups = findAllById(idPage.getContent());

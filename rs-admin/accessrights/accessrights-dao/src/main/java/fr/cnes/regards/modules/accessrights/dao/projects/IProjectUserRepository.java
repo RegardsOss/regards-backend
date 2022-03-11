@@ -53,10 +53,10 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * @param pEmail The {@link ProjectUser}'s <code>email</code>
      * @return The optional {@link ProjectUser} with passed <code>email</code>
      */
-    @EntityGraph(value = "graph.user.metadata")
+    @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     Optional<ProjectUser> findOneByEmail(String pEmail);
 
-    @EntityGraph(value = "graph.user.metadata")
+    @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     Optional<ProjectUser> findById(Long id);
 
     /**
@@ -76,7 +76,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     }
 
     @Override
-    @EntityGraph(value = "graph.user.metadata")
+    @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     List<ProjectUser> findAllById(Iterable<Long> ids);
 
     @Query(value = "select pu.id from ProjectUser pu where pu.status=:status")
@@ -90,7 +90,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      *            The {@link Collection} of <code>email</code>
      * @return The {@link List} of found {@link ProjectUser}s
      */
-    @EntityGraph(value = "graph.user.metadata")
+    @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     List<ProjectUser> findByEmailIn(Collection<String> pEmail);
 
     /**
@@ -101,7 +101,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      *            The role name
      * @return all project users with this role
      */
-    @EntityGraph(value = "graph.user.metadata")
+    @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     List<ProjectUser> findByRoleName(String pName);
 
     /**
@@ -131,7 +131,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * @return all project users with this role
      */
     @Override
-    @EntityGraph(value = "graph.user.metadata")
+    @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     default Page<ProjectUser> findAll(Pageable pageable) {
         Page<Long> idPage = findIdPage(pageable);
         List<ProjectUser> projectUsers = findAllById(idPage.getContent());
@@ -149,7 +149,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * @return all project users with this role
      */
     @Override
-    @EntityGraph(value = "graph.user.metadata")
+    @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     Page<ProjectUser> findAll(Specification<ProjectUser> spec, Pageable pageable);
 
 

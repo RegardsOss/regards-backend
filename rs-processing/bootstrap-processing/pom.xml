@@ -109,7 +109,6 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <version>7.5.0</version>
         </dependency>
 
         <!-- Tests -->

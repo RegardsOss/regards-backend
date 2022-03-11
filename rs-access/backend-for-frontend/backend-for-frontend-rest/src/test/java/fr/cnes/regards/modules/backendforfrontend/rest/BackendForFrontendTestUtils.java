@@ -18,18 +18,12 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import java.util.List;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-
+import fr.cnes.regards.framework.gson.strategy.PagedModelExclusionStrategy;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -46,6 +40,12 @@ import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 /**
  * Declare static variables for tests.
@@ -144,7 +144,9 @@ public class BackendForFrontendTestUtils {
      */
     public static final ResponseEntity<List<EntityModel<PluginServiceDto>>> SERVICES_FOR_DATASET_1;
 
-    private static Gson gson = new Gson();
+    private static Gson gson = (new GsonBuilder()).setExclusionStrategies(new PagedModelExclusionStrategy()).create();
+
+
 
     static {
         DATASET_MODEL = new Model();

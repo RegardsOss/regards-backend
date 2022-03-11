@@ -66,6 +66,6 @@ public class POutputFileRepositoryImpl implements IPOutputFilesRepository {
 
     @Override
     public Flux<POutputFile> findByDownloadedIsTrueAndDeletedIsFalse() {
-        return entityOutputFileRepo.findByDownloadedIsTrueAndDeletedIsFalse().map(mapper::toDomain);
+        return entityOutputFileRepo.findByDownloadedAndDeleted(true, false).map(mapper::toDomain);
     }
 }

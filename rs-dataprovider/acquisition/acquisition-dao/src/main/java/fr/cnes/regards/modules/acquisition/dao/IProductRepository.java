@@ -18,34 +18,23 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.LockModeType;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import javax.persistence.LockModeType;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@link Product} repository
@@ -56,13 +45,13 @@ import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 @Repository
 public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
-    @EntityGraph("graph.product.complete")
+    @EntityGraph(value = "graph.product.complete", type = EntityGraph.EntityGraphType.LOAD)
     Product findOneById(Long id);
 
-    @EntityGraph("graph.product.complete")
+    @EntityGraph(value = "graph.product.complete", type = EntityGraph.EntityGraphType.LOAD)
     Product findByProductName(String productName);
 
-    @EntityGraph("graph.product.complete")
+    @EntityGraph(value = "graph.product.complete", type = EntityGraph.EntityGraphType.LOAD)
     Set<Product> findByProductNameIn(Collection<String> productNames);
 
     Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
@@ -208,7 +197,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
                 products.getTotalElements());
     }
 
-    @EntityGraph("graph.product.complete")
+    @EntityGraph(value = "graph.product.complete", type = EntityGraph.EntityGraphType.LOAD)
     List<Product> findAllByIdIn(List<Long> productIds, Sort sort);
 
     default Page<Product> findByProcessingChain(AcquisitionProcessingChain chain, Pageable pageable) {

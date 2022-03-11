@@ -17,21 +17,8 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.r2dbc.core.DatabaseClient;
-import org.springframework.stereotype.Component;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
@@ -41,8 +28,21 @@ import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.r2dbc.convert.MappingR2dbcConverter;
+import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * This class is a bridge between execution domain entities and database entities.
@@ -71,16 +71,20 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     private final DatabaseClient databaseClient;
 
+    private final MappingR2dbcConverter converter;
+
     @Autowired
     public PExecutionRepositoryImpl(
             IExecutionEntityRepository entityExecRepo,
             DomainEntityMapper.Execution mapper,
-            DatabaseClient databaseClient
+            DatabaseClient databaseClient,
+            MappingR2dbcConverter converter
     ) {
         this.entityExecRepo = entityExecRepo;
         this.mapper = mapper;
         this.databaseClient = databaseClient;
-    }
+        this.converter = converter
+        ;}
 
     @Override
     public Mono<PExecution> create(PExecution exec) {
@@ -150,7 +154,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             }
             orderBy = sj.toString();
         }
-        DatabaseClient.GenericExecuteSpec execute = databaseClient.execute(
+        DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(
                 " SELECT E.* " +
                 " FROM t_execution AS E " +
                 " WHERE (:ignoreTenant OR E.tenant = :tenant) " +
@@ -169,15 +173,14 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         execute = processBid == null ? execute.bindNull(PROCESS_BID_COLUMN, UUID.class) : execute.bind(PROCESS_BID_COLUMN, UUID.fromString(processBid));
         execute = execute.bind("ignoreUserEmail", userEmail == null);
         execute = userEmail == null ? execute.bindNull(USER_EMAIL_COLUMN, String.class) : execute.bind(USER_EMAIL_COLUMN, userEmail);
-        execute = execute.bind("status", status);
+        execute = execute.bind("status", status.stream().map(Enum::toString).collect(Collectors.toList()));
         execute = execute.bind("lastUpdatedFrom", from);
         execute = execute.bind("lastUpdatedTo", to);
         execute = execute.bind("limit", page.getPageSize());
         execute = execute.bind("offset", page.getOffset());
 
         return execute
-                .as(ExecutionEntity.class)
-                .fetch()
+                .map((row, metadata) -> converter.read(ExecutionEntity.class, row, metadata))
                 .all()
                 .map(mapper::toDomain)
                 .doOnNext(exec -> cache.put(exec.getId(), exec));
@@ -192,7 +195,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             OffsetDateTime from,
             OffsetDateTime to
     ) {
-        DatabaseClient.GenericExecuteSpec execute = databaseClient.execute(
+        DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(
                 " SELECT COUNT(*) " +
                 " FROM t_execution AS E " +
                 " WHERE (:ignoreTenant OR E.tenant = :tenant) " +
@@ -209,13 +212,12 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         execute = processBid == null ? execute.bindNull(PROCESS_BID_COLUMN, UUID.class) : execute.bind(PROCESS_BID_COLUMN, UUID.fromString(processBid));
         execute = execute.bind("ignoreUserEmail", userEmail == null);
         execute = userEmail == null ? execute.bindNull(USER_EMAIL_COLUMN, String.class) : execute.bind(USER_EMAIL_COLUMN, userEmail);
-        execute = execute.bind("status", status);
+        execute = execute.bind("status", status.stream().map(Enum::toString).collect(Collectors.toList()));
         execute = execute.bind("lastUpdatedFrom", from);
         execute = execute.bind("lastUpdatedTo", to);
 
         return execute
-                .as(Integer.class)
-                .fetch()
+                .map((row, metadata) -> converter.read(Integer.class, row, metadata))
                 .one();
     }
 

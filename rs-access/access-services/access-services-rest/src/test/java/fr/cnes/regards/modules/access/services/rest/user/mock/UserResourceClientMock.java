@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.access.services.rest.user.mock;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.access.services.rest.user.UserResourceController;
 import fr.cnes.regards.modules.accessrights.client.IUserResourceClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +54,10 @@ public class UserResourceClientMock implements IUserResourceClient, IResourceCon
         RequestMethod.OPTIONS,
         DefaultRole.REGISTERED_USER
     );
+
     @Autowired
-    private UserResourceController userResourceController;
+    private IResourceService resourceService;
+
 
     @Override
     public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(String pUserLogin, String pBorrowedRoleName) {
@@ -80,6 +82,6 @@ public class UserResourceClientMock implements IUserResourceClient, IResourceCon
 
     @Override
     public EntityModel<ResourcesAccess> toResource(ResourcesAccess element, Object... extras) {
-        return userResourceController.toResource(element, extras);
+        return resourceService.toResource(element);
     }
 }

@@ -39,13 +39,13 @@ import java.util.Set;
 @Repository
 public interface IFeatureEntityWithDisseminationRepository extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
 
-    @EntityGraph(attributePaths = {"disseminationsInfo"})
+    @EntityGraph(attributePaths = {"disseminationsInfo"}, type = EntityGraph.EntityGraphType.LOAD)
     List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn);
 
-    @EntityGraph(attributePaths = {"disseminationsInfo"})
+    @EntityGraph(attributePaths = {"disseminationsInfo"}, type = EntityGraph.EntityGraphType.LOAD)
     FeatureEntity findByUrn(FeatureUniformResourceName urn);
 
-    @EntityGraph(attributePaths = {"disseminationsInfo"})
+    @EntityGraph(attributePaths = {"disseminationsInfo"}, type = EntityGraph.EntityGraphType.LOAD)
     List<FeatureEntity> findAll();
 
 }

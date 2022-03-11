@@ -40,5 +40,6 @@ public interface IOutputFileEntityRepository extends ReactiveCrudRepository<Outp
 
     Flux<OutputFileEntity> findByUrlIn(List<URL> urls);
 
-    Flux<OutputFileEntity> findByDownloadedIsTrueAndDeletedIsFalse();
+    Flux<OutputFileEntity> findByDownloadedAndDeleted(boolean isDownloaded, boolean isDeleted);
+
 }

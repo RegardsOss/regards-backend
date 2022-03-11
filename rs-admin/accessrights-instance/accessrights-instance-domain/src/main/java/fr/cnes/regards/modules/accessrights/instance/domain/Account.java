@@ -154,7 +154,7 @@ public class Account implements IIdentifiable<Long> {
         return password;
     }
 
-    public final void setPassword(final String password) {
+    public void setPassword(final String password) {
         if (password != null) {
             passwordUpdateDate = LocalDateTime.now();
             this.password = password;

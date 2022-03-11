@@ -34,8 +34,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { InstanceSqlGeneratorConfiguration.class })
 @TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL",
-        "regards.jpa.instance.outputFile=target/instance_script.sql", "regards.jpa.instance.migrationTool=HBM2DDL" })
-public class InstanceSqlGenerator {
+        "regards.jpa.instance.outputFile=target/instance_script.sql", "regards.jpa.instance.migrationTool=HBM2DDL",
+        "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
+public class InstanceSqlGeneratorIT {
 
     @Test
     public void generate() {

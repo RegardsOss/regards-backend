@@ -17,44 +17,7 @@
 */
 package fr.cnes.regards.modules.processing.rest;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PAGE_PARAM;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.SIZE_PARAM;
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.CANCELLED;
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.FAILURE;
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.PREPARE;
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
-import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.test.context.ContextConfiguration;
-
-import feign.Feign;
-import feign.Headers;
-import feign.Param;
-import feign.QueryMap;
-import feign.RequestLine;
+import feign.*;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -69,12 +32,7 @@ import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParam
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
-import fr.cnes.regards.modules.processing.entity.BatchEntity;
-import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
-import fr.cnes.regards.modules.processing.entity.FileStatsByDataset;
-import fr.cnes.regards.modules.processing.entity.ParamValues;
-import fr.cnes.regards.modules.processing.entity.StepEntity;
-import fr.cnes.regards.modules.processing.entity.Steps;
+import fr.cnes.regards.modules.processing.entity.*;
 import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.testutils.servlet.TestSpringConfiguration;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;
@@ -83,7 +41,36 @@ import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.test.context.ContextConfiguration;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PAGE_PARAM;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.SIZE_PARAM;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = { TestSpringConfiguration.class, PMonitoringControllerTest.Config.class })
 public class PMonitoringControllerTest extends AbstractProcessingTest {

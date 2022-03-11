@@ -46,7 +46,7 @@ public interface IAcquisitionProcessingChainRepository extends JpaRepository<Acq
         return countById(id) == 1;
     }
 
-    @EntityGraph("graph.acquisition.chain.complete")
+    @EntityGraph(value = "graph.acquisition.chain.complete", type = EntityGraph.EntityGraphType.LOAD)
     AcquisitionProcessingChain findCompleteById(Long id);
 
     /**
@@ -82,15 +82,15 @@ public interface IAcquisitionProcessingChainRepository extends JpaRepository<Acq
 
     List<AcquisitionProcessingChain> findByLabel(String label);
 
-    @EntityGraph("graph.acquisition.chain.complete")
+    @EntityGraph(value = "graph.acquisition.chain.complete", type = EntityGraph.EntityGraphType.LOAD)
     @Override
     List<AcquisitionProcessingChain> findAll();
 
-    @EntityGraph("graph.acquisition.chain.complete")
+    @EntityGraph(value = "graph.acquisition.chain.complete", type = EntityGraph.EntityGraphType.LOAD)
     @Override
     Page<AcquisitionProcessingChain> findAll(Pageable pageable);
 
-    @EntityGraph("graph.acquisition.chain.complete")
+    @EntityGraph(value = "graph.acquisition.chain.complete", type = EntityGraph.EntityGraphType.LOAD)
     @Override
     Page<AcquisitionProcessingChain> findAll(Specification<AcquisitionProcessingChain> specification, Pageable pageable);
 

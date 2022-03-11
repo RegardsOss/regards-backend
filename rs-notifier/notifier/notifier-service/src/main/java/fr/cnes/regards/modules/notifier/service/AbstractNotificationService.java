@@ -22,8 +22,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import org.springframework.context.ApplicationContext;
 
-import javax.annotation.PostConstruct;
-
 public abstract class AbstractNotificationService<T extends AbstractNotificationService<T>> {
 
     protected static final String OPTIMIST_LOCK_LOG_MSG = "Another schedule has updated some of the requests handled by this method while it was running.";
@@ -33,15 +31,12 @@ public abstract class AbstractNotificationService<T extends AbstractNotification
     protected IPublisher publisher;
     protected T self;
 
-    protected AbstractNotificationService(INotificationRequestRepository notificationRequestRepository, IPublisher publisher, ApplicationContext applicationContext) {
+    protected AbstractNotificationService(INotificationRequestRepository notificationRequestRepository,
+            IPublisher publisher, ApplicationContext applicationContext,
+            T self) {
         this.notificationRequestRepository = notificationRequestRepository;
         this.publisher = publisher;
         this.applicationContext = applicationContext;
+        this.self = self;
     }
-
-    @PostConstruct
-    public void post() {
-        self = ((T) applicationContext.getBean(this.getClass()));
-    }
-
 }

@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionReques
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPDeleteService;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
@@ -72,7 +72,7 @@ public class OAISDeletionService implements IOAISDeletionService {
     private IOAISDeletionPayloadMapper deletionRequestMapper;
 
     @Autowired
-    private IAIPService aipService;
+    private IAIPDeleteService aipDeleteService;
 
     @Autowired
     private ISIPService sipService;
@@ -94,11 +94,6 @@ public class OAISDeletionService implements IOAISDeletionService {
     @Override
     public List<OAISDeletionRequest> searchRequests(List<Long> deleteRequestIds) {
         return requestRepository.findAllById(deleteRequestIds);
-    }
-
-    @Override
-    public void update(OAISDeletionRequest request) {
-        requestRepository.save(request);
     }
 
     @Override
@@ -154,12 +149,12 @@ public class OAISDeletionService implements IOAISDeletionService {
                 SIPEntity sipToDelete = aipToDelete.getSip();
                 try {
                     if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
-                        aipService.scheduleLinkedFilesDeletion(request);
+                        aipDeleteService.scheduleLinkedFilesDeletion(request);
                     } else {
                         // delete first the request so the aip can be deleted (the aip is a foreign key in the request)
                         requestService.deleteRequest(request);
-                        aipService.processDeletion(sipToDelete.getSipId(),
-                                                   request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                        aipDeleteService.processDeletion(sipToDelete.getSipId(),
+                                                         request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                         sipService.processDeletion(sipToDelete.getSipId(),
                                                    request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                         // if notifications are required
@@ -214,5 +209,4 @@ public class OAISDeletionService implements IOAISDeletionService {
             Thread.currentThread().interrupt();
         }
     }
-
 }

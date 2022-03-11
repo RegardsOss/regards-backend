@@ -37,17 +37,17 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 public interface IFileReferenceWithOwnersRepository
         extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
 
-    @EntityGraph("graph.filereference.owners")
+    @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
     Page<FileReference> findAllByLocationStorage(String storage, Pageable page);
 
     @Override
-    @EntityGraph("graph.filereference.owners")
+    @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
     Page<FileReference> findAll(Pageable page);
 
-    @EntityGraph("graph.filereference.owners")
+    @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
     FileReference findOneById(Long id);
 
-    @EntityGraph("graph.filereference.owners")
+    @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
     Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
 
 }
