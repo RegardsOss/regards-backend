@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -82,6 +83,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MimeType;
 
@@ -101,6 +103,7 @@ import static org.junit.Assert.fail;
  * @author Marc SORDI
  * @author Sébastien Binda
  */
+@ContextConfiguration(classes = { JobTestCleaner.class })
 public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureMultitenantServiceTest.class);
@@ -202,6 +205,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     @Autowired
     protected MockStorageResponsesHelper mockStorageHelper;
 
+    @Autowired
+    private JobTestCleaner jobTestCleaner;
+
     // ------------------------
     // TO CLEAN TESTS
     // ------------------------
@@ -224,8 +230,10 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     @After
     public void after() throws Exception {
         setNotificationSetting(true);
+        jobTestCleaner.cleanJob();
         doAfter();
     }
+
 
     protected void doAfter() throws Exception {
         // Override to init something
@@ -241,8 +249,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         this.featureRepo.deleteAllInBatch();
         this.notificationRequestRepo.deleteAllInBatch();
         this.jobInfoRepository.deleteAll();
-        this.stepPropertyUpdateRequestRepository.deleteAll();
-        this.sessionStepRepository.deleteAll();
+        this.stepPropertyUpdateRequestRepository.deleteAllInBatch();
+        this.sessionStepRepository.deleteAllInBatch();
         this.snapshotProcessRepository.deleteAll();
     }
 

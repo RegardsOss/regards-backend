@@ -130,6 +130,10 @@
             <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
             <artifactId>tenant-settings-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.notifier</groupId>
+            <artifactId>notifier-client</artifactId>
+        </dependency>
         <!-- session handling -->
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
@@ -161,8 +165,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.notifier</groupId>
-            <artifactId>notifier-client</artifactId>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-job-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

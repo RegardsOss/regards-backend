@@ -48,8 +48,7 @@ pipeline {
                 echo "Current workspace = ${env.WORKSPACE}"
 
                 echo "Pull docker images"
-                sh 'cd ' + CI_DIR + ' \
-                    && docker-compose -f docker/docker-compose-cots.yml pull \
+                sh 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml pull \
                     && docker pull ' + MVN_IMAGE
 
                 echo "Build dependency tree"
@@ -68,14 +67,13 @@ pipeline {
                 runMavenDockerImg("deployFastDockerImages", "", false, false)
             }
         }
-        stage("Tests Prepration") {
+        stage("Tests Preparation") {
             steps {
                 echo "Launch COTS"
-                sh 'cd ' + CI_DIR + ' \
-                    && docker-compose \
-                            -f docker/docker-compose-cots.yml \
-                            -p ' + PROJECT_NAME + ' \
-                            up -d'
+                sh 'docker-compose \
+                        -f ' + CI_DIR + '/docker/docker-compose-cots.yml \
+                        -p ' + PROJECT_NAME + ' \
+                        up -d'
             }
         }
 
@@ -236,8 +234,7 @@ pipeline {
         }
         cleanup {
             echo 'POST-CLEANUP-TASK -- Stop CoTs'
-            sh 'cd ' + CI_DIR + ' \
-                 && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
+            sh 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
             echo 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues'
             sh 'chown -R jenkins:jenkins .'
             sh 'chmod -R u+rwx .'
