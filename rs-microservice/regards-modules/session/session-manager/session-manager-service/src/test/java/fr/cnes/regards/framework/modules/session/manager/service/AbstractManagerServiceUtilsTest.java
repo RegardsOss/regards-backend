@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Arrays;
@@ -53,6 +55,7 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" })
+@ContextConfiguration(classes = { JobTestCleaner.class })
 public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenantServiceTest {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractManagerServiceUtilsTest.class);
@@ -92,6 +95,9 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
     // JOBS
     @Autowired
     protected IJobInfoRepository jobInfoRepo;
+    
+    @Autowired
+    private JobTestCleaner jobTestCleaner;
 
     // SESSION MANAGER
     @Autowired
@@ -162,6 +168,7 @@ public abstract class AbstractManagerServiceUtilsTest extends AbstractMultitenan
 
     @After
     public void after() throws Exception {
+        jobTestCleaner.cleanJob();
         doAfter();
     }
 

@@ -180,36 +180,17 @@ pipeline {
 
             // Log COTS only if they are existing
             sh label: "POST-FAILURE-TASK -- Print ElasticSearch logs", script: 'cd ' + CI_DIR + ' \
-                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-elasticsearch)" ]; then \
-                        echo "########################################" \
-                     && echo "#### ELASTICSEARCH" \
-                     && echo "########################################" \
-                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-elasticsearch; \
-                   fi'
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-elasticsearch', returnStatus:true
 
             sh label: "POST-FAILURE-TASK -- Print Postgres logs", script: 'cd ' + CI_DIR + ' \
-                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-postgres)" ]; then \
-                        echo "########################################" \
-                     && echo "#### POSTGRES" \
-                     && echo "########################################" \
-                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-postgres; \
-                   fi'
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-postgres', returnStatus:true
 
             sh label: "POST-FAILURE-TASK -- Print First RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
-                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq-first)" ]; then \
-                        echo "########################################" \
-                     && echo "#### RABBITMQ" \
-                     && echo "########################################" \
-                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-first; \
-                   fi'
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-first', returnStatus:true
 
             sh label: "POST-FAILURE-TASK -- Print Second RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
-                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq-second)" ]; then \
-                        echo "########################################" \
-                     && echo "#### RABBITMQ" \
-                     && echo "########################################" \
-                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second; \
-                   fi'
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second', returnStatus:true
+
         }
         cleanup {
             sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'

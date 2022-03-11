@@ -40,7 +40,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -53,8 +52,6 @@ import org.springframework.test.context.TestPropertySource;
         "regards.session.manager.clean.session.limit.store=30", "regards.session.management.snapshot.process"
         + ".scheduler.bulk.initial.delay=10000000" })
 @ActiveProfiles({ "testAMQP" })
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS,
-        hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {
 
     /**
