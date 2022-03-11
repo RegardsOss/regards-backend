@@ -16,8 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.cloud.gateway.authentication;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.codec.ServerCodecConfigurer;
+
 /**
- * REGARDS gateway cors configuration
- * @author Marc Sordi
- */
-package fr.cnes.regards.cloud.gateway.cors;
+ * @author Iliana Ghazali
+ **/
+@Configuration
+public class TestConfiguration {
+
+    @Bean
+    public ServerCodecConfigurer serverCodecConfigurer() {
+        return ServerCodecConfigurer.create();
+    }
+
+}

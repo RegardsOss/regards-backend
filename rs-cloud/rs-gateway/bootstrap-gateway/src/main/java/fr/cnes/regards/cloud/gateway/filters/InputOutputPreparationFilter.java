@@ -37,6 +37,8 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.UUID;
 
+import static fr.cnes.regards.cloud.gateway.filters.FilterConstants.*;
+
 /**
  * This class is a proxy filter. It aims to log the HTTP method and the URL.</br>
  * It adds to the request header the X-Forwarded-For field.
@@ -50,18 +52,12 @@ public class InputOutputPreparationFilter implements GlobalFilter {
 
     private static final String LOG_PREFIX = "Inbound request (tracking id {}) : ";
 
-    private static final String COMMA = ", ";
-
-    public static final String CORRELATION_ID = "correlation-id";
-
-    public static final String X_FORWARDED_FOR = "X-Forwarded-For";
-
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        ServerHttpRequest requestModified = alterHeaders(exchange.getRequest());
-        logInput(requestModified);
-        return chain.filter(exchange.mutate().request(requestModified).build())
-                .then(Mono.fromRunnable(() -> logOutput(exchange)));
+        ServerHttpRequest modifiedRequest = alterHeaders(exchange.getRequest());
+        logInput(modifiedRequest);
+        ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
+        return chain.filter(modifiedExchange).then(Mono.fromRunnable(() -> logOutput(modifiedExchange)));
     }
 
     private ServerHttpRequest alterHeaders(ServerHttpRequest request) {
@@ -87,16 +83,14 @@ public class InputOutputPreparationFilter implements GlobalFilter {
             }
         }
 
-        return request.mutate().headers(headerAll -> {
-            headerAll.addAll(headersToAdd);
-            headerAll.remove("Cookie");
-            headerAll.remove("Set-Cookie");
-            headerAll.remove("Access-Control-Allow-Origin");
-            headerAll.remove("Access-Control-Allow-Methods");
-            headerAll.remove("Access-Control-Allow-Headers");
-            headerAll.remove("Access-Control-Max-Age");
-            headerAll.remove("Date");
-        }).build();
+        // Try to retrieve jwt token
+        String jwt = request.getQueryParams().getFirst(TOKEN);
+        // Inject into header if not null and bearer not already set
+        if ((jwt != null) && (request.getQueryParams().getFirst(BEARER) == null)) {
+            headersToAdd.add(AUTHORIZATION, BEARER + " " + jwt);
+        }
+
+        return request.mutate().headers(headerAll -> headerAll.addAll(headersToAdd)).build();
     }
 
 

@@ -18,12 +18,8 @@
  */
 package fr.cnes.regards.cloud.gateway;
 
-import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Class ApplicationTest
@@ -31,13 +27,11 @@ import org.springframework.test.context.junit4.SpringRunner;
  * Spring Context test
  * @author Sébastien Binda
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = Application.class)
-@EnableFeignClients(clients = IExternalAuthenticationClient.class)
-public class ApplicationTest {
+class ApplicationTest {
 
     @Test
-    public void initContext() {
+    void initContext() {
         // Nothing to do. Only check Spring context validity
     }
 

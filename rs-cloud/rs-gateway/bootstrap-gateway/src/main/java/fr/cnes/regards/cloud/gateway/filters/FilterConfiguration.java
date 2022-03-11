@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.cloud.gateway.filters;
 
+import fr.cnes.regards.cloud.gateway.authentication.ExternalAuthenticationVerifier;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +28,7 @@ import org.springframework.core.annotation.Order;
 
 /**
  * Global filters to be applied on all routes ordered by execution.
- * In case "post-logic" filters are also implemented, they will be executed in descending order of highest precedence.
+ * In case "post-logic" filters are also implemented, they will be executed in descending order of the highest precedence.
  * @see <a href="https://cloud.spring.io/spring-cloud-gateway/reference/html/#global-filters">spring gateway doc</a>
  *
  * @author Iliana Ghazali
@@ -41,14 +43,8 @@ public class FilterConfiguration {
     }
 
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
-    public GlobalFilter urlHeaderTokenFilter() {
-        return new UrlToHeaderTokenFilter();
-    }
-
-    @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE + 2)
-    public GlobalFilter externalTokenVerificationFilter() {
-        return new ExternalTokenVerificationFilter();
+    public GlobalFilter externalTokenVerificationFilter(JWTService jwtService, ExternalAuthenticationVerifier externalAuthenticationVerifier) {
+        return new ExternalTokenVerificationFilter(jwtService, externalAuthenticationVerifier);
     }
 }

@@ -16,8 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * Package for Regards Gateway filters
- * @author Sébastien Binda
- */
 package fr.cnes.regards.cloud.gateway.filters;
+
+/**
+ * @author Iliana Ghazali
+ **/
+public class FilterConstants {
+
+    public static final String COMMA = ", ";
+
+    public static final String CORRELATION_ID = "correlation-id";
+
+    public static final String X_FORWARDED_FOR = "X-Forwarded-For";
+
+    public static final String AUTHORIZATION = "Authorization";
+
+    public static final String BEARER = "Bearer";
+
+    public static final String TOKEN = "token";
+
+    private FilterConstants() {
+        throw new IllegalStateException("Utility class");
+    }
+}

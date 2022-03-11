@@ -1,8 +1,41 @@
 package fr.cnes.regards.cloud.gateway.filters;
 
-public class ExternalTokenVerificationFilterTest {
-/*
-    public static final String TENANT = "DEFAULT";
+import fr.cnes.regards.cloud.gateway.authentication.ExternalAuthenticationVerifier;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.*;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import static fr.cnes.regards.cloud.gateway.filters.FilterConstants.BEARER;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class ExternalTokenVerificationFilterTest {
+
+    static final String TENANT = "DEFAULT";
+
+    @InjectMocks
+    @Spy
+    private ExternalTokenVerificationFilter tokenFilter;
 
     @Mock
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -11,220 +44,200 @@ public class ExternalTokenVerificationFilterTest {
     private JWTService jwtService;
 
     @Mock
-    private IExternalAuthenticationClient externalAuthenticationClient;
+    private ExternalAuthenticationVerifier externalAuthenticationVerifier;
 
-    private ExternalTokenVerificationFilter filter;
+    @Mock
+    private GatewayFilterChain filterChain;
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        filter = spy(new ExternalTokenVerificationFilter(jwtService, runtimeTenantResolver, externalAuthenticationClient));
+    private ServerWebExchange exchange;
+
+    private final ArgumentCaptor<ServerWebExchange> captor = ArgumentCaptor.forClass(ServerWebExchange.class);
+
+    private final String DUMMY_URL = "http://dummyUrl.com";
+
+    private AutoCloseable closeable;
+
+    @BeforeEach
+    void initService() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void closeService() throws Exception {
+        closeable.close();
     }
 
     @Test
-    public void valid_regards_token_is_validated_not_verified_against_authentication_service() {
-        try {
-            String token = UUID.randomUUID().toString();
+    void valid_regards_token_is_validated_not_verified_against_authentication_service() throws JwtException {
+        // -- GIVEN --
+        String token = UUID.randomUUID().toString();
+        JWTAuthentication authentication = mock(JWTAuthentication.class);
+        when(authentication.getTenant()).thenReturn(TENANT);
+        when(authentication.getJwt()).thenReturn(token);
+        doNothing().when(authentication).setTenant(any());
+        when(jwtService.parseToken(any())).thenReturn(authentication);
 
-            JWTAuthentication authentication = mock(JWTAuthentication.class);
-            when(authentication.getTenant()).thenReturn(TENANT);
-            when(authentication.getJwt()).thenReturn(token);
-            doNothing().when(authentication).setTenant(any());
-            when(jwtService.parseToken(any())).thenReturn(authentication);
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add(HttpConstants.AUTHORIZATION, BEARER + " " + token);
+        requestHeaders.add(HttpConstants.SCOPE, TENANT);
+        MockServerHttpRequest request = MockServerHttpRequest.get(DUMMY_URL).headers(requestHeaders).build();
+        exchange = MockServerWebExchange.from(request);
+        filterChain = mock(GatewayFilterChain.class);
+        when(filterChain.filter(captor.capture())).thenReturn(Mono.empty());
 
-            RequestContext ctx = mock(RequestContext.class);
-            HashMap<String, String> zuulRequestHeaders = new HashMap<>();
-            when(ctx.getZuulRequestHeaders()).thenReturn(zuulRequestHeaders);
+        // -- WHEN --
+        tokenFilter.filter(exchange, filterChain).block();
 
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            when(request.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(BEARER + " " + token);
-            when(request.getHeader(HttpConstants.SCOPE)).thenReturn(TENANT);
+        // -- THEN --
+        ServerHttpRequest modifiedRequest = captor.getValue().getRequest();
+        assertFalse(tokenFilter.getInvalidCache().asMap().containsKey(token));
+        assertTrue(tokenFilter.getValidCache().asMap().containsKey(token));
+        assertEquals(token, tokenFilter.getValidCache().getIfPresent(token));
+        assertTrue(modifiedRequest.getHeaders().containsKey(HttpConstants.AUTHORIZATION));
+        assertEquals(BEARER + " " + token, modifiedRequest.getHeaders().getFirst(HttpConstants.AUTHORIZATION));
 
-            filter.filter(ctx, request);
+        verify(externalAuthenticationVerifier, never()).verifyAndAuthenticate(anyString(), anyString());
 
-            assertFalse(filter.getInvalidCache().asMap().containsKey(token));
-            assertTrue(filter.getValidCache().asMap().containsKey(token));
-            assertEquals(token, filter.getValidCache().getIfPresent(token));
-            assertTrue(zuulRequestHeaders.containsKey(HttpConstants.AUTHORIZATION));
-            assertEquals(BEARER + " " + token, zuulRequestHeaders.get(HttpConstants.AUTHORIZATION));
-
-            verify(filter, times(0)).verifyAndAuthenticate(anyString(), anyString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
     }
 
     @Test
-    public void invalid_regards_token_is_verified_against_authentication_service_and_cached_as_invalid_if_verification_fails() {
-        try {
-            String token = UUID.randomUUID().toString();
+    void invalid_regards_token_is_verified_against_authentication_service_and_cached_as_invalid_if_verification_fails()
+            throws JwtException {
+        // -- GIVEN --
+        String token = UUID.randomUUID().toString();
+        String authenticationToken = UUID.randomUUID().toString();
 
-            JWTAuthentication authentication = mock(JWTAuthentication.class);
-            when(authentication.getTenant()).thenReturn(TENANT);
-            when(authentication.getJwt()).thenReturn(token);
-            doNothing().when(authentication).setTenant(any());
-            JwtException expected = new JwtException("Expected");
-            when(jwtService.parseToken(any())).thenThrow(expected);
+        JWTAuthentication authentication = mock(JWTAuthentication.class);
+        when(authentication.getTenant()).thenReturn(TENANT);
+        when(authentication.getJwt()).thenReturn(authenticationToken);
+        doNothing().when(authentication).setTenant(any());
+        JwtException expected = new JwtException("Expected");
+        when(jwtService.parseToken(any())).thenThrow(expected);
 
-            RequestContext ctx = mock(RequestContext.class);
-            HashMap<String, String> zuulRequestHeaders = new HashMap<>();
-            when(ctx.getZuulRequestHeaders()).thenReturn(zuulRequestHeaders);
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add(HttpConstants.AUTHORIZATION, BEARER + " " + token);
+        requestHeaders.add(HttpConstants.SCOPE, TENANT);
+        MockServerHttpRequest request = MockServerHttpRequest.get(DUMMY_URL).headers(requestHeaders).build();
+        exchange = MockServerWebExchange.from(request);
 
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            when(request.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(BEARER + " " + token);
-            when(request.getHeader(HttpConstants.SCOPE)).thenReturn(TENANT);
+        RuntimeException err = new RuntimeException("Expected test exception");
+        when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.error(err));
 
-            RuntimeException err = new RuntimeException("Expected");
-            doThrow(err)
-                .when(filter)
-                .verifyAndAuthenticate(anyString(), anyString());
+        // -- WHEN --
+        StepVerifier.create(tokenFilter.filter(exchange, filterChain)).verifyComplete();
 
-            filter.filter(ctx, request);
-
-            assertFalse(filter.getValidCache().asMap().containsKey(token));
-            assertTrue(filter.getInvalidCache().asMap().containsKey(token));
-            assertFalse(zuulRequestHeaders.containsKey(HttpConstants.AUTHORIZATION));
-
-            verify(filter).verifyAndAuthenticate(authentication.getTenant(), authentication.getJwt());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
+        // -- THEN --
+        assertFalse(tokenFilter.getValidCache().asMap().containsKey(token));
+        assertTrue(tokenFilter.getInvalidCache().asMap().containsKey(token));
     }
 
     @Test
-    public void invalid_regards_token_is_verified_against_authentication_service_and_cached_as_valid_if_verification_succeeds() {
-        try {
-            String token = UUID.randomUUID().toString();
+    void invalid_regards_token_is_verified_against_authentication_service_and_cached_as_valid_if_verification_succeeds()
+            throws JwtException {
+        // -- GIVEN --
+        String token = UUID.randomUUID().toString();
 
-            JWTAuthentication authentication = mock(JWTAuthentication.class);
-            when(authentication.getTenant()).thenReturn(TENANT);
-            when(authentication.getJwt()).thenReturn(token);
-            doNothing().when(authentication).setTenant(any());
-            JwtException expected = new JwtException("Expected");
-            when(jwtService.parseToken(any())).thenThrow(expected);
+        JWTAuthentication authentication = mock(JWTAuthentication.class);
+        when(authentication.getTenant()).thenReturn(TENANT);
+        when(authentication.getJwt()).thenReturn(token);
+        doNothing().when(authentication).setTenant(any());
+        JwtException expected = new JwtException("Expected");
+        when(jwtService.parseToken(any())).thenThrow(expected);
 
-            RequestContext ctx = mock(RequestContext.class);
-            HashMap<String, String> zuulRequestHeaders = new HashMap<>();
-            when(ctx.getZuulRequestHeaders()).thenReturn(zuulRequestHeaders);
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add(HttpConstants.AUTHORIZATION, BEARER + " " + token);
+        requestHeaders.add(HttpConstants.SCOPE, TENANT);
+        MockServerHttpRequest request = MockServerHttpRequest.get(DUMMY_URL).headers(requestHeaders).build();
+        exchange = MockServerWebExchange.from(request);
+        filterChain = mock(GatewayFilterChain.class);
+        when(filterChain.filter(captor.capture())).thenReturn(Mono.empty());
 
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            when(request.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(BEARER + " " + token);
-            when(request.getHeader(HttpConstants.SCOPE)).thenReturn(TENANT);
+        String newToken = UUID.randomUUID().toString();
+        when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.just(
+                new Authentication(TENANT, "example@test.com", null, "rs-authentication", newToken,
+                                                 OffsetDateTime.now())));
 
-            String newToken = UUID.randomUUID().toString();
-            doReturn(newToken)
-                .when(filter)
-                .verifyAndAuthenticate(anyString(), anyString());
+        // -- WHEN --
+        StepVerifier.create(tokenFilter.filter(exchange, filterChain)).verifyComplete();
 
-            filter.filter(ctx, request);
+        // -- THEN --
+        ServerHttpRequest modifiedRequest = captor.getValue().getRequest();
+        assertFalse(tokenFilter.getInvalidCache().asMap().containsKey(token));
+        assertTrue(tokenFilter.getValidCache().asMap().containsKey(token));
+        assertEquals(newToken, tokenFilter.getValidCache().getIfPresent(token));
+        assertTrue(modifiedRequest.getHeaders().containsKey(HttpConstants.AUTHORIZATION));
+        assertEquals(BEARER + " " + newToken, modifiedRequest.getHeaders().getFirst(HttpConstants.AUTHORIZATION));
 
-            assertFalse(filter.getInvalidCache().asMap().containsKey(token));
-            assertTrue(filter.getValidCache().asMap().containsKey(token));
-            assertEquals(newToken, filter.getValidCache().getIfPresent(token));
-            assertTrue(zuulRequestHeaders.containsKey(HttpConstants.AUTHORIZATION));
-            assertEquals(BEARER + " " + newToken, zuulRequestHeaders.get(HttpConstants.AUTHORIZATION));
+        verify(externalAuthenticationVerifier).verifyAndAuthenticate(authentication.getTenant(), authentication.getJwt());
 
-            verify(filter).verifyAndAuthenticate(authentication.getTenant(), authentication.getJwt());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
     }
 
     @Test
-    public void cached_invalid_token_is_not_checked_at_all() {
-        try {
-            String token = UUID.randomUUID().toString();
-            String mappedToken = UUID.randomUUID().toString();
+    void cached_invalid_token_is_not_checked_at_all() {
+        // -- GIVEN --
+        String token = UUID.randomUUID().toString();
+        String mappedToken = UUID.randomUUID().toString();
 
-            filter.getValidCache().put(token, mappedToken);
+        tokenFilter.getInvalidCache().put(token, mappedToken);
 
-            RequestContext ctx = mock(RequestContext.class);
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add(HttpConstants.AUTHORIZATION, BEARER + " " + token);
+        requestHeaders.add(HttpConstants.SCOPE, TENANT);
+        MockServerHttpRequest request = MockServerHttpRequest.get(DUMMY_URL).headers(requestHeaders).build();
+        exchange = MockServerWebExchange.from(request);
+        filterChain = mock(GatewayFilterChain.class);
+        when(filterChain.filter(captor.capture())).thenReturn(Mono.empty());
 
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            when(request.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(BEARER + " " + token);
-            when(request.getHeader(HttpConstants.SCOPE)).thenReturn(TENANT);
+        // -- WHEN --
+        StepVerifier.create(tokenFilter.filter(exchange, filterChain)).verifyComplete();
 
-            filter.filter(ctx, request);
+        // -- THEN --
+        verifyNoInteractions(jwtService, runtimeTenantResolver, externalAuthenticationVerifier);
+        verify(externalAuthenticationVerifier, times(0)).verifyAndAuthenticate(anyString(), anyString());
 
-            verifyNoInteractions(jwtService, runtimeTenantResolver, externalAuthenticationClient);
-            verify(filter, times(0)).verifyAndAuthenticate(anyString(), anyString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
     }
 
     @Test
-    public void cached_valid_token_is_passed_downstream() {
-        try {
-            String token = UUID.randomUUID().toString();
-            String mappedToken = UUID.randomUUID().toString();
+    void cached_valid_token_is_passed_downstream() {
+        // -- GIVEN --
+        String token = UUID.randomUUID().toString();
+        String mappedToken = UUID.randomUUID().toString();
 
-            filter.getValidCache().put(token, mappedToken);
+        tokenFilter.getValidCache().put(token, mappedToken);
 
-            RequestContext ctx = mock(RequestContext.class);
-            HashMap<String, String> zuulRequestHeaders = new HashMap<>();
-            when(ctx.getZuulRequestHeaders()).thenReturn(zuulRequestHeaders);
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.add(HttpConstants.AUTHORIZATION, BEARER + " " + token);
+        requestHeaders.add(HttpConstants.SCOPE, TENANT);
+        MockServerHttpRequest request = MockServerHttpRequest.get(DUMMY_URL).headers(requestHeaders).build();
+        exchange = MockServerWebExchange.from(request);
+        filterChain = mock(GatewayFilterChain.class);
+        when(filterChain.filter(captor.capture())).thenReturn(Mono.empty());
 
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            when(request.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(BEARER + " " + token);
-            when(request.getHeader(HttpConstants.SCOPE)).thenReturn(TENANT);
+        // -- WHEN --
+        StepVerifier.create(tokenFilter.filter(exchange, filterChain)).verifyComplete();
 
-            filter.filter(ctx, request);
-
-            assertTrue(zuulRequestHeaders.containsKey(HttpConstants.AUTHORIZATION));
-            assertEquals(BEARER + " " + mappedToken, zuulRequestHeaders.get(HttpConstants.AUTHORIZATION));
-
-            verifyNoInteractions(jwtService, runtimeTenantResolver, externalAuthenticationClient);
-            verify(filter, times(0)).verifyAndAuthenticate(anyString(), anyString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
+        // -- THEN --
+        ServerHttpRequest modifiedRequest = captor.getValue().getRequest();
+        assertTrue(modifiedRequest.getHeaders().containsKey(HttpConstants.AUTHORIZATION));
+        assertEquals(BEARER + " " + mappedToken, modifiedRequest.getHeaders().getFirst(HttpConstants.AUTHORIZATION));
+        verifyNoInteractions(jwtService, runtimeTenantResolver, externalAuthenticationVerifier);
+        verify(externalAuthenticationVerifier, times(0)).verifyAndAuthenticate(anyString(), anyString());
     }
 
-    @Test
-    public void verify_fail_when_client_fails() {
-        HttpClientErrorException: {
-            HttpClientErrorException expected = new HttpClientErrorException(HttpStatus.BAD_REQUEST);
-            doThrow(expected)
-                .when(externalAuthenticationClient)
-                .verifyAndAuthenticate(anyString());
-            assertThatThrownBy(() -> filter.verifyAndAuthenticate("plop", "plop"))
-                .isExactlyInstanceOf(InternalAuthenticationServiceException.class)
-                .hasCauseReference(expected);
+   @Test
+    void verify_fail_when_client_fails() {
+        HttpClientErrorException:
+        {
+            WebClientResponseException expected = new WebClientResponseException(HttpStatus.BAD_REQUEST.value(), "Bad request", null, null, null);
+            when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.error(expected));
+            StepVerifier.create(externalAuthenticationVerifier.verifyAndAuthenticate("plop", "plop")).verifyError(WebClientResponseException.class);
         }
 
-        HttpServerErrorException: {
-            HttpServerErrorException expected = new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE);
-            doThrow(expected)
-                .when(externalAuthenticationClient)
-                .verifyAndAuthenticate(anyString());
-            assertThatThrownBy(() -> filter.verifyAndAuthenticate("plop", "plop"))
-                .isExactlyInstanceOf(AuthenticationServiceException.class)
-                .hasCauseReference(expected);
-        }
-
-        FeignException: {
-            FeignException expected = mock(FeignException.class);
-            doThrow(expected)
-                .when(externalAuthenticationClient)
-                .verifyAndAuthenticate(anyString());
-            assertThatThrownBy(() -> filter.verifyAndAuthenticate("plop", "plop"))
-                .isExactlyInstanceOf(InternalAuthenticationServiceException.class)
-                .hasCauseReference(expected);
+        HttpServerErrorException:
+        {
+            WebClientResponseException expected = new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(), "Service not available", null, null, null);
+            when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.error(expected));
+            StepVerifier.create(externalAuthenticationVerifier.verifyAndAuthenticate("plop", "plop")).verifyError(WebClientResponseException.class);
         }
     }
-
-    @Test
-    public void verify_fail_when_server_returns_unexpected_status_code() {
-        doReturn(ResponseEntity.noContent().build())
-            .when(externalAuthenticationClient)
-            .verifyAndAuthenticate(anyString());
-        assertThatThrownBy(() -> filter.verifyAndAuthenticate("plop", "plop"))
-            .isExactlyInstanceOf(InsufficientAuthenticationException.class);
-    }*/
 }
