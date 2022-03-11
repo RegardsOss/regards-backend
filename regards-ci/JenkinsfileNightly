@@ -48,8 +48,7 @@ pipeline {
                 echo "Jenkins node name = ${env.NODE_NAME}"
                 echo "Current workspace = ${env.WORKSPACE}"
 
-                echo "Pull docker images"
-                sh 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml pull \
+                sh label: "Pull docker images", script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml pull \
                     && docker pull ' + MVN_IMAGE
             }
         }
@@ -57,15 +56,13 @@ pipeline {
             steps {
                 parallel(
                     compile: {
-                        echo "Build with CI profile"
-                        runMavenDockerImg("compile", "", false, false)
+                        runMavenDockerImgWithoutCoTS("Build with CI profile", "compile")
                     },
                     cots: {
-                        echo "Launch COTS"
-                            sh 'docker-compose \
-                                    -f ' + CI_DIR + '/docker/docker-compose-cots.yml \
-                                    -p ' + PROJECT_NAME + ' \
-                                    up -d'
+                        sh label: "Launch COTS", script: 'docker-compose \
+                                -f ' + CI_DIR + '/docker/docker-compose-cots.yml \
+                                -p ' + PROJECT_NAME + ' \
+                                up -d'
                     }
                 )
             }
@@ -75,80 +72,80 @@ pipeline {
             parallel {
                 stage('-1-') {
                     stages {
-                        // Please ensure the 4th argument passed to runMavenDockerImg is TRUE !!!
+                        // Please you use here the method [...]One (runMavenDockerImgParallelOne)
                         stage('Microservice') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-microservice", true, true)
+                                runMavenDockerImgParallelOne("sonarTests", "rs-microservice")
                             }
                         }
                         stage('Cloud') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-cloud", true, true)
+                                runMavenDockerImgParallelOne("sonarTests", "rs-cloud")
                             }
                         }
                         stage('Ingest') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-ingest", true, true)
+                                runMavenDockerImgParallelOne("sonarTests", "rs-ingest")
                             }
                         }
                         stage('Access') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-access", true, true)
+                                runMavenDockerImgParallelOne("sonarTests", "rs-access")
                             }
                         }
                         stage('Fem') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-fem", true, true)
+                                runMavenDockerImgParallelOne("sonarTests", "rs-fem")
                             }
                         }
                         stage('Notifier') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-notifier", true, true)
+                                runMavenDockerImgParallelOne("sonarTests", "rs-notifier")
                             }
                         }
                         stage('Worker manager') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-worker-manager", true, true)
+                                runMavenDockerImgParallelOne("sonarTests", "rs-worker-manager")
                             }
                         }
                     }
                 }
                 stage('-2-') {
                     stages {
-                        // Please ensure the 4th argument passed to runMavenDockerImg is FALSE !!!
+                        // Please you use here the method [...]Two (runMavenDockerImgParallelTwo)
                         stage('Admin') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-admin", true, false)
+                                runMavenDockerImgParallelTwo("sonarTests", "rs-admin")
                             }
                         }
                         stage('Dam') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-dam", true, false)
+                                runMavenDockerImgParallelTwo("sonarTests", "rs-dam")
                             }
                         }
                         stage('Catalog') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-catalog", true, false)
+                                runMavenDockerImgParallelTwo("sonarTests", "rs-catalog")
                             }
                         }
                         stage('Storage') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-storage", true, false)
+                                runMavenDockerImgParallelTwo("sonarTests", "rs-storage")
                             }
                         }
                         stage('Dataprovider') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-dataprovider", true, false)
+                                runMavenDockerImgParallelTwo("sonarTests", "rs-dataprovider")
                             }
                         }
                         stage('Order') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-order", true, false)
+                                runMavenDockerImgParallelTwo("sonarTests", "rs-order")
                             }
                         }
                         stage('processing') {
                             steps {
-                                runMavenDockerImg("sonarTests", "rs-processing", true, false)
+                                runMavenDockerImgParallelTwo("sonarTests", "rs-processing")
                             }
                         }
                     }
@@ -182,7 +179,7 @@ pipeline {
             echo 'POST-FAILURE-TASK -- The build FAILED, let\'s print all COTS logs'
 
             // Log COTS only if they are existing
-            sh 'cd ' + CI_DIR + ' \
+            sh label: "POST-FAILURE-TASK -- Print ElasticSearch logs", script: 'cd ' + CI_DIR + ' \
                  && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-elasticsearch)" ]; then \
                         echo "########################################" \
                      && echo "#### ELASTICSEARCH" \
@@ -190,8 +187,7 @@ pipeline {
                      && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-elasticsearch; \
                    fi'
 
-
-            sh 'cd ' + CI_DIR + ' \
+            sh label: "POST-FAILURE-TASK -- Print Postgres logs", script: 'cd ' + CI_DIR + ' \
                  && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-postgres)" ]; then \
                         echo "########################################" \
                      && echo "#### POSTGRES" \
@@ -199,17 +195,15 @@ pipeline {
                      && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-postgres; \
                    fi'
 
-
-            sh 'cd ' + CI_DIR + ' \
-                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq)" ]; then \
+            sh label: "POST-FAILURE-TASK -- Print First RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq-first)" ]; then \
                         echo "########################################" \
                      && echo "#### RABBITMQ" \
                      && echo "########################################" \
-                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq; \
+                     && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-first; \
                    fi'
 
-
-            sh 'cd ' + CI_DIR + ' \
+            sh label: "POST-FAILURE-TASK -- Print Second RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
                  && if [ "$(docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq-second)" ]; then \
                         echo "########################################" \
                      && echo "#### RABBITMQ" \
@@ -218,29 +212,26 @@ pipeline {
                    fi'
         }
         cleanup {
-            echo 'POST-CLEANUP-TASK -- Stop CoTs'
-            sh 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
-            echo 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues'
-            sh 'chown -R jenkins:jenkins .'
-            sh 'chmod -R u+rwx .'
-            sh 'chmod -R g+rwx .'
+            sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
+            sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . ' \
+                '&& chmod -R u+rwx .' \
+                '&& chmod -R g+rwx .'
         }
     }
 }
 
-
 // Return the shell to execute to run a docker container using rs-maven-ci image
+// @params label Label to display on Blue Ocean
 // @params mode Expected mode (see ci script file)
 // @params regardsMs the pom submodule to restrict on
 // @params isRequiringCots true when the container will use CoTs
 // @params isRabbitMqIdFirst should use the first rabbitMQ
 @NonCPS
-def runMavenDockerImg(mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
+def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
     // Transform PROJECT_NAME to what Docker will use for CoTS names
     // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
     // become
     // regardsossbackendfeature2fimprovejenkinsstages31
-    echo "Run maven container with mode=[" + mode + "] and regardsMs=[" + regardsMs + "]. This tasks will use CoTs ? [" + isRequiringCots +"]"
     def dockerProject = PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()
     def dockerCommand = 'docker run --rm -i                                                          \
                         --name ' + dockerProject + '_maven_' + regardsMs + '                         \
@@ -251,7 +242,6 @@ def runMavenDockerImg(mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
                         -e BRANCH_NAME="${BRANCH_NAME}"                                              \
                         -e BRANCH_NAME_VERSION="${BRANCH_NAME_VERSION}"                              \
                         -e WORKSPACE="${WORKSPACE}"                                                  \
-                        -e IGNORE_HASH="${IGNORE_HASH}"                                              \
                         -e CI_DIR="regards-ci/docker"                                                \
                         -e MODE="' + mode + '"                                                       \
                         -e REGARDS_HOME="${REGARDS_HOME}"                                            \
@@ -265,5 +255,22 @@ def runMavenDockerImg(mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
     }
     dockerCommand +=    ' --network="regards_IT_network"                                             \
                         ' + MVN_IMAGE
-    sh dockerCommand
+    sh script: dockerCommand, label: label
+}
+// Use it when you don't need any COTS
+def runMavenDockerImgWithoutCoTS(taskMainLabel, mode) {
+    def label = taskMainLabel + " using maven container with mode=[" + mode + "]"
+    runMavenDockerImg(label, mode, "", false, false)
+}
+
+// Use it when you want CoTS and you are the parallel "One"
+def runMavenDockerImgParallelOne(mode, regardsMs) {
+    def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and first RabbitMQ"
+    runMavenDockerImg(label, mode, regardsMs, true, true)
+}
+
+// Use it when you want CoTS and you are the parallel "Two"
+def runMavenDockerImgParallelTwo(mode, regardsMs) {
+    def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and second RabbitMQ"
+    runMavenDockerImg(label, mode, regardsMs, true, false)
 }
