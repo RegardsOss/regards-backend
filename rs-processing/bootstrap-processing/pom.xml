@@ -32,8 +32,6 @@
     </parent>
 
     <properties>
-        <spring.boot.version>2.3.2.RELEASE</spring.boot.version>
-
         <fr.cnes.regards.docker.image.name>rs-processing</fr.cnes.regards.docker.image.name>
         <docker.entryPoint><![CDATA[["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--","./wait-for-it.sh", "rs-dam:9035", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx1g"]]]></docker.entryPoint>
     </properties>
@@ -53,6 +51,12 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- Spring bootstrap -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+
         <!-- Module -->
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>

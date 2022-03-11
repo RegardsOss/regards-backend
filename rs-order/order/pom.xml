@@ -32,7 +32,6 @@
 	</parent>
 
 	<properties>
-		<lombok.version>1.18.12</lombok.version>
 		<surefire.rerunFailingTestsCount>5</surefire.rerunFailingTestsCount>
 		<failsafe.rerunFailingTestsCount>5</failsafe.rerunFailingTestsCount>
 	</properties>

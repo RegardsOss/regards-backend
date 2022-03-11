@@ -38,10 +38,6 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<lombok.version>1.18.12</lombok.version>
-	</properties>
-
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>dam</artifactId>

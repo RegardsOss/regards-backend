@@ -33,12 +33,6 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <properties>
-        <java.version>1.8</java.version>
-        <vavr.version>0.10.2</vavr.version>
-        <caffeine.version>2.6.2</caffeine.version>
-    </properties>
-
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>

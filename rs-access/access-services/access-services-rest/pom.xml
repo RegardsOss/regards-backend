@@ -52,10 +52,6 @@
         <version>${revision}</version>
 	</parent>
 
-    <properties>
-        <vavr.version>0.10.2</vavr.version>
-    </properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
