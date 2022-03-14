@@ -271,6 +271,7 @@ def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst
                         -e BRANCH_NAME="${BRANCH_NAME}"                                              \
                         -e BRANCH_NAME_VERSION="${BRANCH_NAME_VERSION}"                              \
                         -e WORKSPACE="${WORKSPACE}"                                                  \
+                        -e IGNORE_HASH="${IGNORE_HASH}"                                              \
                         -e CI_DIR="regards-ci/docker"                                                \
                         -e MODE="' + mode + '"                                                       \
                         -e REGARDS_HOME="${REGARDS_HOME}"                                            \
