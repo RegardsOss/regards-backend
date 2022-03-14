@@ -213,9 +213,9 @@ pipeline {
         }
         cleanup {
             sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
-            sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . ' \
-                '&& chmod -R u+rwx .' \
-                '&& chmod -R g+rwx .'
+            sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . \
+                && chmod -R u+rwx . \
+                && chmod -R g+rwx .'
         }
     }
 }
