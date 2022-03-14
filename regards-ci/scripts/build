@@ -128,7 +128,9 @@ function updateNexusHashes {
 }
 
 function compile {
-    checkArtifactsRebuild "pom.xml"
+    if [ -z "${IGNORE_CHECK_ARTIFACT}" ]; then
+        checkArtifactsRebuild "pom.xml"
+    fi
 
     echo -e "\nRunning Maven build with CI profile ..."
 
@@ -137,6 +139,8 @@ function compile {
     else
         if [ -z "${IGNORE_HASH}" ]; then
             mvnPlArgArg="-pl ${mvnPlArg}"
+        else
+            unset mvnPlArgArg
         fi
         set -x
         # mvn -U -B -P docker,CI  -T 6 \
@@ -163,6 +167,21 @@ function compile {
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-compile.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-compile.log' artifact for more information"
         else
+            if [ -z "${IGNORE_HASH}" ] && grep -q "Could not find artifact" "${DATADIR}/mvn-compile.log"; then
+                echo "==========================================="
+                echo "==========================================="
+                echo "==========================================="
+                echo "==========================================="
+                echo "Failed to download some dependency. Trying another time with IGNORE_HASH=true"
+                echo "==========================================="
+                echo "==========================================="
+                echo "==========================================="
+                echo "==========================================="
+                IGNORE_HASH="true"
+                IGNORE_CHECK_ARTIFACT="true"
+                compile
+                exit 0
+            fi
             echo "Error while executing Maven build, please refer to the full 'mvn-compile.log' artifact for more information."
             exit 1
         fi
