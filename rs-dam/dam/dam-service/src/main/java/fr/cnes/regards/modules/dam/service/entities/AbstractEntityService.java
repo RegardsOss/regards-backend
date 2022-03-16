@@ -576,7 +576,11 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         } else {
             String tenant = runtimeTenantResolver.getTenant();
             final U finalUpdated = updated;
-            updated.getFiles().values().forEach(dataFile -> dataFile.setUri(getDownloadUrl(finalUpdated.getIpId(), dataFile.getChecksum(), tenant, true)));
+            // Update download url for locally stored files only for not referenced ones.
+            // Referenced ones must keep the original reference uri.
+            updated.getFiles().values().stream()
+                    .filter(dataFile -> !dataFile.isReference())
+                    .forEach(dataFile -> dataFile.setUri(getDownloadUrl(finalUpdated.getIpId(), dataFile.getChecksum(), tenant, true)));
             repository.save(updated);
         }
 
