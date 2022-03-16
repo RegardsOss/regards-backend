@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.lang.reflect.Type;
-import java.util.*;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -44,14 +38,14 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
-import fr.cnes.regards.modules.ingest.service.chain.step.InternalFinalStep;
-import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
-import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
-import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
-import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
+import fr.cnes.regards.modules.ingest.service.chain.step.*;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+
+import java.lang.reflect.Type;
+import java.util.*;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -113,6 +107,11 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         Optional<IngestProcessingChain> chain = processingChainRepository.findOneByName(processingChainName);
         if (!chain.isPresent()) {
             String message = String.format("No related chain has been found for value \"%s\"", processingChainName);
+            // Save error inside requests
+            for (IngestRequest requestInError : requests) {
+                requestInError.setErrors(Sets.newHashSet(message));
+                requestInError.setState(InternalRequestState.ERROR);
+            }
             // Monitoring
             ingestRequestService.handleUnknownChain(requests);
             handleInvalidParameter(CHAIN_NAME_PARAMETER, message);
