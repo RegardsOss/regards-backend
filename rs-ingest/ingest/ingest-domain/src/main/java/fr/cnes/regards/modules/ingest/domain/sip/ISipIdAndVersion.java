@@ -30,4 +30,6 @@ public interface ISipIdAndVersion {
     String getProviderId();
 
     Integer getVersion();
+
+    Boolean getLast();
 }

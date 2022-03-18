@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -51,30 +48,34 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     @Override
     Optional<SIPEntity> findById(Long id);
 
+    List<SIPEntity> findByProviderId(String providerId);
+
+    List<ISipIdAndVersion> findAllLightByProviderId(String providerId);
+
     /**
      * Find last ingest SIP with specified SIP ID according to ingest date
      * @param providerId external SIP identifier
      * @return the latest registered SIP
      */
-    SIPEntity findTopByProviderIdOrderByCreationDateDesc(String providerId);
+    default SIPEntity findTopByProviderIdOrderByCreationDateDesc(String providerId) {
+        return findByProviderId(providerId).stream()
+                .sorted(Comparator.comparing(SIPEntity::getCreationDate).reversed())
+                .findFirst()
+                .orElse(null);
+    }
 
     /**
      * Find all SIP version of a provider id
      * @param providerId provider id
      * @return all SIP versions of this provider id
      */
-    Collection<SIPEntity> findAllByProviderIdOrderByVersionAsc(String providerId);
-
-    /**
-     * Count SIPEntity with given providerId that have one the given states
-     */
-    long countByProviderIdAndStateIn(String providerId, Collection<SIPState> states);
+    default Collection<SIPEntity> findAllByProviderIdOrderByVersionAsc(String providerId) {
+        return findByProviderId(providerId).stream()
+                .sorted(Comparator.comparing(SIPEntity::getCreationDate))
+                .collect(Collectors.toList());
+    }
 
     long countByProviderId(String providerId);
-
-    default long countByProviderIdAndStateIn(String providerId, SIPState... states) {
-        return countByProviderIdAndStateIn(providerId, Arrays.asList(states));
-    }
 
     /**
      * Find one {@link SIPEntity} by its unique ipId
@@ -96,8 +97,8 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @return next version
      */
     default Integer getNextVersion(String providerId) {
-        SIPEntity latest = findTopByProviderIdOrderByCreationDateDesc(providerId);
-        return latest == null ? 1 : latest.getVersion() + 1;
+        List<Integer> versions = findVersionByProviderId(providerId);
+        return versions == null ? 1 : (versions.stream().mapToInt(v -> v).max().orElse(0)) + 1;
     }
 
     /**
@@ -125,7 +126,14 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * <br/>
      * Note that due to deferred constraint, we can have two versions of a SIP with last flag at a moment.
      */
-    List<ISipIdAndVersion> findByProviderIdAndLast(String providerId, boolean last);
+    default List<ISipIdAndVersion> findByProviderIdAndLast(String providerId, boolean last) {
+        return findAllLightByProviderId(providerId).stream()
+                .filter(s -> s.getLast() == last)
+                .collect(Collectors.toList());
+    }
+
+    @Query(value = "select version from SIPEntity where provider_id = :providerId")
+    List<Integer> findVersionByProviderId(@Param("providerId") String providerId);
 
     @Modifying
     @Query(value = "UPDATE SIPEntity SET last = :last WHERE id = :id")
