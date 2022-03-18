@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.framework.amqp.converter;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -29,12 +32,9 @@ import org.springframework.amqp.support.converter.MessageConversionException;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.IPollable;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * JSON message converters manager
@@ -86,9 +86,11 @@ public class JsonMessageConverters implements MessageConverter {
         // Check if tenant already set and match!
         if ((tenant != null) && (runtimeTenant != null) && !runtimeTenant.equals(tenant)) {
             String errorMessage = String
-                    .format("Inconsistent tenant resolution : runtime tenant \"%s\" does not match with message (%s) one : \"%s\"",
-                            runtimeTenant, type, tenant);
+                    .format("Inconsistent tenant resolution : current runtime tenant [%s] does not match with the tenant inside the message [%s]",
+                            runtimeTenant, tenant);
             LOGGER.warn(errorMessage);
+            String bodyAsString = new String(message.getBody(), StandardCharsets.UTF_8);
+            LOGGER.warn("Message type {}. Message content : {}", type, bodyAsString);
             // FIXME
             // throw new MessageConversionException(errorMessage);
             // Manage tenant before calling handler to properly force and clean tenant.
