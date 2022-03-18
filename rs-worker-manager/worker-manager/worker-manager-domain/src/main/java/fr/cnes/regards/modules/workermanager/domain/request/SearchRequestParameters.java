@@ -22,9 +22,9 @@ import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,21 +36,29 @@ import java.util.Collection;
  */
 public class SearchRequestParameters implements AbstractSearchParameters<Request> {
 
+    @Schema(description = "Source that emitted the request", example = "CNES")
     private String source;
+
+    @Schema(description = "Session that emitted the request", example = "Today_Mission1")
     private String session;
-    private String requestId;
+
+    @Schema(description = "Name of the Worker type matching the Request Content Type", example = "WorkerAcceptingContentType1")
     private String dispatchedWorkerType;
 
     @Valid
+    @Schema(description = "Filter on Content types")
     private ValuesRestriction<String> contentTypes;
 
     @Valid
+    @Schema(description = "Filter on Request statuses")
     private ValuesRestriction<RequestStatus> statuses;
 
     @Valid
+    @Schema(description = "Filter on Request IDs")
     private ValuesRestriction<Long> ids;
 
     @Valid
+    @Schema(description = "Request creation date restriction")
     private DatesRangeRestriction creationDate = new DatesRangeRestriction();
 
     public String getSource() {
@@ -76,15 +84,6 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     public SearchRequestParameters withSession(String session) {
         this.session = session;
         return this;
-    }
-
-    public SearchRequestParameters withRequestId(String requestId) {
-        this.requestId = requestId;
-        return this;
-    }
-
-    public String getRequestId() {
-        return requestId;
     }
 
     public String getDispatchedWorkerType() {

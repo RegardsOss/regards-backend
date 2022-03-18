@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.framework.swagger.autoconfigure;
 
-import java.util.Set;
-
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,17 +38,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.security.OAuthFlow;
-import io.swagger.v3.oas.models.security.OAuthFlows;
-import io.swagger.v3.oas.models.security.Scopes;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import java.util.Set;
 
 /**
  * Auto configuration for swagger

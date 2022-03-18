@@ -73,5 +73,10 @@
             <groupId>fr.cnes.regards.modules.workermanager</groupId>
             <artifactId>worker-manager-dto</artifactId>
         </dependency>
+        <!-- Swagger dependency -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
     </dependencies>
 </project>

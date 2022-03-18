@@ -89,7 +89,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
 
     @PluginParameter(name = "envVariables", label = "Environment variables to give to the shell script",
             description = "List of environment variables needed by the shell script."
-                    + " Format as KEy=VALUE separated by '&', for instance:" + " KEY1=value1&KEY2=value2 ",
+                    + " Format as KEY=VALUE separated by '&', for instance:" + " KEY1=value1&KEY2=value2 ",
             optional = true)
     protected String envVariables;
 

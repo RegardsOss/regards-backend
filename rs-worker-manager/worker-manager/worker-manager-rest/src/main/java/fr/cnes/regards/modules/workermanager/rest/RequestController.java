@@ -29,6 +29,9 @@ import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import fr.cnes.regards.modules.workermanager.service.requests.scan.RequestScanTask;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +54,7 @@ import javax.validation.Valid;
  *
  * @author Théo Lasserre
  */
+@Tag(name = "Request controller")
 @RestController
 @RequestMapping(RequestController.TYPE_MAPPING)
 public class RequestController implements IResourceController<LightRequest> {
@@ -79,32 +83,36 @@ public class RequestController implements IResourceController<LightRequest> {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Retrieve a page of requests matching given filters", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Retrieve Requests", description = "Retrieve Requests matching given filters.")
     public ResponseEntity<PagedModel<EntityModel<LightRequest>>> retrieveLightRequestList(
-            @RequestBody SearchRequestParameters filters,
-            @PageableDefault(sort = "requestId", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<LightRequest> assembler) {
+            @Parameter(description = "Filter requests using criteria") @RequestBody SearchRequestParameters filters,
+            @Parameter(description = "Sorting and page configuration") @PageableDefault(sort = "requestId", direction = Sort.Direction.ASC) Pageable pageable,
+            @Parameter(hidden = true) PagedResourcesAssembler<LightRequest> assembler) {
         Page<LightRequest> requests = requestService.searchLightRequests(filters, pageable);
         return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
     }
 
     @RequestMapping(path = REQUEST_ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve a request matching given requestId", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<LightRequest>> retrieveLightRequest(@PathVariable("requestId") String requestIdPath)
-            throws EntityNotFoundException {
-        LightRequest request = requestService.retrieveLightRequest(requestIdPath);
+    @Operation(summary = "Retrieve Request", description = "Retrieve a Request by its id.")
+    public ResponseEntity<EntityModel<LightRequest>> retrieveLightRequest(
+            @Parameter(description = "Request ID", example = "1") @PathVariable("requestId") String requestId) throws EntityNotFoundException {
+        LightRequest request = requestService.retrieveLightRequest(requestId);
         return new ResponseEntity<>(toResource(request), HttpStatus.OK);
     }
 
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.EXPLOIT)
-    public void retryRequests(@Valid @RequestBody SearchRequestParameters filters) {
+    @Operation(summary = "Retry Requests", description = "Retry Requests matching provided filters.")
+    public void retryRequests(@Parameter(description = "Filter requests using criteria") @Valid @RequestBody SearchRequestParameters filters) {
         LOGGER.debug("Received request to retry requests");
         requestService.scheduleRequestRetryJob(filters);
     }
 
     @RequestMapping(value = REQUEST_DELETE_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "Delete requests matching provided filters", role = DefaultRole.ADMIN)
-    public void deleteRequests(@Valid @RequestBody SearchRequestParameters filters) {
+    @Operation(summary = "Delete Requests", description = "Delete Requests matching provided filters.")
+    public void deleteRequests(@Parameter(description = "Filter requests using criteria") @Valid @RequestBody SearchRequestParameters filters) {
         LOGGER.debug("Received request to delete requests");
         requestService.scheduleRequestDeletionJob(filters);
     }

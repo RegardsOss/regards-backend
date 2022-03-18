@@ -77,11 +77,6 @@
 			<groupId>fr.cnes.regards.modules.feature</groupId>
 			<artifactId>feature-service</artifactId>
 		</dependency>
-		<!-- documentation -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-webmvc-core</artifactId>
-		</dependency>
 		<!-- dump dependency -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.dump</groupId>

@@ -111,6 +111,11 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
         </dependency>
+        <!-- Swagger dependency -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

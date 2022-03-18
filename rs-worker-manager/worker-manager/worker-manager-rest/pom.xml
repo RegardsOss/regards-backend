@@ -70,6 +70,11 @@
             <groupId>fr.cnes.regards.modules.workermanager</groupId>
             <artifactId>worker-manager-service</artifactId>
         </dependency>
+        <!-- Swagger dependency -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

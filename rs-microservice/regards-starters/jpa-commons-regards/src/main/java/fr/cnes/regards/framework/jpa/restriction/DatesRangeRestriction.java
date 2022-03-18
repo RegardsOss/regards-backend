@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.restriction;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -28,7 +30,10 @@ import java.time.OffsetDateTime;
  */
 public class DatesRangeRestriction {
 
+    @Schema(description = "Keep entities having date greater than")
     private OffsetDateTime after;
+
+    @Schema(description = "Keep entities having date less than")
     private OffsetDateTime before;
 
     public DatesRangeRestriction() {

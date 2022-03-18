@@ -18,9 +18,15 @@
  */
 package fr.cnes.regards.modules.workermanager.rest;
 
-import java.util.List;
-import java.util.Map;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.workermanager.dto.WorkerTypeAlive;
+import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,17 +38,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.workermanager.dto.WorkerTypeAlive;
-import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
+import java.util.List;
 
 /**
  * 
  * @author Théo Lasserre
  */
+@Tag(name = "Worker manager")
 @RestController
 public class WorkerController implements IResourceController<WorkerTypeAlive> {
 
@@ -58,7 +60,9 @@ public class WorkerController implements IResourceController<WorkerTypeAlive> {
 
     @RequestMapping(path = TYPE_MAPPING, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve worker types with its number of alive instances", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Retrieve worker types", description = "Retrieve worker types with its number of alive instances.")
     public ResponseEntity<List<WorkerTypeAlive>> retrieveWorkerList(
+        @Parameter(description = "Filter Workers on Request Content Types they handle")
         @RequestParam (value = "contentTypes", required = false) List<String> contentTypes) {
         List<WorkerTypeAlive> workers = workerCacheService.getWorkersInstance(contentTypes);
         return new ResponseEntity<>(workers, HttpStatus.OK);

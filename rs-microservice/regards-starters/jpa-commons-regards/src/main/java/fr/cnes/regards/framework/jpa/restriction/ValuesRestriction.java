@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.restriction;
 
-import com.sun.istack.NotNull;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 
 /**
@@ -33,10 +34,12 @@ public class ValuesRestriction<T> {
 
     @Valid
     @NotNull
+    @Schema(description = "List of accepted or refused values (according to the mode)")
     private Collection<T> values;
 
     @Valid
     @NotNull
+    @Schema(description = "Restriction mode to use")
     private ValuesRestrictionMode mode;
 
     public ValuesRestriction() {
