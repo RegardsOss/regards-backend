@@ -137,14 +137,20 @@ public class OrderDataFileService implements IOrderDataFileService {
                             || (f.getState() == FileState.DOWNLOAD_ERROR)
                             || (f.getState() == FileState.PROCESSING_ERROR))) {
                 filesTask.setEnded(true);
+                LOGGER.trace("File task {} on order {} has ended (no more file to download)", filesTask.getId(), filesTask.getOrderId());
             }
             // ...and if it is waiting for user
             filesTask.computeWaitingForUser();
             filesTasksRepository.save(filesTask);
             // Update then associated information to order
             Order order = orderRepository.findSimpleById(filesTask.getOrderId());
-            order.setWaitingForUser(filesTasksRepository.findByOrderId(filesTask.getOrderId())
-                    .anyMatch(t -> t.isWaitingForUser()));
+            boolean wasWaitingForUser = order.isWaitingForUser();
+            boolean isNowWaitingForUser = filesTasksRepository.findByOrderId(filesTask.getOrderId())
+                    .anyMatch(FilesTask::isWaitingForUser);
+            order.setWaitingForUser(isNowWaitingForUser);
+            if (wasWaitingForUser != isNowWaitingForUser) {
+                LOGGER.trace("Order {} no longer waits for user download", filesTask.getOrderId());
+            }
             orderRepository.save(order);
         }
         return dataFile;
