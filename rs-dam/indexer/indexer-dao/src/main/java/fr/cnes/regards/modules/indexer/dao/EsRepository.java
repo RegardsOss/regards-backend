@@ -1149,7 +1149,10 @@ public class EsRepository implements IEsRepository {
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
                 try {
-                    results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
+                    JsonParser parser = new JsonParser();
+                    JsonObject jo = parser.parse(hit.getSourceAsString()).getAsJsonObject();
+                    String hitType = jo.get("type").getAsString();
+                    results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(), searchKey.getSearchTypeMap().get(hitType)));
                 } catch (JsonParseException e) {
                     LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"", hit.getId(),
                             hit.getSourceAsString());

@@ -32,20 +32,32 @@ public class AbstractOnPointsTest {
 
     protected static class Item implements IIndexable {
 
-        private String id;
+        private String name;
 
         private String type = TYPE;
 
         private Geometry wgs84;
 
-        public Item(String id, Geometry wgs84) {
-            this.id = id;
+        public Item(String name, Geometry wgs84) {
+            this.name = name;
             this.wgs84 = wgs84;
         }
 
+        protected Item() {
+
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+        
         @Override
         public String getDocId() {
-            return id;
+            return name;
         }
 
         @Override
@@ -63,7 +75,7 @@ public class AbstractOnPointsTest {
 
         @Override
         public String getLabel() {
-            return id;
+            return name;
         }
     }
 
@@ -94,6 +106,10 @@ public class AbstractOnPointsTest {
 
         public PointItem(String id, double... coordinates) {
             super(id, new Point(coordinates));
+        }
+
+        public PointItem(){
+            super();
         }
     }
 
