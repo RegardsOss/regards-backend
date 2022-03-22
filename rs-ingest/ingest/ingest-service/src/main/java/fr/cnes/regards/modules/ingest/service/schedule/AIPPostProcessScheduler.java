@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
-import fr.cnes.regards.modules.ingest.service.aip.AIPPostProcessService;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPPostProcessRequestScheduler;
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -57,7 +57,7 @@ public class AIPPostProcessScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private AIPPostProcessService aipPostProcessService;
+    private AIPPostProcessRequestScheduler aipPostProcessRequestScheduler;
 
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
@@ -67,7 +67,7 @@ public class AIPPostProcessScheduler extends AbstractTaskScheduler {
      */
     private final Task postProcessTask = () -> {
         LockAssert.assertLocked();
-        aipPostProcessService.scheduleJob();
+        aipPostProcessRequestScheduler.scheduleJob();
     };
 
     /**

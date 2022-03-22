@@ -17,7 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.ingest.service.aip;
+package fr.cnes.regards.modules.ingest.service.aip.scheduler;
 
 import java.util.List;
 import java.util.Set;
@@ -55,27 +55,32 @@ import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
  */
 @Service
 @MultitenantTransactional
-public class AIPPostProcessService {
+public class AIPPostProcessRequestScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPDeletionService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPDeletionRequestScheduler.class);
 
-    @Autowired
     IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
 
-    @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
-    @Autowired
     private IAuthenticationResolver authResolver;
 
-    @Autowired
     private JobInfoService jobInfoService;
 
     /**
      * Limit number of AIPs to retrieve in one page.
      */
-    @Value("${regards.ingest.aips.postprocess.scan.iteration-limit:100}")
     private Integer aipRequestIterationLimit;
+
+    public AIPPostProcessRequestScheduler(IAIPPostProcessRequestRepository aipPostProcessRequestRepository,
+            IAbstractRequestRepository abstractRequestRepository, IAuthenticationResolver authResolver, JobInfoService jobInfoService,
+            @Value("${regards.ingest.aips.postprocess.scan.iteration-limit:100}") Integer aipRequestIterationLimit) {
+        this.aipPostProcessRequestRepository = aipPostProcessRequestRepository;
+        this.abstractRequestRepository = abstractRequestRepository;
+        this.authResolver = authResolver;
+        this.jobInfoService = jobInfoService;
+        this.aipRequestIterationLimit = aipRequestIterationLimit;
+    }
 
     /**
      * Schedule a {@link IngestPostProcessingJob} for the given {@link IngestProcessingChain} to post process given {@link AIPEntity}s

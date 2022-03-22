@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;

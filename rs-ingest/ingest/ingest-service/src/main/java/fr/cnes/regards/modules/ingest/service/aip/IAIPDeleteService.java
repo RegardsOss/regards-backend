@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip.utils;
+package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
@@ -40,5 +40,12 @@ public interface IAIPDeleteService {
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
      */
     void processDeletion(String sipId, boolean deleteIrrevocably);
+
+    /**
+     * Check if a deletion request is running or pending  for the given aip
+     * @param aip
+     * @return [TRUE|FALSE]
+     */
+    boolean deletionAlreadyPending(AIPEntity aip);
 
 }

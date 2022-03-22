@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip;
+package fr.cnes.regards.modules.ingest.service.aip.scheduler;
 
 import java.util.List;
 import java.util.Set;
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,7 +39,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
@@ -55,36 +53,28 @@ import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
  */
 @Service
 @MultitenantTransactional
-public class AIPDeletionService {
+public class AIPDeletionRequestScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPDeletionService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPDeletionRequestScheduler.class);
 
-    @Autowired
     private JobInfoService jobInfoService;
 
-    @Autowired
     private IOAISDeletionRequestRepository oaisDeletionRequestRepository;
 
-    @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
     /**
      * Limit number of AIPs to retrieve in one page.
      */
-    @Value("${regards.ingest.aips.scan.iteration-limit:100}")
     private Integer deletionRequestIterationLimit;
 
-    /**
-     * Check if a deletion request is running or pending  for the given aip
-     * @param aip
-     * @return [TRUE|FALSE]
-     */
-    public boolean deletionAlreadyPending(AIPEntity aip) {
-        return oaisDeletionRequestRepository
-                .existsByAipIdAndStateIn(aip.getId(),
-                                         Sets.newHashSet(InternalRequestState.CREATED, InternalRequestState.BLOCKED,
-                                                         InternalRequestState.RUNNING,
-                                                         InternalRequestState.TO_SCHEDULE));
+    public AIPDeletionRequestScheduler(JobInfoService jobInfoService, IOAISDeletionRequestRepository oaisDeletionRequestRepository,
+            IAbstractRequestRepository abstractRequestRepository,
+            @Value("${regards.ingest.aips.scan.iteration-limit:100}") Integer deletionRequestIterationLimit) {
+        this.jobInfoService = jobInfoService;
+        this.oaisDeletionRequestRepository = oaisDeletionRequestRepository;
+        this.abstractRequestRepository = abstractRequestRepository;
+        this.deletionRequestIterationLimit = deletionRequestIterationLimit;
     }
 
     public JobInfo scheduleJob() {

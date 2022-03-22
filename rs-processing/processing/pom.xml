@@ -91,11 +91,6 @@
                 <version>${feign.version}</version>
             </dependency>
             <dependency>
-            	<groupId>org.flywaydb</groupId>
-            	<artifactId>flyway-core</artifactId>
-            	<version>${flyway.version}</version>
-        	</dependency>
-            <dependency>
                 <groupId>org.springframework.batch</groupId>
                 <artifactId>spring-batch-core</artifactId>
             </dependency>

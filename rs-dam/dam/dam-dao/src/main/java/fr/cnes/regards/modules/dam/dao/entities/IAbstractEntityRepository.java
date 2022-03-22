@@ -52,7 +52,6 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
      * @return entity
      */
     @Override
-    //@EntityGraph(attributePaths = { "tags", "groups", "model" }, type = EntityGraph.EntityGraphType.LOAD)
     @EntityGraph(value = "graph.full.abstract.entity", type = EntityGraphType.LOAD)
     Optional<T> findById(Long pId);
 

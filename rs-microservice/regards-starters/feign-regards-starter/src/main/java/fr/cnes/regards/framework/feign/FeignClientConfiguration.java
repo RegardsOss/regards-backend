@@ -117,8 +117,6 @@ public class FeignClientConfiguration {
         // configure feign with semaphore-based bulkhead
         Bulkhead bulkhead = Bulkhead.of("customBulkhead",
                               BulkheadConfig.custom()
-                                    .maxConcurrentCalls(100000)
-                                    .maxWaitDuration(Duration.ofSeconds(1L))
                                     .build());
         FeignDecorators feignDecorators = FeignDecorators.builder()
                                                          .withRateLimiter(rateLimitConfig)

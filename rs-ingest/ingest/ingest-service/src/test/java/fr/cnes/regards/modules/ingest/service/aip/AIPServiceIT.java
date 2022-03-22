@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPService;
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Test;

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip;
+package fr.cnes.regards.modules.ingest.service.aip.scheduler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,27 +56,33 @@ import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
  */
 @Service
 @MultitenantTransactional
-public class AIPUpdateService {
+public class AIPUpdateRequestScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateRequestScheduler.class);
 
-    @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
-    @Autowired
     private AIPUpdateRequestService aipUpdateRequestService;
 
-    @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
-    @Autowired
     private JobInfoService jobInfoService;
 
     /**
      * Limit number of AIPs to retrieve in one page.
      */
-    @Value("${regards.ingest.aips.scan.iteration-limit:100}")
+
     private Integer updateRequestIterationLimit;
+
+    public AIPUpdateRequestScheduler(IAIPUpdateRequestRepository aipUpdateRequestRepository,
+            AIPUpdateRequestService aipUpdateRequestService, IAbstractRequestRepository abstractRequestRepository,
+            JobInfoService jobInfoService, @Value("${regards.ingest.aips.scan.iteration-limit:100}") Integer updateRequestIterationLimit) {
+        this.aipUpdateRequestRepository = aipUpdateRequestRepository;
+        this.aipUpdateRequestService = aipUpdateRequestService;
+        this.abstractRequestRepository = abstractRequestRepository;
+        this.jobInfoService = jobInfoService;
+        this.updateRequestIterationLimit = updateRequestIterationLimit;
+    }
 
     public JobInfo scheduleJob() {
         JobInfo jobInfo = null;

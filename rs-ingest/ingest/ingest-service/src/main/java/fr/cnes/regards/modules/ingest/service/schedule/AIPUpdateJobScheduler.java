@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -55,7 +55,7 @@ public class AIPUpdateJobScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private AIPUpdateService aipUpdateService;
+    private AIPUpdateRequestScheduler aipUpdateRequestScheduler;
 
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
@@ -65,7 +65,7 @@ public class AIPUpdateJobScheduler extends AbstractTaskScheduler {
      */
     private final Task aipUpdateTask = () -> {
         LockAssert.assertLocked();
-        aipUpdateService.scheduleJob();
+        aipUpdateRequestScheduler.scheduleJob();
     };
 
     /**

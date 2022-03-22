@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionReques
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPDeleteService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPDeleteService;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;

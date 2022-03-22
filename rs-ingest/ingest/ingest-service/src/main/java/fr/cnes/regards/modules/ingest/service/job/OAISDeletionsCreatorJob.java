@@ -23,12 +23,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import fr.cnes.regards.modules.ingest.service.aip.IAIPDeleteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -43,11 +45,10 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreato
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
-import fr.cnes.regards.modules.ingest.service.aip.AIPDeletionService;
-import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
-import org.springframework.util.CollectionUtils;
+
 
 /**
  * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task
@@ -72,10 +73,10 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
     private OAISDeletionService oaisDeletionRequestService;
 
     @Autowired
-    private AIPDeletionService aipDeletionService;
+    private IOAISDeletionCreatorRepository oaisDeletionCreatorRepo;
 
     @Autowired
-    private IOAISDeletionCreatorRepository oaisDeletionCreatorRepo;
+    private IAIPDeleteService aipDeleteService;
 
     /**
      * Limit number of AIPs to retrieve in one page.
@@ -125,7 +126,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
                 }
                 // If deletion request is already registered for the given aip do not create a new one.
                 List<AbstractRequest> requests = aipsPage.stream()
-                        .filter(aip -> !aipDeletionService.deletionAlreadyPending(aip))
+                        .filter(aip -> !aipDeleteService.deletionAlreadyPending(aip))
                         .map(aip -> OAISDeletionRequest.build(aip, oaisDeletionCreatorPayload.getDeletionMode(), oaisDeletionCreatorPayload.getDeletePhysicalFiles()))
                         .collect(Collectors.toList());
                 nbRequestScheduled += requestService.scheduleRequests(requests);

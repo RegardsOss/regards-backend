@@ -54,8 +54,8 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
-import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -87,7 +87,7 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceTest {
     private IAIPService aipService;
 
     @Autowired
-    private AIPUpdateService aipUpdateService;
+    private AIPUpdateRequestScheduler aipUpdateRequestScheduler;
 
     @Autowired
     private StorageResponseFlowHandler storageListener;
@@ -202,7 +202,7 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceTest {
         long nbTasksPerSip = 5;
         waitForUpdateTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
         // Wait job scheduled
-        JobInfo updateJob = aipUpdateService.scheduleJob();
+        JobInfo updateJob = aipUpdateRequestScheduler.scheduleJob();
         // Wait job done
         waitJobDone(updateJob, JobStatus.SUCCEEDED, 5_000);
 
@@ -251,7 +251,7 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceTest {
 
         storageListener.onCopySuccess(requests);
 
-        JobInfo updateJob = aipUpdateService.scheduleJob();
+        JobInfo updateJob = aipUpdateRequestScheduler.scheduleJob();
         Assert.assertNotNull("One update job should be scheduled", updateJob);
         waitJobDone(updateJob, JobStatus.SUCCEEDED, 5_000);
 

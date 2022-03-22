@@ -55,9 +55,6 @@ public class MethodAuthorizationServiceAutoConfiguration {
     @Value("${regards.instance.tenant.name:instance}")
     private String instanceTenantName;
 
-    @Autowired
-    Environment env;
-
     @ConditionalOnMissingBean
     @Profile("!test")
     @Bean

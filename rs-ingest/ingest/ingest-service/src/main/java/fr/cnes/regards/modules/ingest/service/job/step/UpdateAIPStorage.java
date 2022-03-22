@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPRemoveStorageTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.service.aip.utils.IAIPStorageService;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
 /**

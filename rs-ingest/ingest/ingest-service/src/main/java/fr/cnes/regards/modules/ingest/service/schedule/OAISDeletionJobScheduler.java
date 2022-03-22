@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
-import fr.cnes.regards.modules.ingest.service.aip.AIPDeletionService;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPDeletionRequestScheduler;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionsCreatorJob;
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
 import net.javacrumbs.shedlock.core.LockAssert;
@@ -59,7 +59,7 @@ public class OAISDeletionJobScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private AIPDeletionService aipDeletionService;
+    private AIPDeletionRequestScheduler aipDeletionRequestScheduler;
 
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
@@ -69,7 +69,7 @@ public class OAISDeletionJobScheduler extends AbstractTaskScheduler {
      */
     private final Task aipDeletionTask = () -> {
         LockAssert.assertLocked();
-        aipDeletionService.scheduleJob();
+        aipDeletionRequestScheduler.scheduleJob();
     };
 
     /**

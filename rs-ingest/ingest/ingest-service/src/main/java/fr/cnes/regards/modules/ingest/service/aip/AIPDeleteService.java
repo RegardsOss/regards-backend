@@ -16,8 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip.utils;
+package fr.cnes.regards.modules.ingest.service.aip;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -77,6 +78,15 @@ public class AIPDeleteService implements IAIPDeleteService {
 
     @Autowired
     private IPublisher publisher;
+
+    @Override
+    public boolean deletionAlreadyPending(AIPEntity aip) {
+        return oaisDeletionRequestRepository
+                .existsByAipIdAndStateIn(aip.getId(),
+                                         Sets.newHashSet(InternalRequestState.CREATED, InternalRequestState.BLOCKED,
+                                                         InternalRequestState.RUNNING,
+                                                         InternalRequestState.TO_SCHEDULE));
+    }
 
     @Override
     public void scheduleLinkedFilesDeletion(OAISDeletionRequest request) {

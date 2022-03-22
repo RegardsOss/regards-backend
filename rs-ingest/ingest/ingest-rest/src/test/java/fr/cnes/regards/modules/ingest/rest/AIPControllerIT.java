@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.aip.utils.AIPStorageService;
+import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import fr.cnes.regards.modules.test.IngestServiceTest;
 import org.junit.After;

@@ -46,7 +46,7 @@ public final class FeignClientBuilder {
      */
     public static <T> T build(final Target<T> pTarget) {
         return Feign.builder() // Feign customization
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 5000, TimeUnit.MILLISECONDS, false))
+                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
@@ -59,7 +59,7 @@ public final class FeignClientBuilder {
      */
     public static <T> T build(final Target<T> pTarget, Gson gson) {
         return Feign.builder() // Feign customization
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 5000, TimeUnit.MILLISECONDS, false))
+                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
@@ -73,7 +73,7 @@ public final class FeignClientBuilder {
      */
     public static <T> T build(final Target<T> pTarget, Gson gson, RequestInterceptor... requestInterceptors) {
         return Feign.builder()
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 5000, TimeUnit.MILLISECONDS, false))
+                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .requestInterceptors(Arrays.asList(requestInterceptors)) // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
@@ -87,7 +87,7 @@ public final class FeignClientBuilder {
      */
     public static <T> T build(final Target<T> pTarget, Client client, Gson gson) {
         return Feign.builder()
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 5000, TimeUnit.MILLISECONDS, false))
+                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .client(client) // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
@@ -102,7 +102,7 @@ public final class FeignClientBuilder {
     public static <T> T buildXml(final Target<T> pTarget, Client client) {
         JAXBContextFactory jaxbFactory = new JAXBContextFactory.Builder().withMarshallerJAXBEncoding("UTF-8").build();
         return Feign.builder()
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 5000, TimeUnit.MILLISECONDS, false))
+                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .client(client) // Feign customization
                 .encoder(new JAXBEncoder(jaxbFactory)).decoder(new ResponseEntityDecoder(new JAXBDecoder(jaxbFactory)))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
