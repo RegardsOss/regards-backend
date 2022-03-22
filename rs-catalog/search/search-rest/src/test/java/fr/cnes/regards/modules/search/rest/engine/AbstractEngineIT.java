@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.IIndexerService;
+import fr.cnes.regards.modules.indexer.service.MappingService;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -63,20 +64,6 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Parameter
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.map.HashedMap;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -88,6 +75,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Engine common methods
@@ -114,6 +109,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected static final String SUN = "Sun";
 
     // Star system properties
+
+    protected static final String DATASET_ENGINE = "DATASET_ENGINE";
+
     protected static final String STAR_SYSTEM = "starSystem";
 
     protected static final String NUMBER_OF_PLANETS = "numberOfPlanets";
@@ -206,6 +204,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     protected IDatasetClient datasetClientMock;
+
+    @Autowired
+    protected MappingService mappingService;
 
     // Keep reference to astronomical object
 
@@ -332,6 +333,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     }
 
     private void createData(Model galaxyModel, Model starModel, Model starSystemModel, Model planetModel) {
+        // Configure mapping before adding features
+        mappingService.configureMappings(getDefaultTenant(), modelService.getModelAttrAssocs(PLANET));
+        mappingService.configureMappings(getDefaultTenant(), modelService.getModelAttrAssocs(DATASET_ENGINE));
+
         indexerService.saveBulkEntities(getDefaultTenant(), createGalaxies(galaxyModel));
         indexerService.saveBulkEntities(getDefaultTenant(), createStars(starModel));
 

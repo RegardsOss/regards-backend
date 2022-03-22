@@ -61,37 +61,11 @@
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
 		</dependency>
-		<!-- 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
-		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.opensearch</groupId>
-			<artifactId>opensearch-service</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.storage-light</groupId>
-			<artifactId>storage-light-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>notification-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>geojson-starter</artifactId>
-		</dependency> -->
-		<!-- Test -->
-<!-- 		<dependency>
 			<groupId>fr.cnes.regards.modules.model</groupId>
-			<artifactId>model-dao</artifactId>
-			<scope>test</scope>
+			<artifactId>model-dto</artifactId>
 		</dependency>
-		-->
+		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-test</artifactId>
@@ -102,9 +76,5 @@
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.model</groupId>
-            <artifactId>model-dto</artifactId>
-        </dependency>
     </dependencies>
 </project>

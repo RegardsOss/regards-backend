@@ -82,6 +82,10 @@
 			<artifactId>notification-regards-starter</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.indexer</groupId>
+			<artifactId>indexer-service</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.locationtech.spatial4j</groupId>
 			<artifactId>spatial4j</artifactId>
 		</dependency>
@@ -112,11 +116,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>amqp-regards-starter</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.indexer</groupId>
-			<artifactId>indexer-service</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -180,13 +180,13 @@ public class EntityIndexerService implements IEntityIndexerService {
     private int sessionStepBulkSize;
 
     @Autowired
-    private IMappingService esMappingService;
-
-    @Autowired
     private Gson gson;
 
     @Autowired
     private ISessionStepRepository sessionStepRepository;
+
+    @Autowired
+    private IndexService indexService;
 
     private static List<String> toErrors(Errors errorsObject) {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
@@ -233,8 +233,8 @@ public class EntityIndexerService implements IEntityIndexerService {
             esRepos.delete(tenant, ipId.getEntityType().toString(), ipId.toString());
             sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId.toString()), dsiId);
         } else { // entity has been created or updated, it must be saved into ES
-            createIndexIfNeeded(tenant);
-            esMappingService.configureMappings(tenant, entity.getModel().getName());
+            indexService.createIndexIfNeeded(tenant);
+            indexService.configureMappings(tenant, entity.getModel().getName());
             ICriterion savedSubsettingClause = null;
             // Remove parameters of dataset datasource to avoid expose security values
             if (entity instanceof Dataset) {
@@ -716,29 +716,6 @@ public class EntityIndexerService implements IEntityIndexerService {
         }
     }
 
-    /**
-     * Create ES index with tenant name and geometry mapping if needed
-     *
-     * @return true if index has been created, false if it already existed
-     */
-    @Override
-    public boolean createIndexIfNeeded(String tenant) {
-        if (esRepos.indexExists(tenant)) {
-            return false;
-        }
-        esRepos.createIndex(tenant);
-        return true;
-    }
-
-    @Override
-    public boolean deleteIndex(String tenant) {
-        if (!esRepos.indexExists(tenant)) {
-            return false;
-        }
-        esRepos.deleteIndex(tenant);
-        return true;
-    }
-
     @Override
     @MultitenantTransactional
     public void updateDatasets(String tenant, Collection<Dataset> datasets, OffsetDateTime lastUpdateDate,
@@ -760,7 +737,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Override
     public void deleteIndexNRecreateEntities(String tenant) throws ModuleException {
         //1. Delete existing index
-        deleteIndex(tenant);
+        indexService.deleteIndex(tenant);
         // get all sessions to notify
         Pageable pageToRequest = PageRequest.of(0, sessionStepBulkSize, Sort.by(Sort.Order.asc("source")));
         Page<ISessionStepLight> pageSessionStep;
@@ -770,7 +747,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             pageToRequest = pageSessionStep.nextPageable();
         } while (pageSessionStep.hasNext());
         //2. Then re-create all entities
-        createIndexIfNeeded(tenant);
+        indexService.createIndexIfNeeded(tenant);
         OffsetDateTime updateDate = OffsetDateTime.now();
         updateAllDatasets(tenant, updateDate);
         updateAllCollections(tenant, updateDate);

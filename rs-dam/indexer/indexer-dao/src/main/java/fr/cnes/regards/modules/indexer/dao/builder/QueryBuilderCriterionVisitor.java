@@ -20,10 +20,12 @@ package fr.cnes.regards.modules.indexer.dao.builder;
 
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.indexer.dao.spatial.GeoQueries;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.CircleBuilder;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.CoordinatesBuilder;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.EnvelopeBuilder;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.PolygonBuilder;
 import fr.cnes.regards.modules.indexer.domain.criterion.*;
-import org.elasticsearch.common.geo.builders.CircleBuilder;
-import org.elasticsearch.common.geo.builders.EnvelopeBuilder;
+import org.elasticsearch.geometry.Geometry;
 import org.elasticsearch.index.query.*;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -231,7 +233,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
             CircleBuilder circleBuilder = new CircleBuilder();
             circleBuilder.center(center[0], center[1]);
             circleBuilder.radius(criterion.getRadius());
-            return QueryBuilders.geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, circleBuilder);
+            return QueryBuilders.geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, circleBuilder.buildGeometry());
         } catch (IOException ioe) { // Never occurs
             throw new RsRuntimeException(ioe);
         }
@@ -246,10 +248,24 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     public QueryBuilder visitPolygonCriterion(PolygonCriterion criterion) {
         try {
             return QueryBuilders
-                    .geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, GeoQueries.computeShapeBuilder(criterion));
+                    .geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, buildGeometryFromCoordinates(criterion.getCoordinates()));
         } catch (IOException ioe) { // Never occurs
             throw new RsRuntimeException(ioe);
         }
+    }
+
+    /**
+     * Build Geometry using the coordinates with a PolygonBuilder
+     * @param coordinates the coordinates of the Geometry
+     * @return the Geometry
+     */
+    private Geometry buildGeometryFromCoordinates(double[][][] coordinates) {
+        CoordinatesBuilder coordinatesBuilder = new CoordinatesBuilder();
+        for (int i = 0; i < coordinates[0].length; i++) {
+            coordinatesBuilder.coordinate(new Coordinate(coordinates[0][i][0], coordinates[0][i][1]));
+        }
+        PolygonBuilder builder = new PolygonBuilder(coordinatesBuilder);
+        return builder.buildGeometry();
     }
 
     @Override
@@ -335,7 +351,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
             EnvelopeBuilder envelopeBuilder = new EnvelopeBuilder(
                     new Coordinate(boundaryBoxCriterion.getMinX(), boundaryBoxCriterion.getMaxY()),
                     new Coordinate(boundaryBoxCriterion.getMaxX(), boundaryBoxCriterion.getMinY()));
-            return QueryBuilders.geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, envelopeBuilder);
+            return QueryBuilders.geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, envelopeBuilder.buildGeometry());
         } catch (IOException ioe) {
             throw new RsRuntimeException(ioe);
         }

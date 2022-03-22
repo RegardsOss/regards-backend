@@ -64,12 +64,12 @@
 			<artifactId>dam-gson</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.indexer</groupId>
-			<artifactId>indexer-service</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.opensearch</groupId>
 			<artifactId>opensearch-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.indexer</groupId>
+			<artifactId>indexer-service</artifactId>
 		</dependency>
 		
 		<!-- Framework dependencies -->
@@ -112,6 +112,10 @@
 			<artifactId>rome-modules</artifactId>
 			<version>1.10.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
@@ -123,9 +127,5 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
 	</dependencies>
 </project>

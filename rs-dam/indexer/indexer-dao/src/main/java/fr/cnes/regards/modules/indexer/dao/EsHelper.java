@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
+import com.google.common.base.Strings;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Strings;
 
 /**
  * Helper class used by indexer operations

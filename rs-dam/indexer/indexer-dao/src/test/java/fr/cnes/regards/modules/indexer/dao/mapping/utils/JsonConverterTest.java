@@ -1,14 +1,14 @@
 package fr.cnes.regards.modules.indexer.dao.mapping.utils;
 
-import java.io.IOException;
-
-import org.apache.commons.io.IOUtils;
-import org.elasticsearch.common.Strings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.junit.Test;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.io.IOUtils;
+import org.elasticsearch.common.Strings;
+import org.elasticsearch.xcontent.XContentBuilder;
+import org.junit.Test;
+
+import java.io.IOException;
+
 import static java.lang.ClassLoader.getSystemResourceAsStream;
 import static org.assertj.core.api.Assertions.assertThat;
 

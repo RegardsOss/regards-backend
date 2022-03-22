@@ -51,11 +51,12 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.metrics.max.ParsedMax;
-import org.elasticsearch.search.aggregations.metrics.min.ParsedMin;
-import org.elasticsearch.search.aggregations.metrics.sum.ParsedSum;
+import org.elasticsearch.search.aggregations.metrics.ParsedMax;
+import org.elasticsearch.search.aggregations.metrics.ParsedMin;
+import org.elasticsearch.search.aggregations.metrics.ParsedSum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 
@@ -73,6 +74,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
     @Requirement("REGARDS_DSL_DAM_COL_420")
     @Purpose("Requirement is for collection. Multi search field is used here on data objects but the code is the same")
     @Test
+    @Ignore("Bug on elastic 7.16 during computation of aggregation ranges for integer values (ES issue #83212)")
     public void test() throws Exception {
         String tenant = runtimeTenantResolver.getTenant();
 

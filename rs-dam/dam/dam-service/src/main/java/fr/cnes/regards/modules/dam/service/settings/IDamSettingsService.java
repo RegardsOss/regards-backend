@@ -16,4 +16,12 @@ public interface IDamSettingsService {
 
     void setStorageSubDirectory(String subDirectory) throws EntityException;
 
+    long getIndexNumberOfShards();
+
+    void setIndexNumberOfShards(Long numberOfShards) throws EntityException;
+
+    long getIndexNumberOfReplicas();
+
+    void setIndexNumberOfReplicas(Long numberOfReplicas) throws EntityException;
+
 }

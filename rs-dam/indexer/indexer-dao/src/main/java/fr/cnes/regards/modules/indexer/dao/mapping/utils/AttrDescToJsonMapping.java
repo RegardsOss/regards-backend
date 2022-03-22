@@ -48,7 +48,7 @@ public class AttrDescToJsonMapping {
     }
 
     public static JsonObject stringMapping() {
-        return object(kv("type", "text"), kv("fields", object("keyword", object(kv("type", "keyword")))));
+        return object(kv("type", "text"), kv("fielddata", true), kv("fields", object("keyword", object(kv("type", "keyword")))));
     }
 
     public JsonObject toJsonMapping(AttributeDescription attrDescOrNull) {

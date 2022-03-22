@@ -95,6 +95,26 @@ public class DamSettingsService extends AbstractSettingService implements IDamSe
     }
 
     @Override
+    public long getIndexNumberOfShards() {
+        return getValue(DamSettings.INDEX_NUMBER_OF_SHARDS);
+    }
+
+    @Override
+    public void setIndexNumberOfShards(Long numberOfShards) throws EntityException {
+        dynamicTenantSettingService.update(DamSettings.INDEX_NUMBER_OF_SHARDS, numberOfShards);
+    }
+
+    @Override
+    public long getIndexNumberOfReplicas() {
+        return getValue(DamSettings.INDEX_NUMBER_OF_REPLICAS);
+    }
+
+    @Override
+    public void setIndexNumberOfReplicas(Long numberOfReplicas) throws EntityException {
+        dynamicTenantSettingService.update(DamSettings.INDEX_NUMBER_OF_REPLICAS, numberOfReplicas);
+    }
+
+    @Override
     protected List<DynamicTenantSetting> getSettingList() {
         return DamSettings.SETTING_LIST;
     }

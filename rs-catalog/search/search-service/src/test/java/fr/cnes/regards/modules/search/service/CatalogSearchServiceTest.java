@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
+import org.elasticsearch.search.aggregations.metrics.ParsedStats;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

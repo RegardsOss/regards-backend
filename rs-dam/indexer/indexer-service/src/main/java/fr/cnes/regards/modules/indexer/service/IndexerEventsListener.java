@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
+import fr.cnes.regards.modules.indexer.dao.CreateIndexConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -69,7 +70,11 @@ public class IndexerEventsListener {
 
     private void checkIndex(String tenant) {
         if (!repository.indexExists(tenant)) {
-            if (repository.createIndex(tenant)) {
+            // Creating the index with the default configuration if needed.
+            // The user cannot use custom shard settings during the initial creation of the index as it happens before
+            // the management of microservices is available. A catalog reset is required to use custom settings.
+            boolean acknowledged = repository.createIndex(tenant, CreateIndexConfiguration.DEFAULT);
+            if (acknowledged) {
                 instanceNotificationClient.notify(String
                         .format("Elasticsearch index %s successfully created for tenant %s.", tenant, tenant),
                                                   "Index creation success", NotificationLevel.INFO,

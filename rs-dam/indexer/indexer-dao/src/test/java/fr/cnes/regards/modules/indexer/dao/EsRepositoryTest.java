@@ -34,12 +34,11 @@ import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.metrics.geobounds.ParsedGeoBounds;
-import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
+import org.elasticsearch.search.aggregations.metrics.ParsedGeoBounds;
+import org.elasticsearch.search.aggregations.metrics.ParsedStats;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -49,7 +48,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -556,33 +554,6 @@ public class EsRepositoryTest {
             repository.saveBulk("loading", items);
             System.out.println("Loading (" + items.size() + " items): " + (System.currentTimeMillis() - start) + " ms");
         }
-    }
-
-    /**
-     * Test of search all
-     */
-    @Test
-    public void testSearchAll() {
-        int count = 100_000;
-        loadItemsBulk(count);
-
-        Page<Item> itemsPage = repository.searchAllLimited("loading", Item.class, 100);
-        while (!itemsPage.isLast() && (itemsPage.getNumber() < 99)) {
-            itemsPage = repository.searchAllLimited("loading", Item.class, itemsPage.nextPageable());
-        }
-        final AtomicInteger i = new AtomicInteger(0);
-        long start = System.currentTimeMillis();
-        SearchKey<Item, Item> searchKey = new SearchKey<>("item", Item.class);
-        searchKey.setSearchIndex("loading");
-        repository.searchAll(searchKey, h -> i.getAndIncrement(), ICriterion.all());
-        System.out.println((System.currentTimeMillis() - start) + " ms");
-        Assert.assertEquals(count, i.get());
-
-        Assert.assertEquals(Long.valueOf(count), repository.count(searchKey, null));
-        Assert.assertTrue(repository.count(searchKey, ICriterion.between("price", 1000, 2000)) < Long.valueOf(count));
-
-        Assert.assertEquals(500902683.6326989, repository.sum(searchKey, ICriterion.all(), "price"), 1e7);
-        Assert.assertEquals(49871257., repository.sum(searchKey, ICriterion.all(), "height"), 1e6);
     }
 
     @Test

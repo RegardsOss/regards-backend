@@ -22,11 +22,12 @@ services:
       - regards_IT_network
 
   rs-elasticsearch:
-    image: 172.26.46.158/regards-elasticsearch:latest
+    image: 172.26.46.158/regards-elasticsearch:7
     environment:
       - cluster.name=regards
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms500m -Xmx500m"
+      - discovery.type=single-node
     ulimits:
       memlock:
         soft: -1

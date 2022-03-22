@@ -24,47 +24,15 @@ import com.google.common.collect.Table;
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
-import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.IGeometryVisitor;
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiPoint;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.geojson.geometry.Unlocated;
+import fr.cnes.regards.framework.geojson.geometry.*;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.spring.SpringContext;
-import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMultiMatchCriterion;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.CoordinatesBuilder;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.PolygonBuilder;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.function.Predicate;
 import org.apache.commons.lang3.ArrayUtils;
-import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
-import org.elasticsearch.common.geo.builders.PolygonBuilder;
-import org.elasticsearch.common.geo.builders.ShapeBuilder;
+import org.elasticsearch.common.geo.Orientation;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.GeodeticCalculator;
@@ -83,6 +51,9 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Geo spatial utilities class
@@ -680,7 +651,8 @@ public class GeoHelper {
             coordinatesBuilder.coordinate(new Coordinate(inExteriorRing[i][0], inExteriorRing[i][1]));
         }
         // ES will split polygon into several polygons if that's easier to read
-        Geometry geometry = new PolygonBuilder(coordinatesBuilder, ShapeBuilder.Orientation.COUNTER_CLOCKWISE).buildGeometry(geometryFactory, true);
+        Geometry geometry = new PolygonBuilder(coordinatesBuilder, Orientation.COUNTER_CLOCKWISE)
+                .buildS4JGeometry(geometryFactory, true);
 
         // Save polygons into the resulting outMultipolygons
         if (geometry.getGeometryType().equals("MultiPolygon")) {

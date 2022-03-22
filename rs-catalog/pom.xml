@@ -55,7 +55,7 @@
 	<modules>
 		<module>bootstrap-catalog</module>
 		<module>search</module>
-    <module>catalog-services</module>
-  </modules>
+    	<module>catalog-services</module>
+  	</modules>
 
 </project>

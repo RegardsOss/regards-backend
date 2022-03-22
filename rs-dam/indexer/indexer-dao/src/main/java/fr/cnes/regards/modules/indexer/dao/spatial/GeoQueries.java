@@ -22,14 +22,15 @@ import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.CoordinatesBuilder;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.PolygonBuilder;
+import fr.cnes.regards.modules.indexer.dao.spatial.builders.ShapeBuilder;
 import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import java.util.List;
-import org.elasticsearch.common.geo.builders.CoordinatesBuilder;
-import org.elasticsearch.common.geo.builders.PolygonBuilder;
-import org.elasticsearch.common.geo.builders.ShapeBuilder;
 import org.locationtech.jts.geom.Coordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Geo queries utility class
@@ -44,7 +45,7 @@ public final class GeoQueries {
     /**
      * ComputeShapeBuilder from polygon criterion depending on polygon nature
      */
-    public static ShapeBuilder<?, ?> computeShapeBuilder(PolygonCriterion criterion) {
+    public static ShapeBuilder<?, ?, ?> computeShapeBuilder(PolygonCriterion criterion) {
         // Only shell can be taken into account (external emprise)
         Polygon polygon = Polygon.fromArray(criterion.getCoordinates());
         MultiPolygon shell = GeoHelper.normalizePolygon(polygon);

@@ -34,7 +34,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -54,11 +53,21 @@ public interface IEsRepository {
     int MAX_RESULT_WINDOW = 10_000;
 
     /**
-     * Create specified index
+     * Create specified index using default configuration
      * @param index index
      * @return true if acknowledged by Elasticsearch, false otherwise.
+     * @deprecated Use {@link #createIndex(String, CreateIndexConfiguration)} instead
      */
+    @Deprecated
     boolean createIndex(String index);
+
+    /**
+     * Create specified index
+     * @param index index
+     * @param configuration the parameters to use
+     * @return true if acknowledged by Elasticsearch, false otherwise.
+     */
+    boolean createIndex(String index, CreateIndexConfiguration configuration);
 
     /**
      * @see #putMappings(String, Set)
@@ -66,6 +75,7 @@ public interface IEsRepository {
     default boolean putMappings(String index, AttributeDescription... mappings) {
         return putMappings(index, Sets.newHashSet(mappings));
     }
+
     /**
      * Add mappings for the given index
      * @param index
@@ -107,16 +117,6 @@ public interface IEsRepository {
      * @return true if created, false otherwise
      */
     boolean save(String index, IIndexable document);
-
-    Collection<String> upgradeAllIndices4SingleType();
-
-    /**
-     * Reindex given index to conform to current Elasticsearch version. Index is not deleted, a new one is created
-     * containing same data, its name is returned by the method.
-     * @param index index to be reindexed
-     * @return new index name (usually "&lt;index>_&lt;Elasticsearch major version>")
-     */
-    String reindex(String index) throws IOException;
 
     /**
      * Method only used for tests. Elasticsearch performs refreshes every second. So, il a search is called just after a save, the document will not be available. A manual refresh is necessary (on
@@ -245,34 +245,6 @@ public interface IEsRepository {
     }
 
     /**
-     * Searching first page of all elements from index giving page size.
-     * @param index index
-     * @param clazz class of document type
-     * @param pageSize page size
-     * @param <T> document type
-     * @return first result page containing max page size documents
-     * @deprecated {@link #searchAllLimited(String, Class, Pageable)}
-     */
-    @Deprecated
-    default <T extends IIndexable> Page<T> searchAllLimited(final String index, final Class<T> clazz, final int pageSize) {
-        return this.searchAllLimited(index, clazz, PageRequest.of(0, pageSize));
-    }
-
-    /**
-     * Searching specified page of all elements from index (for first call use {@link #searchAllLimited(String, Class, int)}
-     * method) <b>This method fails if asked for offset greater than 10000
-     * (Elasticsearch limitation)</b>
-     * @param index index
-     * @param clazz class of document type
-     * @param pageRequest page request (use {@link Page#nextPageable()} method for example)
-     * @param <T> class of document type
-     * @return specified result page
-     * @deprecated indices are all single type from ES6
-     */
-    @Deprecated
-    <T extends IIndexable> Page<T> searchAllLimited(String index, Class<T> clazz, Pageable pageRequest);
-
-    /**
      * Searching first page of elements from index giving page size with facets.
      * @param searchKey the search key specifying on which index and type the search must be applied and the class of return objects type
      * @param pageSize page size
@@ -290,7 +262,7 @@ public interface IEsRepository {
     }
 
     /**
-     * Searching specified page of elements from index (for first call use {@link #searchAllLimited(String, Class, int)} method) with facets. <b>This method fails if asked for offset greater than
+     * Searching specified page of elements from index with facets. <b>This method fails if asked for offset greater than
      * 10000 (Elasticsearch limitation)</b>
      * @param pageRequest page request (use {@link Page#nextPageable()} method for example)
      * @param crit search criterion
@@ -342,7 +314,7 @@ public interface IEsRepository {
     }
 
     /**
-     * Searching specified page of elements from index (for first call use {@link #searchAllLimited(String, Class, int)} method) without facets nor sort. <b>This method fails if asked for offset
+     * Searching specified page of elements from index without facets nor sort. <b>This method fails if asked for offset
      * greater than 10000 (Elasticsearch limitation)</b>
      * @param searchKey the search key specifying on which index and type the search must be applied and the class of return objects type
      * @param pageRequest page request (use {@link Page#nextPageable()} method for example)

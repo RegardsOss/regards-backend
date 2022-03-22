@@ -18,33 +18,6 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -63,8 +36,8 @@ import fr.cnes.regards.modules.crawler.service.conf.CrawlerPropertiesConfigurati
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
-import fr.cnes.regards.modules.dam.domain.datasources.plugins.IInternalDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
+import fr.cnes.regards.modules.dam.domain.datasources.plugins.IInternalDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.event.NotDatasetEntityEvent;
@@ -77,6 +50,19 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.*;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Crawler service for other entity than Dataset. <b>This service need @EnableSchedule at Configuration</b>
@@ -126,7 +112,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
     private CrawlerPropertiesConfiguration crawlerConf;
 
     @Autowired
-    private IMappingService esMappingService;
+    private IndexService indexService;
 
     /**
      * Build an URN for a {@link EntityType} of type DATA. The URN contains an UUID builds for a specific value, it used
@@ -171,13 +157,13 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             OffsetDateTime now = OffsetDateTime.now();
             Long datasourceId = pluginConf.getId();
             // If index doesn't exist, just create all data objects
-            boolean mergeNeeded = entityIndexerService.createIndexIfNeeded(tenant);
+            boolean mergeNeeded = indexService.createIndexIfNeeded(tenant);
             // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
             // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
             // but it should be reset with attribute updates
             //lets find the model attributes so that we can have mappings for this model and try to put them.
             String modelName = dsPlugin.getModelName();
-            esMappingService.configureMappings(tenant, modelName);
+            indexService.configureMappings(tenant, modelName);
             // If index already exist, check if index already contains data objects (if not, no need to merge)
             if (mergeNeeded) {
                 SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(),

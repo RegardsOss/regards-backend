@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.crawler.service;
+package fr.cnes.regards.modules.indexer.service;
 
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
@@ -10,7 +10,6 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRes
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
-import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +26,10 @@ import java.util.stream.Collectors;
 public class MappingService implements IMappingService {
 
     @Autowired
-    private IModelAttrAssocService modelAttrAssocService;
-
-    @Autowired
     private IEsRepository esRepos;
 
     @Override
-    public void configureMappings(String tenant, String modelName) {
-        List<ModelAttrAssoc> modelAttributes = modelAttrAssocService.getModelAttrAssocs(modelName);
+    public void configureMappings(String tenant, List<ModelAttrAssoc> modelAttributes) {
         if (!modelAttributes.isEmpty()) {
             Set<AttributeDescription> mappings = new HashSet<>();
             for (ModelAttrAssoc modelAttribute : modelAttributes) {

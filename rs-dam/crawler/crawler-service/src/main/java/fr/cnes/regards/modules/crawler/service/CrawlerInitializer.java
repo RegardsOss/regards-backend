@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
-import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Crawler initializer.
@@ -68,23 +66,4 @@ public class CrawlerInitializer {
         crawlerAndIngesterService.crawl();
         LOGGER.info("Standard crawler started.");
     }
-
-    /**
-     * Upgrade Elasticsearch indices.
-     * This method garanties upgrade is done only one time
-     */
-    private void upgradeElasticsearchIndices() {
-        try {
-            singlePool.submit(() -> {
-                if (!elasticSearchUpgradeDone.getAndSet(true)) {
-                    repository.upgradeAllIndices4SingleType();
-                }
-                return null;
-            }).get();
-        } catch (InterruptedException | ExecutionException e) {
-            LOGGER.error("Unable to upgrade Elasticsearch indices", e);
-            System.exit(0);
-        }
-    }
-
 }

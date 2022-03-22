@@ -18,23 +18,18 @@
  */
 package fr.cnes.regards.modules.indexer.dao.builder;
 
-import java.util.Iterator;
-import java.util.function.UnaryOperator;
-
+import fr.cnes.regards.modules.indexer.dao.EsHelper;
+import fr.cnes.regards.modules.indexer.domain.facet.IFacetTypeVisitor;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.range.RangeAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.max.MaxAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.min.MinAggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.percentiles.Percentile;
-import org.elasticsearch.search.aggregations.metrics.percentiles.Percentiles;
-import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.indexer.dao.EsHelper;
-import fr.cnes.regards.modules.indexer.domain.facet.IFacetTypeVisitor;
+import java.util.Iterator;
+import java.util.function.UnaryOperator;
 
 /**
  * FacetType visitor implementation to generate AggregationBuilder from a search criterion with facets
@@ -107,7 +102,7 @@ public class AggregationBuilderFacetTypeVisitor implements IFacetTypeVisitor<Agg
     }
 
     /**
-     * Double range almost equals date range except that as doubles are compared, all values are scaled with {@link EsHelper#PRECISION}.
+     * Double range almost equals date range except that as doubles are compared, all values are scaled with the precision used in {@link EsHelper}.
      */
     @SuppressWarnings("javadoc")
     @Override

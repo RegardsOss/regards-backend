@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.urn.UniformResourceName;
@@ -29,6 +25,10 @@ import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
+
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Entity domain indexer service interface. This is on top of indexerService to manage domain specific objects.
@@ -73,22 +73,6 @@ public interface IEntityIndexerService {
      */
     void updateEntityIntoEs(String tenant, UniformResourceName ipId, OffsetDateTime lastUpdateDate,
             OffsetDateTime updateDate, boolean forceAssociatedEntitiesUpdate, String dsiId) throws ModuleException;
-
-    /**
-     * Create index it doesn't exist
-     *
-     * @param tenant concerned tenant
-     * @return true if a creation has been done
-     */
-    boolean createIndexIfNeeded(String tenant);
-
-    /**
-     * CreDeleteate index if exist
-     *
-     * @param tenant concerned tenant
-     * @return true if a deletion has been done
-     */
-    boolean deleteIndex(String tenant);
 
     /**
      * Transactional method updating a set of datasets
