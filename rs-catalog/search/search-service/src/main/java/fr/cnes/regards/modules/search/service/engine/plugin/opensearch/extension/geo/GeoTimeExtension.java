@@ -18,28 +18,16 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.rometools.modules.georss.geometries.AbstractGeometry;
-import com.rometools.modules.georss.geometries.AbstractRing;
-import com.rometools.modules.georss.geometries.LinearRing;
-import com.rometools.modules.georss.geometries.Position;
-import com.rometools.modules.georss.geometries.PositionList;
+import com.rometools.modules.georss.geometries.*;
 import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.module.Module;
-
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.LineString;
+import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
@@ -57,24 +45,30 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.gml.impl.GmlTimeModuleImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Geo&Time parameter extension for Opensearch standard.
- * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch
- *      parameter extension</a>
- * @see <a href="http://www.opengeospatial.org/standards/opensearchgeo">Opensearch Geo&Time extension</a>
  *
  * @author Sébastien Binda
+ * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch
+ * parameter extension</a>
+ * @see <a href="http://www.opengeospatial.org/standards/opensearchgeo">Opensearch Geo&Time extension</a>
  */
 public class GeoTimeExtension extends AbstractExtension {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GeoTimeExtension.class);
 
     public static final String TIME_NS = "time";
 
     public static final String TIME_START_PARAMETER = "start";
 
     public static final String TIME_END_PARAMETER = "end";
+
+    public static final List<String> TIME_PARAMETERS = Lists.newArrayList(TIME_START_PARAMETER, TIME_END_PARAMETER);
 
     public static final String GEO_NS = "geo";
 
@@ -94,57 +88,50 @@ public class GeoTimeExtension extends AbstractExtension {
 
     public static final String S_S = "{%s:%s}";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeoTimeExtension.class);
+
     @Override
-    public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Feature feature, String token) {
+    public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Feature feature, String token) {
         feature.setGeometry(entity.getGeometry());
     }
 
     @Override
-    public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Entry entry, Gson gson, String token) {
+    public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson, String token) {
         // Add module generator
         entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
 
     }
 
     @Override
-    public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
+    public Optional<String> getDescriptorParameterValue(DescriptionParameter descParameter) {
         ParameterConfiguration conf = descParameter.getConfiguration();
-        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_START_PARAMETER.equals(conf.getName())) {
-            parameter.setValue(String.format(S_S, TIME_NS, TIME_START_PARAMETER));
+        Optional<String> value = Optional.empty();
+        if ((conf != null)) {
+            String name = conf.getName();
+            if (isGeoTimeConfiguration(conf)) {
+                value = Optional.of(String.format(S_S, TIME_NS, name));
+            }
         }
-        if ((conf != null) && TIME_NS.equals(conf.getNamespace()) && TIME_END_PARAMETER.equals(conf.getName())) {
-            parameter.setValue(String.format(S_S, TIME_NS, TIME_END_PARAMETER));
-        }
+        return value;
     }
 
     @Override
-    public List<OpenSearchParameter> addParametersToDescription() {
+    public List<OpenSearchParameter> getDescriptorBasicExtensionParameters() {
         List<OpenSearchParameter> geoParameters = Lists.newArrayList();
-        geoParameters
-                .add(builderParameter(GEO_PARAMETER, String.format(S_S, GEO_NS, GEO_PARAMETER),
-                                      "Defined in Well Known Text standard (WKT) with coordinates in decimal degrees (EPSG:4326)",
-                                      null));
-        geoParameters
-                .add(builderParameter(BOX_PARAMETER, String.format(S_S, GEO_NS, BOX_PARAMETER),
-                                      "Defined by 'west, south, east, north' coordinates of longitude, latitude, in decimal degrees (EPSG:4326)",
-                                      BOX_PATTERN));
+        geoParameters.add(builderParameter(GEO_PARAMETER, String.format(S_S, GEO_NS, GEO_PARAMETER),
+                                           "Defined in Well Known Text standard (WKT) with coordinates in decimal degrees (EPSG:4326)", null));
+        geoParameters.add(builderParameter(BOX_PARAMETER, String.format(S_S, GEO_NS, BOX_PARAMETER),
+                                           "Defined by 'west, south, east, north' coordinates of longitude, latitude, in decimal degrees (EPSG:4326)",
+                                           BOX_PATTERN));
         // To implement
         // geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
         // "Location string e.g. Paris, France", null));
-        geoParameters
-                .add(builderParameter(LON_PARAMETER, String.format(S_S, GEO_NS, LON_PARAMETER),
-                                      "Longitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lat",
-                                      null, "180", "-180"));
-        geoParameters
-                .add(builderParameter(LAT_PARAMETER, String.format(S_S, GEO_NS, LAT_PARAMETER),
-                                      "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon",
-                                      null, "90", "-90"));
-        geoParameters
-                .add(builderParameter(RADIUS_PARAMETER, String.format(S_S, GEO_NS, RADIUS_PARAMETER),
-                                      "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon",
-                                      null, null, "1"));
+        geoParameters.add(builderParameter(LON_PARAMETER, String.format(S_S, GEO_NS, LON_PARAMETER),
+                                           "Longitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lat", null, "180", "-180"));
+        geoParameters.add(builderParameter(LAT_PARAMETER, String.format(S_S, GEO_NS, LAT_PARAMETER),
+                                           "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon", null, "90", "-90"));
+        geoParameters.add(builderParameter(RADIUS_PARAMETER, String.format(S_S, GEO_NS, RADIUS_PARAMETER),
+                                           "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon", null, null, "1"));
         return geoParameters;
     }
 
@@ -195,23 +182,18 @@ public class GeoTimeExtension extends AbstractExtension {
 
     private ICriterion buildTimeCriterion(List<SearchParameter> timeParameters) {
         List<ICriterion> criterion = Lists.newArrayList();
-        Optional<SearchParameter> startParam = timeParameters.stream()
-                .filter(p -> p.getConfiguration().getName().equals(TIME_START_PARAMETER)).findFirst();
-        Optional<SearchParameter> endParam = timeParameters.stream()
-                .filter(p -> p.getConfiguration().getName().equals(TIME_END_PARAMETER)).findFirst();
+        Optional<SearchParameter> startParam = timeParameters.stream().filter(p -> p.getConfiguration().getName().equals(TIME_START_PARAMETER)).findFirst();
+        Optional<SearchParameter> endParam = timeParameters.stream().filter(p -> p.getConfiguration().getName().equals(TIME_END_PARAMETER)).findFirst();
         if (startParam.isPresent()) {
             try {
-                criterion
-                        .add(AttributeCriterionBuilder.build(startParam.get().getAttributeModel(), ParameterOperator.GE,
-                                                             startParam.get().getSearchValues()));
+                criterion.add(AttributeCriterionBuilder.build(startParam.get().getAttributeModel(), ParameterOperator.GE, startParam.get().getSearchValues()));
             } catch (UnsupportedCriterionOperator e) {
                 LOGGER.warn(e.getMessage(), e);
             }
         }
         if (endParam.isPresent()) {
             try {
-                criterion.add(AttributeCriterionBuilder.build(endParam.get().getAttributeModel(), ParameterOperator.LE,
-                                                              endParam.get().getSearchValues()));
+                criterion.add(AttributeCriterionBuilder.build(endParam.get().getAttributeModel(), ParameterOperator.LE, endParam.get().getSearchValues()));
             } catch (UnsupportedCriterionOperator e) {
                 LOGGER.warn(e.getMessage(), e);
             }
@@ -221,16 +203,11 @@ public class GeoTimeExtension extends AbstractExtension {
 
     private ICriterion buildGeoCriterion(List<SearchParameter> geoParameters) throws ExtensionException {
         List<ICriterion> criterion = Lists.newArrayList();
-        Optional<SearchParameter> geometryParameter = geoParameters.stream()
-                .filter(p -> p.getName().equals(GEO_PARAMETER)).findFirst();
-        Optional<SearchParameter> lonParameter = geoParameters.stream().filter(p -> p.getName().equals(LON_PARAMETER))
-                .findFirst();
-        Optional<SearchParameter> latParameter = geoParameters.stream().filter(p -> p.getName().equals(LAT_PARAMETER))
-                .findFirst();
-        Optional<SearchParameter> radiusParameter = geoParameters.stream()
-                .filter(p -> p.getName().equals(RADIUS_PARAMETER)).findFirst();
-        Optional<SearchParameter> boxParameter = geoParameters.stream().filter(p -> p.getName().equals(BOX_PARAMETER))
-                .findFirst();
+        Optional<SearchParameter> geometryParameter = geoParameters.stream().filter(p -> p.getName().equals(GEO_PARAMETER)).findFirst();
+        Optional<SearchParameter> lonParameter = geoParameters.stream().filter(p -> p.getName().equals(LON_PARAMETER)).findFirst();
+        Optional<SearchParameter> latParameter = geoParameters.stream().filter(p -> p.getName().equals(LAT_PARAMETER)).findFirst();
+        Optional<SearchParameter> radiusParameter = geoParameters.stream().filter(p -> p.getName().equals(RADIUS_PARAMETER)).findFirst();
+        Optional<SearchParameter> boxParameter = geoParameters.stream().filter(p -> p.getName().equals(BOX_PARAMETER)).findFirst();
 
         try {
             if (geometryParameter.isPresent()) {
@@ -242,8 +219,7 @@ public class GeoTimeExtension extends AbstractExtension {
             }
 
             if (lonParameter.isPresent() && latParameter.isPresent() && radiusParameter.isPresent()) {
-                criterion.add(AttributeCriterionBuilder.buildGeometryCircle(lonParameter.get().getSearchValues(),
-                                                                            latParameter.get().getSearchValues(),
+                criterion.add(AttributeCriterionBuilder.buildGeometryCircle(lonParameter.get().getSearchValues(), latParameter.get().getSearchValues(),
                                                                             radiusParameter.get().getSearchValues()));
             }
         } catch (InvalidGeometryException e) {
@@ -257,32 +233,27 @@ public class GeoTimeExtension extends AbstractExtension {
     protected boolean supportsSearchParameter(SearchParameter parameter) {
         boolean supports = parameter.getName().equals(GEO_PARAMETER) || parameter.getName().equals(BOX_PARAMETER);
         supports |= parameter.getName().equals(LON_PARAMETER) || parameter.getName().equals(LAT_PARAMETER);
-        supports |= parameter.getName().equals(RADIUS_PARAMETER) || ((parameter.getConfiguration() != null)
-                && TIME_NS.equals(parameter.getConfiguration().getNamespace()));
+        supports |= parameter.getName().equals(RADIUS_PARAMETER) || ((parameter.getConfiguration() != null) && TIME_NS.equals(
+                parameter.getConfiguration().getNamespace()));
         return supports;
     }
 
-    private Module getAtomEntityResponseBuilder(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Gson gson) {
+    private Module getAtomEntityResponseBuilder(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Gson gson) {
         // Add GML with time module to handle geo & time extension
         GmlTimeModuleImpl gmlMod = new GmlTimeModuleImpl();
         ParameterConfiguration timeStartParameterConf = paramConfigurations.stream()
-                .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_START_PARAMETER.equals(c.getName())).findFirst()
-                .orElse(null);
+                .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_START_PARAMETER.equals(c.getName())).findFirst().orElse(null);
         ParameterConfiguration timeEndParameterConf = paramConfigurations.stream()
-                .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_END_PARAMETER.equals(c.getName())).findFirst()
-                .orElse(null);
+                .filter(c -> TIME_NS.equals(c.getNamespace()) && TIME_END_PARAMETER.equals(c.getName())).findFirst().orElse(null);
         if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {
-            String startDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
-                    .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
-            String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath()
-                    .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
+            String startDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath().replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
+            String endDateJsonPath = timeStartParameterConf.getAttributeModelJsonPath().replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             IProperty<?> startDate = entity.getProperty(startDateJsonPath);
             IProperty<?> stopDate = entity.getProperty(endDateJsonPath);
             if ((startDate != null) && (startDate.getValue() instanceof OffsetDateTime) && (stopDate != null)
                     && (stopDate.getValue() instanceof OffsetDateTime)) {
-                gmlMod.setStartDate((OffsetDateTime) startDate.getValue());
-                gmlMod.setStopDate((OffsetDateTime) stopDate.getValue());
+                gmlMod.setStartDate(IProperty.toDateValue(startDate.getValue()));
+                gmlMod.setStopDate(IProperty.toDateValue(stopDate.getValue()));
             }
             gmlMod.setGsonBuilder(gson);
             gmlMod.setGeometry(buildGeometry(entity.getGeometry()));
@@ -351,8 +322,7 @@ public class GeoTimeExtension extends AbstractExtension {
         return param;
     }
 
-    private OpenSearchParameter builderParameter(String name, String value, String title, String pattern, String maxInc,
-            String minInc) {
+    private OpenSearchParameter builderParameter(String name, String value, String title, String pattern, String maxInc, String minInc) {
         OpenSearchParameter param = new OpenSearchParameter();
         param.setName(name);
         param.setValue(value);
@@ -361,5 +331,12 @@ public class GeoTimeExtension extends AbstractExtension {
         param.setMaxInclusive(maxInc);
         param.setMinInclusive(minInc);
         return param;
+    }
+
+    /**
+     * @return true when the configuration is related to this extension
+     */
+    private boolean isGeoTimeConfiguration(ParameterConfiguration conf) {
+        return TIME_NS.equals(conf.getNamespace()) && TIME_PARAMETERS.contains(conf.getName());
     }
 }

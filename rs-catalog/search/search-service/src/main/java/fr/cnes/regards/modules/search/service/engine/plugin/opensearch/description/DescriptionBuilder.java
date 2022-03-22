@@ -18,29 +18,7 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Lists;
-import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
-import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkRelation;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.Sets;
-
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
@@ -71,11 +49,25 @@ import fr.cnes.regards.modules.search.schema.UrlType;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameterOption;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
-import fr.cnes.regards.modules.search.service.SearchException;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Configuration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import org.apache.commons.compress.utils.Lists;
+import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
+import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Opensearch description.xml builder.
@@ -147,12 +139,8 @@ public class DescriptionBuilder {
                                        EngineConfiguration engineConf, Optional<EntityFeature> dataset, IEntityLinkBuilder linkBuilder)
             throws ModuleException {
 
-        // Retrieve informations about current projet
-        String currentTenant = tenantResolver.getTenant();
-
         // Get all attributes for the given search type.
-        List<DescriptionParameter> descParameters = getDescParameters(criterion, context, parameterConfs,
-                currentTenant);
+        List<DescriptionParameter> descParameters = getDescParameters(criterion, context, parameterConfs);
 
         // Build descriptor generic metadatas
         OpenSearchDescription desc = buildMetadata(engineConf, dataset);
@@ -274,7 +262,7 @@ public class DescriptionBuilder {
 
         for (IOpenSearchExtension ext : extensions) {
             if (ext.isActivated()) {
-                parameters.addAll(ext.addParametersToDescription());
+                parameters.addAll(ext.getDescriptorBasicExtensionParameters());
             }
         }
 
@@ -335,7 +323,8 @@ public class DescriptionBuilder {
 
         for (IOpenSearchExtension ext : extensions) {
             if (ext.isActivated()) {
-                ext.applyToDescriptionParameter(parameter, descParameter);
+                Optional<String> value = ext.getDescriptorParameterValue(descParameter);
+                value.ifPresent(parameter::setValue);
             }
         }
         return parameter;
@@ -350,11 +339,10 @@ public class DescriptionBuilder {
      * @param criterion      {@link ICriterion} search criterion
      * @param context        {@link SearchContext}
      * @param parameterConfs {@link ParameterConfiguration} configured parameters.
-     * @param pCurrentTenant {@link String} tenant or project.
      * @return {@link Map}<{@link AttributeModel}, {@link QueryableAttribute}>
      */
     private List<DescriptionParameter> getDescParameters(ICriterion criterion, SearchContext context,
-                                                         List<ParameterConfiguration> parameterConfs, String pCurrentTenant) throws ModuleException {
+                                                         List<ParameterConfiguration> parameterConfs) throws ModuleException {
 
         List<DescriptionParameter> parameters = Lists.newArrayList();
 

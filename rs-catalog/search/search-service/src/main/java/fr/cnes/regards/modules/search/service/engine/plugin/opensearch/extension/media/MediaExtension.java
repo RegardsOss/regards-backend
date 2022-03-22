@@ -18,31 +18,15 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.rometools.modules.mediarss.MediaEntryModuleImpl;
-import com.rometools.modules.mediarss.types.Category;
-import com.rometools.modules.mediarss.types.MediaContent;
-import com.rometools.modules.mediarss.types.MediaGroup;
-import com.rometools.modules.mediarss.types.Metadata;
-import com.rometools.modules.mediarss.types.UrlReference;
+import com.rometools.modules.mediarss.types.*;
 import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.atom.Link;
 import com.rometools.rome.feed.module.Module;
-
 import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.framework.geojson.GeoJsonLink;
 import fr.cnes.regards.framework.urn.DataType;
@@ -54,22 +38,27 @@ import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description.DescriptionParameter;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.SearchParameter;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeoJsonLinkBuilder;
+import org.apache.commons.compress.utils.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Media extension for Opensearch standard.
- * @see <a href="https://github.com/dewitt/opensearch/blob/master/opensearch-1-1-draft-6.md">Opensearch</a>
- * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch
- *      parameter extension</a>
  *
  * @author Sébastien Binda
+ * @see <a href="https://github.com/dewitt/opensearch/blob/master/opensearch-1-1-draft-6.md">Opensearch</a>
+ * @see <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Parameter/1.0/Draft_2">Opensearch
+ * parameter extension</a>
  */
 public class MediaExtension extends AbstractExtension {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MediaExtension.class);
 
     public static final String GEO_JSON_RAWDATA_KEY = "rawdata";
 
@@ -87,14 +76,17 @@ public class MediaExtension extends AbstractExtension {
 
     public static final String ATOM_MEDIA_CAT_REF = "http://www.opengis.net/spec/EOMPOM/1.0";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MediaExtension.class);
+
     @Override
-    public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Feature feature, String token) {
+    public void formatGeoJsonResponseFeature(EntityFeature entity,
+                                             List<ParameterConfiguration> paramConfigurations,
+                                             Feature feature,
+                                             String token) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         Object obj = feature.getProperties().get("links");
         if (obj instanceof List<?>) {
-            @SuppressWarnings("unchecked")
-            List<GeoJsonLink> links = (List<GeoJsonLink>) obj;
+            @SuppressWarnings("unchecked") List<GeoJsonLink> links = (List<GeoJsonLink>) obj;
             medias.get(DataType.RAWDATA).forEach(f -> {
                 feature.addProperty(GEO_JSON_RAWDATA_KEY, GeoJsonLinkBuilder.getDataFileHref(f, token));
                 links.add(getGeoJsonLink(f, token));
@@ -123,8 +115,11 @@ public class MediaExtension extends AbstractExtension {
     }
 
     @Override
-    public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Entry entry, Gson gson, String token) {
+    public void formatAtomResponseEntry(EntityFeature entity,
+                                        List<ParameterConfiguration> paramConfigurations,
+                                        Entry entry,
+                                        Gson gson,
+                                        String token) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         // Add module generator
         Module mediaMod = getAtomEntityResponseBuilder(medias, token);
@@ -136,23 +131,24 @@ public class MediaExtension extends AbstractExtension {
     }
 
     @Override
-    public void applyToDescriptionParameter(OpenSearchParameter parameter, DescriptionParameter descParameter) {
-        // This extension does not apply any modification to Url Parameters into opensearch descritor
+    public Optional<String> getDescriptorParameterValue(DescriptionParameter descParameter) {
+        // Media extension does not provide any search query param.
+        return Optional.empty();
     }
 
     @Override
-    public List<OpenSearchParameter> addParametersToDescription() {
-        return Lists.newArrayList();
+    public List<OpenSearchParameter> getDescriptorBasicExtensionParameters() {
+        return Collections.emptyList();
     }
 
     @Override
     public void applyToDescription(OpenSearchDescription openSearchDescription) {
-        // This extension does not apply any modification to global opensearch descritor information
+        // This extension does not apply any modification to global opensearch descriptor information
     }
 
     @Override
-    protected ICriterion buildCriteria(SearchParameter parameter) throws ExtensionException {
-        // Media extension does not handle search queries.
+    protected ICriterion buildCriteria(SearchParameter parameter) {
+        // Media extension does not provide any search query param
         return ICriterion.all();
     }
 
@@ -164,6 +160,7 @@ public class MediaExtension extends AbstractExtension {
 
     /**
      * Retrieve media files from the given {@link AbstractDataEntity}
+     *
      * @param entity {@link AbstractEntity}
      * @return medias by type (Quicklook or Thumbnail)
      */
@@ -175,6 +172,7 @@ public class MediaExtension extends AbstractExtension {
 
     /**
      * Generate ATOM {@link Link}s for the given medias.
+     *
      * @param medias
      * @return {@link Link}s
      */
@@ -206,6 +204,7 @@ public class MediaExtension extends AbstractExtension {
 
     /**
      * Build rome {@link Module} to generate media properties for entities into ATOM search response
+     *
      * @param medias
      * @return {@link Module}
      */
@@ -231,8 +230,9 @@ public class MediaExtension extends AbstractExtension {
 
     /**
      * Generate ATOM {@link MediaContent}s fro given {@link DataFile}s
+     *
      * @param files {@link DataFile}s
-     * @param cat {@link Category}
+     * @param cat   {@link Category}
      * @return {@link MediaContent}s
      */
     private List<MediaContent> generateMediaContents(Collection<DataFile> files, Category cat, String token) {
@@ -259,10 +259,12 @@ public class MediaExtension extends AbstractExtension {
         try {
             fileName = Paths.get(href.toURL().getFile()).getFileName().toString();
         } catch (MalformedURLException e) {
-            LOGGER.warn("Error getting filename for file {}", href.toString());
+            LOGGER.warn("Error getting filename for file {}", href);
         }
-        return new GeoJsonLink(LINK_ENCLOSURE_REL, file.getMimeType().toString(), fileName,
-                GeoJsonLinkBuilder.getDataFileHref(file, token));
+        return new GeoJsonLink(LINK_ENCLOSURE_REL,
+                               file.getMimeType().toString(),
+                               fileName,
+                               GeoJsonLinkBuilder.getDataFileHref(file, token));
     }
 
 }

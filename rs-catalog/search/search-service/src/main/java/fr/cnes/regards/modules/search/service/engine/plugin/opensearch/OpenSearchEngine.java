@@ -52,9 +52,9 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.IResponseBuilder;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.AtomResponseBuilder;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.IResponseFormatter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.AtomResponseFormatter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeojsonResponseFormatter;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.common.Strings;
@@ -248,7 +248,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      */
     private Object formatResponse(FacetPage<EntityFeature> page, SearchContext context, IEntityLinkBuilder linkBuilder)
             throws UnsupportedMediaTypesException {
-        IResponseBuilder<?> builder = getBuilder(context);
+        IResponseFormatter<?> builder = getBuilder(context);
         builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration, linkBuilder
                 .buildExtraLink(resourceService, context, IanaLinkRelations.SELF, EXTRA_DESCRIPTION).getHref(), context,
                             configuration, page, linkBuilder.buildPaginationLinks(resourceService, page, context));
@@ -338,17 +338,17 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     /**
      * Retrieve a response builder from existing ones matching the {@link MediaType} from the {@link SearchContext}
      * @param context {@link SearchContext}
-     * @return {@link IResponseBuilder}
+     * @return {@link IResponseFormatter}
      * @throws UnsupportedMediaTypesException when asked media type is not handled
      */
-    private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
-        IResponseBuilder<?> responseBuilder;
+    private IResponseFormatter<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
+        IResponseFormatter<?> responseBuilder;
 
         if (context.getHeaders().getAccept().stream().anyMatch(MediaType.APPLICATION_JSON::isCompatibleWith)) {
-            responseBuilder = new GeojsonResponseBuilder(authResolver.getToken());
+            responseBuilder = new GeojsonResponseFormatter(authResolver.getToken());
         } else if (context.getHeaders().getAccept().stream()
                 .anyMatch(MediaType.APPLICATION_ATOM_XML::isCompatibleWith)) {
-            responseBuilder = new AtomResponseBuilder(gson, authResolver.getToken());
+            responseBuilder = new AtomResponseFormatter(gson, authResolver.getToken());
         } else {
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
         }

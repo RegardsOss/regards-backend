@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.ExtensionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Abstract class for Opensearch parameters extensions.
@@ -86,9 +85,8 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
     }
 
     /**
-     * Build a {@link ICriterion} for the given {@link attributeModel} and the given values.
-     * @param attributeModel {@link attributeModel}
-     * @param values {@link String}s
+     * Build a {@link ICriterion} for the given {@link SearchParameter} parameter.
+     * @param parameter {@link SearchParameter}
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
