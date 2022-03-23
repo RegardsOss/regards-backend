@@ -384,7 +384,9 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         } else {
             String tenant = runtimeTenantResolver.getTenant();
             final U finalEntity = entity;
-            entity.getFiles().values().forEach(dataFile -> dataFile.setUri(getDownloadUrl(finalEntity.getIpId(), dataFile.getChecksum(), tenant, true)));
+            entity.getFiles().values().stream()
+                    .filter(dataFile -> !dataFile.isReference())
+                    .forEach(dataFile -> dataFile.setUri(getDownloadUrl(finalEntity.getIpId(), dataFile.getChecksum(), tenant, true)));
         }
 
         entity = repository.save(entity);
