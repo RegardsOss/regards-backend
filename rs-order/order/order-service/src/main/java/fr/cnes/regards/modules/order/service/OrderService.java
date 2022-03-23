@@ -39,6 +39,8 @@ import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -203,6 +205,9 @@ public class OrderService implements IOrderService {
         order.setFrontendUrl(url);
         order = self.create(order);
 
+        // Set log correlation id
+        MDC.put("correlationId", "ORDER_ID=" + order.getId().toString());
+
         // Set basket owner to order (PM54)
         String newBasketOwner = IOrderService.BASKET_OWNER_PREFIX + order.getId();
         Basket newBasket = basketService.transferOwnerShip(basket.getOwner(), newBasketOwner);
@@ -228,12 +233,17 @@ public class OrderService implements IOrderService {
         checkAction(id, Action.PAUSE);
         Order order = orderRepository.findCompleteById(id);
 
+        // Set log correlation id
+        MDC.put("correlationId", "ORDER_ID=" + order.getId().toString());
+
         // Ask for all jobInfos abortion
         order.getDatasetTasks().stream()
                 .flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo)
                 .forEach(jobInfo -> {
                     if (jobInfo != null) {
+                        // Set log correlation id
+                        MDC.put("correlationId", "ORDER_ID=" + order.getId().toString());
                         jobInfoService.stopJob(jobInfo.getId());
                     }
                 });
@@ -247,12 +257,17 @@ public class OrderService implements IOrderService {
         checkAction(id, Action.RESUME);
         Order order = orderRepository.findCompleteById(id);
 
+        // Set log correlation id
+        MDC.put("correlationId", "ORDER_ID=" + order.getId().toString());
+
         // Passes all ABORTED jobInfo to PENDING
         order.getDatasetTasks().stream()
                 .flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo)
                 .filter(jobInfo -> jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
                 .forEach(jobInfo -> {
+                    // Set log correlation id
+                    MDC.put("correlationId", "ORDER_ID=" + order.getId().toString());
                     jobInfo.updateStatus(JobStatus.PENDING);
                     jobInfoService.save(jobInfo);
                 });
@@ -267,6 +282,9 @@ public class OrderService implements IOrderService {
 
         checkAction(id, Action.DELETE);
         Order order = orderRepository.findCompleteById(id);
+
+        // Set log correlation id
+        MDC.put("correlationId", "ORDER_ID=" + order.getId().toString());
 
         // Delete all order data files
         dataFileService.removeAll(order.getId());
@@ -308,6 +326,9 @@ public class OrderService implements IOrderService {
         String orderOwner = order.getOwner();
         String orderOwnerRole = orderHelperService.getRole(orderOwner);
 
+        // Set log correlation id
+        MDC.put("correlationId", "ORDER_ID=" + order.getId().toString());
+
         orderRetryService.asyncCompleteRetry(order.getId(), orderOwnerRole, orderSettingsService.getUserOrderParameters().getSubOrderDuration(), runtimeTenantResolver.getTenant());
     }
 
@@ -315,6 +336,10 @@ public class OrderService implements IOrderService {
     public void remove(Long id) throws ModuleException {
         checkAction(id, Action.REMOVE);
         Order order = orderRepository.findCompleteById(id);
+
+        // Set log correlation id
+        MDC.put("correlationId", "ORDER_ID=" + order.getId().toString());
+
         // Data files have already been deleted so there's only the basket and the order to remove
         basketService.deleteIfExists(BASKET_OWNER_PREFIX + order.getId());
         orderRepository.deleteById(order.getId());

@@ -21,7 +21,7 @@
 <included>
 
     <property name="FILE_LOG_PATTERN"
-              value="%date [${APP_NAME}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} - %msg%n"/>
+              value="%date [${APP_NAME}] [%-16thread] %-5level %logger{36} [%mdc{tenant}] %mdc{req.remoteHost} %mdc{req.xForwardedFor} %mdc{username} [%mdc{correlationId}] - %msg%n"/>
 
     <appender name="FILE"
               class="ch.qos.logback.core.rolling.RollingFileAppender">

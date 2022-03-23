@@ -17,27 +17,29 @@
 */
 package fr.cnes.regards.modules.processing.storage;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
+
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.utils.Unit;
 import io.vavr.collection.Seq;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.FileSystemUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
-
 import static fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException.mustWrap;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.WORKDIR_CREATION_ERROR;
+import static fr.cnes.regards.modules.processing.utils.LogUtils.setOrderIdInMdc;
 
 /**
  * This class is the implementation for {@link IExecutionLocalWorkdirService}.
@@ -60,8 +62,11 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
 
     public Mono<ExecutionLocalWorkdir> makeWorkdir(PExecution exec) {
         return Mono.fromCallable(() -> {
+            String correlationId = exec.getBatchCorrelationId();
+            setOrderIdInMdc(correlationId);
+
             ExecutionLocalWorkdir executionLocalWorkdir = new ExecutionLocalWorkdir(
-                    basePath.resolve(exec.getId().toString()));
+            basePath.resolve(exec.getId().toString()));
             Files.createDirectories(executionLocalWorkdir.inputFolder());
             Files.createDirectories(executionLocalWorkdir.outputFolder());
             return executionLocalWorkdir;

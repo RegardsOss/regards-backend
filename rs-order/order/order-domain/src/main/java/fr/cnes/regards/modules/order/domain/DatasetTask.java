@@ -41,7 +41,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.process.ProcessBatchDescription;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 
 /**
  * Dataset specific order task. This task is linked to optional processing task and to all sub-orders (files tasks) of
@@ -84,9 +84,9 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     @Column(name = "files_size")
     private long filesSize = 0;
 
-    @Column(name = "process_batch_desc")
+    @Column(name = "process_dataset_desc")
     @Type(type = "jsonb")
-    private ProcessBatchDescription processBatchDesc;
+    private ProcessDatasetDescription processDatasetDescription;
 
     public DatasetTask() {
     }
@@ -109,6 +109,7 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
         dsTask.setFilesCount(orderdDataTypes.stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
         dsTask.setFilesSize(orderdDataTypes.stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
         dsTask.setObjectsCount(dsSel.getObjectsCount());
+        dsTask.setProcessDatasetDescription(dsSel.getProcessDatasetDescription());
 
         dsSel.getItemsSelections().forEach(item -> {
             dsTask.addSelectionRequest(item.getSelectionRequest());
@@ -157,14 +158,6 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
         this.filesSize = filesSize;
     }
 
-    public ProcessBatchDescription getProcessBatchDesc() {
-        return processBatchDesc;
-    }
-
-    public void setProcessBatchDesc(ProcessBatchDescription processBatchDesc) {
-        this.processBatchDesc = processBatchDesc;
-    }
-
     public List<BasketSelectionRequest> getSelectionRequests() {
         return selectionRequests;
     }
@@ -179,6 +172,14 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     }
 
     public boolean hasProcessing() {
-        return this.processBatchDesc != null;
+        return this.processDatasetDescription != null;
+    }
+
+    public ProcessDatasetDescription getProcessDatasetDescription() {
+        return processDatasetDescription;
+    }
+
+    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+        this.processDatasetDescription = processDatasetDescription;
     }
 }

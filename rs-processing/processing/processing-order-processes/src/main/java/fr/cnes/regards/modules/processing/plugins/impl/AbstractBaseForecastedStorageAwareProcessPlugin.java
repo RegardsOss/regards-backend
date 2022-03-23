@@ -17,6 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.plugins.impl;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -29,30 +42,22 @@ import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import fr.cnes.regards.modules.processing.order.OrderInputFileMetadata;
 import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
-import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import io.vavr.collection.Seq;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import lombok.Value;
 import lombok.With;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import reactor.core.publisher.Mono;
+
+import static fr.cnes.regards.modules.processing.utils.LogUtils.setOrderIdInMdc;
+import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
 
 /**
  * This class is a base abstract class for process plugins which interact with the
@@ -98,7 +103,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                 .flatMap(wd -> workdirService.writeInputFilesToWorkdirInput(wd, inputFiles))
                 .flatMap(wd -> {
                     if (addMetadata) {
-                        return addMetadataInWorkdir(wd, inputFiles, context.getBatch().getTenant());
+                        return addMetadataInWorkdir(wd, inputFiles, context);
                     } else {
                         return Mono.just(wd);
                     }
@@ -163,11 +168,14 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
     private Mono<ExecutionLocalWorkdir> addMetadataInWorkdir(
         ExecutionLocalWorkdir wd,
         Seq<PInputFile> inputFiles,
-        String tenant
+        ExecutionContext context
     ) {
         return Mono.fromCallable(() -> {
+            String correlationId = context.getExec().getBatchCorrelationId();
+            setOrderIdInMdc(correlationId);
+
             LOGGER.info("Add metadata in workdir for : {}", inputFiles);
-            runtimeTenantResolver.forceTenant(tenant);
+            runtimeTenantResolver.forceTenant(context.getBatch().getTenant());
             FeignSecurityManager.asSystem();
             getDistinctFeatureIds(inputFiles)
                 .forEach(urn -> downloadMetadataForInputURN(wd, urn));

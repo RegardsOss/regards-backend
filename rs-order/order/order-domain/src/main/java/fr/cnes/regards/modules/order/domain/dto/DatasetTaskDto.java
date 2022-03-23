@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.domain.dto;
 import org.springframework.beans.BeanUtils;
 
 import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 
 /**
  * DatasetTask Dto to avoid loading FilesTask and all associated files
@@ -37,6 +38,8 @@ public class DatasetTaskDto {
     private long filesCount = 0;
 
     private long filesSize = 0;
+
+    private ProcessDatasetDescription processDatasetDescription;
 
     // To be defined : a ProcessingTask should certainly be better
     // Or directly specifying JobInfo managing processing task
@@ -88,6 +91,14 @@ public class DatasetTaskDto {
 
     public void setProcessingService(String processingService) {
         this.processingService = processingService;
+    }
+
+    public ProcessDatasetDescription getProcessDatasetDescription() {
+        return processDatasetDescription;
+    }
+
+    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+        this.processDatasetDescription = processDatasetDescription;
     }
 
     /**

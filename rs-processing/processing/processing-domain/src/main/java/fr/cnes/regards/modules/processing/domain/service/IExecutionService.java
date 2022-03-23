@@ -17,12 +17,14 @@
 */
 package fr.cnes.regards.modules.processing.domain.service;
 
+import java.util.UUID;
+
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
+import static fr.cnes.regards.modules.processing.utils.LogUtils.setOrderIdInMdc;
 
 /**
  * This interface defines a service contract for {@link PExecution} entities.
@@ -39,8 +41,12 @@ public interface IExecutionService {
 
     default Mono<PExecution> runExecutable(UUID execId) {
         return createContext(execId)
-                .flatMap(ctx -> ctx.getProcess().getExecutable().execute(ctx))
-                .map(ExecutionContext::getExec);
+                .flatMap(ctx -> {
+                    String correlationId = ctx.getExec().getBatchCorrelationId();
+                    setOrderIdInMdc(correlationId);
+
+                    return ctx.getProcess().getExecutable().execute(ctx);
+                }).map(ExecutionContext::getExec);
     }
 
 }

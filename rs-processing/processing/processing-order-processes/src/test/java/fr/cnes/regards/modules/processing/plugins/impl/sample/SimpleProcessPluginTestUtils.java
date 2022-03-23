@@ -70,7 +70,7 @@ public class SimpleProcessPluginTestUtils {
 
     public static PExecution makeExec(UUID execId, UUID batchId, UUID processBusinessId) throws Exception {
         return new PExecution(
-                execId, "exec cid", batchId, "batch cid",
+                execId, "exec cid", batchId, "order-1_dsSel-2_subOrder-4",
                 Duration.ofSeconds(10),
                 List.of(new PInputFile("one", "one.raw", "text/plain",
                                        resourceFileBasePath.resolve("one.raw").toUri().toURL(), 3L,
