@@ -125,7 +125,7 @@ public class FeignClientConfiguration {
         // return custom feign builder and allow 404 responses to be processed without errors
         Resilience4jFeign.Builder builder =  Resilience4jFeign.builder(feignDecorators);
         builder.decode404();
-        builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, 5000, TimeUnit.MILLISECONDS, false));
+        builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, 60000, TimeUnit.MILLISECONDS, false));
         return builder;
     }
 }

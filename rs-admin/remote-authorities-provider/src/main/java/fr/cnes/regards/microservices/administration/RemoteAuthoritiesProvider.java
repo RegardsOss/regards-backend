@@ -179,12 +179,11 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
         // lets get the role from distant admin
         FeignSecurityManager.asSystem();
         ResponseEntity<List<EntityModel<ResourcesAccess>>> resourcesResponse = roleResourceClient
-                .getRoleResources(roleName);
+                .getRoleResourcesForMicroservice(roleName, microserviceName);
         if (resourcesResponse.getStatusCode().equals(HttpStatus.OK)) {
             final List<EntityModel<ResourcesAccess>> body = resourcesResponse.getBody();
             final List<ResourcesAccess> resources = HateoasUtils.unwrapList(body);
-            return resources.stream().filter(resource -> resource.getMicroservice().equals(microserviceName))
-                    //                    .peek((resource) -> LOGGER.info("Building resource mapping of {}", resource.toString()))
+            return resources.stream()
                     .map(resource -> buildResourceMapping(resource, Collections.singleton(new Role(roleName))))
                     .collect(Collectors.toSet());
         }

@@ -44,14 +44,18 @@ public interface IRoleResourceClient {
 
     @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ResourcesAccess>>> getRoleResources(
-            @PathVariable("role_name") final String pRoleName);
+            @PathVariable("role_name") final String roleName);
+
+    @GetMapping(value = ROOT_TYPE_MAPPING + "/{microservice}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<List<EntityModel<ResourcesAccess>>> getRoleResourcesForMicroservice(
+            @PathVariable("role_name") final String roleName, @PathVariable("microservice") final String microserviceName);
 
     @PostMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EntityModel<ResourcesAccess>> addRoleResource(@PathVariable("role_name") final String pRoleName,
-            @RequestBody @Valid final ResourcesAccess pNewResourcesAccess);
+    ResponseEntity<EntityModel<ResourcesAccess>> addRoleResource(@PathVariable("role_name") final String roleName,
+            @RequestBody @Valid final ResourcesAccess newResourcesAccess);
 
     @DeleteMapping(value = ROOT_TYPE_MAPPING + "/{resources_access_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> deleteRoleResource(@PathVariable("role_name") final String pRoleName,
-            @PathVariable("resources_access_id") final Long pResourcesAccessId);
+    ResponseEntity<Void> deleteRoleResource(@PathVariable("role_name") final String roleName,
+            @PathVariable("resources_access_id") final Long resourcesAccessId);
 
 }
