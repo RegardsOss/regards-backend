@@ -54,7 +54,7 @@
 
 		<maven-deploy.skip>true</maven-deploy.skip>
 
-		<regards.version>1.8.0</regards.version>
+		<regards.version>1.8.1</regards.version>
 		<revision>${regards.version}</revision>
 
 		<!-- COTS -->
