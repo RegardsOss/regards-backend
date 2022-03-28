@@ -18,13 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service.licence;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -35,15 +29,22 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.LicenseAction;
+import fr.cnes.regards.modules.accessrights.domain.projects.events.LicenseEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 /**
  * Service handling link between project's license and project user
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Service
 @MultitenantTransactional
@@ -69,23 +70,20 @@ public class LicenseService implements ILicenseService {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IPublisher publisher;
+
     /**
      * Retrieve the license state for the given project and the current user
+     *
      * @return the license state
      * @throws EntityNotFoundException
      */
     @Override
     public LicenseDTO retrieveLicenseState() throws EntityNotFoundException {
-        Project project = retrieveProject(runtimeTenantResolver.getTenant());
-        if (authResolver.getRole().equals(DefaultRole.INSTANCE_ADMIN.toString())) {
-            return new LicenseDTO(true, project.getLicenceLink());
-        } else {
-            ProjectUser pu = projectUserService.retrieveCurrentUser();
-            if (project.getLicenceLink() != null && !project.getLicenceLink().isEmpty()) {
-                return new LicenseDTO(pu.isLicenseAccepted(), project.getLicenceLink());
-            }
-            return new LicenseDTO(true, project.getLicenceLink());
-        }
+        String licenceLink = retrieveProject(runtimeTenantResolver.getTenant()).getLicenceLink();
+        boolean isLicenseAccepted = isInstanceAdmin() || noLicense(licenceLink) || isLicenseAcceptedByUser();
+        return new LicenseDTO(isLicenseAccepted, licenceLink);
     }
 
     private Project retrieveProject(String pProjectName) throws EntityNotFoundException {
@@ -99,17 +97,32 @@ public class LicenseService implements ILicenseService {
         return response.getBody().getContent();
     }
 
+    private boolean isInstanceAdmin() {
+        return authResolver.getRole().equals(DefaultRole.INSTANCE_ADMIN.toString());
+    }
+
+    private boolean noLicense(String licenceLink) {
+        return licenceLink == null || licenceLink.isEmpty();
+    }
+
+    private boolean isLicenseAcceptedByUser() throws EntityNotFoundException {
+        return projectUserService.retrieveCurrentUser().isLicenseAccepted();
+    }
+
     /**
      * Accept the license of the given project for the current user
+     *
      * @return accepted license state
-     * @throws EntityException
+     * @throws EntityException if
      */
     @Override
     public LicenseDTO acceptLicense() throws EntityException {
-        ProjectUser pu = projectUserService.retrieveCurrentUser();
-        pu.setLicenseAccepted(true);
-        projectUserService.updateUser(pu.getId(), pu);
-        return retrieveLicenseState();
+        ProjectUser projectUser = projectUserService.retrieveCurrentUser();
+        projectUser.setLicenseAccepted(true);
+        projectUserService.updateUser(projectUser.getId(), projectUser);
+        LicenseDTO license = retrieveLicenseState();
+        publisher.publish(new LicenseEvent(LicenseAction.ACCEPT, projectUser.getEmail(), license.getLicenceLink()));
+        return license;
     }
 
     /**
@@ -118,5 +131,6 @@ public class LicenseService implements ILicenseService {
     @Override
     public void resetLicence() {
         projectUserService.resetLicence();
+        publisher.publish(new LicenseEvent(LicenseAction.RESET, "", ""));
     }
 }

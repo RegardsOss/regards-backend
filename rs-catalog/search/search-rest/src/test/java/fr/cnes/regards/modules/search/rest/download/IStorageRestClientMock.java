@@ -3,6 +3,8 @@ package fr.cnes.regards.modules.search.rest.download;
 import feign.Request;
 import feign.Request.Body;
 import feign.Response;
+import fr.cnes.regards.framework.security.autoconfigure.CustomCacheControlHeadersWriter;
+import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
@@ -16,14 +18,91 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 
 import javax.validation.Valid;
-import java.nio.charset.Charset;
+import java.io.IOException;
 import java.util.*;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Primary
 @Service
 public class IStorageRestClientMock implements IStorageRestClient, IStorageFileListener {
+
+    private final IStorageRestClient storageClient;
+
+    public IStorageRestClientMock() {
+        storageClient = mock(IStorageRestClient.class);
+    }
+
+    public void setup(StorageDownloadStatus downloadStatus) {
+        mockFileDownload(downloadStatus);
+    }
+
+    private void mockFileDownload(StorageDownloadStatus downloadStatus) {
+        FakeFileFactory fileFactory = new FakeFileFactory();
+
+        if (downloadStatus == StorageDownloadStatus.HTTP_ERROR) {
+            when(storageClient.downloadFile(eq(fileFactory.validFile()), any())) //
+                .thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "http error"));
+        } else if (downloadStatus == StorageDownloadStatus.FAILURE) {
+            when(storageClient.downloadFile(eq(fileFactory.validFile()), any())) //
+                .thenReturn(storageResponse(HttpStatus.NOT_FOUND, "errors."));
+        } else {
+            when(storageClient.downloadFile(eq(fileFactory.validFile()), any())). //
+                thenReturn(storageResponse(HttpStatus.OK, "content"));
+
+            // Can't inline because response is mocked (can't mock during mock creation)
+            Response invalidResponse = invalidStorageResponse();
+            when(storageClient.downloadFile(eq(fileFactory.invalidFile()), any())) //
+                .thenReturn(invalidResponse);
+        }
+    }
+
+    private Response storageResponse(HttpStatus status, String fileContent) {
+        return Response.builder()
+            .status(status.value())
+            .headers(headers())
+            .body(fileContent.getBytes())
+            .request(request())
+            .build();
+    }
+
+    private Response invalidStorageResponse() {
+        return Response.builder()
+            .status(HttpStatus.OK.value())
+            .headers(headers())
+            .body(body())
+            .request(request())
+            .build();
+    }
+
+    private Map<String, Collection<String>> headers() {
+        HashMap<String, Collection<String>> headers = new HashMap<>();
+        headers.put(CustomCacheControlHeadersWriter.CACHE_CONTROL, Collections.singletonList("cache"));
+        headers.put(CustomCacheControlHeadersWriter.EXPIRES, Collections.singletonList("expires"));
+        headers.put(CustomCacheControlHeadersWriter.PRAGMA, Collections.singletonList("pragma"));
+        headers.put("key1", Arrays.asList("value1", "value2"));
+        return headers;
+    }
+
+    private Response.Body body() {
+        try {
+            Response.Body body = mock(Response.Body.class);
+            when(body.asInputStream()).thenThrow(new IOException("file pb"));
+            return body;
+        } catch (IOException e) {
+            throw new RuntimeException("Error while mocking storage mock", e);
+        }
+    }
+
+    private Request request() {
+        return Request.create(Request.HttpMethod.GET, "url", headers(), Body.empty());
+    }
 
     @Override
     public void onFileStored(List<FileReferenceEventDTO> stored) {
@@ -57,14 +136,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
 
     @Override
     public Response downloadFile(String checksum, Boolean isContentInline) {
-        Map<String, Collection<String>> map = new HashMap<>();
-        Request request = Request.create(Request.HttpMethod.GET, "test", map, Body.empty());
-        if (!"checksumOk".equals(checksum)) {
-            return Response.builder().status(HttpStatus.NOT_FOUND.value()).reason("not found").request(request)
-                    .headers(map).build();
-        }
-        return Response.builder().status(HttpStatus.OK.value()).body("result file content", Charset.defaultCharset())
-                .request(request).headers(map).build();
+        return storageClient.downloadFile(checksum, isContentInline);
     }
 
     /* (non-Javadoc)
@@ -96,7 +168,8 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail, @Valid DownloadQuotaLimitsDto quotaLimits) {
+    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail,
+                                                                    @Valid DownloadQuotaLimitsDto quotaLimits) {
         return null;
     }
 

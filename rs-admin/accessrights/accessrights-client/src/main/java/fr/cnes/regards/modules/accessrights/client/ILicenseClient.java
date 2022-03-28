@@ -18,22 +18,23 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-
 /**
  * API client for license reset
  *
  * @author Marc Sordi
- *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.license-client")
-@RequestMapping(value = ILicenseClient.PATH_LICENSE, produces = MediaType.APPLICATION_JSON_VALUE,
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = ILicenseClient.PATH_LICENSE,
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface ILicenseClient {
 
     /**
@@ -45,6 +46,12 @@ public interface ILicenseClient {
      * Controller path to reset the license
      */
     String PATH_RESET = "/reset";
+
+    @RequestMapping(method = RequestMethod.GET)
+    ResponseEntity<EntityModel<LicenseDTO>> retrieveLicense();
+
+    @RequestMapping(method = RequestMethod.PUT)
+    ResponseEntity<EntityModel<LicenseDTO>> acceptLicense();
 
     @RequestMapping(method = RequestMethod.PUT, path = PATH_RESET)
     ResponseEntity<Void> resetLicense();

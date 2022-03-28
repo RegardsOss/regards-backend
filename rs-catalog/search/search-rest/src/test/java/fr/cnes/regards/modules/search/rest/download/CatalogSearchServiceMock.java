@@ -18,37 +18,59 @@
  */
 package fr.cnes.regards.modules.search.rest.download;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Service;
-
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
+import fr.cnes.regards.modules.search.rest.FakeProductFactory;
 import fr.cnes.regards.modules.search.service.CatalogSearchService;
+import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.IFacetConverter;
 import fr.cnes.regards.modules.search.service.IPageableConverter;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Mock simulate access rights on catalog
  *
  * @author Sébastien Binda
- *
  */
 @Service
 @Primary
 public class CatalogSearchServiceMock extends CatalogSearchService {
 
-    public CatalogSearchServiceMock(ISearchService searchService, IOpenSearchService openSearchService,
-            IAccessRightFilter accessRightFilter, IFacetConverter facetConverter,
-            IPageableConverter pageableConverter) {
+    private final ICatalogSearchService accessVerification;
+
+    public CatalogSearchServiceMock(ISearchService searchService,
+                                    IOpenSearchService openSearchService,
+                                    IAccessRightFilter accessRightFilter,
+                                    IFacetConverter facetConverter,
+                                    IPageableConverter pageableConverter) {
         super(searchService, openSearchService, accessRightFilter, facetConverter, pageableConverter);
+        accessVerification = mockAccessVerification();
+
+    }
+
+    private ICatalogSearchService mockAccessVerification() {
+        try {
+            FakeProductFactory products = new FakeProductFactory();
+            ICatalogSearchService searchService = mock(ICatalogSearchService.class);
+            when(searchService.hasAccess(products.unknownProduct())).thenThrow(new EntityNotFoundException("not found"));
+            when(searchService.hasAccess(products.unauthorizedProduct())).thenReturn(false);
+            when(searchService.hasAccess(products.validProduct())).thenReturn(true);
+            return searchService;
+        } catch (EntityNotFoundException e) {
+            throw new RuntimeException("problems while mocking product access verification", e);
+        }
     }
 
     @Override
-    public boolean hasAccess(UniformResourceName urn) {
-        UniformResourceName urnExpected = UniformResourceName.fromString(CatalogDownloadControllerIT.AIP_ID_OK);
-        return urnExpected.equals(urn);
+    public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException {
+        return accessVerification.hasAccess(urn);
     }
 
 }
