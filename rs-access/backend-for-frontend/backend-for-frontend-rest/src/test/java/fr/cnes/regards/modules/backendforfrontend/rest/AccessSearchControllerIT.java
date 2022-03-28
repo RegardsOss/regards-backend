@@ -18,15 +18,20 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.access.services.service.aggregator.IServicesAggregatorService;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.Arrays;
 
 /**
  * Integration Test for {@link AccessSearchController}
@@ -35,13 +40,23 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=bff" })
-public class AccessSearchControllerIT extends AbstractRegardsIT {
+public class AccessSearchControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(AccessSearchControllerIT.class);
 
+    @MockBean
+    IServicesAggregatorService serviceMock;
+
+    @Before
+    public void init() {
+        Mockito.when(serviceMock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_0.getIpId().toString()),
+                                           null)).thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
+        Mockito.when(serviceMock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_1.getIpId().toString()),
+                                           null)).thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
+    }
     @Test
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")

@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.access.services.rest.aggregator;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
+import fr.cnes.regards.modules.access.services.rest.assembler.PluginServiceDtoResourcesAssembler;
+import fr.cnes.regards.modules.access.services.service.aggregator.IServicesAggregatorService;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,20 +33,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
-import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
-import fr.cnes.regards.modules.access.services.rest.assembler.PluginServiceDtoResourcesAssembler;
-import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
-import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
-import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import java.util.List;
 
 /**
  * This controller returns aggregations of UI services and Catalog services.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
@@ -56,12 +49,7 @@ public class ServicesAggregatorController {
     /**
      * The client providing catalog services
      */
-    private final ICatalogServicesClient catalogServicesClient;
-
-    /**
-     * The service provinding ui services
-     */
-    private final IUIPluginConfigurationService uiPluginConfigurationService;
+    private final IServicesAggregatorService aggregatorService;
 
     /**
      * The resource assembler for {@link PluginServiceDto}s
@@ -69,52 +57,30 @@ public class ServicesAggregatorController {
     private final PluginServiceDtoResourcesAssembler assembler;
 
     /**
-     * @param catalogServicesClient
-     * @param uiPluginConfigurationService
+     * @param aggregatorService
      * @param assembler
      */
-    public ServicesAggregatorController(ICatalogServicesClient catalogServicesClient,
-            IUIPluginConfigurationService uiPluginConfigurationService, PluginServiceDtoResourcesAssembler assembler) {
+    public ServicesAggregatorController(IServicesAggregatorService aggregatorService,
+                                        PluginServiceDtoResourcesAssembler assembler) {
         super();
-        this.catalogServicesClient = catalogServicesClient;
-        this.uiPluginConfigurationService = uiPluginConfigurationService;
+        this.aggregatorService = aggregatorService;
         this.assembler = assembler;
     }
 
     /**
      * Returns all services applied to all datasets plus those of the given dataset
-     * @param datasetIpIds the ip ids of the {@link Dataset}s
+     *
+     * @param datasetIpIds     the ip ids of the {@link Dataset}s
      * @param applicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Returns services applied to all datasets plus those of the given dataset",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpIds,
-            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationModes) {
-        // Retrieve catalog services
-        ResponseEntity<List<EntityModel<PluginConfigurationDto>>> catalogServices = catalogServicesClient
-                .retrieveServices(datasetIpIds, applicationModes);
-        // Retrive ui services
-        List<UIPluginConfiguration> uiServices = uiPluginConfigurationService
-                .retrieveActivePluginServices(datasetIpIds, applicationModes);
-
-        try (Stream<PluginConfigurationDto> streamCatalogServices = HateoasUtils
-                .unwrapCollection(catalogServices.getBody()).stream();
-                Stream<UIPluginConfiguration> streamUiServices = uiServices.stream()) {
-            // Map catalog service to dto
-            Stream<PluginServiceDto> streamCatalogServicesDto = streamCatalogServices
-                    .map(PluginServiceDto::fromPluginConfigurationDto);
-            // Map ui service to dto
-            Stream<PluginServiceDto> streamUiServicesDto = streamUiServices
-                    .map(PluginServiceDto::fromUIPluginConfiguration);
-            // Merge streams
-            List<PluginServiceDto> results = Stream.concat(streamCatalogServicesDto, streamUiServicesDto)
-                    .collect(Collectors.toList());
-
-            return new ResponseEntity<>(assembler.toResources(results), HttpStatus.OK);
-        }
+        @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpIds,
+        @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationModes) {
+        List<PluginServiceDto> results = aggregatorService.retrieveServices(datasetIpIds, applicationModes);
+        return new ResponseEntity<>(assembler.toResources(results), HttpStatus.OK);
     }
-
 }
