@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.modules.access.services.service.aggregator.cache.ServiceAggregatorCacheAutoConfiguration

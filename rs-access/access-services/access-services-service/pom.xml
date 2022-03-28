@@ -65,10 +65,6 @@
             <groupId>fr.cnes.regards.modules.accessrights</groupId>
             <artifactId>accessrights-client</artifactId>
         </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules</groupId>
-            <artifactId>catalog-services-client</artifactId>
-        </dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards</artifactId>

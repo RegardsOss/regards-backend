@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
-import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
-import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import java.util.Arrays;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -35,12 +38,17 @@ import org.springframework.context.annotation.Configuration;
 public class BackendForFrontendTestConfiguration {
 
     @Bean
-    IRolesClient rolesClientMock() {
-        return Mockito.mock(IRolesClient.class);
+    @Primary
+    public IServiceAggregatorClient serviceAggregatorClient() {
+        IServiceAggregatorClient mock = Mockito.mock(IServiceAggregatorClient.class);
+        Mockito.when(mock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_0.getIpId().toString()),
+                                           null))
+                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
+        Mockito.when(mock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_1.getIpId().toString()),
+                                           null))
+                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
+        return mock;
     }
-
-    @Bean
-    ICatalogServicesClient catalogClient() { return Mockito.mock(ICatalogServicesClient.class); }
 
     @Bean
     public ILegacySearchEngineJsonClient searchClient() {
@@ -48,12 +56,12 @@ public class BackendForFrontendTestConfiguration {
         Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
         Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
         Mockito.when(mock.searchCollections(Mockito.any()))
-            .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
         Mockito.when(mock.searchDatasets(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
         Mockito.when(mock.searchDataObjects(Mockito.any()))
-            .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
         Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any()))
-            .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
+                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
         return mock;
     }
 

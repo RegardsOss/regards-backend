@@ -137,12 +137,12 @@ public class BackendForFrontendTestUtils {
     /**
      * The services applicable to DATASET_0
      */
-    public static final List<PluginServiceDto> SERVICES_FOR_DATASET_0;
+    public static final ResponseEntity<List<EntityModel<PluginServiceDto>>> SERVICES_FOR_DATASET_0;
 
     /**
      * The services applicable to DATASET_1
      */
-    public static final List<PluginServiceDto> SERVICES_FOR_DATASET_1;
+    public static final ResponseEntity<List<EntityModel<PluginServiceDto>>> SERVICES_FOR_DATASET_1;
 
     private static Gson gson = (new GsonBuilder()).setExclusionStrategies(new PagedModelExclusionStrategy()).create();
 
@@ -270,12 +270,16 @@ public class BackendForFrontendTestUtils {
     }
 
     static {
-        SERVICES_FOR_DATASET_0 = Lists.newArrayList(BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_A,
+        List<PluginServiceDto> asList = Lists.newArrayList(BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_A,
                                                            BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_C);
+        List<EntityModel<PluginServiceDto>> asResources = HateoasUtils.wrapList(asList);
+        SERVICES_FOR_DATASET_0 = new ResponseEntity<>(asResources, HttpStatus.OK);
     }
 
     static {
-        SERVICES_FOR_DATASET_1 = Lists.newArrayList(BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_B);
+        List<PluginServiceDto> asList = Lists.newArrayList(BackendForFrontendTestUtils.PLUGIN_SERVICE_DTO_B);
+        List<EntityModel<PluginServiceDto>> asResources = HateoasUtils.wrapList(asList);
+        SERVICES_FOR_DATASET_1 = new ResponseEntity<>(asResources, HttpStatus.OK);
     }
 
 }

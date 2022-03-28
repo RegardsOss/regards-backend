@@ -26,9 +26,15 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
-import fr.cnes.regards.modules.access.services.service.aggregator.IServicesAggregatorService;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,21 +49,38 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
- *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
 @RequestMapping(path = AccessSearchController.ROOT_PATH)
 public class AccessSearchController {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessSearchController.class);
+
+    /**
+     * Function converting a {@link JsonArray} into a {@link Stream}
+     */
+    private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
+            .stream(pJsonArray.spliterator(), false);
+
+    @Autowired
+    private IServiceAggregatorClient serviceAggregatorClient;
+
+    @Autowired
+    private ILegacySearchEngineJsonClient searchClient;
+
+    @Autowired
+    private Gson gson;
+
+    /**
+     * The main path
+     */
+    static final String ROOT_PATH = "";
 
     public static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets/search";
 
@@ -70,32 +93,6 @@ public class AccessSearchController {
     public static final String SEARCH = "/search";
 
     /**
-     * The main path
-     */
-    static final String ROOT_PATH = "";
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessSearchController.class);
-
-    /**
-     * Function converting a {@link JsonArray} into a {@link Stream}
-     */
-    private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport.stream(
-        pJsonArray.spliterator(),
-        false);
-
-    @Autowired
-    private IServicesAggregatorService aggregatorService;
-
-    @Autowired
-    private ILegacySearchEngineJsonClient searchClient;
-
-    @Autowired
-    private Gson gson;
-
-    /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
      * collection, dataset, dataobject and document.
      * <p>
@@ -105,12 +102,13 @@ public class AccessSearchController {
      */
     @RequestMapping(path = SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-        description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return "
-            + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
-            + "UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
+            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return "
+                    + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
+                    + "UI Services and Catalog Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchAll(
-        @RequestParam(required = false) final MultiValueMap<String, String> allParams)
-        throws HttpClientErrorException, HttpServerErrorException {
+            @RequestParam(required = false) final MultiValueMap<String, String> allParams)
+            throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -129,10 +127,11 @@ public class AccessSearchController {
      */
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-        description = "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog "
-            + "Services.", role = DefaultRole.PUBLIC)
+            description = "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog "
+                    + "Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final MultiValueMap<String, String> allParams)
-        throws HttpClientErrorException, HttpServerErrorException {
+            throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -150,10 +149,11 @@ public class AccessSearchController {
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-        description = "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog "
-            + "Services.", role = DefaultRole.PUBLIC)
+            description = "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog "
+                    + "Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam final MultiValueMap<String, String> allParams)
-        throws HttpClientErrorException, HttpServerErrorException {
+            throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -171,9 +171,9 @@ public class AccessSearchController {
      */
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobjects. Only return required facets. Injects "
-        + "applicable UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
+            + "applicable UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam MultiValueMap<String, String> allParams)
-        throws HttpClientErrorException, HttpServerErrorException {
+            throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -196,12 +196,12 @@ public class AccessSearchController {
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-        description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
-            + " but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
-        role = DefaultRole.PUBLIC)
+            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
+                    + " but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(
-        @RequestParam final MultiValueMap<String, String> allParams)
-        throws HttpClientErrorException, HttpServerErrorException {
+            @RequestParam final MultiValueMap<String, String> allParams)
+            throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -228,7 +228,6 @@ public class AccessSearchController {
 
     /**
      * Returns the applicable services of the given entity
-     *
      * @param pEntity The entity, represented as a {@link JsonObject}
      * @return The list of applicable services, represented as a {@link JsonObject}
      */
@@ -242,10 +241,10 @@ public class AccessSearchController {
             .filter(urn -> EntityType.DATASET.equals(urn.getEntityType())) // Only keep URNs of datasets
             .map(UniformResourceName::toString) // Go back to strings
             .distinct() // Remove doubles
-            .map(datasetIpId -> aggregatorService.retrieveServices(Arrays.asList(datasetIpId), null))
+            .map(datasetIpId -> serviceAggregatorClient.retrieveServices(Arrays.asList(datasetIpId), null))
+            .map(ResponseEntity::getBody)
             .flatMap(List::stream) // Now each element of the stream is a List of services, so we flatten the structure in a stream of services
             .distinct() // Remove doubles
-            .map(p -> EntityModel.of(p))
             .collect(Collectors.toList());
         // @formatter:on
 
