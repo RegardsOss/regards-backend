@@ -65,28 +65,28 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-spatial</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>org.geolatte</artifactId>
-                    <groupId>geolatte-geom</groupId>
-                </exclusion>
-            </exclusions>
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>org.geolatte</artifactId>-->
+<!--                    <groupId>geolatte-geom</groupId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
-        <dependency>
-            <groupId>org.geolatte</groupId>
-            <artifactId>geolatte-geom</artifactId>
-            <version>1.8.0</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>xml-apis</artifactId>
-                    <groupId>xml-apis</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.geolatte</groupId>-->
+<!--            <artifactId>geolatte-geom</artifactId>-->
+<!--            <version>1.8.0</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>xml-apis</artifactId>-->
+<!--                    <groupId>xml-apis</groupId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.geolatte</groupId>
             <artifactId>geolatte-geojson</artifactId>
-            <version>1.8.0</version>
+            <version>1.8.2</version>
         </dependency>
     </dependencies>
 </project>

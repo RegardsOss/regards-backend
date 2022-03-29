@@ -2211,7 +2211,7 @@
 			<name>Nexus Maven Repository for regards artifacts</name>
 			<url>https://172.26.46.158:8443/repository/maven-snapshot-regards/</url>
 			<releases>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
@@ -2225,7 +2225,7 @@
 				<enabled>true</enabled>
 			</releases>
 			<snapshots>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
