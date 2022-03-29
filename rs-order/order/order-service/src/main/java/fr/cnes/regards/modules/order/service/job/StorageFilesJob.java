@@ -182,35 +182,6 @@ public class StorageFilesJob extends AbstractJob<Void> {
         }
     }
 
-    /**
-     * Handle Events from storage about all files availability asking
-     * Each time an event come back from storage, a token is released through semaphore
-     */
-    public void handleFileEvent(String checksum, boolean available) {
-        if (!dataFilesMultimap.containsKey(checksum)) {
-            return;
-        }
-        if (alreadyHandledFiles.contains(checksum)) {
-            return;
-        }
-        Collection<OrderDataFile> dataFiles = dataFilesMultimap.get(checksum);
-        if (available) {
-            for (OrderDataFile df : dataFiles) {
-                logger.debug("File {} - {} is now available.", df.getFilename(), df.getChecksum());
-                df.setState(FileState.AVAILABLE);
-            }
-            alreadyHandledFiles.add(checksum);
-        } else {
-            for (OrderDataFile dataFile : dataFiles) {
-                logger.debug("File {} - {} is now in error.", dataFile.getFilename(), dataFile.getChecksum());
-                dataFile.setState(FileState.ERROR);
-            }
-            alreadyHandledFiles.add(checksum);
-        }
-        this.advanceCompletion();
-        this.semaphore.release();
-    }
-
     public void changeFilesState(Set<String> checksumsAvailable, FileState fileState) {
         Set<String> availableFilesOrderedByThisJob = new HashSet<>(checksumsAvailable);
         availableFilesOrderedByThisJob.retainAll(dataFilesMultimap.keySet());

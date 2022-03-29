@@ -40,7 +40,6 @@ import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -296,6 +295,8 @@ public class OrderService implements IOrderService {
         order.setWaitingForUser(false);
         order.setStatus(OrderStatus.DELETED);
         orderRepository.save(order);
+        // Don't forget to manage user order jobs again (PENDING -> QUEUED)
+        orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
     }
 
     @Override
