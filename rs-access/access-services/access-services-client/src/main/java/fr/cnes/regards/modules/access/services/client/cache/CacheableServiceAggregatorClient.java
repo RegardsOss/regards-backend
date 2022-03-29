@@ -16,27 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.access.services.client;
+package fr.cnes.regards.modules.access.services.client.cache;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
- * Feign client for calling ServicesAggregatorController methods
+ * Wrapper to IServiceAggregatorClient (Fiegn client) to add a cache.
  *
- * @author Xavier-Alexandre Brochard
- * @author Sébastien Binda
+ * @author Binda Sébastien
  */
-@RestClient(name = "rs-access-project", contextId = "rs-access-project.service-agg-client")
-public interface IServiceAggregatorClient {
+@Component
+public class CacheableServiceAggregatorClient {
+
+    private IServiceAggregatorClient serviceAggregatorClient;
+
+    public CacheableServiceAggregatorClient(IServiceAggregatorClient serviceAggregatorClient) {
+        this.serviceAggregatorClient = serviceAggregatorClient;
+    }
 
     /**
      * Returns all services applied to all datasets plus those of the given dataset
@@ -45,8 +49,11 @@ public interface IServiceAggregatorClient {
      * @param applicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
-    @GetMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpId,
-            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationModes);
+    @Cacheable(value = ServiceAggregatorKeyGenerator.CACHE_NAME,
+        keyGenerator = ServiceAggregatorKeyGenerator.KEY_GENERATOR, sync = true)
+    public ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(List<String> datasetIpId,
+                                                                         List<ServiceScope> applicationModes) {
+        return serviceAggregatorClient.retrieveServices(datasetIpId, applicationModes);
+    }
+
 }

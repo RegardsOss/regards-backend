@@ -26,18 +26,9 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
+import fr.cnes.regards.modules.access.services.client.cache.CacheableServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +40,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
  * @author Xavier-Alexandre Brochard
@@ -58,24 +56,24 @@ import org.springframework.web.client.HttpServerErrorException;
 public class AccessSearchController {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessSearchController.class);
-
-    /**
      * Function converting a {@link JsonArray} into a {@link Stream}
      */
     private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
             .stream(pJsonArray.spliterator(), false);
 
-    @Autowired
-    private IServiceAggregatorClient serviceAggregatorClient;
+    private CacheableServiceAggregatorClient serviceAggregatorClient;
 
-    @Autowired
     private ILegacySearchEngineJsonClient searchClient;
 
-    @Autowired
     private Gson gson;
+
+    public AccessSearchController(CacheableServiceAggregatorClient serviceAggregatorClient,
+                                  ILegacySearchEngineJsonClient searchClient,
+                                  Gson gson) {
+        this.serviceAggregatorClient = serviceAggregatorClient;
+        this.searchClient = searchClient;
+        this.gson = gson;
+    }
 
     /**
      * The main path

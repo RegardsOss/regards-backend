@@ -18,24 +18,9 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
@@ -50,8 +35,21 @@ import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.client.CacheableRolesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class PluginConfigurationService
@@ -88,7 +86,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
     /**
      * Client to control roles
      */
-    private final IRolesClient rolesClient;
+    private final CacheableRolesClient rolesClient;
 
     /**
      * Authentication resolver
@@ -103,7 +101,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      */
     public UIPluginConfigurationService(IUIPluginDefinitionRepository pluginRepository,
             ILinkUIPluginsDatasetsRepository linkedUiPluginRespository, IUIPluginConfigurationRepository repository,
-            IPublisher publisher, IRolesClient rolesClient, IAuthenticationResolver authResolver) {
+            IPublisher publisher, CacheableRolesClient rolesClient, IAuthenticationResolver authResolver) {
         super();
         this.pluginRepository = pluginRepository;
         this.linkedUiPluginRespository = linkedUiPluginRespository;

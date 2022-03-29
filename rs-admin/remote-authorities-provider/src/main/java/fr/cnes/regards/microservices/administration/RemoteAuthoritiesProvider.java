@@ -18,13 +18,22 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.SecurityException;
+import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.modules.accessrights.client.CacheableRolesClient;
+import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
+import fr.cnes.regards.modules.accessrights.client.IRoleResourceClient;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -35,32 +44,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.domain.SecurityException;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
-import fr.cnes.regards.modules.accessrights.client.IRoleResourceClient;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- *
  * Class MicroserviceAuthoritiesProvider
- *
+ * <p>
  * IAuthoritiesProvider implementation for all microservices exception administration.
  *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
-
  */
 public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChecker implements IAuthoritiesProvider {
 
@@ -79,6 +72,8 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
     /**
      * Administration microservice REST client
      */
+    private final CacheableRolesClient cacheRoleClient;
+
     private final IRolesClient roleClient;
 
     /**
@@ -87,30 +82,26 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     *
      * Constructor
-     *
-     * @param pRolesClient
-     *            Feign client to query administration service for roles
-     * @param pResourcesclient
-     *            Feign client to query administration service for resources
-     * @param runtimeTenantResolver
-     *            runtime tenant resolver
-
      */
     public RemoteAuthoritiesProvider(final DiscoveryClient discoveryClient,
-            final IMicroserviceResourceClient pResourcesclient, final IRolesClient pRolesClient,
-            final IRuntimeTenantResolver runtimeTenantResolver, final IRoleResourceClient pRoleResourceClient) {
+                                     final IMicroserviceResourceClient resourcesclient,
+                                     final CacheableRolesClient cacheableRolesClient,
+                                     final IRolesClient rolesClient,
+                                     final IRuntimeTenantResolver runtimeTenantResolver,
+                                     final IRoleResourceClient roleResourceClient) {
         super(discoveryClient);
-        resourcesClient = pResourcesclient;
-        roleClient = pRolesClient;
-        roleResourceClient = pRoleResourceClient;
+        resourcesClient = resourcesclient;
+        roleClient = rolesClient;
+        cacheRoleClient = cacheableRolesClient;
+        this.roleResourceClient = roleResourceClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public void registerEndpoints(final String microserviceName, final String tenant,
-            final List<ResourceMapping> localEndpoints) throws SecurityException {
+    public void registerEndpoints(final String microserviceName,
+                                  final String tenant,
+                                  final List<ResourceMapping> localEndpoints) throws SecurityException {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -122,14 +113,15 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
             final ResponseEntity<Void> response = resourcesClient.registerMicroserviceEndpoints(microserviceName,
                                                                                                 localEndpoints);
             if (!response.getStatusCode().equals(HttpStatus.OK)) {
-                throw new SecurityException(
-                        String.format("Error registering endpoints to administration service for tenant %s", tenant));
+                throw new SecurityException(String.format(
+                    "Error registering endpoints to administration service for tenant %s",
+                    tenant));
             }
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            throw new SecurityException(
-                    String.format("Error registering endpoints to administration service for tenant %s. Cause : ",
-                                  tenant, e.getMessage()),
-                    e);
+            throw new SecurityException(String.format(
+                "Error registering endpoints to administration service for tenant %s. Cause : ",
+                tenant,
+                e.getMessage()), e);
         }
 
     }
@@ -138,7 +130,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
     public boolean shouldAccessToResourceRequiring(String roleName) {
         ResponseEntity<Boolean> response;
         try {
-            response = roleClient.shouldAccessToResourceRequiring(roleName);
+            response = cacheRoleClient.shouldAccessToResourceRequiring(roleName);
             if ((response != null) && response.hasBody()) {
                 return response.getBody();
             }
@@ -178,27 +170,25 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
         runtimeTenantResolver.forceTenant(tenant);
         // lets get the role from distant admin
         FeignSecurityManager.asSystem();
-        ResponseEntity<List<EntityModel<ResourcesAccess>>> resourcesResponse = roleResourceClient
-                .getRoleResourcesForMicroservice(roleName, microserviceName);
+        ResponseEntity<List<EntityModel<ResourcesAccess>>> resourcesResponse = roleResourceClient.getRoleResourcesForMicroservice(
+            roleName,
+            microserviceName);
         if (resourcesResponse.getStatusCode().equals(HttpStatus.OK)) {
             final List<EntityModel<ResourcesAccess>> body = resourcesResponse.getBody();
             final List<ResourcesAccess> resources = HateoasUtils.unwrapList(body);
             return resources.stream()
-                    .map(resource -> buildResourceMapping(resource, Collections.singleton(new Role(roleName))))
-                    .collect(Collectors.toSet());
+                .map(resource -> buildResourceMapping(resource, Collections.singleton(new Role(roleName))))
+                .collect(Collectors.toSet());
         }
         LOGGER.warn("Role {} seems to have been deleted. We are skipping the resource update", roleName);
         return Sets.newHashSet();
     }
 
     /**
-     *
      * Create a {@link RoleAuthority} from a {@link Role}
      *
-     * @param pRole
-     *            role to convert to RoleAuthority
+     * @param pRole role to convert to RoleAuthority
      * @return {@link RoleAuthority}
-
      */
     private RoleAuthority createRoleAuthority(final Role pRole) {
         final RoleAuthority roleAuth = new RoleAuthority(pRole.getName());
@@ -207,11 +197,14 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
     }
 
     private ResourceMapping buildResourceMapping(final ResourcesAccess pRa, final Collection<Role> pRoles) {
-        final ResourceMapping mapping = new ResourceMapping(
-                ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
-                pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
-        mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
-                .collect(Collectors.toList()));
+        final ResourceMapping mapping = new ResourceMapping(ResourceAccessAdapter.createResourceAccess(pRa.getDescription(),
+                                                                                                       null),
+                                                            pRa.getResource(),
+                                                            pRa.getControllerSimpleName(),
+                                                            RequestMethod.valueOf(pRa.getVerb().toString()));
+        mapping.setAutorizedRoles(pRoles.stream()
+                                      .map(role -> new RoleAuthority(role.getName()))
+                                      .collect(Collectors.toList()));
         return mapping;
     }
 }
