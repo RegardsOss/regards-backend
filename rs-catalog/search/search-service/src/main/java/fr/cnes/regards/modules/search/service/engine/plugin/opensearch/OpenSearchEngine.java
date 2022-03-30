@@ -139,6 +139,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @PluginParameter(name = ENGINE_PARAMETERS, label = "Search engine global configuration")
     private EngineConfiguration engineConfiguration;
 
+    private List<String> ignoredParams = new ArrayList<>();
     /**
      * To build resource links
      */
@@ -163,6 +164,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         if (paramConfigurations == null) {
             paramConfigurations = Lists.newArrayList();
         }
+        initIgnoredQueryParams();
     }
 
     @Override
@@ -316,9 +318,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<SearchParameter> searchParameters = Lists.newArrayList();
         for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
             try {
-                // Ignore special query parameter (q) or empty values
-                if (!queryParam.getKey().equals(configuration.getQueryParameterName())
-                        && ((queryParam.getValue().size() != 1)
+                // Ignore special query parameter (q, scope, token...) or empty values
+                if (validQueryParam(queryParam.getKey()) &&
+                        ((queryParam.getValue().size() > 1)
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     Pair<AttributeModel, ParameterConfiguration> attributeConf = getParameterAttribute(queryParam
                             .getKey());
@@ -333,6 +335,21 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             }
         }
         return searchParameters;
+    }
+
+    private boolean validQueryParam(String key) {
+        return !ignoredParams.contains(key);
+    }
+
+    private void initIgnoredQueryParams() {
+        ignoredParams.add(configuration.getQueryParameterName());
+        ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
+        ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME);
+        ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT);
+        ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE);
+        ignoredParams.add("scope");
+        ignoredParams.add("token");
+        ignoredParams.add("_pretty");
     }
 
     /**

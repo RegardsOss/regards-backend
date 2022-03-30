@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson;
 
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.geojson.*;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
@@ -74,7 +73,6 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
     protected void setResponseQuery(SearchContext context, String role) {
         Query query = new Query();
         context.getQueryParams().forEach((name, values) -> values.forEach(value -> query.addFilter(name, value)));
-        query.addFilter("token", token);
         response.setQuery(query);
     }
 
