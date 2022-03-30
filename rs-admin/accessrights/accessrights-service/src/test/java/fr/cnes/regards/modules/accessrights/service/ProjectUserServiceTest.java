@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -115,6 +116,8 @@ public class ProjectUserServiceTest {
     private ProjectUserGroupService projectUserGroupService;
     @Mock
     private QuotaHelperService quotaHelperService;
+    @Mock
+    private IPublisher publisher;
 
     @Before
     public void init() throws EntityException {

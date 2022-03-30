@@ -25,10 +25,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupCreationEvent;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupDeletionEvent;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.PublicAccessGroupCreationEvent;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.PublicAccessGroupDeletionEvent;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupAction;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupEvent;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.PublicAccessGroupEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -48,17 +47,22 @@ import java.util.Optional;
 @MultitenantTransactional
 public class AccessGroupService implements IAccessGroupService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessGroupService.class);
-
     public static final String ACCESS_GROUP_ALREADY_EXIST_ERROR_MESSAGE = "Access Group of name %s already exists! Name of an access group has to be unique.";
+
     public static final String ACCESS_GROUP_PUBLIC_DOCUMENTS = "Public";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessGroupService.class);
+
     private final IAccessGroupRepository accessGroupRepository;
+
     private final IPublisher publisher;
+
     private final ITenantResolver tenantResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public AccessGroupService(IAccessGroupRepository accessGroupRepository, IPublisher publisher, ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver) {
+    public AccessGroupService(IAccessGroupRepository accessGroupRepository, IPublisher publisher,
+            ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver) {
         this.accessGroupRepository = accessGroupRepository;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -89,14 +93,14 @@ public class AccessGroupService implements IAccessGroupService {
     @Override
     public AccessGroup createAccessGroup(AccessGroup pToBeCreated) throws EntityAlreadyExistsException {
         if (accessGroupRepository.findOneByName(pToBeCreated.getName()) != null) {
-            throw new EntityAlreadyExistsException(String.format(ACCESS_GROUP_ALREADY_EXIST_ERROR_MESSAGE, pToBeCreated.getName()));
+            throw new EntityAlreadyExistsException(
+                    String.format(ACCESS_GROUP_ALREADY_EXIST_ERROR_MESSAGE, pToBeCreated.getName()));
         }
         AccessGroup created = accessGroupRepository.save(pToBeCreated);
         if (created.isPublic()) {
-            publisher.publish(new PublicAccessGroupCreationEvent(created));
-        } else {
-            publisher.publish(new AccessGroupCreationEvent(created));
+            publisher.publish(new PublicAccessGroupEvent(created, AccessGroupAction.CREATE));
         }
+        publisher.publish(new AccessGroupEvent(created, AccessGroupAction.CREATE));
         return created;
     }
 
@@ -115,18 +119,19 @@ public class AccessGroupService implements IAccessGroupService {
     }
 
     @Override
-    public void deleteAccessGroup(String pAccessGroupName) throws EntityOperationForbiddenException, EntityNotFoundException {
+    public void deleteAccessGroup(String pAccessGroupName)
+            throws EntityOperationForbiddenException, EntityNotFoundException {
         AccessGroup toDelete = retrieveAccessGroup(pAccessGroupName);
         // Prevent users to delete the public AccessGroup used by Documents
         if (toDelete.isInternal()) {
-            throw new EntityOperationForbiddenException(toDelete.getName(), AccessGroup.class, "Cannot remove the public access group used by Documents");
+            throw new EntityOperationForbiddenException(toDelete.getName(), AccessGroup.class,
+                                                        "Cannot remove the public access group used by Documents");
         }
         accessGroupRepository.deleteById(toDelete.getId());
         if (toDelete.isPublic()) {
-            publisher.publish(new PublicAccessGroupDeletionEvent(toDelete));
-        } else {
-            publisher.publish(new AccessGroupDeletionEvent(toDelete));
+            publisher.publish(new PublicAccessGroupEvent(toDelete, AccessGroupAction.DELETE));
         }
+        publisher.publish(new AccessGroupEvent(toDelete, AccessGroupAction.DELETE));
     }
 
     @Override
@@ -145,13 +150,17 @@ public class AccessGroupService implements IAccessGroupService {
         // Update visibility
         boolean wasPublic = oldGroup.isPublic();
         boolean isPublic = updatedGroup.isPublic();
-        if (wasPublic != isPublic) {
-            if (!wasPublic) {
-                // Publish proper event in order for rs-admin to link group to users
-                publisher.publish(new PublicAccessGroupCreationEvent(oldGroup));
-            } // Nothing to do when going from public to private, since public groups are already linked to all users
-            oldGroup.setPublic(updatedGroup.isPublic());
+        if (wasPublic && !isPublic) {
+            // this case does not concern real users because group is not removed once it becomes private
+            // However, false users (public) should have their access group cache updated
+            publisher.publish(new PublicAccessGroupEvent(oldGroup, AccessGroupAction.DELETE));
         }
+        if (isPublic && !wasPublic) {
+            // Publish proper event in order for rs-admin to link group to users
+            publisher.publish(new PublicAccessGroupEvent(oldGroup, AccessGroupAction.CREATE));
+        }
+
+        oldGroup.setPublic(updatedGroup.isPublic());
 
         return accessGroupRepository.save(oldGroup);
     }

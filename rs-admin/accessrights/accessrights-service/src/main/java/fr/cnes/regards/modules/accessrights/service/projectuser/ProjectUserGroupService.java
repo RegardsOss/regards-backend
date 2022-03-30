@@ -44,7 +44,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -57,21 +56,26 @@ public class ProjectUserGroupService {
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUserGroupService.class);
 
     private final IProjectUserRepository projectUserRepository;
+
     private final IAccessGroupClient accessGroupClient;
+
     private final Gson gson;
 
-    public ProjectUserGroupService(IProjectUserRepository projectUserRepository, IAccessGroupClient accessGroupClient, Gson gson) {
+    public ProjectUserGroupService(IProjectUserRepository projectUserRepository, IAccessGroupClient accessGroupClient,
+            Gson gson) {
         this.projectUserRepository = projectUserRepository;
         this.accessGroupClient = accessGroupClient;
         this.gson = gson;
     }
 
-    public void validateAccessGroups(Set<String> accessGroups, boolean checkPublic) throws EntityNotFoundException, EntityInvalidException {
+    public void validateAccessGroups(Set<String> accessGroups, boolean checkPublic)
+            throws EntityNotFoundException, EntityInvalidException {
         try {
             FeignSecurityManager.asSystem();
             for (String group : accessGroups) {
                 ResponseEntity<EntityModel<AccessGroup>> response = accessGroupClient.retrieveAccessGroup(group);
-                if (response == null || !response.getStatusCode().is2xxSuccessful() || HateoasUtils.unwrap(response.getBody()) == null) {
+                if (response == null || !response.getStatusCode().is2xxSuccessful()
+                        || HateoasUtils.unwrap(response.getBody()) == null) {
                     throw new EntityNotFoundException(group, AccessGroup.class);
                 } else {
                     if (checkPublic && HateoasUtils.unwrap(response.getBody()).isPublic()) {
@@ -98,18 +102,12 @@ public class ProjectUserGroupService {
         } while (projectUserPage.hasNext());
     }
 
-    public void removePublicGroup(String accessGroup) {
-        removeGroup(accessGroup, (group, pageable) -> projectUserRepository.findAll(pageable));
-    }
-
     public void removeGroup(String accessGroup) {
-        removeGroup(
-                accessGroup,
-                (group, pageable) -> {
-                    Specification<ProjectUser> specification =
-                            new ProjectUserSpecificationsBuilder().withParameters(new ProjectUserSearchParameters().setAccessGroup(group)).build();
-                    return projectUserRepository.findAll(specification, pageable);
-                });
+        removeGroup(accessGroup, (group, pageable) -> {
+            Specification<ProjectUser> specification = new ProjectUserSpecificationsBuilder().withParameters(
+                    new ProjectUserSearchParameters().setAccessGroup(group)).build();
+            return projectUserRepository.findAll(specification, pageable);
+        });
     }
 
     private void removeGroup(String accessGroup, BiFunction<String, Pageable, Page<ProjectUser>> find) {
@@ -123,13 +121,14 @@ public class ProjectUserGroupService {
     }
 
     public Set<String> getPublicGroups() throws EntityInvalidException {
-        Set<String> publicGroups = new HashSet<>();
+        Set<String> publicGroups;
         try {
             FeignSecurityManager.asSystem();
-            publicGroups = HateoasUtils.retrieveAllPages(100, pageable -> accessGroupClient.retrieveAccessGroupsList(true, pageable.getPageNumber(), pageable.getPageSize()))
-                                       .stream()
-                                       .map(AccessGroup::getName)
-                                       .collect(Collectors.toSet());
+            publicGroups = HateoasUtils.retrieveAllPages(100,
+                                                         pageable -> accessGroupClient.retrieveAccessGroupsList(true,
+                                                                                                                pageable.getPageNumber(),
+                                                                                                                pageable.getPageSize()))
+                    .stream().map(AccessGroup::getName).collect(Collectors.toSet());
         } catch (HttpServerErrorException | HttpClientErrorException e) {
             LOG.error(e.getMessage(), e);
             ServerErrorResponse errorResponse = gson.fromJson(e.getResponseBodyAsString(), ServerErrorResponse.class);
@@ -141,7 +140,8 @@ public class ProjectUserGroupService {
     }
 
     public void linkAccessGroups(String email, List<String> groups) throws EntityNotFoundException {
-        ProjectUser projectUser = projectUserRepository.findOneByEmail(email).orElseThrow(() -> new EntityNotFoundException(email, ProjectUser.class));
+        ProjectUser projectUser = projectUserRepository.findOneByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException(email, ProjectUser.class));
         if (!CollectionUtils.isEmpty(groups)) {
             projectUser.getAccessGroups().addAll(groups);
         }

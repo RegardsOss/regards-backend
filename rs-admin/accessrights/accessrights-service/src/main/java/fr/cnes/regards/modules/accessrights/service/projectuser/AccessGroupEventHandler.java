@@ -22,9 +22,9 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupDeletionEvent;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.PublicAccessGroupCreationEvent;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.PublicAccessGroupDeletionEvent;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupAction;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupEvent;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.PublicAccessGroupEvent;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -33,10 +33,14 @@ import org.springframework.stereotype.Component;
 public class AccessGroupEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     private final ISubscriber subscriber;
+
     private final ProjectUserGroupService projectUserGroupService;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public AccessGroupEventHandler(ISubscriber subscriber, ProjectUserGroupService projectUserGroupService, IRuntimeTenantResolver runtimeTenantResolver) {
+    public AccessGroupEventHandler(ISubscriber subscriber,
+                                   ProjectUserGroupService projectUserGroupService,
+                                   IRuntimeTenantResolver runtimeTenantResolver) {
         this.subscriber = subscriber;
         this.projectUserGroupService = projectUserGroupService;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -44,18 +48,20 @@ public class AccessGroupEventHandler implements ApplicationListener<ApplicationR
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(PublicAccessGroupCreationEvent.class, new PublicAccessGroupCreationEventHandler());
-        subscriber.subscribeTo(PublicAccessGroupDeletionEvent.class, new PublicAccessGroupDeletionEventHandler());
-        subscriber.subscribeTo(AccessGroupDeletionEvent.class, new AccessGroupDeletionEventHandler());
+        subscriber.subscribeTo(PublicAccessGroupEvent.class, new PublicAccessGroupEventHandler());
+        subscriber.subscribeTo(AccessGroupEvent.class, new AccessGroupEventDeletionHandler());
     }
 
-    private class PublicAccessGroupCreationEventHandler implements IHandler<PublicAccessGroupCreationEvent> {
+    private class PublicAccessGroupEventHandler implements IHandler<PublicAccessGroupEvent> {
 
         @Override
-        public void handle(TenantWrapper<PublicAccessGroupCreationEvent> wrapper) {
+        public void handle(TenantWrapper<PublicAccessGroupEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                projectUserGroupService.addPublicGroup(wrapper.getContent().getAccessGroup().getName());
+                PublicAccessGroupEvent content = wrapper.getContent();
+                if (content.getAction() == AccessGroupAction.CREATE) {
+                    projectUserGroupService.addPublicGroup(content.getAccessGroup().getName());
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -63,27 +69,16 @@ public class AccessGroupEventHandler implements ApplicationListener<ApplicationR
 
     }
 
-    private class PublicAccessGroupDeletionEventHandler implements IHandler<PublicAccessGroupDeletionEvent> {
+    private class AccessGroupEventDeletionHandler implements IHandler<AccessGroupEvent> {
 
         @Override
-        public void handle(TenantWrapper<PublicAccessGroupDeletionEvent> wrapper) {
+        public void handle(TenantWrapper<AccessGroupEvent> wrapper) {
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                projectUserGroupService.removePublicGroup(wrapper.getContent().getAccessGroup().getName());
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
-
-    }
-
-    private class AccessGroupDeletionEventHandler implements IHandler<AccessGroupDeletionEvent> {
-
-        @Override
-        public void handle(TenantWrapper<AccessGroupDeletionEvent> wrapper) {
-            try {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                projectUserGroupService.removeGroup(wrapper.getContent().getAccessGroup().getName());
+                AccessGroupEvent content = wrapper.getContent();
+                if (content.getAction() == AccessGroupAction.DELETE) {
+                    projectUserGroupService.removeGroup(content.getAccessGroup().getName());
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

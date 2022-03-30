@@ -18,18 +18,9 @@
  */
 package fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-
-@Event(target = Target.ALL)
-public class AccessGroupDeletionEvent extends AccessGroupEvent{
-
-    public AccessGroupDeletionEvent() {
-    }
-
-    public AccessGroupDeletionEvent(AccessGroup pAccessGroup) {
-        super(pAccessGroup);
-    }
-
+/**
+ * @author Stephane Cortine
+ **/
+public enum AccessGroupAction {
+    DELETE, CREATE
 }

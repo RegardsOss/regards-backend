@@ -22,14 +22,17 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 
+/**
+ * @author Stephane Cortine
+ **/
 @Event(target = Target.ALL)
-public class PublicAccessGroupDeletionEvent extends AccessGroupDeletionEvent {
+public class PublicAccessGroupEvent extends AccessGroupEvent {
 
-    public PublicAccessGroupDeletionEvent() {
+    public PublicAccessGroupEvent() {
+        // constructor for deserialization
     }
 
-    public PublicAccessGroupDeletionEvent(AccessGroup accessGroup) {
-        super(accessGroup);
+    public PublicAccessGroupEvent(AccessGroup accessGroup, AccessGroupAction action) {
+        super(accessGroup, action);
     }
-
 }

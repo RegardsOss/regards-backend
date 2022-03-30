@@ -18,28 +18,29 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import java.io.IOException;
+import com.google.common.base.Strings;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.google.common.base.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import java.io.IOException;
 
 /**
  * This filter allows to inject a public token before JWT authentication filter if no JWT is found and a tenant is
  * specified in request parameters.
+ *
  * @author Marc Sordi
  */
 public class PublicAuthenticationFilter extends OncePerRequestFilter {
+
+    public static final String PUBLIC_USER_EMAIL = "public@regards.com";
 
     /**
      * Class logger
@@ -80,7 +81,8 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Add an authorization header for public request
-     * @param tenant tenant
+     *
+     * @param tenant  tenant
      * @param request request
      */
     private void addPublicAuthorizationHeader(String tenant, CustomHttpServletRequest request) {
@@ -91,7 +93,7 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // Generate a public token
-        String jwt = jwtService.generateToken(tenant, "public", "public@regards.com", DefaultRole.PUBLIC.name());
+        String jwt = jwtService.generateToken(tenant, "public", PUBLIC_USER_EMAIL, DefaultRole.PUBLIC.name());
         // Add token into request header
         request.addHeader(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + jwt);
     }

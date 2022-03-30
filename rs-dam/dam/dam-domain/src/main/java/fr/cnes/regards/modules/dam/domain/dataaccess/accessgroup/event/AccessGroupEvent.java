@@ -32,6 +32,11 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 public class AccessGroupEvent implements ISubscribable {
 
     /**
+     * The action of the event
+     */
+    private AccessGroupAction action;
+
+    /**
      * The source of the event
      */
     private AccessGroup accessGroup;
@@ -40,9 +45,17 @@ public class AccessGroupEvent implements ISubscribable {
         // Deserialization constructor
     }
 
-    public AccessGroupEvent(AccessGroup accessGroup) {
-        super();
+    public AccessGroupEvent(AccessGroup accessGroup, AccessGroupAction action) {
         this.accessGroup = accessGroup;
+        this.action = action;
+    }
+
+    public AccessGroupAction getAction() {
+        return action;
+    }
+
+    public void setAction(AccessGroupAction action) {
+        this.action = action;
     }
 
     public AccessGroup getAccessGroup() {
