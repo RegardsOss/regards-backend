@@ -79,7 +79,7 @@ public class AccessRightService implements IAccessRightService {
     private final IAccessRightRepository accessRightRepository;
     private final IAccessGroupService accessGroupService;
     private final IDatasetService datasetService;
-    private final IPublisher eventPublisher;
+    private final IPublisher publisher;
     private final IPluginService pluginService;
     private final INotificationClient notificationClient;
     private final IAuthenticationResolver authenticationResolver;
@@ -87,7 +87,7 @@ public class AccessRightService implements IAccessRightService {
 
     public AccessRightService(IAccessRightRepository accessRightRepository, IAccessGroupService accessGroupService,
             IDatasetService datasetService,
-            IPublisher eventPublisher,
+            IPublisher publisher,
             IPluginService pluginService,
             INotificationClient notificationClient,
             IAuthenticationResolver authenticationResolver,
@@ -96,7 +96,7 @@ public class AccessRightService implements IAccessRightService {
         this.accessRightRepository = accessRightRepository;
         this.accessGroupService = accessGroupService;
         this.datasetService = datasetService;
-        this.eventPublisher = eventPublisher;
+        this.publisher = publisher;
         this.pluginService = pluginService;
         this.notificationClient = notificationClient;
         this.authenticationResolver = authenticationResolver;
@@ -235,7 +235,7 @@ public class AccessRightService implements IAccessRightService {
 
         AccessRight created = accessRightRepository.save(accessRight);
         logForSecurity(created);
-        eventPublisher.publish(new AccessRightEvent(created, AccessRightEventType.CREATE, authenticationResolver.getRole()));
+        publisher.publish(new AccessRightEvent(created, AccessRightEventType.CREATE, authenticationResolver.getRole()));
         return created;
     }
 
@@ -323,7 +323,7 @@ public class AccessRightService implements IAccessRightService {
             pluginService.deletePluginConfiguration(toRemove.get().getBusinessId());
         }
 
-        eventPublisher.publish(new AccessRightEvent(accessRight, AccessRightEventType.UPDATE, authenticationResolver.getRole()));
+        publisher.publish(new AccessRightEvent(accessRight, AccessRightEventType.UPDATE, authenticationResolver.getRole()));
         return accessRight;
     }
 
@@ -352,7 +352,7 @@ public class AccessRightService implements IAccessRightService {
         }
 
         if (dataset != null) {
-            eventPublisher.publish(new AccessRightEvent(accessRight, AccessRightEventType.DELETE, authenticationResolver.getRole()));
+            publisher.publish(new AccessRightEvent(accessRight, AccessRightEventType.DELETE, authenticationResolver.getRole()));
         }
     }
 
@@ -396,7 +396,7 @@ public class AccessRightService implements IAccessRightService {
                     if (plugin.isDynamic()) {
                         logForSecurity(ar);
                         datasetsToUpdate.add(ar.getDataset().getIpId());
-                        eventPublisher.publish(new AccessRightEvent(ar, AccessRightEventType.UPDATE, DefaultRole.PROJECT_ADMIN.name()));
+                        publisher.publish(new AccessRightEvent(ar, AccessRightEventType.UPDATE, DefaultRole.PROJECT_ADMIN.name()));
                     }
                 }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
