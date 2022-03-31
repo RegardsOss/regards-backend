@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -33,7 +32,6 @@ import java.util.List;
  *
  * @author Binda Sébastien
  */
-@Component
 public class CacheableServiceAggregatorClient {
 
     private IServiceAggregatorClient serviceAggregatorClient;

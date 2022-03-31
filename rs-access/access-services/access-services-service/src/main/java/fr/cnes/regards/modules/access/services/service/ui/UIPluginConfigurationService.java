@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
-import fr.cnes.regards.modules.accessrights.client.CacheableRolesClient;
+import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

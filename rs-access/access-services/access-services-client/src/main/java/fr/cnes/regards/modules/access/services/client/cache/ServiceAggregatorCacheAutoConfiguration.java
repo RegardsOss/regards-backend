@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.client.cache;
 
+import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
@@ -60,6 +61,11 @@ public class ServiceAggregatorCacheAutoConfiguration {
     public ServiceAggregatorClientEventHandler serviceAggregatorEventHandler(ISubscriber subscriber,
             IServiceAggregatorKeyGenerator keyGen) {
         return new ServiceAggregatorClientEventHandler(subscriber, keyGen);
+    }
+
+    @Bean
+    public CacheableServiceAggregatorClient cacheableServiceAggregatorClient(IServiceAggregatorClient serviceAggregatorClient) {
+        return new CacheableServiceAggregatorClient(serviceAggregatorClient);
     }
 
 }

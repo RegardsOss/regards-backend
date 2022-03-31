@@ -1,34 +1,8 @@
 package fr.cnes.regards.modules.crawler.service;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.geojson.GeoJsonType;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiPoint;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.geojson.geometry.Unlocated;
+import fr.cnes.regards.framework.geojson.geometry.*;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -44,10 +18,22 @@ import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactoryEventHandler;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.Optional;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles("noscheduler") // Disable scheduling, this will activate IngesterService during all tests
+@ActiveProfiles({"noscheduler","test"}) // Disable scheduling, this will activate IngesterService during all tests
 @TestPropertySource(locations = { "classpath:test.properties" })
 public class GeometryIT {
 

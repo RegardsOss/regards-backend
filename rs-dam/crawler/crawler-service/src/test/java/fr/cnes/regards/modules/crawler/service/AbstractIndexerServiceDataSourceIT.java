@@ -70,7 +70,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -81,7 +80,7 @@ import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles("noscheduler") // Disable scheduling, this will activate IngesterService during all tests
+@ActiveProfiles({"noscheduler","test"}) // Disable scheduling, this will activate IngesterService during all tests
 @TestPropertySource(locations = { "classpath:test.properties" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 public abstract class AbstractIndexerServiceDataSourceIT {

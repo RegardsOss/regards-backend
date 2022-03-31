@@ -709,7 +709,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         agentSnapshotJobService.scheduleJob();
 
         // Check that sessionStep is well generated
-        Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             boolean done = false;
             SessionStep step = sessionStepRepository.findBySourceAndLastUpdateDateBefore(source, end,

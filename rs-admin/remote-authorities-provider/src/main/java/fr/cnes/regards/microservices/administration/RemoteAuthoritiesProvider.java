@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.modules.accessrights.client.CacheableRolesClient;
+import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
 import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRoleResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;

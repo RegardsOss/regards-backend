@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import java.util.Arrays;
-
+import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
+import fr.cnes.regards.modules.access.services.client.cache.CacheableServiceAggregatorClient;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
-import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
-import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import java.util.Arrays;
 
 /**
  * Module-wide configuration for integration tests.
@@ -48,6 +48,11 @@ public class BackendForFrontendTestConfiguration {
                                            null))
                 .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
         return mock;
+    }
+
+    @Bean
+    public CacheableServiceAggregatorClient cacheableServiceAggregatorClient(IServiceAggregatorClient client) {
+        return new CacheableServiceAggregatorClient(client);
     }
 
     @Bean

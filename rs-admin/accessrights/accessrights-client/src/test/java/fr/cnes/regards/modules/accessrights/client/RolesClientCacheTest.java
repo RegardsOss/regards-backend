@@ -18,6 +18,7 @@ package fr.cnes.regards.modules.accessrights.client;
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +39,7 @@ import fr.cnes.regards.modules.accessrights.client.cache.IRolesHierarchyKeyGener
 public class RolesClientCacheTest {
 
     @Autowired
-    IRolesClient client;
+    CacheableRolesClient cacheClient;
 
     @Autowired
     IRolesHierarchyKeyGenerator keyGenerator;
@@ -49,25 +50,25 @@ public class RolesClientCacheTest {
     @Test
     public void test() throws EntityNotFoundException {
 
-        client.shouldAccessToResourceRequiring("plop");
-        client.shouldAccessToResourceRequiring("plop");
-        client.shouldAccessToResourceRequiring("plop");
+        cacheClient.shouldAccessToResourceRequiring("plop");
+        cacheClient.shouldAccessToResourceRequiring("plop");
+        cacheClient.shouldAccessToResourceRequiring("plop");
 
         Assert.assertEquals(1, counter.getCount());
 
-        client.shouldAccessToResourceRequiring("plop");
+        cacheClient.shouldAccessToResourceRequiring("plop");
 
         Assert.assertEquals(1, counter.getCount());
 
-        client.shouldAccessToResourceRequiring("another");
-        client.shouldAccessToResourceRequiring("another");
+        cacheClient.shouldAccessToResourceRequiring("another");
+        cacheClient.shouldAccessToResourceRequiring("another");
 
         Assert.assertEquals(2, counter.getCount());
 
         keyGenerator.cleanCache();
 
-        client.shouldAccessToResourceRequiring("another");
-        client.shouldAccessToResourceRequiring("another");
+        cacheClient.shouldAccessToResourceRequiring("another");
+        cacheClient.shouldAccessToResourceRequiring("another");
 
         Assert.assertEquals(3, counter.getCount());
     }

@@ -18,8 +18,17 @@
  */
 package fr.cnes.regards.modules.access.services.client;
 
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
+import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
+import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,16 +36,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
-import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
-import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import java.util.List;
 
 /**
  * Module-wide configuration for Integration Tests
@@ -47,6 +47,11 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 public class ServiceAggregatorClientITConfiguration {
 
     private static Long ID = 0L;
+
+    @Bean
+    public CacheableRolesClient cacheableRolesClient(IRolesClient rolesClient) {
+        return new CacheableRolesClient(rolesClient);
+    }
 
     @Bean
     public ICatalogServicesClient catalogServicesClient() {

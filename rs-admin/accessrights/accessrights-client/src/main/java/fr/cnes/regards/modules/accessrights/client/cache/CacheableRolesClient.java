@@ -16,21 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.accessrights.client;
+package fr.cnes.regards.modules.accessrights.client.cache;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.client.cache.RolesHierarchyKeyGenerator;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
 /**
  * Wrapper to IRolesClient (Fiegn client) to add a cache.
  *
  * @author Binda Sébastien
  */
-@Component
 public class CacheableRolesClient {
 
     private IRolesClient rolesClient;
@@ -51,7 +49,5 @@ public class CacheableRolesClient {
         throws EntityNotFoundException {
         return rolesClient.shouldAccessToResourceRequiring(roleName);
     }
-
-
 
 }

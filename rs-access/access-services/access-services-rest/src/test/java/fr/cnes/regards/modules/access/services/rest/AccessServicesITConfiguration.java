@@ -18,17 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.rest;
 
-import java.util.Set;
-
-import org.assertj.core.util.Lists;
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -37,9 +27,19 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import org.assertj.core.util.Lists;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.Set;
 
 /**
  * Module-wide configuration for tests.
@@ -56,6 +56,11 @@ public class AccessServicesITConfiguration {
     private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.COLLECTION);
 
     private static Long ID = 0L;
+
+    @Bean
+    public CacheableRolesClient cacheableServiceAggregatorClient(IRolesClient rolesClient) {
+        return new CacheableRolesClient(rolesClient);
+    }
 
     @Bean
     public ICatalogServicesClient catalogServicesClient() {

@@ -133,7 +133,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceT
 
         mockNotificationSuccess();
         // Give it some time
-        waitCreationRequestDeletion(0, 20000);
+        waitCreationRequestDeletion(0, 40000);
 
         // Compute Session step
         // for each product 4 events : 1request + 1 requestRunning + 1 referencedProduct  -1 requestRunning
@@ -298,7 +298,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceT
         mockStorageHelper.mockFeatureCreationStorageSuccess(new HashSet<>(requestIds));
         mockNotificationSuccess();
         // Give it some time
-        waitCreationRequestDeletion(1, 20000);
+        waitCreationRequestDeletion(1, 40000);
         waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_STORAGE_ERROR, 1, 10_000);
 
         // Compute Session step

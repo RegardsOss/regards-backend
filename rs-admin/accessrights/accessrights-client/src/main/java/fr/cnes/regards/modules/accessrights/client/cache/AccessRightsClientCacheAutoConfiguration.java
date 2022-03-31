@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.accessrights.client.cache;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
@@ -58,6 +59,11 @@ public class AccessRightsClientCacheAutoConfiguration {
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     RoleEventHandler roleEventHandler(ISubscriber subscriber, IRolesHierarchyKeyGenerator rolesKeyGen) {
         return new RoleEventHandler(subscriber, rolesKeyGen);
+    }
+
+    @Bean
+    CacheableRolesClient cacheableRolesClient(IRolesClient rolesClient) {
+        return new CacheableRolesClient(rolesClient);
     }
 
 }
