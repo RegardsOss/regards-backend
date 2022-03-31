@@ -18,21 +18,22 @@
  */
 package fr.cnes.regards.framework.metric.autoconfigure;
 
+import io.micrometer.core.aop.TimedAspect;
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.micrometer.core.aop.TimedAspect;
-import io.micrometer.core.instrument.Clock;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
-
 /**
  * @author kevin
  * @author Marc SORDI
  */
+@Slf4j
 @Configuration
 @EnableConfigurationProperties(LoggingRegistryConfiguration.class)
 @AutoConfigureBefore(CompositeMeterRegistryAutoConfiguration.class)
@@ -45,6 +46,6 @@ public class MetricAutoConfiguration {
 
     @Bean
     public LoggingMeterRegistry loggingMeterRegistry(LoggingRegistryConfiguration configuration) {
-        return new LoggingMeterRegistry(configuration, Clock.SYSTEM);
+        return LoggingMeterRegistry.builder(configuration).loggingSink(log::debug).clock(Clock.SYSTEM).build();
     }
 }
