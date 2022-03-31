@@ -18,30 +18,14 @@
  */
 package fr.cnes.regards.framework.swagger.autoconfigure;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import com.google.gson.JsonParser;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.WriteListener;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-
-import com.google.gson.JsonParser;
+import java.io.*;
 
 /**
  * Intercept OpenAPI to reformat API documentation properly with GSON serialization
@@ -57,7 +41,7 @@ public class OpenApiFilter implements Filter {
         chain.doFilter(byteRequestWrapper, byteResponseWrapper);
         String jsonResponse = new String(byteResponseWrapper.getBytes(), response.getCharacterEncoding());
         response.getOutputStream()
-                .write((new JsonParser().parse(jsonResponse).getAsString()).getBytes(response.getCharacterEncoding()));
+                .write((new JsonParser().parse(jsonResponse)).toString().getBytes(response.getCharacterEncoding()));
     }
 
     static class OpenApiResponseWrapper extends HttpServletResponseWrapper {
