@@ -16,20 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.processing.utils;
+package fr.cnes.regards.framework.module.rest.filter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
 
 /**
  * @author Théo Lasserre
  */
-public class LogUtils {
-    public static void setOrderIdInMdc(String batchCorrelationId) {
-        // See BatchSuborderCorrelationIdentifier to understand batchCorrelationId pattern
-        int orderIdFirstChar = batchCorrelationId.indexOf("-") + 1;
-        int orderIdLastChar = batchCorrelationId.indexOf("_");
+@Component
+public class CorrelationIdFilter extends OncePerRequestFilter {
 
-        // Set log correlation id
-        CorrelationIdUtils.setCorrelationId("ORDER_ID=" + batchCorrelationId.substring(orderIdFirstChar, orderIdLastChar));
+    public CorrelationIdFilter() {
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        CorrelationIdUtils.clearCorrelationId();
     }
 }

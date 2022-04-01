@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
@@ -111,7 +112,14 @@ public class OrderCreationService implements IOrderCreationService {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void asyncCompleteOrderCreation(Basket basket, Long orderId, int subOrderDuration, String role, String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
-        self.completeOrderCreation(basket, orderId, role, subOrderDuration, tenant);
+        try {
+            // Set log correlation id
+            CorrelationIdUtils.setCorrelationId("ORDER_ID" + orderId.toString());
+
+            self.completeOrderCreation(basket, orderId, role, subOrderDuration, tenant);
+        } finally {
+            CorrelationIdUtils.clearCorrelationId();
+        }
     }
 
     @Override
@@ -172,6 +180,7 @@ public class OrderCreationService implements IOrderCreationService {
         }
         order = orderRepository.save(order);
         LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
+
         if (order.getStatus() != OrderStatus.FAILED) {
             try {
                 sendOrderCreationEmail(order);

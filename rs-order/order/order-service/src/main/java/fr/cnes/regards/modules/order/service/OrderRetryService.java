@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -67,12 +68,13 @@ public class OrderRetryService implements IOrderRetryService {
 
     @Override
     public void retry(long orderId, String role, int subOrderDuration) {
-
         Order order = orderRepository.findSimpleById(orderId);
         String owner = order.getOwner();
         LOGGER.info("Retrying order (id: {}) with owner {}...", order.getId(), owner);
 
         try {
+            // Set log correlation id
+            CorrelationIdUtils.setCorrelationId("ORDER_ID=" + String.valueOf(orderId));
 
             int priority = orderJobService.computePriority(owner, role);
             OrderCounts orderCounts = new OrderCounts();
@@ -91,6 +93,8 @@ public class OrderRetryService implements IOrderRetryService {
 
         } catch (Exception e) {
             LOGGER.error("Error while retrying order", e);
+        } finally {
+            CorrelationIdUtils.clearCorrelationId();
         }
     }
 

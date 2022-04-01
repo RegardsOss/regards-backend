@@ -21,6 +21,7 @@ import org.springframework.util.FileSystemUtils;
 import com.google.common.collect.BiMap;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -180,6 +181,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         if (jobInfo.getJob().needWorkspace()) {
             FileSystemUtils.deleteRecursively(jobInfo.getJob().getWorkspace().toFile());
         }
+        CorrelationIdUtils.clearCorrelationId();
         // Clean jobsMap
         jobsMap.remove(jobInfo);
     }

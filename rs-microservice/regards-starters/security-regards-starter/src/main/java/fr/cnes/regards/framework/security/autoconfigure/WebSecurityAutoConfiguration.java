@@ -44,12 +44,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.filter.CorsFilter;
-import fr.cnes.regards.framework.security.filter.IpFilter;
-import fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter;
-import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
-import fr.cnes.regards.framework.security.filter.PublicAuthenticationFilter;
-import fr.cnes.regards.framework.security.filter.RequestLogFilter;
+import fr.cnes.regards.framework.security.filter.*;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**

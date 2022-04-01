@@ -7,6 +7,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -83,29 +84,36 @@ public class OrderHelperService {
 
     @MultitenantTransactional
     public UUID createStorageSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, long orderId, String owner, int subOrderDuration, String role, int priority) {
-
         LOGGER.info("Creating storage sub-order of {} files (Order: {} - Owner: {})", orderDataFiles.size(), orderId, owner);
 
-        FilesTask currentFilesTask = new FilesTask();
-        currentFilesTask.setOrderId(orderId);
-        currentFilesTask.setOwner(owner);
-        currentFilesTask.addAllFiles(orderDataFiles);
+        try {
+            // Set log correlation id
+            CorrelationIdUtils.setCorrelationId("ORDER_ID=" + String.valueOf(orderId));
 
-        // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
-        JobInfo storageJobInfo = new JobInfo(true);
-        storageJobInfo.setParameters(
-                new FilesJobParameter(orderDataFiles.stream().map(OrderDataFile::getId).toArray(Long[]::new)),
-                new SubOrderAvailabilityPeriodJobParameter(subOrderDuration),
-                new UserJobParameter(owner), new UserRoleJobParameter(role)
-        );
-        storageJobInfo.setOwner(owner);
-        storageJobInfo.setClassName(StorageFilesJob.class.getName());
-        storageJobInfo.setPriority(priority);
+            FilesTask currentFilesTask = new FilesTask();
+            currentFilesTask.setOrderId(orderId);
+            currentFilesTask.setOwner(owner);
+            currentFilesTask.addAllFiles(orderDataFiles);
 
-        JobInfo jobInfo = jobInfoService.createAsPending(storageJobInfo);
-        currentFilesTask.setJobInfo(jobInfo);
-        datasetTask.addReliantTask(currentFilesTask);
-        return jobInfo.getId();
+            // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
+            JobInfo storageJobInfo = new JobInfo(true);
+            storageJobInfo.setParameters(
+                    new FilesJobParameter(orderDataFiles.stream().map(OrderDataFile::getId).toArray(Long[]::new)),
+                    new SubOrderAvailabilityPeriodJobParameter(subOrderDuration),
+                    new UserJobParameter(owner), new UserRoleJobParameter(role)
+            );
+            storageJobInfo.setOwner(owner);
+            storageJobInfo.setClassName(StorageFilesJob.class.getName());
+            storageJobInfo.setPriority(priority);
+
+            JobInfo jobInfo = jobInfoService.createAsPending(storageJobInfo);
+            currentFilesTask.setJobInfo(jobInfo);
+            datasetTask.addReliantTask(currentFilesTask);
+
+            return jobInfo.getId();
+        } finally {
+            CorrelationIdUtils.clearCorrelationId();
+        }
     }
 
     @MultitenantTransactional
