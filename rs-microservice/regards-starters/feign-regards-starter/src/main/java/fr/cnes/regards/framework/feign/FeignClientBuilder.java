@@ -25,6 +25,7 @@ import feign.gson.GsonEncoder;
 import feign.jaxb.JAXBContextFactory;
 import feign.jaxb.JAXBDecoder;
 import feign.jaxb.JAXBEncoder;
+import org.springframework.cloud.openfeign.support.PageableSpringQueryMapEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 
 import java.util.Arrays;
@@ -48,6 +49,7 @@ public final class FeignClientBuilder {
         return Feign.builder() // Feign customization
                 .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
+                .queryMapEncoder(new PageableSpringQueryMapEncoder())
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
     }
@@ -61,6 +63,7 @@ public final class FeignClientBuilder {
         return Feign.builder() // Feign customization
                 .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                .queryMapEncoder(new PageableSpringQueryMapEncoder())
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
     }
@@ -76,6 +79,7 @@ public final class FeignClientBuilder {
                 .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .requestInterceptors(Arrays.asList(requestInterceptors)) // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                .queryMapEncoder(new PageableSpringQueryMapEncoder())
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
     }
@@ -90,6 +94,7 @@ public final class FeignClientBuilder {
                 .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
                 .client(client) // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                .queryMapEncoder(new PageableSpringQueryMapEncoder())
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
     }

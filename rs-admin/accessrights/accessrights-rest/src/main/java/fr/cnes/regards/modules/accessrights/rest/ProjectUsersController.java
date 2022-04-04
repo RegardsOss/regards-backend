@@ -101,17 +101,17 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
      *
+     * @param parameters              search parameters as request params
      * @param pageable                paging parameters
      * @param pagedResourcesAssembler assembler
-     * @param parameters              search parameters as request params
      * @return a {@link List} of {@link ProjectUser}
      */
     @GetMapping
     @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
-            @PageableDefault(sort = "email", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler,
-            ProjectUserSearchParameters parameters
+            ProjectUserSearchParameters parameters,
+            @PageableDefault(sort = "created", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler
     ) {
         return ResponseEntity.ok(toPagedResources(projectUserService.retrieveUserList(parameters, pageable), pagedResourcesAssembler));
     }
@@ -126,7 +126,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @GetMapping(PENDING_ACCESSES)
     @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(
-            @PageableDefault(sort = "email", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault(sort = "created", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ProjectUser> assembler
     ) {
         return ResponseEntity.ok(toPagedResources(projectUserService.retrieveAccessRequestList(pageable), assembler));
@@ -345,8 +345,8 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
             if (projectUserService.canDelete(element)) {
                 resourceService.addLink(resource, clazz, "removeProjectUser", LinkRels.DELETE, idParam);
             }
-            resourceService.addLink(resource, clazz, "retrieveProjectUserList", LinkRels.LIST, MethodParamFactory.build(Pageable.class),
-                                    MethodParamFactory.build(PagedResourcesAssembler.class), MethodParamFactory.build(ProjectUserSearchParameters.class));
+            resourceService.addLink(resource, clazz, "retrieveProjectUserList", LinkRels.LIST, MethodParamFactory.build(ProjectUserSearchParameters.class),
+                                    MethodParamFactory.build(Pageable.class), MethodParamFactory.build(PagedResourcesAssembler.class));
             // Specific links to add in WAITING_ACCESS state
             if (UserStatus.WAITING_ACCESS.equals(element.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest", LinkRelation.of("accept"), idParam);

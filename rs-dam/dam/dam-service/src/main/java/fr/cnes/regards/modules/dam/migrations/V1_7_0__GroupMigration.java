@@ -11,6 +11,7 @@ import org.flywaydb.core.api.migration.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -99,7 +100,8 @@ public class V1_7_0__GroupMigration extends BaseJavaMigration {
 
             try {
                 FeignSecurityManager.asSystem();
-                ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(), 0, 1);
+                ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(),
+                                                                                                                           PageRequest.of(0, 1));
                 if (response != null && response.getStatusCode().is2xxSuccessful()) {
                     PagedModel<EntityModel<ProjectUser>> body = response.getBody();
                     if (body != null) {
@@ -170,7 +172,7 @@ public class V1_7_0__GroupMigration extends BaseJavaMigration {
             FeignSecurityManager.asSystem();
             return HateoasUtils.retrieveAllPages(
                                        100,
-                                       pageable -> projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(), pageable.getPageNumber(), pageable.getPageSize()))
+                                       pageable -> projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(), pageable))
                                .stream()
                                .map(ProjectUser::getEmail)
                                .collect(Collectors.toSet());

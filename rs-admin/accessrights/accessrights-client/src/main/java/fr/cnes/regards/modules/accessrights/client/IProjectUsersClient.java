@@ -23,6 +23,8 @@ import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import org.springframework.cloud.openfeign.SpringQueryMap;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
@@ -52,25 +54,20 @@ public interface IProjectUsersClient {
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
      *
-     * @param page       page index
-     * @param size       page size
      * @param parameters search parameters as request params
      * @return a {@link List} of {@link ProjectUser}
      */
     @GetMapping(value = ROOT_PATH, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
-            @RequestParam ProjectUserSearchParameters parameters, @RequestParam("page") int page, @RequestParam("size") int size
-    );
+        @RequestParam ProjectUserSearchParameters parameters, @SpringQueryMap Pageable pageable);
 
     /**
      * Retrieve all users with a pending access request.
      *
-     * @param page page index
-     * @param size page size
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
      */
     @GetMapping(value = ROOT_PATH + "/pendingaccesses", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(@RequestParam("page") int page, @RequestParam("size") int size);
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(@SpringQueryMap Pageable pageable);
 
     @PostMapping(value = ROOT_PATH, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody final AccessRequestDto pDto);
@@ -135,27 +132,23 @@ public interface IProjectUsersClient {
      * retrieveRoleProjectUserList
      *
      * @param pRoleId role identifier to retrieve users.
-     * @param page    page index
-     * @param size    page size
+     *
      * @return {@link PagedModel} of {@link ProjectUser}
      */
     @GetMapping(value = ROOT_PATH + "/roles/{role_id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(
-            @PathVariable("role_id") final Long pRoleId, @RequestParam("page") int page, @RequestParam("size") int size
-    );
+            @PathVariable("role_id") final Long pRoleId, @SpringQueryMap Pageable pageable);
 
     /**
      * Retrieve pages of project user which role, represented by its name, is the one provided
      *
      * @param pRole role name
-     * @param page  page index
-     * @param size  page size
+     *
      * @return page of project user which role, represented by its name, is the one provided
      */
     @GetMapping(value = ROOT_PATH + "/roles", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(
-            @RequestParam("role_name") String pRole, @RequestParam("page") int page, @RequestParam("size") int size
-    );
+            @RequestParam("role_name") String pRole, @SpringQueryMap Pageable pageable);
 
     @PostMapping(value = ROOT_PATH + "/email/{email}/groups", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> linkAccessGroups(@PathVariable("email") String email, @RequestBody List<String> groups);

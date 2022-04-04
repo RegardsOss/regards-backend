@@ -123,7 +123,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         return completeUserPagedResponseWithQuotas(
                 () -> {
                     FeignSecurityManager.asSystem();
-                    return projectUsersClient.retrieveProjectUserList(parameters, pageable.getPageNumber(), pageable.getPageSize());
+                    return projectUsersClient.retrieveProjectUserList(parameters, pageable);
                 },
                 pageable,
                 assembler
@@ -145,7 +145,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         return completeUserPagedResponseWithQuotas(
                 () -> {
                     FeignSecurityManager.asSystem();
-                    return projectUsersClient.retrieveAccessRequestList(pageable.getPageNumber(), pageable.getPageSize());
+                    return projectUsersClient.retrieveAccessRequestList(pageable);
                 },
                 pageable,
                 assembler
@@ -333,7 +333,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         return completeUserPagedResponseWithQuotas(
                 () -> {
                     FeignSecurityManager.asSystem();
-                    return projectUsersClient.retrieveRoleProjectUserList(roleId, pageable.getPageNumber(), pageable.getPageSize());
+                    return projectUsersClient.retrieveRoleProjectUserList(roleId, pageable);
                 },
                 pageable,
                 assembler
@@ -359,7 +359,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         return completeUserPagedResponseWithQuotas(
                 () -> {
                     FeignSecurityManager.asSystem();
-                    return projectUsersClient.retrieveRoleProjectUsersList(role, pageable.getPageNumber(), pageable.getPageSize());
+                    return projectUsersClient.retrieveRoleProjectUsersList(role, pageable);
                 },
                 pageable,
                 assembler

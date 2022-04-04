@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
@@ -50,8 +51,8 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     private static List<ProjectUser> users = new ArrayList<>();
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, int pPage, int pSize) {
-        final PageMetadata metadata = new PageMetadata(pSize, pPage, users.size());
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, Pageable pageable) {
+        final PageMetadata metadata = new PageMetadata(pageable.getPageSize(), pageable.getPageNumber(), users.size());
         final PagedModel<EntityModel<ProjectUser>> resource = PagedModel.of(HateoasUtils.wrapList(users), metadata,
                 new ArrayList<>());
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -84,20 +85,17 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(final int pPage,
-            final int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(Pageable pageable) {
         return null;
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId,
-            final int pPage, final int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(final Long pRoleId, Pageable pageable) {
         return null;
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage,
-            int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, Pageable page) {
         return null;
     }
 

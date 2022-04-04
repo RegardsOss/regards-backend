@@ -5,6 +5,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +22,12 @@ import java.util.List;
 public class ProjectUsersClientMock implements IProjectUsersClient {
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, Pageable pageable) {
         return null;
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(Pageable pageable) {
         return null;
     }
 
@@ -71,12 +72,12 @@ public class ProjectUsersClientMock implements IProjectUsersClient {
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId, Pageable pageable) {
         return null;
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, Pageable pageable) {
         return null;
     }
 

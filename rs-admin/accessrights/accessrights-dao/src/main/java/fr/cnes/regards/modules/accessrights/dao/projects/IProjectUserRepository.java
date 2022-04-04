@@ -20,10 +20,7 @@ package fr.cnes.regards.modules.accessrights.dao.projects;
 
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -79,6 +76,10 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     List<ProjectUser> findAllById(Iterable<Long> ids);
 
+    @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
+    List<ProjectUser> findAllByIdIn(Collection<Long> ids, Sort sort);
+
+
     @Query(value = "select pu.id from ProjectUser pu where pu.status=:status")
     Page<Long> findIdPageByStatus(@Param("status") UserStatus status, Pageable pageable);
 
@@ -116,7 +117,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      */
     default Page<ProjectUser> findByRoleNameIn(Set<String> names, Pageable pageable) {
         Page<Long> idPage = findIdPageByRoleNameIn(names, pageable);
-        List<ProjectUser> projectUsers = findAllById(idPage.getContent());
+        List<ProjectUser> projectUsers = findAllByIdIn(idPage.getContent(), pageable.getSort());
         return new PageImpl<>(projectUsers, idPage.getPageable(), idPage.getTotalElements());
     }
 

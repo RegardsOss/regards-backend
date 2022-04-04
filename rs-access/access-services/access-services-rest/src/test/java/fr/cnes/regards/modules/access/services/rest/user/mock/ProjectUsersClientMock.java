@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.AbstractPageRequest;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -69,12 +70,12 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     private PagedResourcesAssembler<ProjectUser> assembler;
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, Pageable pageable) {
         return singleProjectUserPagedResponse();
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(Pageable pageable) {
         return singleProjectUserPagedResponse();
     }
 
@@ -119,12 +120,12 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId, Pageable pageable) {
         return singleProjectUserPagedResponse();
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, int pPage, int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, Pageable pageable) {
         return singleProjectUserPagedResponse();
     }
 
