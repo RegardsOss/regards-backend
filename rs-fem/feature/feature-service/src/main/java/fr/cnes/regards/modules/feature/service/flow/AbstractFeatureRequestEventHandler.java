@@ -21,6 +21,9 @@ package fr.cnes.regards.modules.feature.service.flow;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import org.springframework.amqp.core.Message;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 /**
  * @author Marc SORDI
@@ -29,8 +32,11 @@ public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHan
 
     private final Class<M> type;
 
-    public AbstractFeatureRequestEventHandler(Class<M> type) {
+    protected Validator validator;
+
+    public AbstractFeatureRequestEventHandler(Class<M> type, Validator validator) {
         this.type = type;
+        this.validator = validator;
     }
 
     @Override
@@ -41,6 +47,14 @@ public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHan
     @Override
     public boolean handleConversionError(Message message, String errorMessage) {
         return getFeatureService().denyMessage(message, errorMessage);
+    }
+
+
+    @Override
+    public Errors validate(M message) {
+        Errors errors = new BeanPropertyBindingResult(message, "FeatureCreationRequestEvent");
+        validator.validate(message, errors);
+        return errors;
     }
 
     public abstract IRequestDeniedService getFeatureService();
