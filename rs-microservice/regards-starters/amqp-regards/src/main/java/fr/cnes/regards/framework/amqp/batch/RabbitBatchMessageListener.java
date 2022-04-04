@@ -181,23 +181,32 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
         // Handle messages by tenant
         for (String tenant : convertedMessages.keySet()) {
-
             // Prepare message
             List<BatchMessage> validMessages = new ArrayList<>();
             for (BatchMessage message : convertedMessages.get(tenant)) {
-                if (!tenantResolver.getAllActiveTenants().contains(tenant)) {
-                    // Propagate errors
-                    Errors errors = new MapBindingResult(new HashMap<>(), message.getClass().getName());
-                    errors.reject(INVALID_TENANT_CODE, String.format("Unknown or inactive tenant %s", tenant));
-                    handleInvalidMessage(null, message, channel, errors);
-                } else {
-                    // Message validity check
-                    Errors errors = invokeValidationMethod(tenant, message.getConverted());
-                    if (errors == null || !errors.hasErrors()) {
-                        validMessages.add(message);
+                try {
+                    if (isInvalidMessageFromGlobalDLQ(message.getOrigin(), batchHandler)) {
+                        String errorMessage = String.format(
+                            "x-first-death-exchange found in message headers mismatch with current message %s",
+                            message.getClass().getName());
+                        handleInvalidMessage(tenant, message, channel, errorMessage);
+                    } else if (!tenantResolver.getAllActiveTenants().contains(tenant)) {
+                        // Propagate errors
+                        Errors errors = new MapBindingResult(new HashMap<>(), message.getClass().getName());
+                        errors.reject(INVALID_TENANT_CODE, String.format("Unknown or inactive tenant %s", tenant));
+                        handleInvalidMessage(null, message, channel, errors);
                     } else {
-                        handleInvalidMessage(tenant, message, channel, errors);
+                        // Message validity check
+                        Errors errors = invokeValidationMethod(tenant, message.getConverted());
+                        if (errors == null || !errors.hasErrors()) {
+                            validMessages.add(message);
+                        } else {
+                            handleInvalidMessage(tenant, message, channel, errors);
+                        }
                     }
+                } catch (Throwable e) {
+                    LOGGER.error(e.getMessage(), e);
+                    handleInvalidMessage(tenant, message, channel, e.getMessage());
                 }
             }
 
@@ -213,6 +222,19 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                 }
             }
         }
+    }
+
+    /**
+     * Check into message headers if property x-first-death-exchange exists.
+     * Property exists means message come from DLQ, so check if origin exchange match with current IBatchHandler.
+     * Return true if message cannot be handled by current handler.
+     * @param message Message to check
+     * @param handler BatchHandler
+     * @return boolean
+     */
+    private boolean isInvalidMessageFromGlobalDLQ(Message message, IBatchHandler handler) {
+        String originExchangeName = message.getMessageProperties().getHeader("x-first-death-exchange");
+        return originExchangeName != null && handler.getType() != null && !originExchangeName.endsWith(handler.getType().getName());
     }
 
     protected Errors invokeValidationMethod(String tenant, Object message) {
@@ -310,21 +332,22 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     }
 
     private void handleInvalidMessage(String tenant, BatchMessage invalidMessage, Channel channel, Errors errors) {
+        handleInvalidMessage(tenant, invalidMessage, channel, getErrorsAsString(errors));
+    }
 
-        // Get errors
-        String details = getErrorsAsString(errors);
+    private void handleInvalidMessage(String tenant, BatchMessage invalidMessage, Channel channel, String errorMessage) {
+        String logMsg = String
+            .format("[%s] For handler %s [%s] : %s", INVALID_MESSAGE_TITLE, batchHandler.getClass().getName(),
+                    errorMessage, invalidMessage.toString());
 
-        String errorMessage = String
-                .format("[%s] For handler %s [%s] : %s", INVALID_MESSAGE_TITLE, batchHandler.getClass().getName(),
-                        details, invalidMessage.toString());
-        LOGGER.error(errorMessage);
+        LOGGER.error(logMsg);
 
         // Send notification
         sendNotification(tenant, INVALID_MESSAGE_TITLE, errorMessage);
 
         // Reject message
         rejectMessage(tenant, invalidMessage.getOrigin(), channel,
-                      String.format("%s : %s", INVALID_MESSAGE_TITLE, details), null);
+                      String.format("%s : %s", INVALID_MESSAGE_TITLE, errorMessage), null);
     }
 
     private void handleMissingTenantError(Message message, Channel channel) {

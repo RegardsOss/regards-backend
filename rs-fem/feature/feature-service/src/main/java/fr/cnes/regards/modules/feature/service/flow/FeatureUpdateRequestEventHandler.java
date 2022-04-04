@@ -28,12 +28,11 @@ import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 import java.util.List;
 
@@ -49,28 +48,25 @@ public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEven
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateRequestEventHandler.class);
 
-    @Autowired
     private FeatureConfigurationProperties confProperties;
 
-    @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
     private IFeatureUpdateService featureService;
 
-    public FeatureUpdateRequestEventHandler() {
-        super(FeatureUpdateRequestEvent.class);
+    public FeatureUpdateRequestEventHandler(FeatureConfigurationProperties confProperties,
+                                            ISubscriber subscriber,
+                                            IFeatureUpdateService featureService,
+                                            Validator validator) {
+        super(FeatureUpdateRequestEvent.class, validator);
+        this.confProperties = confProperties;
+        this.subscriber = subscriber;
+        this.featureService = featureService;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(FeatureUpdateRequestEvent.class, this);
-    }
-
-    @Override
-    public Errors validate(FeatureUpdateRequestEvent message) {
-        // FIXME
-        return null;
     }
 
     @Override

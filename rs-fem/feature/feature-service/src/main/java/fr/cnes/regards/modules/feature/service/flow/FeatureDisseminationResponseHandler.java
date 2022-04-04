@@ -21,13 +21,13 @@ package fr.cnes.regards.modules.feature.service.flow;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
-import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
 import fr.cnes.regards.modules.feature.service.request.FeatureUpdateDisseminationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 import java.util.List;
 
@@ -38,16 +38,21 @@ import java.util.List;
  */
 @Component
 public class FeatureDisseminationResponseHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<DisseminationAckEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<DisseminationAckEvent> {
 
-    @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
-    private IFeatureUpdateService featureUpdateService;
-
-    @Autowired
     private FeatureUpdateDisseminationService featureUpdateDisseminationService;
+
+    private Validator validator;
+
+    public FeatureDisseminationResponseHandler(ISubscriber subscriber,
+                                               FeatureUpdateDisseminationService featureUpdateDisseminationService,
+                                               Validator validator) {
+        this.subscriber = subscriber;
+        this.featureUpdateDisseminationService = featureUpdateDisseminationService;
+        this.validator = validator;
+    }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -56,7 +61,9 @@ public class FeatureDisseminationResponseHandler
 
     @Override
     public Errors validate(DisseminationAckEvent message) {
-        return null;
+        Errors errors = new BeanPropertyBindingResult(message, message.getClass().getName());
+        validator.validate(message, errors);
+        return errors;
     }
 
     @Override
@@ -64,7 +71,8 @@ public class FeatureDisseminationResponseHandler
         LOGGER.debug("[DISSEMINATION ACK HANDLER] Bulk handling {} DisseminationAckEvent...", messages.size());
         long start = System.currentTimeMillis();
         featureUpdateDisseminationService.saveAckRequests(messages);
-        LOGGER.debug("[DISSEMINATION ACK HANDLER] {} DisseminationAckEvent events handled in {} ms", messages.size(),
+        LOGGER.debug("[DISSEMINATION ACK HANDLER] {} DisseminationAckEvent events handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 }

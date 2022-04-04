@@ -21,8 +21,6 @@ package fr.cnes.regards.modules.feature.service.flow;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
@@ -32,12 +30,11 @@ import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 import java.util.List;
 
@@ -49,27 +46,30 @@ import java.util.List;
 @Component
 @Profile("!noFemHandler")
 public class FeatureCreationRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureCreationRequestEvent>
-        implements IBatchHandler<FeatureCreationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+    implements IBatchHandler<FeatureCreationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCreationRequestEventHandler.class);
 
-    @Autowired
     private FeatureConfigurationProperties confProperties;
 
-    @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
     private IPublisher publisher;
 
-    @Autowired
     private IFeatureCreationService featureService;
 
-    @Autowired
     private ITenantResolver tenantResolver;
 
-    public FeatureCreationRequestEventHandler() {
-        super(FeatureCreationRequestEvent.class);
+    public FeatureCreationRequestEventHandler(FeatureConfigurationProperties confProperties,
+                                              ISubscriber subscriber, IPublisher publisher,
+                                              IFeatureCreationService featureService, ITenantResolver tenantResolver,
+                                              Validator validator) {
+        super(FeatureCreationRequestEvent.class, validator);
+        this.confProperties = confProperties;
+        this.subscriber = subscriber;
+        this.publisher = publisher;
+        this.featureService = featureService;
+        this.tenantResolver = tenantResolver;
     }
 
     @Override
@@ -80,17 +80,12 @@ public class FeatureCreationRequestEventHandler extends AbstractFeatureRequestEv
     }
 
     @Override
-    public Errors validate(FeatureCreationRequestEvent message) {
-        // FIXME
-        return null;
-    }
-
-    @Override
     public void handleBatch(List<FeatureCreationRequestEvent> messages) {
         long start = System.currentTimeMillis();
         RequestInfo<String> requestInfo = featureService.registerRequests(messages);
         LOGGER.info("{} granted request(s) and {} denied request(s) registered in {} ms",
-                    requestInfo.getGranted().size(), requestInfo.getDenied().keySet().size(),
+                    requestInfo.getGranted().size(),
+                    requestInfo.getDenied().keySet().size(),
                     System.currentTimeMillis() - start);
     }
 

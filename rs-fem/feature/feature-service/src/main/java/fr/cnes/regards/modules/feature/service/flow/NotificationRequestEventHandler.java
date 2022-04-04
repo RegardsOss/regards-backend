@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
+import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 import java.util.List;
 
@@ -47,28 +48,26 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestEventHandler.class);
 
-    @Autowired
     private FeatureConfigurationProperties confProperties;
 
-    @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
     private IFeatureNotificationService notificationService;
 
-    public NotificationRequestEventHandler() {
-        super(FeatureNotificationRequestEvent.class);
+    public NotificationRequestEventHandler(FeatureConfigurationProperties confProperties,
+                                           ISubscriber subscriber,
+                                           IFeatureNotificationService featureService,
+                                           Validator validator) {
+        super(FeatureNotificationRequestEvent.class, validator);
+        this.confProperties = confProperties;
+        this.subscriber = subscriber;
+        this.notificationService = featureService;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(FeatureNotificationRequestEvent.class, this);
-    }
 
-    @Override
-    public Errors validate(FeatureNotificationRequestEvent message) {
-        // FIXME
-        return null;
     }
 
     @Override
