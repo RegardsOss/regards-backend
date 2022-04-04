@@ -25,9 +25,7 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -106,9 +104,14 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private final IAmqpAdmin amqpAdmin;
 
-    public RabbitBatchMessageListener(IAmqpAdmin amqpAdmin, String microserviceName,
-            IInstancePublisher instancePublisher, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
-            ITenantResolver tenantResolver, MessageConverter messageConverter, IBatchHandler<?> batchHandler) {
+    public RabbitBatchMessageListener(IAmqpAdmin amqpAdmin,
+                                      String microserviceName,
+                                      IInstancePublisher instancePublisher,
+                                      IPublisher publisher,
+                                      IRuntimeTenantResolver runtimeTenantResolver,
+                                      ITenantResolver tenantResolver,
+                                      MessageConverter messageConverter,
+                                      IBatchHandler<?> batchHandler) {
         this.amqpAdmin = amqpAdmin;
         this.microserviceName = microserviceName;
         this.instancePublisher = instancePublisher;
@@ -128,7 +131,8 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             errors.getAllErrors().forEach(error -> {
                 if (error instanceof FieldError) {
                     FieldError fieldError = (FieldError) error;
-                    err.add(String.format("%s at %s: rejected value [%s].", fieldError.getDefaultMessage(),
+                    err.add(String.format("%s at %s: rejected value [%s].",
+                                          fieldError.getDefaultMessage(),
                                           fieldError.getField(),
                                           ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
                 } else {
@@ -154,62 +158,12 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     @Override
     public void onMessageBatch(List<Message> messages, Channel channel) {
 
-        // Map of messages by tenant
-        Multimap<String, BatchMessage> convertedMessages = ArrayListMultimap.create();
-
         // Convert messages
-        for (Message message : messages) {
-
-            try {
-                setDefaultHeaders(message);
-                Object converted = messageConverter.fromMessage(message);
-                if (RabbitVersion.isVersion1(message) && TenantWrapper.class.isAssignableFrom(converted.getClass())) {
-                    // REGARDS API V1.0
-                    TenantWrapper<?> wrapper = (TenantWrapper<?>) converted;
-                    convertedMessages.put(wrapper.getTenant(), buildBatchMessage(message, wrapper.getContent()));
-                } else if (RabbitVersion.isVersion1_1(message)) {
-                    // REGARDS API V1.1
-                    String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
-                    convertedMessages.put(tenant, buildBatchMessage(message, converted));
-                } else {
-                    handleMissingTenantError(message, channel);
-                }
-            } catch (MessageConversionException mce) {
-                handleConversionError(message, channel, mce);
-            }
-        }
+        Multimap<String, BatchMessage> convertedMessages = convertMessagesByTenant(messages, channel);
 
         // Handle messages by tenant
         for (String tenant : convertedMessages.keySet()) {
-            // Prepare message
-            List<BatchMessage> validMessages = new ArrayList<>();
-            for (BatchMessage message : convertedMessages.get(tenant)) {
-                try {
-                    if (isInvalidMessageFromGlobalDLQ(message.getOrigin(), batchHandler)) {
-                        String errorMessage = String.format(
-                            "x-first-death-exchange found in message headers mismatch with current message %s",
-                            message.getClass().getName());
-                        handleInvalidMessage(tenant, message, channel, errorMessage);
-                    } else if (!tenantResolver.getAllActiveTenants().contains(tenant)) {
-                        // Propagate errors
-                        Errors errors = new MapBindingResult(new HashMap<>(), message.getClass().getName());
-                        errors.reject(INVALID_TENANT_CODE, String.format("Unknown or inactive tenant %s", tenant));
-                        handleInvalidMessage(null, message, channel, errors);
-                    } else {
-                        // Message validity check
-                        Errors errors = invokeValidationMethod(tenant, message.getConverted());
-                        if (errors == null || !errors.hasErrors()) {
-                            validMessages.add(message);
-                        } else {
-                            handleInvalidMessage(tenant, message, channel, errors);
-                        }
-                    }
-                } catch (Throwable e) {
-                    LOGGER.error(e.getMessage(), e);
-                    handleInvalidMessage(tenant, message, channel, e.getMessage());
-                }
-            }
-
+            List<BatchMessage> validMessages = getValidMessages(convertedMessages.get(tenant), tenant, channel);
             if (!validMessages.isEmpty()) {
                 try {
                     // Launch valid message processing
@@ -228,13 +182,117 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
      * Check into message headers if property x-first-death-exchange exists.
      * Property exists means message come from DLQ, so check if origin exchange match with current IBatchHandler.
      * Return true if message cannot be handled by current handler.
+     *
      * @param message Message to check
-     * @param handler BatchHandler
-     * @return boolean
+     * @param tenant
+     * @param channel
+     * @return boolean true if valid
      */
-    private boolean isInvalidMessageFromGlobalDLQ(Message message, IBatchHandler handler) {
-        String originExchangeName = message.getMessageProperties().getHeader("x-first-death-exchange");
-        return originExchangeName != null && handler.getType() != null && !originExchangeName.endsWith(handler.getType().getName());
+    private boolean handleInvalidMessageFromDLQ(BatchMessage message, String tenant, Channel channel) {
+        String originExchangeName = message.getOrigin().getMessageProperties().getHeader("x-first-death-exchange");
+        boolean isValid = originExchangeName == null || batchHandler.getType() == null || originExchangeName.endsWith(
+            batchHandler.getType().getName());
+        if (!isValid) {
+            String errorMessage = String.format(
+                "x-first-death-exchange found in message headers mismatch with current message %s",
+                message.getClass().getName());
+            handleInvalidMessage(tenant, message, channel, errorMessage);
+        }
+        return isValid;
+    }
+
+    /**
+     * Check if message tenant is associated to a current active tenant.
+     *
+     * @param message
+     * @param tenant
+     * @param channel
+     * @return true if valid
+     */
+    private boolean handleInvalidMessageTentant(BatchMessage message, String tenant, Channel channel) {
+        boolean isValid = tenantResolver.getAllActiveTenants().contains(tenant);
+        if (!isValid) {
+            // Propagate errors
+            Errors errors = new MapBindingResult(new HashMap<>(), message.getClass().getName());
+            errors.reject(INVALID_TENANT_CODE, String.format("Unknown or inactive tenant %s", tenant));
+            handleInvalidMessage(null, message, channel, errors);
+        }
+        return isValid;
+    }
+
+    /**
+     * Validate message with handler delegated function
+     *
+     * @param message
+     * @param tenant
+     * @param channel
+     * @return true if valid
+     */
+    private boolean validateMessage(BatchMessage message, String tenant, Channel channel) {
+        Errors errors = invokeValidationMethod(tenant, message.getConverted());
+        if (errors != null && errors.hasErrors()) {
+            handleInvalidMessage(tenant, message, channel, errors);
+        }
+        return errors == null || !errors.hasErrors();
+    }
+
+    /**
+     * Concert {@link Message}s to {@link BatchMessage}s
+     * @param messages
+     * @param channel
+     * @return
+     */
+    private Multimap<String, BatchMessage> convertMessagesByTenant(List<Message> messages, Channel channel) {
+        // Map of messages by tenant
+        Multimap<String, BatchMessage> convertedMessages = ArrayListMultimap.create();
+        // Convert messages
+        for (Message message : messages) {
+            try {
+                setDefaultHeaders(message);
+                Object converted = messageConverter.fromMessage(message);
+                String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+                if (tenant != null && !tenant.isEmpty()) {
+                    convertedMessages.put(tenant, buildBatchMessage(message, converted));
+                } else {
+                    handleMissingTenantError(message, channel);
+                }
+            } catch (MessageConversionException mce) {
+                handleConversionError(message, channel, mce);
+            }
+        }
+        return convertedMessages;
+    }
+
+    /**
+     * Return valid messages from given ones.
+     * Messages are validated by :
+     * - associated to an active tenant
+     * - If message from DLQ, origin exchange is the same as the current handler
+     * - Valide message with current handler delegated function
+     *
+     * @param convertedMessages %essages to validate
+     * @param tenant            Message tenant
+     * @param channel           Amq channel
+     * @return
+     */
+    private List<BatchMessage> getValidMessages(Collection<BatchMessage> convertedMessages,
+                                                String tenant,
+                                                Channel channel) {
+        List<BatchMessage> validMessages = new ArrayList<>();
+        for (BatchMessage message : convertedMessages) {
+            try {
+                boolean isValid = handleInvalidMessageFromDLQ(message, tenant, channel);
+                isValid &= handleInvalidMessageTentant(message, tenant, channel);
+                isValid &= validateMessage(message, tenant, channel);
+                if (isValid) {
+                    validMessages.add(message);
+                }
+            } catch (Throwable e) {
+                LOGGER.error(e.getMessage(), e);
+                handleInvalidMessage(tenant, message, channel, e.getMessage());
+            }
+        }
+        return validMessages;
     }
 
     protected Errors invokeValidationMethod(String tenant, Object message) {
@@ -286,7 +344,8 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             methodInvoker.invoke();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassNotFoundException ex) {
             LOGGER.error(String.format("Fail to invoke handler %s#%s with following raw exception",
-                                       batchHandler.getClass().getName(), HANDLE_METHOD_NAME), ex);
+                                       batchHandler.getClass().getName(),
+                                       HANDLE_METHOD_NAME), ex);
             ArrayList<String> arrayClass = new ArrayList<>();
             if (arguments != null) {
                 for (Object argument : arguments) {
@@ -294,10 +353,11 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                 }
             }
             throw new ListenerExecutionFailedException(
-                    "Fail to invoke target method '" + HANDLE_METHOD_NAME + "' with argument type = [" + StringUtils
-                            .collectionToCommaDelimitedString(arrayClass) + "], value = [" + ObjectUtils
-                            .nullSafeToString(arguments) + "]", ex,
-                    originalMessages.toArray(new Message[originalMessages.size()]));
+                "Fail to invoke target method '" + HANDLE_METHOD_NAME + "' with argument type = ["
+                    + StringUtils.collectionToCommaDelimitedString(arrayClass) + "], value = ["
+                    + ObjectUtils.nullSafeToString(arguments) + "]",
+                ex,
+                originalMessages.toArray(new Message[originalMessages.size()]));
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -316,9 +376,10 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     private void handleBatchException(String tenant, List<BatchMessage> validMessages, Channel channel, Exception ex) {
 
         // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String
-                .format("[%s] All messages are routed to DLQ for handler %s : %s", BATCH_PROCESSING_FAILURE_TITLE,
-                        batchHandler.getClass().getName(), ex.getMessage());
+        String errorMessage = String.format("[%s] All messages are routed to DLQ for handler %s : %s",
+                                            BATCH_PROCESSING_FAILURE_TITLE,
+                                            batchHandler.getClass().getName(),
+                                            ex.getMessage());
         LOGGER.error(errorMessage, ex);
 
         // Send notification
@@ -335,10 +396,15 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         handleInvalidMessage(tenant, invalidMessage, channel, getErrorsAsString(errors));
     }
 
-    private void handleInvalidMessage(String tenant, BatchMessage invalidMessage, Channel channel, String errorMessage) {
-        String logMsg = String
-            .format("[%s] For handler %s [%s] : %s", INVALID_MESSAGE_TITLE, batchHandler.getClass().getName(),
-                    errorMessage, invalidMessage.toString());
+    private void handleInvalidMessage(String tenant,
+                                      BatchMessage invalidMessage,
+                                      Channel channel,
+                                      String errorMessage) {
+        String logMsg = String.format("[%s] For handler %s [%s] : %s",
+                                      INVALID_MESSAGE_TITLE,
+                                      batchHandler.getClass().getName(),
+                                      errorMessage,
+                                      invalidMessage.toString());
 
         LOGGER.error(logMsg);
 
@@ -346,14 +412,19 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         sendNotification(tenant, INVALID_MESSAGE_TITLE, errorMessage);
 
         // Reject message
-        rejectMessage(tenant, invalidMessage.getOrigin(), channel,
-                      String.format("%s : %s", INVALID_MESSAGE_TITLE, errorMessage), null);
+        rejectMessage(tenant,
+                      invalidMessage.getOrigin(),
+                      channel,
+                      String.format("%s : %s", INVALID_MESSAGE_TITLE, errorMessage),
+                      null);
     }
 
     private void handleMissingTenantError(Message message, Channel channel) {
         // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("[%s] While preparing message for handler %s : %s", TENANT_NOT_FOUND,
-                                            batchHandler.getClass().getName(), message.toString());
+        String errorMessage = String.format("[%s] While preparing message for handler %s : %s",
+                                            TENANT_NOT_FOUND,
+                                            batchHandler.getClass().getName(),
+                                            message.toString());
         LOGGER.error(errorMessage);
 
         // Send notification
@@ -365,14 +436,16 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private void handleConversionError(Message message, Channel channel, MessageConversionException ex) {
         // Message cannot be converted
-        String errorMessage = String
-                .format("[%s] While preparing message for handler %s : %s (%s)", CONVERSION_FAILURE_TITLE,
-                        batchHandler.getClass().getName(), message.toString(), ex.getMessage());
+        String errorMessage = String.format("[%s] While preparing message for handler %s : %s (%s)",
+                                            CONVERSION_FAILURE_TITLE,
+                                            batchHandler.getClass().getName(),
+                                            message.toString(),
+                                            ex.getMessage());
         LOGGER.error(errorMessage, ex);
 
         // Send notification
-        if (RabbitVersion.isVersion1_1(message)) {
-            String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+        String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+        if (tenant != null && !tenant.isEmpty()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 if (!batchHandler.handleConversionError(message, errorMessage)) {
@@ -418,8 +491,10 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             boolean republished = false;
             try {
                 // Publish to DLQ
-                publisher.basicPublish(tenant, amqpAdmin.getDefaultDLXName(),
-                                       amqpAdmin.getDedicatedDLRKFromQueueName(consumerQueueName), message);
+                publisher.basicPublish(tenant,
+                                       amqpAdmin.getDefaultDLXName(),
+                                       amqpAdmin.getDedicatedDLRKFromQueueName(consumerQueueName),
+                                       message);
                 republished = true;
             } catch (Exception e) {
                 LOGGER.error("Fail to republish error message into dedicated DLQ", e);
@@ -457,7 +532,9 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     private void sendNotification(String tenant, String title, String errorMessage) {
 
         // Prepare notification
-        NotificationDtoBuilder builder = new NotificationDtoBuilder(errorMessage, title, NotificationLevel.ERROR,
+        NotificationDtoBuilder builder = new NotificationDtoBuilder(errorMessage,
+                                                                    title,
+                                                                    NotificationLevel.ERROR,
                                                                     microserviceName);
         Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
         NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));

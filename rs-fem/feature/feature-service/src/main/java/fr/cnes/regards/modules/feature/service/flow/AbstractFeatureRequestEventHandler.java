@@ -52,7 +52,7 @@ public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHan
 
     @Override
     public Errors validate(M message) {
-        Errors errors = new BeanPropertyBindingResult(message, "FeatureCreationRequestEvent");
+        Errors errors = new BeanPropertyBindingResult(message, message.getClass().getName());
         validator.validate(message, errors);
         return errors;
     }

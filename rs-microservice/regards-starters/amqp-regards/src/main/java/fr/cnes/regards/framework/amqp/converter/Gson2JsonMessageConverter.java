@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.framework.amqp.converter;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-
+import com.google.common.reflect.TypeParameter;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -31,16 +33,11 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.support.converter.AbstractMessageConverter;
 import org.springframework.amqp.support.converter.MessageConversionException;
 
-import com.google.common.reflect.TypeParameter;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 
 /**
  * GSON message converter
@@ -114,13 +111,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
                 typeHeader = message.getMessageProperties().getHeader(WRAPPED_TYPE_HEADER);
             }
             Class<?> eventType = Class.forName((String) typeHeader);
-            if (RabbitVersion.isVersion1_1(message)) {
-                return TypeToken.of(eventType).getType();
-            } else if (RabbitVersion.isVersion1(message)) {
-                return createTypeToken(eventType).getType();
-            } else {
-                throw new MessageConversionException("Unknown message api version");
-            }
+            return TypeToken.of(eventType).getType();
         } catch (ClassNotFoundException e) {
             String errorMessage = String.format(CONVERSION_ERROR, "JAVA event type no found");
             LOGGER.error(errorMessage, e);
