@@ -29,6 +29,7 @@ import com.rometools.rome.feed.synd.SyndPerson;
 import com.rometools.rome.feed.synd.SyndPersonImpl;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.search.OpenSearchMediaType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
@@ -49,8 +50,8 @@ import java.util.List;
  * <li>{@link IOpenSearchExtension}s for additional extensions like geo+time or media.</li>
  * </ul>
  *
- * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  */
 public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed> {
 
@@ -60,11 +61,11 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     public static final String ATOM_VERSION = "atom_1.0";
 
     protected final Gson gson;
+
     public AtomResponseFormatter(Gson gson, String token) {
         super(token);
         this.gson = gson;
     }
-
 
     @Override
     public void clear() {
@@ -87,7 +88,6 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     protected Entry buildFeature() {
         return new Entry();
     }
-
 
     @Override
     protected void addResponseLanguage(String language) {
@@ -112,7 +112,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
         OpenSearchModuleImpl osm = getResponseOpenSearchModule();
 
         // Add the query from opensearch module
-         OSQuery query = new OSQuery();
+        OSQuery query = new OSQuery();
         if ((context.getQueryParams() != null) && context.getQueryParams().containsKey("q")) {
             query.setSearchTerms(context.getQueryParams().get("q").get(0));
         }
@@ -144,7 +144,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     protected void addResponsePaginationInfos(long totalResults, long startIndex, int itemsPerPage) {
         OpenSearchModuleImpl osm = getResponseOpenSearchModule();
         osm.setItemsPerPage(itemsPerPage);
-        osm.setStartIndex((int)startIndex + 1);
+        osm.setStartIndex((int) startIndex + 1);
         osm.setTotalResults((int) totalResults);
     }
 
@@ -169,6 +169,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     protected void addResponseId(String searchId) {
         response.setId(searchId);
     }
+
     @Override
     protected void addFeatureUpdated(OffsetDateTime date) {
         this.feature.setUpdated(new Date(date.toEpochSecond()));
@@ -208,7 +209,18 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void updateEntityWithExtension(IOpenSearchExtension extension, EntityFeature entity, List<ParameterConfiguration> paramConfigurations) {
+    protected void addFeatureServices(DataFile firstRawData) {
+        Link rawdataLink = new Link();
+        rawdataLink.setHref(firstRawData.getUri());
+        rawdataLink.setType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        rawdataLink.setTitle(String.format("Download rawdata for product %s", feature.getId()));
+        this.feature.getAlternateLinks().add(rawdataLink);
+    }
+
+    @Override
+    protected void updateEntityWithExtension(IOpenSearchExtension extension,
+                                             EntityFeature entity,
+                                             List<ParameterConfiguration> paramConfigurations) {
         extension.formatAtomResponseEntry(entity, paramConfigurations, this.feature, gson, scope);
     }
 

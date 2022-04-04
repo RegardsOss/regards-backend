@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter;
 
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Configuration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
@@ -31,7 +33,9 @@ import org.springframework.hateoas.Link;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Léo Mieulet
@@ -129,6 +133,7 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
         addFeatureTitle(entity.getLabel());
         addFeatureProviderId(entity.getProviderId());
         addFeatureUpdated(entity.getLastUpdate());
+        addFeatureServices(entity.getFeature());
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {
@@ -143,6 +148,16 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
     protected abstract void updateEntityWithExtension(IOpenSearchExtension extension,
                                                       EntityFeature entity,
                                                       List<ParameterConfiguration> paramConfigurations);
+
+    private void addFeatureServices(EntityFeature entity) {
+        Collection<DataFile> rawdataDataFiles = entity.getFiles().get(DataType.RAWDATA);
+        Optional<DataFile> firstRawData = rawdataDataFiles.stream().findFirst();
+        if (firstRawData.isPresent()) {
+            addFeatureServices(firstRawData.get());
+        }
+    }
+
+    protected abstract void addFeatureServices(DataFile firstRawData);
 
     protected abstract void addFeatureUpdated(OffsetDateTime date);
 

@@ -221,6 +221,9 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
                 String providerId = feature.getAsJsonPrimitive("providerId").getAsString();
 
                 DataObject dataObject = new DataObject(dataModel, getDefaultTenant(), providerId, label);
+                UniformResourceName ipId = UniformResourceName.fromString(feature.getAsJsonPrimitive("id")
+                                                                              .getAsString());
+                dataObject.setIpId(ipId);
                 dataObject.setCreationDate(OffsetDateTime.now());
                 // Not all products share the same platform name; so we use it to have two different date
                 if (getStringProperty(properties, "PlatformName").get().getValue().equals("SPOT4")) {
@@ -334,6 +337,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         Boolean online = fileAsObj.get("online").getAsBoolean();
         Boolean reference = fileAsObj.get("reference").getAsBoolean();
         DataFile dataFile = DataFile.build(dataType, filename, uri, mimeType, online, reference);
+
+        dataFile.setChecksum(fileAsObj.get("checksum").getAsString());
         JsonElement imageHeight = fileAsObj.get("imageHeight");
         if (imageHeight != null) {
             dataFile.setImageHeight(imageHeight.getAsDouble());
@@ -463,6 +468,9 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.expectValue("$.features[0].properties.thumbnail", thumbnailURL);
         // There is no quicklook inside this product, so quicklook value is also thumbnailURL
         customizer.expectValue("$.features[0].properties.quicklook", thumbnailURL);
+
+        customizer.expectValueMatchesPattern("$.features[0].properties.services.download.url",
+                                             "https://regards.cnes.fr/api/v1/rs-catalog/downloads/URN:AIP:DATA:swh:a4456e48-3e24-3c32-baea-093b1f63e85d:V1/files/.*");
 
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,

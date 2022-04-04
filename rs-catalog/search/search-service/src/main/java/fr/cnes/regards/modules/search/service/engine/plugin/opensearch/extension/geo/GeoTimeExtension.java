@@ -93,6 +93,8 @@ public class GeoTimeExtension extends AbstractExtension {
     @Override
     public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Feature feature, String token) {
         feature.setGeometry(entity.getGeometry());
+        // The normalized geometry is only used during ES research and should not be returned inside OpenSearch results
+        feature.setNormalizedGeometry(null);
     }
 
     @Override
