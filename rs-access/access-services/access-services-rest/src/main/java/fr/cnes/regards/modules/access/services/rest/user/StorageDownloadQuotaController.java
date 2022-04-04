@@ -116,6 +116,8 @@ public class StorageDownloadQuotaController {
         Supplier<V> orElse
     ) throws ModuleException {
         return Try.ofSupplier(action)
+            // response should be remapped because of a "bug" somewhere in spring that does not treat headers as case-insentive while feign does
+            .map(response->new ResponseEntity<>(response.getBody(), response.getStatusCode()))
             // add FeignSecurityManager.reset call so that security is properly handled in case quotaSupplier usurp identity. Otherwise, reset just set back the value per default
             .andFinally(FeignSecurityManager::reset)
             // special value for frontend if any error on storage or storage not deploy
