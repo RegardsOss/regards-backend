@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
-import org.springframework.util.ErrorHandler;
-
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
@@ -35,6 +25,15 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
+import org.springframework.util.ErrorHandler;
+
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Marc SORDI
@@ -89,18 +88,19 @@ public class RegardsErrorHandler implements ErrorHandler {
                 instancePublisher.publish(event);
 
                 // Try to publish to PROJECT_ADMIN looking for tenant to properly route the notification
-                if (RabbitVersion.isVersion1_1(lefe.getFailedMessage())) {
-                    String tenant = lefe.getFailedMessage().getMessageProperties()
-                            .getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
-                    if (tenant != null) {
-                        try {
-                            // Route notification to the right tenant
-                            runtimeTenantResolver.forceTenant(tenant);
-                            publisher.publish(event);
-                        } finally {
-                            runtimeTenantResolver.clearTenant();
-                        }
+                String tenant = lefe.getFailedMessage()
+                    .getMessageProperties()
+                    .getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+                if (tenant != null && !tenant.isEmpty()) {
+                    try {
+                        // Route notification to the right tenant
+                        runtimeTenantResolver.forceTenant(tenant);
+                        publisher.publish(event);
+                    } finally {
+                        runtimeTenantResolver.clearTenant();
                     }
+                } else {
+                    LOGGER.error("Invalid message. Missing tenant header !");
                 }
             }
         } else {

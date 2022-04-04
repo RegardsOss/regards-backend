@@ -25,7 +25,6 @@ import org.springframework.amqp.support.converter.MessageConversionException;
 import com.rabbitmq.client.Channel;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 
 /**
  * @author Marc SORDI
@@ -38,13 +37,11 @@ public class RabbitMessageListenerAdapter extends MessageListenerAdapter {
 
     @Override
     protected Object[] buildListenerArguments(Object extractedMessage, Channel channel, Message message) {
-        if (RabbitVersion.isVersion1_1(message)) {
-            String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+        String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+        if (tenant != null && !tenant.isEmpty()) {
             return new Object[] { tenant, extractedMessage };
-        } else if (RabbitVersion.isVersion1(message)) {
-            return new Object[] { extractedMessage };
         } else {
-            throw new MessageConversionException("Unknown message api version");
+            throw new MessageConversionException("Invalid message. Missing tenant header.");
         }
     }
 }
