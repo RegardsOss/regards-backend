@@ -60,6 +60,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static fr.cnes.regards.modules.order.domain.log.LogUtils.ORDER_ID_LOG_KEY;
+
 @Service
 @MultitenantTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -206,7 +208,7 @@ public class OrderService implements IOrderService {
 
         try {
             // Set log correlation id
-            CorrelationIdUtils.setCorrelationId("ORDER_ID=" + order.getId().toString());
+            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
             // Set basket owner to order (PM54)
             String newBasketOwner = IOrderService.BASKET_OWNER_PREFIX + order.getId();
@@ -239,13 +241,13 @@ public class OrderService implements IOrderService {
 
         try {
             // Set log correlation id
-            CorrelationIdUtils.setCorrelationId("ORDER_ID=" + order.getId().toString());
+            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
             // Ask for all jobInfos abortion
             order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo).forEach(jobInfo -> {
                 if (jobInfo != null) {
                     // Set log correlation id
-                    CorrelationIdUtils.setCorrelationId("ORDER_ID=" + order.getId().toString());
+                    CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
                     jobInfoService.stopJob(jobInfo.getId());
                 }
             });
@@ -264,7 +266,7 @@ public class OrderService implements IOrderService {
 
         try {
             // Set log correlation id
-            CorrelationIdUtils.setCorrelationId("ORDER_ID=" + order.getId().toString());
+            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
             // Passes all ABORTED jobInfo to PENDING
             order.getDatasetTasks().stream()
@@ -273,7 +275,7 @@ public class OrderService implements IOrderService {
                     .filter(jobInfo -> jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
                     .forEach(jobInfo -> {
                         // Set log correlation id
-                        CorrelationIdUtils.setCorrelationId("ORDER_ID=" + order.getId().toString());
+                        CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
                         jobInfo.updateStatus(JobStatus.PENDING);
                         jobInfoService.save(jobInfo);
                     });
@@ -294,7 +296,7 @@ public class OrderService implements IOrderService {
 
         try {
             // Set log correlation id
-            CorrelationIdUtils.setCorrelationId("ORDER_ID=" + order.getId().toString());
+            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
             // Delete all order data files
             dataFileService.removeAll(order.getId());
@@ -347,7 +349,7 @@ public class OrderService implements IOrderService {
 
         try {
             // Set log correlation id
-            CorrelationIdUtils.setCorrelationId("ORDER_ID=" + order.getId().toString());
+            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
             orderRetryService.asyncCompleteRetry(order.getId(), orderOwnerRole, orderSettingsService.getUserOrderParameters().getSubOrderDuration(), runtimeTenantResolver.getTenant());
         } finally {
@@ -362,7 +364,7 @@ public class OrderService implements IOrderService {
 
         try {
             // Set log correlation id
-            CorrelationIdUtils.setCorrelationId("ORDER_ID=" + order.getId().toString());
+            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
             // Data files have already been deleted so there's only the basket and the order to remove
             basketService.deleteIfExists(BASKET_OWNER_PREFIX + order.getId());

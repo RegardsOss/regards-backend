@@ -60,6 +60,8 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.time.OffsetDateTime;
 import java.util.*;
 
+import static fr.cnes.regards.modules.order.domain.log.LogUtils.ORDER_ID_LOG_KEY;
+
 @Service
 @RefreshScope
 @MultitenantTransactional
@@ -114,7 +116,7 @@ public class OrderCreationService implements IOrderCreationService {
         runtimeTenantResolver.forceTenant(tenant);
         try {
             // Set log correlation id
-            CorrelationIdUtils.setCorrelationId("ORDER_ID" + orderId.toString());
+            CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + orderId);
 
             self.completeOrderCreation(basket, orderId, role, subOrderDuration, tenant);
         } finally {
