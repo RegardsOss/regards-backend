@@ -95,11 +95,11 @@ public class MediaExtension extends AbstractExtension {
     }
 
     @Override
-    public void formatGeoJsonResponseFeature(EntityFeature entity,
+    public void formatGeoJsonResponseFeature(AbstractEntity<EntityFeature> entity,
                                              List<ParameterConfiguration> paramConfigurations,
                                              Feature feature,
                                              String scope) {
-        Multimap<DataType, DataFile> medias = getMedias(entity);
+        Multimap<DataType, DataFile> medias = getMedias(entity.getFeature());
         Object obj = feature.getProperties().get("links");
         if (obj instanceof List<?>) {
             @SuppressWarnings("unchecked") List<GeoJsonLink> links = (List<GeoJsonLink>) obj;
@@ -179,12 +179,12 @@ public class MediaExtension extends AbstractExtension {
     }
 
     @Override
-    public void formatAtomResponseEntry(EntityFeature entity,
+    public void formatAtomResponseEntry(AbstractEntity<EntityFeature> entity,
                                         List<ParameterConfiguration> paramConfigurations,
                                         Entry entry,
                                         Gson gson,
                                         String scope) {
-        Multimap<DataType, DataFile> medias = getMedias(entity);
+        Multimap<DataType, DataFile> medias = getMedias(entity.getFeature());
         // Add module generator
         Module mediaMod = getAtomEntityResponseBuilder(medias, scope);
         if (mediaMod != null) {

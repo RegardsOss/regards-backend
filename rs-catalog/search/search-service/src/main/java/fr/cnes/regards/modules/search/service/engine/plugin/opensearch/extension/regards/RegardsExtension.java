@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extensio
 import com.google.gson.Gson;
 import com.rometools.rome.feed.atom.Entry;
 import fr.cnes.regards.framework.geojson.Feature;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -58,7 +59,7 @@ public class RegardsExtension extends AbstractExtension {
     public static final String REGARDS_NS = "regards";
 
     @Override
-    public void formatGeoJsonResponseFeature(EntityFeature entity,
+    public void formatGeoJsonResponseFeature(AbstractEntity<EntityFeature> entity,
                                              List<ParameterConfiguration> paramConfigurations,
                                              Feature feature,
                                              String token) {
@@ -83,14 +84,14 @@ public class RegardsExtension extends AbstractExtension {
     }
 
     @Override
-    public void formatAtomResponseEntry(EntityFeature entity,
+    public void formatAtomResponseEntry(AbstractEntity<EntityFeature> entity,
                                         List<ParameterConfiguration> paramConfigurations,
                                         Entry entry,
                                         Gson gson,
                                         String scope) {
         RegardsModule rm = new RegardsModuleImpl();
         rm.setGsonBuilder(gson);
-        rm.setEntity(entity);
+        rm.setEntity(entity.getFeature());
         entry.getModules().add(rm);
     }
 

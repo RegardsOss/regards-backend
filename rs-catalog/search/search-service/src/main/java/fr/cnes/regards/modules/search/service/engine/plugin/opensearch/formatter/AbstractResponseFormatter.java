@@ -31,7 +31,6 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Parameter
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import org.springframework.hateoas.Link;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -132,12 +131,11 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
         addFeatureLinks(entityLinks);
         addFeatureTitle(entity.getLabel());
         addFeatureProviderId(entity.getProviderId());
-        addFeatureUpdated(entity.getLastUpdate());
         addFeatureServices(entity.getFeature());
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {
-                updateEntityWithExtension(extension, entity.getFeature(), paramConfigurations);
+                updateEntityWithExtension(extension, entity, paramConfigurations);
             }
         }
         return feature;
@@ -146,7 +144,7 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
     protected abstract T buildFeature();
 
     protected abstract void updateEntityWithExtension(IOpenSearchExtension extension,
-                                                      EntityFeature entity,
+                                                      AbstractEntity<EntityFeature> entity,
                                                       List<ParameterConfiguration> paramConfigurations);
 
     private void addFeatureServices(EntityFeature entity) {
@@ -158,8 +156,6 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
     }
 
     protected abstract void addFeatureServices(DataFile firstRawData);
-
-    protected abstract void addFeatureUpdated(OffsetDateTime date);
 
     protected abstract void addFeatureProviderId(String providerId);
 

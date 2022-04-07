@@ -63,7 +63,6 @@ public class GeoJsonEarthObservationPropertiesBuilder {
     private static HashSet<EarthObservationAttribute> getRootAttributes() {
         return Sets.newHashSet(EarthObservationAttribute.TITLE,
                                EarthObservationAttribute.PARENT_IDENTIFIER,
-                               EarthObservationAttribute.CREATION_DATE,
                                EarthObservationAttribute.DOI,
                                EarthObservationAttribute.PRODUCTION_STATUS,
                                EarthObservationAttribute.AVAILABILITY_TIME);
@@ -291,7 +290,7 @@ public class GeoJsonEarthObservationPropertiesBuilder {
     }
 
     /**
-     * Retrieve the property key for a specific {@linl EarthObservationAttribute}
+     * Retrieve the property key for a specific {@link EarthObservationAttribute}
      * As some attributes are renamed in the GeoJSON extension
      */
     private static String getGeoJSONPropertyKey(EarthObservationAttribute propertyName) {

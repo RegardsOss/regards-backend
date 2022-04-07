@@ -82,10 +82,6 @@ public enum EarthObservationAttribute {
 
     PROCESSING_CENTER("processingCenter"),
 
-    CREATION_DATE("creationDate"),
-
-    MODIFICATION_DATE("modificationDate"),
-
     PROCESSING_DATE("processingDate"),
 
     SENSOR_MODE("sensorMode"),

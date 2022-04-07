@@ -105,8 +105,6 @@ Supported attributes are :
 - productQualityDegradationTag
 - processorName
 - processingCenter
-- creationDate
-- modificationDate
 - processingDate
 - sensorMode
 - archivingCenter
@@ -127,6 +125,10 @@ Supported attributes are :
 - dopplerFrequency
 - incidenceAngleVariation
 - resolution
+
+When this extension is enabled, automatically add creationDate (when the metaproduct has been created on REGARDS) and 
+modificationDate (when the metaproduct has been updated on REGARDS) inside the product, as these informations are 
+relative to the REGARDS catalog and not contained inside your REGARDS model.
 
 ### Media extension ###
 

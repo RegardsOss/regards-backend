@@ -81,6 +81,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
 
     private static final String ENGINE_TYPE = "opensearch";
 
+    public static final OffsetDateTime CREATION_DATE = OffsetDateTime.now();
+
     private final OffsetDateTime lastUpdateSpot4 = OffsetDateTime.of(2020, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
 
     private final OffsetDateTime lastUpdateSpot5 = OffsetDateTime.of(2021, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
@@ -224,7 +226,7 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
                 UniformResourceName ipId = UniformResourceName.fromString(feature.getAsJsonPrimitive("id")
                                                                               .getAsString());
                 dataObject.setIpId(ipId);
-                dataObject.setCreationDate(OffsetDateTime.now());
+                dataObject.setCreationDate(CREATION_DATE);
                 // Not all products share the same platform name; so we use it to have two different date
                 if (getStringProperty(properties, "PlatformName").get().getValue().equals("SPOT4")) {
                     dataObject.setLastUpdate(lastUpdateSpot4);
@@ -409,8 +411,6 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(
             atomUrl + "/Parameter[@name='CloudCover' and @value='{eo:cloudCover}']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='CreationDate' and @value='{eo:creationDate}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
                 atomUrl + "/Parameter[@name='illuminationElevationAngle' and @value='{eo:illuminationElevationAngle}']")
                               .exists());
         customizer.expect(MockMvcResultMatchers.xpath(
@@ -446,6 +446,7 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("SceneName", "011-012_S4_234-211-0_2011-04-17-04-06-46_HRVIR-2_M_DT_BM");
+        customizer.addParameter("Platform", "SPOT4");
         customizer.expectValue("$.properties.totalResults", 1);
         customizer.expectValue("$.features.length()", 1);
         customizer.expectValue("$.features[0].properties.productInformation.processingLevel", "1A");
@@ -463,11 +464,14 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.expectValue("$.features[0].properties.acquisitionInformation[0].instrument.instrumentShortName",
                                "HRVIR2");
         customizer.expectValue("$.features[0].properties.PlatformName", "SPOT4");
+        customizer.expectValue("$.features[0].properties.creationDate", CREATION_DATE.withOffsetSameInstant(ZoneOffset.UTC).toString());
         customizer.expectValue("$.features[0].properties.updated", lastUpdateSpot4.toString());
         String thumbnailURL = "https://regards.cnes.fr/api/v1/rs-catalog/downloads/URN:AIP:DATA:swh:a4456e48-3e24-3c32-baea-093b1f63e85d:V1/files/19273a25e605bf83658c27890576b041?scope=swh";
         customizer.expectValue("$.features[0].properties.thumbnail", thumbnailURL);
         // There is no quicklook inside this product, so quicklook value is also thumbnailURL
         customizer.expectValue("$.features[0].properties.quicklook", thumbnailURL);
+        customizer.expectValue("$.features[0].properties.temporal.beginningDateTime", "2011-04-17T04:06:46Z");
+        customizer.expectValue("$.features[0].properties.temporal.endingDateTime", "2011-04-17T04:06:46Z");
 
         customizer.expectValueMatchesPattern("$.features[0].properties.services.download.url",
                                              "https://regards.cnes.fr/api/v1/rs-catalog/downloads/URN:AIP:DATA:swh:a4456e48-3e24-3c32-baea-093b1f63e85d:V1/files/.*");
@@ -478,6 +482,24 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
                           ENGINE_TYPE);
         logDuration(startTime);
     }
+
+    @Test
+    public void searchDataobjectExcludingAllResults() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        long startTime = System.currentTimeMillis();
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("Platform", "SPOT1515");
+
+        customizer.expectValue("$.properties.totalResults", 0);
+        customizer.expectValue("$.features.length()", 0);
+
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
+        logDuration(startTime);
+    }
+
 
     @Test
     public void searchDataobjectsWithUpdatedFilter() {

@@ -14,6 +14,8 @@ The opensearch engine protocol allows to :
  - [Time extension](http://www.opensearch.org/Specifications/OpenSearch/Extensions/Time/1.0/Draft_1)
  - [Geo extension](http://www.opensearch.org/Specifications/OpenSearch/Extensions/Geo/1.0/Draft_1)
  
+FIXME: New links are here: https://github.com/dewitt/opensearch
+
 ## Usage
 
  Parameters to configure :
@@ -29,4 +31,5 @@ The opensearch engine protocol allows to :
  - **Time&geo extension activation** : [True|false] 
  - **Media extension activation** : [True|False] add media links to entity like thumbnail, rawdatas, documents, ...
  - **Regards extension activation** : Add all project catalogue attributes to opensearch descriptors in "regards" namespace.
+ - **Earth Observation extension activation** : Add Earth Observation attributes to opensearch descriptors in "eo" namespace.
  - **Parameters configuration** : Allow you to specify each regards catalog atribute to match a namespace and a name for a specific extension.

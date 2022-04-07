@@ -38,6 +38,8 @@ public class Feature extends AbstractFeature<Map<String, Object>, String> {
 
     public static final String UPDATED_FIELD = "updated";
 
+    public static final String CREATED_FIELD = "creationDate";
+
     public static final String LINKS_FIELD = "links";
 
     public Feature() {
@@ -58,5 +60,9 @@ public class Feature extends AbstractFeature<Map<String, Object>, String> {
 
     public void setUpdated(OffsetDateTime updated) {
         properties.put(UPDATED_FIELD, updated);
+    }
+
+    public void setCreated(OffsetDateTime updated) {
+        properties.put(CREATED_FIELD, updated);
     }
 }

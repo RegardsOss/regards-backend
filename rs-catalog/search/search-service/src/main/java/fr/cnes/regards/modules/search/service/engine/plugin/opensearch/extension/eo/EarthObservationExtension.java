@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extensio
 import com.google.gson.Gson;
 import com.rometools.rome.feed.atom.Entry;
 import fr.cnes.regards.framework.geojson.Feature;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
@@ -40,6 +41,8 @@ import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Date;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,15 +76,17 @@ public class EarthObservationExtension extends AbstractExtension {
 
     @Override
     protected boolean supportsSearchParameter(SearchParameter parameter) {
-        return false;
+        return isEOConfiguration(parameter.getConfiguration());
     }
 
     @Override
-    public void formatAtomResponseEntry(EntityFeature entity,
+    public void formatAtomResponseEntry(AbstractEntity<EntityFeature> entity,
                                         List<ParameterConfiguration> paramConfigurations,
                                         Entry entry,
                                         Gson gson,
                                         String scope) {
+        setAtomFeatureCreated(entry, entity.getCreationDate());
+        setAtomFeatureUpdated(entry, entity.getLastUpdate());
         Map<EarthObservationAttribute, Object> activeProperties = getActiveProperties(entity, paramConfigurations);
         if (!activeProperties.isEmpty()) {
             // Add EarthObservation module to handle this extension
@@ -92,19 +97,37 @@ public class EarthObservationExtension extends AbstractExtension {
         }
     }
 
+    protected void setAtomFeatureUpdated(Entry entry, OffsetDateTime date) {
+        entry.setUpdated(new Date(date.toEpochSecond()));
+    }
+
+    protected void setAtomFeatureCreated(Entry entry, OffsetDateTime date) {
+        entry.setCreated(new Date(date.toEpochSecond()));
+    }
+
     @Override
-    public void formatGeoJsonResponseFeature(EntityFeature entity,
+    public void formatGeoJsonResponseFeature(AbstractEntity<EntityFeature> entity,
                                              List<ParameterConfiguration> paramConfigurations,
                                              Feature feature,
                                              String token) {
+        setGeoJsonFeatureCreated(feature, entity.getCreationDate());
+        setGeoJsonFeatureUpdated(feature, entity.getLastUpdate());
         Map<EarthObservationAttribute, Object> mappedValues = getActiveProperties(entity, paramConfigurations);
         feature.getProperties().putAll(GeoJsonEarthObservationPropertiesBuilder.buildProperties(mappedValues));
+    }
+
+    private void setGeoJsonFeatureUpdated(Feature feature, OffsetDateTime date) {
+        feature.setUpdated(date);
+    }
+
+    private void setGeoJsonFeatureCreated(Feature feature, OffsetDateTime date) {
+        feature.setCreated(date);
     }
 
     @Override
     public Optional<String> getDescriptorParameterValue(DescriptionParameter descParameter) {
         ParameterConfiguration conf = descParameter.getConfiguration();
-        if ((conf != null) && isEOConfiguration(conf)) {
+        if (isEOConfiguration(conf)) {
             return Optional.of(String.format(PARAMETER_VALUE_PATTERN, EO_NAMESPACE, conf.getName()));
         }
         return Optional.empty();
@@ -114,7 +137,7 @@ public class EarthObservationExtension extends AbstractExtension {
      * @return true when the configuration is related to this plugin
      */
     private boolean isEOConfiguration(ParameterConfiguration conf) {
-        return EO_NAMESPACE.equals(conf.getNamespace()) && (EarthObservationAttribute.exists(conf.getName()));
+        return conf != null && EO_NAMESPACE.equals(conf.getNamespace()) && (EarthObservationAttribute.exists(conf.getName()));
     }
 
     @Override
@@ -127,13 +150,13 @@ public class EarthObservationExtension extends AbstractExtension {
         return Lists.newArrayList();
     }
 
-    private Map<EarthObservationAttribute, Object> getActiveProperties(EntityFeature entity,
+    private Map<EarthObservationAttribute, Object> getActiveProperties(AbstractEntity<EntityFeature> entity,
                                                                        List<ParameterConfiguration> paramConfigurations) {
         Map<EarthObservationAttribute, Object> activeProperties = new HashMap<>();
         for (ParameterConfiguration paramConfiguration : paramConfigurations) {
             Optional<EarthObservationAttribute> attributeOpt = EarthObservationAttribute.fromName(paramConfiguration.getName());
             if (attributeOpt.isPresent()) {
-                Optional<Object> entityPropertyValueOpt = getEntityPropertyValue(entity, paramConfiguration);
+                Optional<Object> entityPropertyValueOpt = getEntityPropertyValue(entity.getFeature(), paramConfiguration);
                 if (entityPropertyValueOpt.isPresent()) {
                     activeProperties.put(attributeOpt.get(), entityPropertyValueOpt.get());
                 }

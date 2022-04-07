@@ -28,6 +28,7 @@ import com.rometools.rome.feed.atom.Link;
 import com.rometools.rome.feed.synd.SyndPerson;
 import com.rometools.rome.feed.synd.SyndPersonImpl;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.search.OpenSearchMediaType;
@@ -40,7 +41,6 @@ import org.springframework.http.MediaType;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -171,11 +171,6 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void addFeatureUpdated(OffsetDateTime date) {
-        this.feature.setUpdated(new Date(date.toEpochSecond()));
-    }
-
-    @Override
     protected void addFeatureProviderId(String providerId) {
         // do nothing
     }
@@ -219,7 +214,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
 
     @Override
     protected void updateEntityWithExtension(IOpenSearchExtension extension,
-                                             EntityFeature entity,
+                                             AbstractEntity<EntityFeature> entity,
                                              List<ParameterConfiguration> paramConfigurations) {
         extension.formatAtomResponseEntry(entity, paramConfigurations, this.feature, gson, scope);
     }

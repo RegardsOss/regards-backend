@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.LineString;
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -49,7 +50,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -91,16 +94,43 @@ public class GeoTimeExtension extends AbstractExtension {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeoTimeExtension.class);
 
     @Override
-    public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Feature feature, String token) {
+    public void formatGeoJsonResponseFeature(AbstractEntity<EntityFeature> entity, List<ParameterConfiguration> paramConfigurations, Feature feature, String token) {
         feature.setGeometry(entity.getGeometry());
         // The normalized geometry is only used during ES research and should not be returned inside OpenSearch results
         feature.setNormalizedGeometry(null);
+        addGeoJsonTimeProperties(entity.getFeature(), paramConfigurations, feature);
+    }
+
+    private void addGeoJsonTimeProperties(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Feature feature) {
+        Map<String, Object> temporalNode = new HashMap<>();
+        for (ParameterConfiguration parameterConfiguration : paramConfigurations) {
+            if (isGeoTimeConfiguration(parameterConfiguration)) {
+                Optional<Object> entityPropertyValueOpt = getEntityPropertyValue(entity, parameterConfiguration);
+                if (entityPropertyValueOpt.isPresent()) {
+                    String propertyKey = getGeoJSONTimePropertyKey(parameterConfiguration);
+                    temporalNode.put(propertyKey, entityPropertyValueOpt.get());
+                }
+            }
+        }
+        if (!temporalNode.isEmpty()) {
+            feature.getProperties().put("temporal", temporalNode);
+        }
+    }
+
+    private String getGeoJSONTimePropertyKey(ParameterConfiguration parameterConfiguration) {
+        String propertyKey;
+        if (parameterConfiguration.getName().equals(TIME_START_PARAMETER)) {
+            propertyKey = "beginningDateTime";
+        } else {
+            propertyKey = "endingDateTime";
+        }
+        return propertyKey;
     }
 
     @Override
-    public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson, String scope) {
+    public void formatAtomResponseEntry(AbstractEntity<EntityFeature> entity, List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson, String scope) {
         // Add module generator
-        entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
+        entry.getModules().add(getAtomEntityResponseBuilder(entity.getFeature(), paramConfigurations, gson));
 
     }
 
