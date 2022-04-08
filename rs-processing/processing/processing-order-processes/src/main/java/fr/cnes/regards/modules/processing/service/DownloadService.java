@@ -44,6 +44,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +53,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.Callable;
 
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.EXTERNAL_DOWNLOAD_ERROR;
@@ -114,7 +116,7 @@ public class DownloadService implements IDownloadService {
     }
 
     private Mono<Path> internalDownload(String checksum, Path dest) {
-        return Mono.subscriberContext()
+        return Mono.deferContextual(Mono::just)
                    .map(ctx -> ctx.get(PExecution.class))
                    .flatMap(exec -> internalDownloadWithTenant(checksum, dest, exec.getTenant(), exec.getUserName()));
     }
@@ -135,8 +137,8 @@ public class DownloadService implements IDownloadService {
                                                                                                   t)));
     }
 
-    public Flux<DataBuffer> downloadUsingStorageRestClient(String tenant, String user, String checksum) {
-        return DataBufferUtils.readInputStream(() -> {
+    private Callable<InputStream> remoteBlockingCall(String tenant, String user, String checksum) {
+        return () -> {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 FeignSecurityManager.asUser(user, DefaultRole.PROJECT_ADMIN.name());
@@ -159,7 +161,12 @@ public class DownloadService implements IDownloadService {
                 FeignSecurityManager.reset();
                 runtimeTenantResolver.clearTenant();
             }
-        }, bufferFactory, 4096);
+        };
+    }
+
+    public Flux<DataBuffer> downloadUsingStorageRestClient(String tenant, String user, String checksum) {
+        return DataBufferUtils.readInputStream(remoteBlockingCall(tenant, user, checksum), bufferFactory, 4096)
+                              .subscribeOn(Schedulers.boundedElastic());
     }
 
     private Mono<Path> externalDownload(URL url, Path dest) {

@@ -38,7 +38,6 @@
         <lorem.version>2.1</lorem.version>
         <easy.random.core.version>4.3.0</easy.random.core.version>
         <easy.random.vavr.extension.version>1.0.0</easy.random.vavr.extension.version>
-        <feign.version>11.8</feign.version>
         <r2dbc.migrate.spring.boot.starter.version>1.8.3</r2dbc.migrate.spring.boot.starter.version>
     </properties>
 
@@ -85,11 +84,6 @@
 	        	<artifactId>netty-all</artifactId>
 	        	<version>${io.netty.version}</version>
 	    	</dependency>
-            <dependency>
-                <groupId>io.github.openfeign</groupId>
-                <artifactId>feign-core</artifactId>
-                <version>${feign.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.batch</groupId>
                 <artifactId>spring-batch-core</artifactId>
