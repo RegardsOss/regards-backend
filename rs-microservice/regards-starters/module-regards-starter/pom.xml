@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>module-regards-starter</artifactId>
-    <description>REGARDS module starter</description>
+    <description>REGARDS module auto configuration (starter)</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

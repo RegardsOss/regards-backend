@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jpa-instance-regards-starter</artifactId>
-    <description>REGARDS Swagger starter</description>
+    <description>REGARDS JPA instance auto configuration (starter)</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

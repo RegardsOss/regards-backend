@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jpa-instance-regards</artifactId>
-    <description>REGARDS JPA multi tenant auto configuration</description>
+    <description>REGARDS JPA instance business logic</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

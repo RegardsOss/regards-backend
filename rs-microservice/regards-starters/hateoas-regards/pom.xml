@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hateoas-regards</artifactId>
-    <description>hateoas</description>
+    <description>REGARDS HATEOAS business logic</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

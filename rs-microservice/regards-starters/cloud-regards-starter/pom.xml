@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>cloud-regards-starter</artifactId>
-    <description>REGARDS security starter</description>
+    <description>REGARDS cloud auto configuration (starter)</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

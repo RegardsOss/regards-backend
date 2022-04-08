@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>feign-regards</artifactId>
-    <description>REGARDS Feignr</description>
+    <description>REGARDS Feign business logic</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

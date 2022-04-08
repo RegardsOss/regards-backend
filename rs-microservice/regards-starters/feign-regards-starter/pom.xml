@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>feign-regards-starter</artifactId>
-    <description>REGARDS Feign starter</description>
+    <description>REGARDS Feign auto configuration (starter)</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

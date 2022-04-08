@@ -21,14 +21,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <artifactId>oais-regards</artifactId>
+    <description>REGARDS OAIS business logic</description>
+
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <artifactId>oais-regards</artifactId>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>

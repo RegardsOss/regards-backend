@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>geojson-starter</artifactId>
-    <description>GeoJson starter - RFC 7946 extensible model</description>
+    <description>GeoJson - RFC 7946 extensible model - auto configuration (starter)</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
