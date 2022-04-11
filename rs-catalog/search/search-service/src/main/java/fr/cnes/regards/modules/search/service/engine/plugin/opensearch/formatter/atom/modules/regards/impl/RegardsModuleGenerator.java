@@ -18,27 +18,27 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.regards.impl;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.jdom2.Element;
-import org.jdom2.Namespace;
-
 import com.google.gson.Gson;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.io.ModuleGenerator;
-
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Module generator to handle specific REGARDS models opensearch parameters into ATOM format responses.
  * com.rometools.rome module generator to handle specifics regards model attributes.
+ * This ModuleGenerator is executed by rome (see rome.properties)
+ *
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */

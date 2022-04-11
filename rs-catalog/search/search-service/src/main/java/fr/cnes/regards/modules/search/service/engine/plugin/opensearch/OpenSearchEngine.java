@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.descripti
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.SearchParameter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.eo.EarthObservationExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
@@ -100,6 +101,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public static final String REGARDS_EXTENSION_PARAMETER = "regardsExtension";
 
     public static final String MEDIA_EXTENSION_PARAMETER = "mediaExtension";
+
+    public static final String EARTH_OBSERVATION_EXTENSION_PARAMETER = "earthObservationExtension";
 
     public static final String EXTRA_DESCRIPTION = "opensearchdescription.xml";
 
@@ -154,6 +157,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @PluginParameter(name = MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
     private MediaExtension mediaExtension;
+
+    @PluginParameter(name = EARTH_OBSERVATION_EXTENSION_PARAMETER, label = "Open search Earth Observation extension")
+    private EarthObservationExtension earthObservationExtension;
 
     @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true,
             markdown = "OpensearchParameter.md")
@@ -217,7 +223,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
             return new ResponseEntity<>(
                     descriptionBuilder.build(context, parse(context),
-                                             Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+                                             Arrays.asList(mediaExtension, regardsExtension, timeExtension, earthObservationExtension),
                                              paramConfigurations, engineConfiguration, dataset, linkBuilder),
                     headers, HttpStatus.OK);
         } else {
@@ -285,7 +291,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<SearchParameter> attributes = buildParameters(queryParams);
 
         return ICriterion.and(timeExtension.buildCriterion(attributes), mediaExtension.buildCriterion(attributes),
-                              regardsExtension.buildCriterion(attributes));
+                              regardsExtension.buildCriterion(attributes), earthObservationExtension.buildCriterion(attributes));
     }
 
     private Pair<AttributeModel, ParameterConfiguration> getParameterAttribute(String queryParam)
@@ -372,6 +378,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         responseBuilder.addExtension(timeExtension);
         responseBuilder.addExtension(mediaExtension);
         responseBuilder.addExtension(regardsExtension);
+        responseBuilder.addExtension(earthObservationExtension);
         return responseBuilder;
     }
 

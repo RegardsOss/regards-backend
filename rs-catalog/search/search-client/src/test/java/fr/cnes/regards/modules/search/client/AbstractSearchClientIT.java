@@ -18,22 +18,7 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import java.lang.reflect.ParameterizedType;
-import java.util.List;
-import java.util.Set;
-
-import org.assertj.core.util.Lists;
-import org.elasticsearch.index.IndexNotFoundException;
-import org.junit.After;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -53,9 +38,23 @@ import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchE
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.eo.EarthObservationExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
+import org.assertj.core.util.Lists;
+import org.elasticsearch.index.IndexNotFoundException;
+import org.junit.After;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.TestPropertySource;
+
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract Integration Test for clients of the module.
@@ -142,6 +141,8 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         regardsExt.setActivated(true);
         MediaExtension mediaExt = new MediaExtension();
         mediaExt.setActivated(true);
+        EarthObservationExtension eoExt = new EarthObservationExtension();
+        eoExt.setActivated(true);
 
         List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
         ParameterConfiguration planetParameter = new ParameterConfiguration();
@@ -153,13 +154,13 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
 
         ParameterConfiguration startTimeParameter = new ParameterConfiguration();
         startTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.startDate");
-        startTimeParameter.setName("start");
-        startTimeParameter.setNamespace("time");
+        startTimeParameter.setName(GeoTimeExtension.TIME_START_PARAMETER);
+        startTimeParameter.setNamespace(GeoTimeExtension.TIME_NS);
         paramConfigurations.add(startTimeParameter);
         ParameterConfiguration endTimeParameter = new ParameterConfiguration();
         endTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.stopDate");
-        endTimeParameter.setName("end");
-        endTimeParameter.setNamespace("time");
+        endTimeParameter.setName(GeoTimeExtension.TIME_END_PARAMETER);
+        endTimeParameter.setNamespace(GeoTimeExtension.TIME_NS);
         paramConfigurations.add(endTimeParameter);
 
         EngineConfiguration engineConfiguration = new EngineConfiguration();
@@ -177,6 +178,8 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
                                         PluginParameterTransformer.toJson(regardsExt)),
                      IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER,
                                         PluginParameterTransformer.toJson(mediaExt)),
+                     IPluginParam.build(OpenSearchEngine.EARTH_OBSERVATION_EXTENSION_PARAMETER,
+                                        PluginParameterTransformer.toJson(eoExt)),
                      IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION,
                                         PluginParameterTransformer.toJson(paramConfigurations)),
                      IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,

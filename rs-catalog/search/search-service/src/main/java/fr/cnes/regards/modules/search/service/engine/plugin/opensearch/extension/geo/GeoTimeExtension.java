@@ -86,7 +86,7 @@ public class GeoTimeExtension extends AbstractExtension {
 
     public static final String RADIUS_PARAMETER = "radius";
 
-    public static final String S_S = "{%s:%s}";
+    private static final String PARAMETER_VALUE_PATTERN = "{%s:%s}";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeoTimeExtension.class);
 
@@ -105,32 +105,28 @@ public class GeoTimeExtension extends AbstractExtension {
     @Override
     public Optional<String> getDescriptorParameterValue(DescriptionParameter descParameter) {
         ParameterConfiguration conf = descParameter.getConfiguration();
-        Optional<String> value = Optional.empty();
-        if ((conf != null)) {
-            String name = conf.getName();
-            if (isGeoTimeConfiguration(conf)) {
-                value = Optional.of(String.format(S_S, TIME_NS, name));
-            }
+        if ((conf != null) && isGeoTimeConfiguration(conf)) {
+            return Optional.of(String.format(PARAMETER_VALUE_PATTERN, TIME_NS, conf.getName()));
         }
-        return value;
+        return Optional.empty();
     }
 
     @Override
     public List<OpenSearchParameter> getDescriptorBasicExtensionParameters() {
         List<OpenSearchParameter> geoParameters = Lists.newArrayList();
-        geoParameters.add(builderParameter(GEO_PARAMETER, String.format(S_S, GEO_NS, GEO_PARAMETER),
+        geoParameters.add(builderParameter(GEO_PARAMETER, String.format(PARAMETER_VALUE_PATTERN, GEO_NS, GEO_PARAMETER),
                                            "Defined in Well Known Text standard (WKT) with coordinates in decimal degrees (EPSG:4326)", null));
-        geoParameters.add(builderParameter(BOX_PARAMETER, String.format(S_S, GEO_NS, BOX_PARAMETER),
+        geoParameters.add(builderParameter(BOX_PARAMETER, String.format(PARAMETER_VALUE_PATTERN, GEO_NS, BOX_PARAMETER),
                                            "Defined by 'west, south, east, north' coordinates of longitude, latitude, in decimal degrees (EPSG:4326)",
                                            BOX_PATTERN));
         // To implement
         // geoParameters.add(builderParameter(LOCATION_PARAMETER, String.format("{%s:%s}", GEO_NS, LOCATION_PARAMETER),
         // "Location string e.g. Paris, France", null));
-        geoParameters.add(builderParameter(LON_PARAMETER, String.format(S_S, GEO_NS, LON_PARAMETER),
+        geoParameters.add(builderParameter(LON_PARAMETER, String.format(PARAMETER_VALUE_PATTERN, GEO_NS, LON_PARAMETER),
                                            "Longitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lat", null, "180", "-180"));
-        geoParameters.add(builderParameter(LAT_PARAMETER, String.format(S_S, GEO_NS, LAT_PARAMETER),
+        geoParameters.add(builderParameter(LAT_PARAMETER, String.format(PARAMETER_VALUE_PATTERN, GEO_NS, LAT_PARAMETER),
                                            "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon", null, "90", "-90"));
-        geoParameters.add(builderParameter(RADIUS_PARAMETER, String.format(S_S, GEO_NS, RADIUS_PARAMETER),
+        geoParameters.add(builderParameter(RADIUS_PARAMETER, String.format(PARAMETER_VALUE_PATTERN, GEO_NS, RADIUS_PARAMETER),
                                            "Latitude expressed in decimal degrees (EPSG:4326) - should be used with geo:lon", null, null, "1"));
         return geoParameters;
     }

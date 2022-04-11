@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -37,7 +36,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -87,7 +85,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     private ResultActions searchDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // 9 data from planets & 2 datas from test datas
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(14)));
+        customizer.expectValue("$.content.length()", 14);
 
         return performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
     }
@@ -127,7 +125,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchFullTextDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.content.length()", 1);
         // Add full text search
         customizer.addParameter("q", MERCURY);
 
@@ -137,7 +135,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchFullTextDataobjects2() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(2)));
+        customizer.expectValue("$.content.length()",2);
         // Add full text search
         String value = MERCURY + " OR " + PLANET + ":" + JUPITER;
         customizer.addParameter("q", value);
@@ -148,7 +146,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     @Test(expected = AssertionError.class)
     public void searchFullTextDataobjects3() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(2)));
+        customizer.expectValue("$.content.length()", 2);
         // Add full text search
         String value = MERCURY + " " + JUPITER;
         //        String value = MERCURY + " OR " + JUPITER;

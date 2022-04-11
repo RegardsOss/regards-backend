@@ -24,45 +24,48 @@
               "version": "1.0.0",
               "priorityOrder": 1,
               "parameters": [
-				{
-				  "type": "POJO",
-      			  "name": "engineConfiguration",
-      			  "clazz": "fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter.EngineConfiguration",
-				  "value": {
+                {
+                  "type": "POJO",
+                  "name": "engineConfiguration",
+                  "value": {
                     "searchTitle": "Open search",
                     "searchDescription": "Open search",
                     "contact": "regards@c-s.fr",
                     "shortName": "Open search",
                     "longName": "Open search"
                   }
-    			},
+                },
                 {
                   "type": "POJO",
-      			  "name": "timeExtension",
-      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension",
+                  "name": "timeExtension",
                   "value": {
                     "activated": true
                   }
                 },
                 {
                   "type": "POJO",
-      			  "name": "regardsExtension",
-      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension",
+                  "name": "regardsExtension",
                   "value": {
                     "activated": true
                   }
                 },
-               {
+                {
                   "type": "POJO",
-      			  "name": "mediaExtension",
-      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension",
+                  "name": "mediaExtension",
                   "value": {
                     "activated": true
+                  }
+                },
+                {
+                  "type": "POJO",
+                  "name": "earthObservationExtension",
+                  "value": {
+                    "activated": false
                   }
                 },
                 {
                   "type": "COLLECTION",
-                  "name": "paramConfigurations",
+                  "name": "parametersConfiguration",
                   "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration",
                   "value": []
                 }

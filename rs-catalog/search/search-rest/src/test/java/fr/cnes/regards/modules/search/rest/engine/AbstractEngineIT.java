@@ -60,23 +60,10 @@ import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.eo.EarthObservationExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.map.HashedMap;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -88,6 +75,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Engine common methods
@@ -384,6 +379,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         regardsExt.setActivated(true);
         MediaExtension mediaExt = new MediaExtension();
         mediaExt.setActivated(true);
+        EarthObservationExtension eoExt = new EarthObservationExtension();
+        eoExt.setActivated(true);
 
         List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
         ParameterConfiguration planetParameter = new ParameterConfiguration();
@@ -396,14 +393,14 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         ParameterConfiguration startTimeParameter = new ParameterConfiguration();
         startTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.startDate");
         startTimeParameter.setAllias("debut");
-        startTimeParameter.setName("start");
-        startTimeParameter.setNamespace("time");
+        startTimeParameter.setName(GeoTimeExtension.TIME_START_PARAMETER);
+        startTimeParameter.setNamespace(GeoTimeExtension.TIME_NS);
         paramConfigurations.add(startTimeParameter);
         ParameterConfiguration endTimeParameter = new ParameterConfiguration();
         endTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.stopDate");
         endTimeParameter.setAllias("fin");
-        endTimeParameter.setName("end");
-        endTimeParameter.setNamespace("time");
+        endTimeParameter.setName(GeoTimeExtension.TIME_END_PARAMETER);
+        endTimeParameter.setNamespace(GeoTimeExtension.TIME_NS);
         paramConfigurations.add(endTimeParameter);
 
         EngineConfiguration engineConfiguration = new EngineConfiguration();
@@ -421,6 +418,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                         PluginParameterTransformer.toJson(regardsExt)),
                      IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER,
                                         PluginParameterTransformer.toJson(mediaExt)),
+                     IPluginParam.build(OpenSearchEngine.EARTH_OBSERVATION_EXTENSION_PARAMETER,
+                                        PluginParameterTransformer.toJson(eoExt)),
                      IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION,
                                         PluginParameterTransformer.toJson(paramConfigurations)),
                      IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,

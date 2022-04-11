@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model>
+    <name>SWH_Dataset</name>
+    <description>SWH Dataset</description>
+    <type>DATASET</type>
+    <attribute alterable="true" optional="true">
+        <label>Processing Level</label>
+        <name>ProcessingLevel</name>
+        <description>Processing Level</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Access Constraint</label>
+        <name>accessConstraint</name>
+        <description>Access Constraint</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Type</label>
+        <name>Type</name>
+        <description>Type</description>
+        <type unit="unitless">STRING</type>
+        <restriction>
+            <enumeration>
+                <value>Dataset</value>
+            </enumeration>
+        </restriction>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Keywords</label>
+        <name>Keywords</name>
+        <description>Keywords</description>
+        <type unit="unitless">STRING_ARRAY</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Sub-Domain</label>
+        <name>SubDomain</name>
+        <description>Sub-Domain</description>
+        <type unit="unitless">STRING_ARRAY</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>File Naming</label>
+        <name>fileNaming</name>
+        <description>File Naming</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Description</label>
+        <name>DescriptionURL</name>
+        <description>Description</description>
+        <type unit="unitless">URL</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Full Name</label>
+        <name>fullName</name>
+        <description>Full Name</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Platforms</label>
+        <name>Platforms</name>
+        <description>Platforms</description>
+        <type unit="unitless">STRING_ARRAY</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Start Date</label>
+        <name>startDate</name>
+        <description>Start Date</description>
+        <type unit="unitless">DATE_ISO8601</type>
+        <computation>
+            <label>startDate</label>
+            <min_compute parameterAttributeName="DataDate"/>
+        </computation>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Dataset Access</label>
+        <name>datasetAccess</name>
+        <description>Dataset Access</description>
+        <type unit="unitless">URL</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Product Format</label>
+        <name>productFormat</name>
+        <description>Product Format</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Title</label>
+        <name>title</name>
+        <description>Title</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Archive Center</label>
+        <name>ArchiveCenter</name>
+        <description>Archive Center</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Instrument Name</label>
+        <name>InstrumentName</name>
+        <description>Instrument Name</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Short Description</label>
+        <name>ShortDescription</name>
+        <description>Short Description</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Production Center</label>
+        <name>ProductionCenter</name>
+        <description>Production Center</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Dataset Size</label>
+        <name>DatasetSize</name>
+        <description>Dataset Size</description>
+        <type unit="o">LONG</type>
+        <computation>
+            <label>DatasetTotalSize</label>
+            <sum_compute parameterAttributeName="DataFileSize"/>
+        </computation>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Diffusion Center</label>
+        <name>diffusionCenter</name>
+        <description>Diffusion Center</description>
+        <type unit="unitless">STRING_ARRAY</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Domain</label>
+        <name>Thematic</name>
+        <description>Domain</description>
+        <type unit="unitless">STRING_ARRAY</type>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>Number of Objects</label>
+        <name>Nb_Objects</name>
+        <description>Number of Objects</description>
+        <type unit="unitless">LONG</type>
+        <computation>
+            <label>DatasetNbObjects</label>
+            <count/>
+        </computation>
+    </attribute>
+    <attribute alterable="true" optional="true">
+        <label>End Date</label>
+        <name>endDate</name>
+        <description>End Date</description>
+        <type unit="unitless">DATE_ISO8601</type>
+        <computation>
+            <label>endDate</label>
+            <max_compute parameterAttributeName="DataDate"/>
+        </computation>
+    </attribute>
+</model>

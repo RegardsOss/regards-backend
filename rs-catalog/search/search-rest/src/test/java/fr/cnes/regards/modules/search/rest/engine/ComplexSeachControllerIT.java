@@ -18,20 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.urn.DataType;
@@ -41,6 +28,15 @@ import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.rest.ComplexSearchController;
 import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
+import org.junit.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @TestPropertySource(locations = { "classpath:test.properties" }, properties = { "regards.tenant=complex_search",
         "spring.jpa.properties.hibernate.default_schema=complex_search" })
@@ -85,7 +81,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         request.setRequests(requests);
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(2)));
+        customizer.expectValue("$.metadata.totalElements",2);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -109,7 +105,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void searchAll() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(14)));
+        customizer.expectValue("$.metadata.totalElements", 14);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -119,7 +115,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                 .getIpId().toString(), "q", String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 8 attributes associated to model planet result of the dataobject search
-        customizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(8)));
+        customizer.expectToHaveSize("$", 8);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING + ComplexSearchController.SEARCH_DATAOBJECTS_ATTRIBUTES,
                            request, customizer, "Search all error");
     }
@@ -133,7 +129,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                                          String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 2 for the legacy request on planet type
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(2)));
+        customizer.expectValue("$.metadata.totalElements", 2);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -147,7 +143,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                                          "q", String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // No entity matching the given dataset
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(0)));
+        customizer.expectValue("$.metadata.totalElements", 0);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -160,7 +156,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                                          String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)),
                                          OffsetDateTime.now().minusDays(20), null));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(0)));
+        customizer.expectValue("$.metadata.totalElements", 0);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -175,7 +171,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 2 for the legacy request on planet type
         // Should be 1 for the open search request on planet name
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(3)));
+        customizer.expectValue("$.metadata.totalElements", 3);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -193,7 +189,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 1 for the legacy request (2) on planet type (-1) on exluded ipId of jupiter.
         // Should be 1 for the open search request on planet name
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(2)));
+        customizer.expectValue("$.metadata.totalElements", 2);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -205,7 +201,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                                          Lists.newArrayList(astroObjects.get(JUPITER).getIpId().toString())));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 14 for the legacy all request (-1) for excluded id of jupiter
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(13)));
+        customizer.expectValue("$.metadata.totalElements", 13);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -213,9 +209,9 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void computeDatasetSummary() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.documentsCount", Matchers.equalTo(14)));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.filesCount", Matchers.equalTo(1)));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.filesSize", Matchers.equalTo(10)));
+        customizer.expectValue("$.documentsCount", 14);
+        customizer.expectValue("$.filesCount", 1);
+        customizer.expectValue("$.filesSize", 10);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING + ComplexSearchController.SUMMARY_MAPPING, request,
                            customizer, "Search all error");
     }
