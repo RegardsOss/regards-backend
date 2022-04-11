@@ -19,19 +19,16 @@
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom;
 
 import com.google.gson.Gson;
-import com.rometools.modules.opensearch.OpenSearchModule;
 import com.rometools.modules.opensearch.entity.OSQuery;
 import com.rometools.modules.opensearch.impl.OpenSearchModuleImpl;
 import com.rometools.rome.feed.atom.Content;
 import com.rometools.rome.feed.atom.Entry;
 import com.rometools.rome.feed.atom.Feed;
 import com.rometools.rome.feed.atom.Link;
-import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndPerson;
 import com.rometools.rome.feed.synd.SyndPersonImpl;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.OpenSearchMediaType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
@@ -83,9 +80,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     @Override
     protected Feed buildResponse() {
         Feed feed = new Feed(ATOM_VERSION);
-        List<Module> mods = feed.getModules();
-        OpenSearchModule osm = new OpenSearchModuleImpl();
-        mods.add(osm);
+        feed.getModules().add(new OpenSearchModuleImpl());
         return feed;
     }
 
@@ -96,17 +91,17 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
 
 
     @Override
-    protected void setResponseLanguage(String language) {
+    protected void addResponseLanguage(String language) {
         response.setLanguage(language);
     }
 
     @Override
-    protected void setResponseUpdated() {
+    protected void addResponseUpdated() {
         response.setUpdated(Date.valueOf(LocalDate.now()));
     }
 
     @Override
-    protected void setResponseAuthor(String contact, String attribution) {
+    protected void addResponseAuthor(String contact, String attribution) {
         SyndPerson author = new SyndPersonImpl();
         author.setEmail(contact);
         author.setName(attribution);
@@ -114,7 +109,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void setResponseQuery(SearchContext context, String role) {
+    protected void addResponseQuery(SearchContext context, String role) {
         OpenSearchModuleImpl osm = getResponseOpenSearchModule();
 
         // Add the query from opensearch module
@@ -128,7 +123,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void setResponseOpenSearchDescription(String openSearchDescriptionUrl) {
+    protected void addResponseOpenSearchDescription(String openSearchDescriptionUrl) {
         OpenSearchModuleImpl osm = getResponseOpenSearchModule();
 
         // Add opensearch description link
@@ -142,12 +137,12 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void setResponseLinks(List<org.springframework.hateoas.Link> links) {
+    protected void addResponseLinks(List<org.springframework.hateoas.Link> links) {
         // do nothing
     }
 
     @Override
-    protected void setResponsePaginationInfos(FacetPage<EntityFeature> page) {
+    protected void addResponsePaginationInfos(FacetPage<EntityFeature> page) {
         OpenSearchModuleImpl osm = getResponseOpenSearchModule();
         osm.setItemsPerPage(page.getSize());
         osm.setStartIndex((page.getNumber() * page.getSize()) + 1);
@@ -159,7 +154,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void setResponseDescription(String description) {
+    protected void addResponseDescription(String description) {
         Content content = new Content();
         content.setType(Content.TEXT);
         content.setValue(description);
@@ -167,31 +162,31 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void setResponseTitle(String title) {
+    protected void addResponseTitle(String title) {
         response.setTitle(title);
     }
 
     @Override
-    protected void setResponseId(String searchId) {
+    protected void addResponseId(String searchId) {
         response.setId(searchId);
     }
     @Override
-    protected void setFeatureUpdated(OffsetDateTime date) {
+    protected void addFeatureUpdated(OffsetDateTime date) {
         this.feature.setUpdated(new Date(date.toEpochSecond()));
     }
 
     @Override
-    protected void setFeatureProviderId(String providerId) {
+    protected void addFeatureProviderId(String providerId) {
         // do nothing
     }
 
     @Override
-    protected void setFeatureTitle(String title) {
+    protected void addFeatureTitle(String title) {
         this.feature.setTitle(title);
     }
 
     @Override
-    protected void setFeatureId(UniformResourceName id) {
+    protected void addFeatureId(UniformResourceName id) {
         this.feature.setId(id.toString());
     }
 
@@ -201,7 +196,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void setFeatureLinks(List<org.springframework.hateoas.Link> entityLinks) {
+    protected void addFeatureLinks(List<org.springframework.hateoas.Link> entityLinks) {
         entityLinks.forEach(link -> {
             Link feedEntityLink = new Link();
             String href = GeoJsonLinkBuilder.getDataFileHref(link.getHref(), token);

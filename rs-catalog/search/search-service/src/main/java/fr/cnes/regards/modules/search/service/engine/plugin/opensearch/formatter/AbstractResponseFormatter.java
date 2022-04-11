@@ -68,41 +68,41 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
                             List<Link> links) {
         response = buildResponse();
 
-        setResponseId(searchId);
-        setResponseTitle(engineConf.getSearchTitle());
-        setResponseDescription(engineConf.getSearchDescription());
-        setResponseAuthor(engineConf.getContact(), engineConf.getAttribution());
-        setResponseUpdated();
-        setResponseLanguage(configuration.getLanguage());
+        addResponseId(searchId);
+        addResponseTitle(engineConf.getSearchTitle());
+        addResponseDescription(engineConf.getSearchDescription());
+        addResponseAuthor(engineConf.getContact(), engineConf.getAttribution());
+        addResponseUpdated();
+        addResponseLanguage(configuration.getLanguage());
 
-        setResponsePaginationInfos(page);
-        setResponseQuery(context, configuration.getUrlsRel());
+        addResponsePaginationInfos(page);
+        addResponseQuery(context, configuration.getUrlsRel());
 
-        setResponseLinks(links);
-        setResponseOpenSearchDescription(openSearchDescriptionUrl);
+        addResponseLinks(links);
+        addResponseOpenSearchDescription(openSearchDescriptionUrl);
     }
 
     protected abstract U buildResponse();
 
-    protected abstract void setResponseOpenSearchDescription(String openSearchDescriptionUrl);
+    protected abstract void addResponseOpenSearchDescription(String openSearchDescriptionUrl);
 
-    protected abstract void setResponseLanguage(String language);
+    protected abstract void addResponseLanguage(String language);
 
-    protected abstract void setResponseUpdated();
+    protected abstract void addResponseUpdated();
 
-    protected abstract void setResponseAuthor(String contact, String attribution);
+    protected abstract void addResponseAuthor(String contact, String attribution);
 
-    protected abstract void setResponseQuery(SearchContext context, String role);
+    protected abstract void addResponseQuery(SearchContext context, String role);
 
-    protected abstract void setResponseLinks(List<Link> links);
+    protected abstract void addResponseLinks(List<Link> links);
 
-    protected abstract void setResponsePaginationInfos(FacetPage<EntityFeature> page);
+    protected abstract void addResponsePaginationInfos(FacetPage<EntityFeature> page);
 
-    protected abstract void setResponseDescription(String description);
+    protected abstract void addResponseDescription(String description);
 
-    protected abstract void setResponseTitle(String title);
+    protected abstract void addResponseTitle(String title);
 
-    protected abstract void setResponseId(String searchId);
+    protected abstract void addResponseId(String searchId);
 
     @Override
     public void addEntity(EntityFeature entity,
@@ -119,13 +119,13 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
         feature = buildFeature();
 
         UniformResourceName id = entity.getId();
-        setFeatureId(id);
-        setFeatureLinks(entityLinks);
-        setFeatureTitle(entity.getLabel());
-        setFeatureProviderId(entity.getProviderId());
+        addFeatureId(id);
+        addFeatureLinks(entityLinks);
+        addFeatureTitle(entity.getLabel());
+        addFeatureProviderId(entity.getProviderId());
 
         if (entityLastUpdate.isPresent()) {
-            setFeatureUpdated(entityLastUpdate.get());
+            addFeatureUpdated(entityLastUpdate.get());
         }
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
@@ -142,15 +142,15 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
                                                       EntityFeature entity,
                                                       List<ParameterConfiguration> paramConfigurations);
 
-    protected abstract void setFeatureUpdated(OffsetDateTime date);
+    protected abstract void addFeatureUpdated(OffsetDateTime date);
 
-    protected abstract void setFeatureProviderId(String providerId);
+    protected abstract void addFeatureProviderId(String providerId);
 
-    protected abstract void setFeatureTitle(String title);
+    protected abstract void addFeatureTitle(String title);
 
-    protected abstract void setFeatureLinks(List<Link> entityLinks);
+    protected abstract void addFeatureLinks(List<Link> entityLinks);
 
-    protected abstract void setFeatureId(UniformResourceName id);
+    protected abstract void addFeatureId(UniformResourceName id);
 
     protected abstract void addToResponse(T entity);
 }

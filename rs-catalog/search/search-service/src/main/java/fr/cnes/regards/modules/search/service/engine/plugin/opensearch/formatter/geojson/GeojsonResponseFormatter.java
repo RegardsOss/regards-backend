@@ -55,54 +55,54 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
     }
 
     @Override
-    protected void setResponseLanguage(String language) {
+    protected void addResponseLanguage(String language) {
         // not supported
     }
 
     @Override
-    protected void setResponseUpdated() {
+    protected void addResponseUpdated() {
         // not supported
     }
 
     @Override
-    protected void setResponseAuthor(String contact, String attribution) {
+    protected void addResponseAuthor(String contact, String attribution) {
         // not supported
     }
 
     @Override
-    protected void setResponseQuery(SearchContext context, String role) {
+    protected void addResponseQuery(SearchContext context, String role) {
         Query query = new Query();
         context.getQueryParams().forEach((name, values) -> values.forEach(value -> query.addFilter(name, value)));
         response.setQuery(query);
     }
 
     @Override
-    protected void setResponseLinks(List<Link> links) {
+    protected void addResponseLinks(List<Link> links) {
         response.setLinks(links.stream().map(l -> GeoJsonLinkBuilder.build(l, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, token)).collect(Collectors.toList()));
     }
 
     @Override
-    protected void setResponseOpenSearchDescription(String openSearchDescriptionUrl) {
+    protected void addResponseOpenSearchDescription(String openSearchDescriptionUrl) {
         // do nothing
     }
 
     @Override
-    protected void setResponsePaginationInfos(FacetPage<EntityFeature> page) {
+    protected void addResponsePaginationInfos(FacetPage<EntityFeature> page) {
         response.setPaginationInfos(page.getTotalElements(), page.getNumber() * page.getSize(), page.getSize());
     }
 
     @Override
-    protected void setResponseDescription(String description) {
+    protected void addResponseDescription(String description) {
         response.setDescription(description);
     }
 
     @Override
-    protected void setResponseTitle(String title) {
+    protected void addResponseTitle(String title) {
         response.setTitle(title);
     }
 
     @Override
-    protected void setResponseId(String searchId) {
+    protected void addResponseId(String searchId) {
         response.setId(searchId);
     }
 
@@ -122,22 +122,22 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
     }
 
     @Override
-    protected void setFeatureUpdated(OffsetDateTime date) {
+    protected void addFeatureUpdated(OffsetDateTime date) {
         this.feature.setUpdated(date);
     }
 
     @Override
-    protected void setFeatureProviderId(String providerId) {
+    protected void addFeatureProviderId(String providerId) {
         this.feature.addProperty("providerId", providerId);
     }
 
     @Override
-    protected void setFeatureTitle(String title) {
+    protected void addFeatureTitle(String title) {
         this.feature.setTitle(title);
     }
 
     @Override
-    protected void setFeatureLinks(List<Link> entityLinks) {
+    protected void addFeatureLinks(List<Link> entityLinks) {
         // All links are alternate links here in geo json format
         // Other types like icon or enclosure are handle in extensions (example : media)
         String title = String.format("GeoJson link for %s", feature.getId());
@@ -147,7 +147,7 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
     }
 
     @Override
-    protected void setFeatureId(UniformResourceName id) {
+    protected void addFeatureId(UniformResourceName id) {
         this.feature.setId(id.toString());
     }
 
