@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.opensearch.service.parser.UpdatedParser;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description.DescriptionBuilder;
@@ -248,7 +249,6 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(geoJsonUrl).exists());
 
         // Check url parameters
-        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=21]").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='q']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='name_test']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet']").exists());
@@ -276,11 +276,17 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE))
                                   .exists());
         customizer.expect(
-                          MockMvcResultMatchers
-                                  .xpath(atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
-                                                                 DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME,
-                                                                 DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT))
-                                  .exists());
+            MockMvcResultMatchers
+                .xpath(atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                               DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME,
+                                               DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT))
+                .exists());
+        customizer.expect(
+            MockMvcResultMatchers
+                .xpath(atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                               UpdatedParser.UPDATED_PARAMETER,
+                                               UpdatedParser.UPDATED_PARAMETER))
+                .exists());
 
         // Check options
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet' and count(Option)=12]").exists());
@@ -290,6 +296,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                 .xpath(atomUrl + "/Parameter[@name='sun_distance' and @minInclusive='7000000.0']").exists());
         customizer.expect(MockMvcResultMatchers
                 .xpath(atomUrl + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=22]").exists());
 
         // Check date boundaries
         IProperty<?> startDate = mercury.getProperty("TimePeriod.startDate");

@@ -409,7 +409,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         engineConfiguration.setSearchTitle("search");
         engineConfiguration.setContact("regards@c-s.fr");
         engineConfiguration.setImage("http://plop/image.png");
-        engineConfiguration.setEntityLastUpdateDatePropertyPath("TimePeriod.startDate");
 
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER,
@@ -600,7 +599,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             Set<String> params) {
         DataObject planet = createEntity(planetModel, name);
         planet.setGroups(getAccessGroups());
-        planet.setCreationDate(OffsetDateTime.now());
         planet.addProperty(IProperty.buildString(PLANET, name));
         planet.addProperty(IProperty.buildString(PLANET_TYPE, type));
         planet.addProperty(IProperty.buildInteger(PLANET_DIAMETER, diameter));
@@ -647,6 +645,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             default:
                 throw new UnsupportedOperationException("Unknown entity type " + model.getType());
         }
+        entity.setCreationDate(OffsetDateTime.now());
+        entity.setLastUpdate(OffsetDateTime.now());
         if (astroObjects.containsKey(label)) {
             throw new UnsupportedOperationException("Label \"" + label
                     + "\" for astronomical object already exists! Please change it and relaunch test!");

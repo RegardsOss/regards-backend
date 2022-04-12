@@ -169,7 +169,6 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         engineConfiguration.setSearchTitle("search");
         engineConfiguration.setContact("regards@c-s.fr");
         engineConfiguration.setImage("http://plop/image.png");
-        engineConfiguration.setEntityLastUpdateDatePropertyPath("TimePeriod.startDate");
 
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER,

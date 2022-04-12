@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -34,11 +35,10 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.dto.properties.DateProperty;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import fr.cnes.regards.modules.opensearch.service.parser.UpdatedParser;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.*;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
@@ -77,7 +77,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -181,7 +180,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Override
     public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser,
             IEntityLinkBuilder linkBuilder) throws ModuleException {
-        FacetPage<EntityFeature> facetPage = searchService.search(parser.parse(context), context.getSearchType(), null,
+        FacetPage<AbstractEntity<EntityFeature>> facetPage = catalogSearchService.search(parser.parse(context), context.getSearchType(), null,
                                                                   getPagination(context));
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
@@ -190,10 +189,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ResponseEntity<Object> getEntity(SearchContext context, IEntityLinkBuilder linkBuilder)
             throws ModuleException {
         // Retrieve entity
-        EntityFeature entity = searchService.get(context.getUrn().get());
+        AbstractEntity<EntityFeature> entity = catalogSearchService.get(context.getUrn().get());
         // add fake pagination for whatever reason it seems we have to response a list and not a single item....
         context.setPageable(PageRequest.of(0, 1));
-        FacetPage<EntityFeature> facetPage = new FacetPage<>(Collections.singletonList(entity), Sets.newHashSet(),
+        FacetPage<AbstractEntity<EntityFeature>> facetPage = new FacetPage<>(Collections.singletonList(entity), Sets.newHashSet(),
                 getPagination(context), 1);
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
@@ -201,9 +200,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
         // First parse q parameter for searchTerms if any.
         QueryParser queryParser = new QueryParser(finder);
-        ICriterion searchTermsCriterion = queryParser.parse(queryParams);
+        ICriterion qCriterion = queryParser.parse(queryParams);
+        ICriterion qAndUpdatedCriterion = ICriterion.and(qCriterion, new UpdatedParser().parse(queryParams));
         // Then parse all parameters (open search parameters extension)
-        return ICriterion.and(searchTermsCriterion, parseParametersExt(queryParams));
+        return ICriterion.and(qAndUpdatedCriterion, parseParametersExt(queryParams));
     }
 
     @Override
@@ -254,33 +254,16 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return formatted response
      * @throws UnsupportedMediaTypesException from {@link #getBuilder(SearchContext)}
      */
-    private Object formatResponse(FacetPage<EntityFeature> page, SearchContext context, IEntityLinkBuilder linkBuilder)
+    private Object formatResponse(FacetPage<AbstractEntity<EntityFeature>> page, SearchContext context, IEntityLinkBuilder linkBuilder)
             throws UnsupportedMediaTypesException {
         IResponseFormatter<?> builder = getBuilder(context);
         builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration, linkBuilder
                 .buildExtraLink(resourceService, context, IanaLinkRelations.SELF, EXTRA_DESCRIPTION).getHref(), context,
                             configuration, page, linkBuilder.buildPaginationLinks(resourceService, page, context));
         page.getContent()
-                .forEach(e -> builder.addEntity(e, getEntityLastUpdateDate(e), paramConfigurations,
-                                                linkBuilder.buildEntityLinks(resourceService, context, e)));
+                .forEach(e -> builder.addEntity(e, paramConfigurations,
+                                                linkBuilder.buildEntityLinks(resourceService, context, e.getFeature())));
         return builder.build();
-    }
-
-    /**
-     * Retrieve the last update date of the given entity.
-     * @param entity {@link EntityFeature}
-     * @return Optional<OffsetDateTime>
-     */
-    private Optional<OffsetDateTime> getEntityLastUpdateDate(EntityFeature entity) {
-        Optional<OffsetDateTime> date = Optional.empty();
-        if (engineConfiguration.getEntityLastUpdateDatePropertyPath() != null) {
-            IProperty<?> dateAttribute = entity.getProperty(engineConfiguration.getEntityLastUpdateDatePropertyPath());
-            if (dateAttribute instanceof DateProperty) {
-                DateProperty dateAttr = (DateProperty) dateAttribute;
-                return Optional.ofNullable(dateAttr.getValue());
-            }
-        }
-        return date;
     }
 
     /**
@@ -348,11 +331,12 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     }
 
     private void initIgnoredQueryParams() {
-        ignoredParams.add(configuration.getQueryParameterName());
+        ignoredParams.add(QueryParser.QUERY_PARAMETER);
         ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
         ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME);
         ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT);
         ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE);
+        ignoredParams.add(UpdatedParser.UPDATED_PARAMETER);
         ignoredParams.add("scope");
         ignoredParams.add("token");
         ignoredParams.add("_pretty");

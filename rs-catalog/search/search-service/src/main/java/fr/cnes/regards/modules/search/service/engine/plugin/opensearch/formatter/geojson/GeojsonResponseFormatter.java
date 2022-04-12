@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatte
 import fr.cnes.regards.framework.geojson.*;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.IOpenSearchExtension;
@@ -87,8 +86,8 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
     }
 
     @Override
-    protected void addResponsePaginationInfos(FacetPage<EntityFeature> page) {
-        response.setPaginationInfos(page.getTotalElements(), page.getNumber() * page.getSize(), page.getSize());
+    protected void addResponsePaginationInfos(long totalResults, long startIndex, int itemsPerPage) {
+        response.setPaginationInfos(totalResults, startIndex, itemsPerPage);
     }
 
     @Override

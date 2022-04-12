@@ -67,6 +67,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 /**
@@ -79,6 +80,10 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(SwhOpenSearchControllerIT.class);
 
     private static final String ENGINE_TYPE = "opensearch";
+
+    private final OffsetDateTime lastUpdateSpot4 = OffsetDateTime.of(2020, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
+
+    private final OffsetDateTime lastUpdateSpot5 = OffsetDateTime.of(2021, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
 
     @Autowired
     private Gson gson;
@@ -217,20 +222,22 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
 
                 DataObject dataObject = new DataObject(dataModel, getDefaultTenant(), providerId, label);
                 dataObject.setCreationDate(OffsetDateTime.now());
+                // Not all products share the same platform name; so we use it to have two different date
+                if (getStringProperty(properties, "PlatformName").get().getValue().equals("SPOT4")) {
+                    dataObject.setLastUpdate(lastUpdateSpot4);
+                } else {
+                    dataObject.setLastUpdate(lastUpdateSpot5);
+                }
+
                 addFiles(dataObject, feature.getAsJsonObject("files"));
-                dataObject.setGeometry(IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry.toLinearRingCoordinates(
+                dataObject.setNormalizedGeometry(IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry.toLinearRingCoordinates(
                     IGeometry.position(10.0, 10.0),
                     IGeometry.position(10.0, 30.0),
                     IGeometry.position(30.0, 30.0),
                     IGeometry.position(30.0, 10.0),
                     IGeometry.position(10.0, 10.0)))));
 
-                dataObject.setGeometry(IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry.toLinearRingCoordinates(
-                    IGeometry.position(10.0, 10.0),
-                    IGeometry.position(10.0, 30.0),
-                    IGeometry.position(30.0, 30.0),
-                    IGeometry.position(30.0, 10.0),
-                    IGeometry.position(10.0, 10.0)))));
+                dataObject.setGeometry(dataObject.getNormalizedGeometry());
 
                 addProperty(dataObject, getStringProperty(properties, "CoupledMode"));
                 addProperty(dataObject, getArrayProperty(properties, "CoupledScenesMI"));
@@ -386,7 +393,7 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
         customizer.addParameter("token", "public_token");
         String atomUrl = "OpenSearchDescription/Url[@type='" + MediaType.APPLICATION_ATOM_XML_VALUE + "']";
-        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=64]").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=65]").exists());
         customizer.expect(MockMvcResultMatchers.xpath(
                 atomUrl + "/Parameter[@name='illuminationAzimuthAngle' and @value='{eo:illuminationAzimuthAngle}']")
                               .exists());
@@ -413,6 +420,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
             atomUrl + "/Parameter[@name='minimumIncidenceAngle' and @value='{eo:minimumIncidenceAngle}']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(
             atomUrl + "/Parameter[@name='ProcessingLevel' and @value='{eo:processingLevel}']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='updated' and @value='{updated}']")
+                              .exists());
         long startTime = System.currentTimeMillis();
         performDefaultGet(
             SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
@@ -458,12 +467,34 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
             "FULL");
         customizer.expectValue("$.features[0].properties.acquisitionInformation[0].instrument.instrumentShortName",
                                "HRVIR2");
+        customizer.expectValue("$.features[0].properties.PlatformName", "SPOT4");
+        customizer.expectValue("$.features[0].properties.updated", lastUpdateSpot4.toString());
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
                           ENGINE_TYPE);
         logDuration(startTime);
+    }
 
+    @Test
+    public void searchDataobjectsWithUpdatedFilter() {
+        searchDataobjectWithUpdatedFilter(lastUpdateSpot5.toString(), 148);
+        searchDataobjectWithUpdatedFilter(lastUpdateSpot4.toString(), 400);
+    }
+
+    private void searchDataobjectWithUpdatedFilter(String updated, int totalResults) {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        long startTime = System.currentTimeMillis();
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("updated", updated);
+        customizer.expectValue("$.properties.totalResults", totalResults);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
+        logDuration(startTime);
     }
 
     @Test

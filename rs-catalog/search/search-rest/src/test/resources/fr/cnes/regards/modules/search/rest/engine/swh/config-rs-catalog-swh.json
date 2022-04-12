@@ -32,8 +32,7 @@
                     "searchDescription": "Open search",
                     "contact": "regards@c-s.fr",
                     "shortName": "Open search",
-                    "longName": "Open search",
-                    "entityLastUpdateDatePropertyPath": "properties.system.change_date"
+                    "longName": "Open search"
                   }
                 },
                 {

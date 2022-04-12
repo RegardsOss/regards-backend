@@ -142,11 +142,11 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     }
 
     @Override
-    protected void addResponsePaginationInfos(FacetPage<EntityFeature> page) {
+    protected void addResponsePaginationInfos(long totalResults, long startIndex, int itemsPerPage) {
         OpenSearchModuleImpl osm = getResponseOpenSearchModule();
-        osm.setItemsPerPage(page.getSize());
-        osm.setStartIndex((page.getNumber() * page.getSize()) + 1);
-        osm.setTotalResults((int) page.getTotalElements());
+        osm.setItemsPerPage(itemsPerPage);
+        osm.setStartIndex((int)startIndex + 1);
+        osm.setTotalResults((int) totalResults);
     }
 
     private OpenSearchModuleImpl getResponseOpenSearchModule() {

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter;
 
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -31,7 +32,6 @@ import org.springframework.hateoas.Link;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Léo Mieulet
@@ -64,7 +64,7 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
                             String openSearchDescriptionUrl,
                             SearchContext context,
                             Configuration configuration,
-                            FacetPage<EntityFeature> page,
+                            FacetPage<AbstractEntity<EntityFeature>> page,
                             List<Link> links) {
         response = buildResponse();
 
@@ -82,6 +82,13 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
         addResponseOpenSearchDescription(openSearchDescriptionUrl);
     }
 
+    private void addResponsePaginationInfos(FacetPage<AbstractEntity<EntityFeature>> page) {
+        int pageSize = page.getSize();
+        int pageStartIndex = page.getNumber() * pageSize;
+        long pageTotalElements = page.getTotalElements();
+        addResponsePaginationInfos(pageTotalElements, pageStartIndex, pageSize);
+    }
+
     protected abstract U buildResponse();
 
     protected abstract void addResponseOpenSearchDescription(String openSearchDescriptionUrl);
@@ -96,7 +103,7 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
 
     protected abstract void addResponseLinks(List<Link> links);
 
-    protected abstract void addResponsePaginationInfos(FacetPage<EntityFeature> page);
+    protected abstract void addResponsePaginationInfos(long totalResults, long startIndex, int itemsPerPage);
 
     protected abstract void addResponseDescription(String description);
 
@@ -105,32 +112,27 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
     protected abstract void addResponseId(String searchId);
 
     @Override
-    public void addEntity(EntityFeature entity,
-                          Optional<OffsetDateTime> entityLastUpdate,
+    public void addEntity(AbstractEntity<EntityFeature> entity,
                           List<ParameterConfiguration> paramConfigurations,
                           List<Link> entityLinks) {
-        addToResponse(buildFeature(entity, entityLastUpdate, paramConfigurations, entityLinks));
+        addToResponse(buildFeature(entity, paramConfigurations, entityLinks));
     }
 
-    public T buildFeature(EntityFeature entity,
-                          Optional<OffsetDateTime> entityLastUpdate,
+    public T buildFeature(AbstractEntity<EntityFeature> entity,
                           List<ParameterConfiguration> paramConfigurations,
                           List<Link> entityLinks) {
         feature = buildFeature();
 
-        UniformResourceName id = entity.getId();
+        UniformResourceName id = entity.getFeature().getId();
         addFeatureId(id);
         addFeatureLinks(entityLinks);
         addFeatureTitle(entity.getLabel());
         addFeatureProviderId(entity.getProviderId());
-
-        if (entityLastUpdate.isPresent()) {
-            addFeatureUpdated(entityLastUpdate.get());
-        }
+        addFeatureUpdated(entity.getLastUpdate());
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {
-                updateEntityWithExtension(extension, entity, paramConfigurations);
+                updateEntityWithExtension(extension, entity.getFeature(), paramConfigurations);
             }
         }
         return feature;

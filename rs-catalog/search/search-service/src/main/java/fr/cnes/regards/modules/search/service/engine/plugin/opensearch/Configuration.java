@@ -29,8 +29,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "opensearch")
 public class Configuration {
 
-    private String queryParameterName = "q";
-
     private String queryParameterValue = "searchTerms";
 
     private String queryParameterTitle = "Free text search";
@@ -45,14 +43,6 @@ public class Configuration {
 
     public Configuration() {
         // Empty constructor needed for Spring
-    }
-
-    public String getQueryParameterName() {
-        return queryParameterName;
-    }
-
-    public void setQueryParameterName(String queryParameterName) {
-        this.queryParameterName = queryParameterName;
     }
 
     public String getQueryParameterValue() {

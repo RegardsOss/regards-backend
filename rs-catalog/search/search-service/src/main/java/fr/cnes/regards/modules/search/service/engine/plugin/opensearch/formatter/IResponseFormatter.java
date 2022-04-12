@@ -28,9 +28,7 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Parameter
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import org.springframework.hateoas.Link;
 
-import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Interface to define OpenSearch response formatters. Formatters are made for serialized Feature and descriptor in ATOM or JSON format.
@@ -52,17 +50,16 @@ public interface IResponseFormatter<R> {
      * @param links                    {@link Link}s of the entities collection
      */
     void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl, SearchContext context, Configuration configuration,
-            FacetPage<EntityFeature> page, List<Link> links);
+                     FacetPage<AbstractEntity<EntityFeature>> page, List<Link> links);
 
     /**
      * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
      *
      * @param entity              {@link AbstractEntity}
-     * @param entityLastUpdate    last update of the current entity to add
      * @param paramConfigurations {@link ParameterConfiguration}s
      * @parma entityLinks {@link Link}s of the entity
      */
-    void addEntity(EntityFeature entity, Optional<OffsetDateTime> entityLastUpdate, List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks);
+    void addEntity(AbstractEntity<EntityFeature> entity, List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks);
 
     /**
      * Clear all added {@link AbstractEntity}s to the current builder.

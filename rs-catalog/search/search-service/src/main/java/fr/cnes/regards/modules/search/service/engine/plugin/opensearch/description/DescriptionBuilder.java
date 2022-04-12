@@ -39,6 +39,8 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionTy
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import fr.cnes.regards.modules.opensearch.service.parser.UpdatedParser;
 import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -132,6 +134,7 @@ public class DescriptionBuilder {
      * @param context        {@link SearchContext}
      * @param extensions     {@link IOpenSearchExtension} extensions to use
      * @param parameterConfs {@link ParameterConfiguration}s parameters configuration.
+     * @param dataset
      * @return {@link OpenSearchDescription}
      */
     public OpenSearchDescription build(SearchContext context, ICriterion criterion,
@@ -252,7 +255,7 @@ public class DescriptionBuilder {
         // Add standard q parameter
         OpenSearchParameter qParameter = new OpenSearchParameter();
         qParameter.setTitle(configuration.getQueryParameterTitle());
-        qParameter.setName(configuration.getQueryParameterName());
+        qParameter.setName(QueryParser.QUERY_PARAMETER);
         qParameter.setValue(String.format("{%s}", configuration.getQueryParameterValue()));
         parameters.add(qParameter);
 
@@ -281,6 +284,12 @@ public class DescriptionBuilder {
         startPageParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_PAGE));
         startPageParameter.setMinInclusive("0");
         parameters.add(startPageParameter);
+
+        OpenSearchParameter updatedParameter = new OpenSearchParameter();
+        updatedParameter.setTitle("Filter features on updated field, return all features having or after the provided date");
+        updatedParameter.setName(UpdatedParser.UPDATED_PARAMETER);
+        updatedParameter.setValue(String.format("{%s}", UpdatedParser.UPDATED_PARAMETER));
+        parameters.add(updatedParameter);
 
         return parameters;
     }
