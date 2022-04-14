@@ -25,7 +25,7 @@
     <artifactId>templates-service</artifactId>
 
     <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
+        <groupId>fr.cnes.regards.framework.modules</groupId>
         <artifactId>templates</artifactId>
         <version>${revision}</version>
     </parent>
