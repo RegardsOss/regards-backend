@@ -253,7 +253,7 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
                            Files.exists(Paths.get(cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()))));
         Optional<FileCacheRequest> request = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("A cache request should be created", request.isPresent());
-        Assert.assertTrue("A cache request should be created", request.get().getStatus() == FileRequestStatus.ERROR);
+        Assert.assertEquals("A cache request should be created", FileRequestStatus.ERROR, request.get().getStatus());
     }
 
     /**
@@ -296,7 +296,7 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
                           Files.exists(Paths.get(cacheService.getFilePath(fileRef3.getMetaInfo().getChecksum()))));
         Assert.assertTrue("file should be restored in cache",
                           Files.exists(Paths.get(cacheService.getFilePath(fileRef4.getMetaInfo().getChecksum()))));
-        Assert.assertTrue("No cache request should remains", fileCacheReqRepo.count() == 0);
+        Assert.assertEquals("No cache request should remains", 0, fileCacheReqRepo.count());
 
     }
 
@@ -338,6 +338,31 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
                           Mockito.any(),
                           Mockito.any(),
                           Mockito.any());
+    }
+
+    @Test
+    public void cleanExpiredCacheRequests() throws ExecutionException, InterruptedException {
+        OffsetDateTime expirationDate = OffsetDateTime.now().minusDays(1);
+        FileReference expiredCacheRequestFile = this.generateRandomStoredNearlineFileReference();
+        fileCacheReqRepo.save(new FileCacheRequest(expiredCacheRequestFile, "target/test", expirationDate, "test"));
+
+        FileReference expiresTomorrowCacheRequestFile = this.generateRandomStoredNearlineFileReference();
+        fileCacheReqRepo.save(new FileCacheRequest(expiresTomorrowCacheRequestFile,
+                                                   "target/test",
+                                                   OffsetDateTime.now().plusDays(1),
+                                                   "test"));
+
+        Assert.assertEquals("There is only 2 file cache requests.", 2, fileCacheReqRepo.count());
+        Assert.assertTrue("One file cache requests should be expired (expirationDate < now)",
+                          fileCacheReqRepo.findByChecksum(expiredCacheRequestFile.getMetaInfo().getChecksum())
+                                          .filter(req -> req.getExpirationDate().isBefore(OffsetDateTime.now()))
+                                          .isPresent());
+        Assert.assertTrue("The other file cache requests should not be expired (expirationDate > now)",
+                          fileCacheReqRepo.findByChecksum(expiresTomorrowCacheRequestFile.getMetaInfo().getChecksum())
+                                          .filter(req -> req.getExpirationDate().isAfter(OffsetDateTime.now()))
+                                          .isPresent());
+        fileCacheRequestService.cleanExpiredCacheRequests();
+        Assert.assertEquals("After cleaning expired requests there should be one left.", 1, fileCacheReqRepo.count());
     }
 
 }

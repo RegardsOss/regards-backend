@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.storage.service.file.request;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.request.*;
@@ -94,6 +93,7 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     private final Task handleRequestsTask = () -> {
         LockAssert.assertLocked();
         handleGroupRequests();
+        handleExpiredCacheRequests();
         handleFileCacheRequests();
         handleFileStorageRequests();
         handleFileDeletionRequests();
@@ -103,27 +103,31 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
-    public void handleFileStorageRequests() throws ModuleException {
+    public void handleFileStorageRequests() {
         reqStatusService.checkDelayedStorageRequests();
         fileStorageRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(), Sets.newHashSet());
     }
 
-    public void handleFileCacheRequests() throws ModuleException {
+    public void handleFileCacheRequests() {
         reqStatusService.checkDelayedCacheRequests();
         fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
     }
 
-    public void handleFileDeletionRequests() throws ModuleException {
+    private void handleExpiredCacheRequests() {
+        fileCacheRequestService.cleanExpiredCacheRequests();
+    }
+
+    public void handleFileDeletionRequests() {
         reqStatusService.checkDelayedDeleteRequests();
         fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet());
     }
 
-    public void handleFileCopyRequests() throws ModuleException {
+    public void handleFileCopyRequests() {
         reqStatusService.checkDelayedCopyRequests();
         fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
     }
 
-    public void handleGroupRequests() throws ModuleException {
+    public void handleGroupRequests() {
         reqGrpService.checkRequestsGroupsDone();
     }
 

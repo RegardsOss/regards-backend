@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.plugin.IDeletionProgressManager;
-import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 /**
  * Progress manager class to handle {@link FileDeletionRequestJob} advancement.<br>
@@ -49,8 +46,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
 
     private final Set<FileDeletionRequest> handled = Sets.newHashSet();
 
-    public FileDeletionJobProgressManager(FileDeletionRequestService fileDeletionRequestService,
-            FileReferenceEventPublisher publisher, IJob<?> job) {
+    public FileDeletionJobProgressManager(FileDeletionRequestService fileDeletionRequestService, IJob<?> job) {
         super();
         this.job = job;
         this.fileDeletionRequestService = fileDeletionRequestService;
@@ -60,7 +56,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
     public void deletionFailed(FileDeletionRequest fileDeletionRequest, String cause) {
         FileReference fileRef = fileDeletionRequest.getFileReference();
         LOGGER.error("[DELETION ERROR] - Deletion error for file {} from {} (checksum: {}). Cause : {}",
-                     fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
+                     fileRef.getMetaInfo().getFileName(), fileRef.getLocation(),
                      fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
         fileDeletionRequestService.handleError(fileDeletionRequest, cause);
@@ -70,7 +66,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
     @Override
     public void deletionSucceed(FileDeletionRequest fileDeletionRequest) {
         FileReference fileRef = fileDeletionRequest.getFileReference();
-        String successMessage = String.format("File %s successfully deteled from %s (checksum: %s)",
+        String successMessage = String.format("File %s successfully deleted from %s (checksum: %s)",
                                               fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
                                               fileRef.getMetaInfo().getChecksum());
         LOGGER.debug("[DELETION SUCCESS] - {}", successMessage);
