@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-20XX CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,8 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * 
- * @author Xavier-Alexandre Brochard
- */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
+
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+
+/**
+ * Action to update user access to a project
+ *
+ * @author Thomas Fache
+ **/
+public interface UserAccessUpdate {
+
+    void updateState() throws EntityOperationForbiddenException;
+
+}
