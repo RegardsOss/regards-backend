@@ -50,7 +50,7 @@
 
 	<properties>
 		<!-- REGARDS -->
-		<java.version>1.8</java.version>
+		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-deploy.skip>true</maven-deploy.skip>
 		<regards.version>1.10.0-SNAPSHOT</regards.version>
@@ -180,6 +180,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<docker.registry.host>172.26.46.158</docker.registry.host>
 		<docker.registry.baseImage>regards-java-alpine</docker.registry.baseImage>
+		<docker.registry.tagImage>17</docker.registry.tagImage>
 		<sonar.language>java</sonar.language>
 		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
 		<jacoco.outputDir>target/coverage-reports</jacoco.outputDir>

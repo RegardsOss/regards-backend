@@ -72,7 +72,7 @@
                         <skipDockerBuild>false</skipDockerBuild>
                         <forceTags>true</forceTags>
                         <imageName>${docker.registry.host}/${fr.cnes.regards.docker.image.name}</imageName>
-                        <baseImage>${docker.registry.host}/${docker.registry.baseImage}</baseImage>
+                        <baseImage>${docker.registry.host}/${docker.registry.baseImage}:${docker.registry.tagImage}</baseImage>
                         <serverId>REGARDS-DockerHub</serverId>
                         <registryUrl>${docker.registry.host}</registryUrl>
                         <imageTags>
