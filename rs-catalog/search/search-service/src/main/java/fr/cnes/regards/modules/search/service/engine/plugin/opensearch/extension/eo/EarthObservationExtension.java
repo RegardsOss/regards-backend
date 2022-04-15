@@ -81,7 +81,7 @@ public class EarthObservationExtension extends AbstractExtension {
                                         List<ParameterConfiguration> paramConfigurations,
                                         Entry entry,
                                         Gson gson,
-                                        String token) {
+                                        String scope) {
         Map<EarthObservationAttribute, Object> activeProperties = getActiveProperties(entity, paramConfigurations);
         if (!activeProperties.isEmpty()) {
             // Add EarthObservation module to handle this extension

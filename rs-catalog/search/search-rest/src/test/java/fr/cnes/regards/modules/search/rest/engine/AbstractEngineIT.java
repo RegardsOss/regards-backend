@@ -541,35 +541,37 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         planet.setDatasetModelNames(Sets.newHashSet(planetModel.getName()));
 
-        DataFile quicklooksd = new DataFile();
-        quicklooksd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklooksd.setUri(URI.create("http://regards/le_quicklook_sd.jpg").toString());
-        quicklooksd.setReference(false);
-        quicklooksd.setImageWidth(100d);
-        quicklooksd.setImageHeight(100d);
-        planet.getFiles().put(DataType.QUICKLOOK_SD, quicklooksd);
-        DataFile quicklookmd = new DataFile();
-        quicklookmd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklookmd.setUri(URI.create("http://regards/le_quicklook_md.jpg").toString());
-        quicklookmd.setReference(false);
-        quicklookmd.setImageWidth(100d);
-        quicklookmd.setImageHeight(100d);
-        planet.getFiles().put(DataType.QUICKLOOK_MD, quicklookmd);
-        DataFile quicklookhd = new DataFile();
-        quicklookhd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklookhd.setUri(URI.create("http://regards/le_quicklook_hd.jpg").toString());
-        quicklookhd.setReference(false);
-        quicklookhd.setImageWidth(100d);
-        quicklookhd.setImageHeight(100d);
-        planet.getFiles().put(DataType.QUICKLOOK_HD, quicklookhd);
+        planet.getFiles()
+            .put(DataType.QUICKLOOK_SD,
+                 buildDataFile(DataType.QUICKLOOK_SD,
+                               "le_quicklook_sd.jpg",
+                               "http://regards/le_quicklook_sd.jpg",
+                               "application/jpg",
+                               100d));
 
-        DataFile thumbnail = new DataFile();
-        thumbnail.setMimeType(MimeType.valueOf("application/png"));
-        thumbnail.setUri(URI.create("http://regards/thumbnail.png").toString());
-        thumbnail.setImageWidth(250d);
-        thumbnail.setImageHeight(250d);
-        thumbnail.setReference(false);
-        planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
+        planet.getFiles()
+            .put(DataType.QUICKLOOK_MD,
+                 buildDataFile(DataType.QUICKLOOK_MD,
+                               "le_quicklook_md.jpg",
+                               "http://regards/le_quicklook_md.jpg",
+                               "application/jpg",
+                               100d));
+
+        planet.getFiles()
+            .put(DataType.QUICKLOOK_HD,
+                 buildDataFile(DataType.QUICKLOOK_HD,
+                               "le_quicklook_hd.jpg",
+                               "http://regards/le_quicklook_hd.jpg",
+                               "application/jpg",
+                               100d));
+
+        planet.getFiles()
+            .put(DataType.THUMBNAIL,
+                 buildDataFile(DataType.THUMBNAIL,
+                               "thumbnail.png",
+                               "http://regards/thumbnail.png",
+                               "application/png",
+                               250d));
 
         DataFile rawdata = DataFile.build(DataType.RAWDATA, "test.nc", "http://regards/test.nc",
                                           MediaType.APPLICATION_OCTET_STREAM, Boolean.TRUE, Boolean.FALSE);
@@ -586,6 +588,18 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                                  IProperty.buildDate(STOP_DATE, stopDateValue)));
 
         return planet;
+    }
+
+    private DataFile buildDataFile(DataType dataType, String fileName, String uri, String mimeType, double imageSize) {
+        DataFile quicklookmd = DataFile.build(dataType,
+                                              fileName,
+                                              URI.create(uri).toString(),
+                                              MimeType.valueOf(mimeType),
+                                              Boolean.TRUE,
+                                              Boolean.FALSE);
+        quicklookmd.setImageWidth(imageSize);
+        quicklookmd.setImageHeight(imageSize);
+        return quicklookmd;
     }
 
     /**

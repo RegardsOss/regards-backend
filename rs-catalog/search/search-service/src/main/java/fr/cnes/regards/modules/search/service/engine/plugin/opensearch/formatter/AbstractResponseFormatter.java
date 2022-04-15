@@ -38,7 +38,7 @@ import java.util.List;
  */
 public abstract class AbstractResponseFormatter<T, U> implements IResponseFormatter<U> {
 
-    protected final String token;
+    protected final String scope;
 
     /**
      * List of {@link IOpenSearchExtension} to handle for ATOM format.
@@ -49,8 +49,8 @@ public abstract class AbstractResponseFormatter<T, U> implements IResponseFormat
 
     protected U response;
 
-    public AbstractResponseFormatter(String token) {
-        this.token = token;
+    public AbstractResponseFormatter(String scope) {
+        this.scope = scope;
     }
 
     @Override

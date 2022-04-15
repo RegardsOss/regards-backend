@@ -87,7 +87,7 @@ public class RegardsExtension extends AbstractExtension {
                                         List<ParameterConfiguration> paramConfigurations,
                                         Entry entry,
                                         Gson gson,
-                                        String token) {
+                                        String scope) {
         RegardsModule rm = new RegardsModuleImpl();
         rm.setGsonBuilder(gson);
         rm.setEntity(entity);

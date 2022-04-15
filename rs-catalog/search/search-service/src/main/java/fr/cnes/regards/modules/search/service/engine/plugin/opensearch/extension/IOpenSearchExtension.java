@@ -69,9 +69,9 @@ public interface IOpenSearchExtension {
      * @param paramConfigurations {@link ParameterConfiguration} opensearch parameters configurations.
      * @param entry               {@link Entry} ATOM feed entry in which add the extension format
      * @param gson                {@link Gson} tool to serialize objects.
-     * @param token               {@link String} tool to serialize objects.
+     * @param scope               {@link String} current tenant
      */
-    void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson, String token);
+    void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson, String scope);
 
     /**
      * Add parameter into the given {@link Feature} for the {@link EntityFeature} for Geojson response

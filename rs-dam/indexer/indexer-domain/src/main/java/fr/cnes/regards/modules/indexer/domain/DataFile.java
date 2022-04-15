@@ -28,7 +28,7 @@ import java.net.URI;
 import java.util.Set;
 
 /**
- * This class manages data reference. Use {@link #build(DataType, String, String, MimeType, Boolean)} to instanciate it.
+ * This class manages data reference. Use {@link #build(DataType, String, String, MimeType, Boolean, Boolean)} to instanciate it.
  *
  * @author lmieulet
  * @author Marc Sordi

@@ -41,8 +41,8 @@ import java.util.stream.Collectors;
  */
 public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature, FeatureWithPropertiesCollection> {
 
-    public GeojsonResponseFormatter(String token) {
-        super(token);
+    public GeojsonResponseFormatter(String scope) {
+        super(scope);
     }
 
     /**
@@ -77,7 +77,9 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
 
     @Override
     protected void addResponseLinks(List<Link> links) {
-        response.setLinks(links.stream().map(l -> GeoJsonLinkBuilder.build(l, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, token)).collect(Collectors.toList()));
+        response.setLinks(links.stream()
+                              .map(link -> new GeoJsonLink(link, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+                              .collect(Collectors.toList()));
     }
 
     @Override
@@ -116,8 +118,10 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
     }
 
     @Override
-    protected void updateEntityWithExtension(IOpenSearchExtension extension, EntityFeature entity, List<ParameterConfiguration> paramConfigurations) {
-        extension.formatGeoJsonResponseFeature(entity, paramConfigurations, this.feature, this.token);
+    protected void updateEntityWithExtension(IOpenSearchExtension extension,
+                                             EntityFeature entity,
+                                             List<ParameterConfiguration> paramConfigurations) {
+        extension.formatGeoJsonResponseFeature(entity, paramConfigurations, this.feature, this.scope);
     }
 
     @Override
@@ -141,8 +145,11 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
         // Other types like icon or enclosure are handle in extensions (example : media)
         String title = String.format("GeoJson link for %s", feature.getId());
         this.feature.setLinks(entityLinks.stream()
-                                     .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonLink.LINK_ALTERNATE_REL, title, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE,
-                                                                        token)).collect(Collectors.toList()));
+                                  .map(link -> new GeoJsonLink(link,
+                                                            GeoJsonLink.LINK_ALTERNATE_REL,
+                                                            title,
+                                                            GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+                                  .collect(Collectors.toList()));
     }
 
     @Override

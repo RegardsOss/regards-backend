@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.rometools.modules.mediarss.MediaEntryModuleImpl;
 import com.rometools.modules.mediarss.types.*;
@@ -40,15 +40,12 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Parameter
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description.DescriptionParameter;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.AbstractExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.SearchParameter;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeoJsonLinkBuilder;
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.DataFileHrefBuilder;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Media extension for Opensearch standard.
@@ -76,42 +73,109 @@ public class MediaExtension extends AbstractExtension {
 
     public static final String ATOM_MEDIA_CAT_REF = "http://www.opengis.net/spec/EOMPOM/1.0";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MediaExtension.class);
+    private static final List<DataType> QUICKLOOK_DATA_TYPES = Lists.newArrayList(DataType.QUICKLOOK_SD,
+                                                                                 DataType.QUICKLOOK_MD,
+                                                                                 DataType.QUICKLOOK_HD);
+
+    /**
+     * Convert a {@link DataFile} to a {@link GeoJsonLink}. Only for publicly available resource like QUICKLOOK and THUMBNAIL
+     *
+     * @param dataFile {@link DataFile}
+     * @param scope
+     * @return {@link GeoJsonLink}
+     */
+    private static GeoJsonLink getGeoJsonLink(DataFile dataFile, String scope) {
+        String fileName = getFileNameFromDataFile(dataFile);
+        String href = DataFileHrefBuilder.getDataFileHref(dataFile, scope);
+        return new GeoJsonLink(LINK_ENCLOSURE_REL, dataFile.getMimeType().toString(), fileName, href);
+    }
+
+    private static String getFileNameFromDataFile(DataFile dataFile) {
+        return Paths.get(dataFile.asUri().getPath()).getFileName().toString();
+    }
 
     @Override
     public void formatGeoJsonResponseFeature(EntityFeature entity,
                                              List<ParameterConfiguration> paramConfigurations,
                                              Feature feature,
-                                             String token) {
+                                             String scope) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         Object obj = feature.getProperties().get("links");
         if (obj instanceof List<?>) {
             @SuppressWarnings("unchecked") List<GeoJsonLink> links = (List<GeoJsonLink>) obj;
-            medias.get(DataType.RAWDATA).forEach(f -> {
-                feature.addProperty(GEO_JSON_RAWDATA_KEY, GeoJsonLinkBuilder.getDataFileHref(f, token));
-                links.add(getGeoJsonLink(f, token));
-            });
-            Set<String> quicklooks = Sets.newHashSet();
-            medias.get(DataType.QUICKLOOK_SD).forEach(f -> {
-                quicklooks.add(GeoJsonLinkBuilder.getDataFileHref(f, token));
-                links.add(getGeoJsonLink(f, token));
-            });
-            medias.get(DataType.QUICKLOOK_MD).forEach(f -> {
-                quicklooks.add(GeoJsonLinkBuilder.getDataFileHref(f, token));
-                links.add(getGeoJsonLink(f, token));
-            });
-            medias.get(DataType.QUICKLOOK_HD).forEach(f -> {
-                quicklooks.add(GeoJsonLinkBuilder.getDataFileHref(f, token));
-                links.add(getGeoJsonLink(f, token));
-            });
-            if (!quicklooks.isEmpty()) {
-                feature.addProperty(GEO_JSON_QUICKLOOK_KEY, quicklooks);
-            }
-            medias.get(DataType.THUMBNAIL).forEach(f -> {
-                feature.addProperty(GEO_JSON_THUMBNAIL_KEY, GeoJsonLinkBuilder.getDataFileHref(f, token));
-                links.add(getGeoJsonLink(f, token));
-            });
+
+            links.addAll(getRawdataLinks(medias.get(DataType.RAWDATA), scope));
+            links.addAll(getAllQuicklookTypesLinks(medias, scope));
+            links.addAll(getImageLinks(medias.get(DataType.THUMBNAIL), scope));
+
+            // Add rawdata property at the root of the Feature
+            addFeatureProperty(feature,
+                               GEO_JSON_RAWDATA_KEY,
+                               getDataFileHrefOptByDataType(medias, DataType.RAWDATA, scope));
+
+            // Add thumbnail property at the root of the Feature
+            addFeatureProperty(feature,
+                               GEO_JSON_THUMBNAIL_KEY,
+                               getDataFileHrefOptByDataType(medias, DataType.THUMBNAIL, scope));
+
+            // Add quicklook property at the root of the Feature
+            addFeatureProperty(feature, GEO_JSON_QUICKLOOK_KEY, getQuicklookDataFileHrefOpt(medias, scope));
         }
+    }
+
+    private Collection<GeoJsonLink> getRawdataLinks(Collection<DataFile> rawdataDataFiles, String scope) {
+        return rawdataDataFiles.stream()
+            .map(dataFile -> getGeoJsonLink(dataFile, scope))
+            .collect(Collectors.toList());
+    }
+
+    private Collection<GeoJsonLink> getAllQuicklookTypesLinks(Multimap<DataType, DataFile> medias, String scope) {
+        List<DataFile> allQuicklooksTypesDataFiles = QUICKLOOK_DATA_TYPES.stream()
+            .map(medias::get)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+        return getImageLinks(allQuicklooksTypesDataFiles, scope);
+    }
+
+    private Collection<GeoJsonLink> getImageLinks(Collection<DataFile> thumbnailDataFiles, String scope) {
+        return thumbnailDataFiles.stream()
+            .map(dataFile -> getGeoJsonLink(dataFile, scope))
+            .collect(Collectors.toList());
+    }
+
+    private void addFeatureProperty(Feature feature, String propertyKey, Optional<String> propertyValue) {
+        propertyValue.ifPresent(href -> feature.addProperty(propertyKey, href));
+    }
+
+    /**
+     * Get the href of the first DataFile to use in the root quickloook property.
+     * Fallback to the thumbnail if there is no QUICKLOOK
+     * Order of priority : QUICKLOOK_MD > QUICKLOOK_SD > QUICKLOOK_HD > THUMBNAIL
+     */
+    private Optional<String> getQuicklookDataFileHrefOpt(Multimap<DataType, DataFile> medias, String scope) {
+        Optional<String> hrefQuicklookMD = getDataFileHrefOptByDataType(medias, DataType.QUICKLOOK_MD, scope);
+        if (hrefQuicklookMD.isPresent()) {
+            return hrefQuicklookMD;
+        }
+        Optional<String> hrefQuicklookSD = getDataFileHrefOptByDataType(medias, DataType.QUICKLOOK_SD, scope);
+        if (hrefQuicklookSD.isPresent()) {
+            return hrefQuicklookSD;
+        }
+        Optional<String> hrefQuicklookHD = getDataFileHrefOptByDataType(medias, DataType.QUICKLOOK_HD, scope);
+        if (hrefQuicklookHD.isPresent()) {
+            return hrefQuicklookHD;
+        }
+        return getDataFileHrefOptByDataType(medias, DataType.THUMBNAIL, scope);
+    }
+
+    private Optional<String> getDataFileHrefOptByDataType(Multimap<DataType, DataFile> medias,
+                                                          DataType dataType,
+                                                          String scope) {
+        return medias.get(dataType)
+            .stream()
+            .findFirst()
+            .map(dataFile -> DataFileHrefBuilder.getDataFileHref(dataFile, scope));
+
     }
 
     @Override
@@ -119,15 +183,15 @@ public class MediaExtension extends AbstractExtension {
                                         List<ParameterConfiguration> paramConfigurations,
                                         Entry entry,
                                         Gson gson,
-                                        String token) {
+                                        String scope) {
         Multimap<DataType, DataFile> medias = getMedias(entity);
         // Add module generator
-        Module mediaMod = getAtomEntityResponseBuilder(medias, token);
+        Module mediaMod = getAtomEntityResponseBuilder(medias, scope);
         if (mediaMod != null) {
             entry.getModules().add(mediaMod);
         }
         // Add links
-        entry.getAlternateLinks().addAll(getLinks(medias, token));
+        entry.getAlternateLinks().addAll(getAtomLinks(medias, scope));
     }
 
     @Override
@@ -159,7 +223,7 @@ public class MediaExtension extends AbstractExtension {
     }
 
     /**
-     * Retrieve media files from the given {@link AbstractDataEntity}
+     * Retrieve media files from the given {@link EntityFeature}
      *
      * @param entity {@link AbstractEntity}
      * @return medias by type (Quicklook or Thumbnail)
@@ -176,8 +240,8 @@ public class MediaExtension extends AbstractExtension {
      * @param medias
      * @return {@link Link}s
      */
-    private Collection<Link> getLinks(Multimap<DataType, DataFile> medias, String token) {
-        List<Link> links = Lists.newArrayList();
+    private Collection<Link> getAtomLinks(Multimap<DataType, DataFile> medias, String scope) {
+        List<Link> links = new ArrayList<>();
         medias.forEach((type, file) -> {
             switch (type) {
                 case QUICKLOOK_SD:
@@ -185,13 +249,13 @@ public class MediaExtension extends AbstractExtension {
                 case QUICKLOOK_HD:
                 case THUMBNAIL:
                     Link iconLink = new Link();
-                    iconLink.setHref(GeoJsonLinkBuilder.getDataFileHref(file, token));
+                    iconLink.setHref(DataFileHrefBuilder.getDataFileHref(file, scope));
                     iconLink.setRel(LINK_ICON_REL);
                     links.add(iconLink);
                     break;
                 case RAWDATA:
                     Link enclosureLink = new Link();
-                    enclosureLink.setHref(GeoJsonLinkBuilder.getDataFileHref(file, token));
+                    enclosureLink.setHref(DataFileHrefBuilder.getDataFileHref(file, scope));
                     enclosureLink.setRel(LINK_ENCLOSURE_REL);
                     links.add(enclosureLink);
                     break;
@@ -208,15 +272,15 @@ public class MediaExtension extends AbstractExtension {
      * @param medias
      * @return {@link Module}
      */
-    private Module getAtomEntityResponseBuilder(Multimap<DataType, DataFile> medias, String token) {
+    private Module getAtomEntityResponseBuilder(Multimap<DataType, DataFile> medias, String scope) {
         if (!medias.isEmpty()) {
             List<MediaContent> contents = Lists.newArrayList();
-            contents.addAll(generateMediaContents(medias.get(DataType.QUICKLOOK_SD),
-                                                  new Category(ATOM_MEDIA_CAT_REF, null, ATOM_MEDIA_QUICKLOOK_CAT),
-                                                  token));
-            contents.addAll(generateMediaContents(medias.get(DataType.THUMBNAIL),
-                                                  new Category(ATOM_MEDIA_CAT_REF, null, ATOM_MEDIA_THUMBNAIL_CAT),
-                                                  token));
+            contents.addAll(generateAtomMediaContents(medias.get(DataType.QUICKLOOK_SD),
+                                                      new Category(ATOM_MEDIA_CAT_REF, null, ATOM_MEDIA_QUICKLOOK_CAT),
+                                                      scope));
+            contents.addAll(generateAtomMediaContents(medias.get(DataType.THUMBNAIL),
+                                                      new Category(ATOM_MEDIA_CAT_REF, null, ATOM_MEDIA_THUMBNAIL_CAT),
+                                                      scope));
             MediaEntryModuleImpl mediaMod = new MediaEntryModuleImpl();
             MediaContent[] contentsArr = new MediaContent[contents.size()];
             MediaGroup group = new MediaGroup(contents.toArray(contentsArr));
@@ -235,10 +299,10 @@ public class MediaExtension extends AbstractExtension {
      * @param cat   {@link Category}
      * @return {@link MediaContent}s
      */
-    private List<MediaContent> generateMediaContents(Collection<DataFile> files, Category cat, String token) {
+    private List<MediaContent> generateAtomMediaContents(Collection<DataFile> files, Category cat, String scope) {
         List<MediaContent> contents = Lists.newArrayList();
         for (DataFile file : files) {
-            String href = GeoJsonLinkBuilder.getDataFileHref(file, token);
+            String href = DataFileHrefBuilder.getDataFileHref(file, scope);
             MediaContent content = new MediaContent(new UrlReference(URI.create(href)));
             content.setMedium("image");
             content.setType(file.getMimeType().toString());
@@ -251,20 +315,6 @@ public class MediaExtension extends AbstractExtension {
             contents.add(content);
         }
         return contents;
-    }
-
-    private GeoJsonLink getGeoJsonLink(DataFile file, String token) {
-        URI href = file.asUri();
-        String fileName = href.toString();
-        try {
-            fileName = Paths.get(href.toURL().getFile()).getFileName().toString();
-        } catch (MalformedURLException e) {
-            LOGGER.warn("Error getting filename for file {}", href);
-        }
-        return new GeoJsonLink(LINK_ENCLOSURE_REL,
-                               file.getMimeType().toString(),
-                               fileName,
-                               GeoJsonLinkBuilder.getDataFileHref(file, token));
     }
 
 }

@@ -20,13 +20,13 @@ package fr.cnes.regards.modules.search.service.engine.plugin.opensearch;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
@@ -133,15 +133,16 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private Configuration configuration;
 
     @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
     protected ICatalogSearchService catalogSearchService;
 
     @PluginParameter(name = ENGINE_PARAMETERS, label = "Search engine global configuration")
     private EngineConfiguration engineConfiguration;
 
     private List<String> ignoredParams = new ArrayList<>();
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     /**
      * To build resource links
      */
@@ -350,12 +351,13 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      */
     private IResponseFormatter<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
         IResponseFormatter<?> responseBuilder;
+        String currentTenant = runtimeTenantResolver.getTenant();
 
         if (context.getHeaders().getAccept().stream().anyMatch(MediaType.APPLICATION_JSON::isCompatibleWith)) {
-            responseBuilder = new GeojsonResponseFormatter(authResolver.getToken());
+            responseBuilder = new GeojsonResponseFormatter(currentTenant);
         } else if (context.getHeaders().getAccept().stream()
                 .anyMatch(MediaType.APPLICATION_ATOM_XML::isCompatibleWith)) {
-            responseBuilder = new AtomResponseFormatter(gson, authResolver.getToken());
+            responseBuilder = new AtomResponseFormatter(gson, currentTenant);
         } else {
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
         }

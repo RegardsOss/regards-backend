@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.AbstractResponseFormatter;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeoJsonLinkBuilder;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.MediaType;
 
@@ -199,8 +198,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     protected void addFeatureLinks(List<org.springframework.hateoas.Link> entityLinks) {
         entityLinks.forEach(link -> {
             Link feedEntityLink = new Link();
-            String href = GeoJsonLinkBuilder.getDataFileHref(link.getHref(), token);
-            feedEntityLink.setHref(href);
+            feedEntityLink.setHref(link.getHref());
             feedEntityLink.setType(MediaType.APPLICATION_ATOM_XML_VALUE);
             if (link.getRel().equals(IanaLinkRelations.SELF)) {
                 feedEntityLink.setTitle(String.format("ATOM link for %s", feature.getId()));
@@ -211,7 +209,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
 
     @Override
     protected void updateEntityWithExtension(IOpenSearchExtension extension, EntityFeature entity, List<ParameterConfiguration> paramConfigurations) {
-        extension.formatAtomResponseEntry(entity, paramConfigurations, this.feature, gson, token);
+        extension.formatAtomResponseEntry(entity, paramConfigurations, this.feature, gson, scope);
     }
 
 }

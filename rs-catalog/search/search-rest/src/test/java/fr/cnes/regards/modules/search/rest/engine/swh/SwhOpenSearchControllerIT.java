@@ -434,19 +434,9 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjects() {
-
+    public void searchDataobject() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         long startTime = System.currentTimeMillis();
-        customizer.expectValue("$.properties.totalResults", 400);
-        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                          customizer,
-                          "Search all error",
-                          ENGINE_TYPE);
-        logDuration(startTime);
-
-        customizer = customizer().expectStatusOk();
-        startTime = System.currentTimeMillis();
         customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
@@ -469,6 +459,11 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
                                "HRVIR2");
         customizer.expectValue("$.features[0].properties.PlatformName", "SPOT4");
         customizer.expectValue("$.features[0].properties.updated", lastUpdateSpot4.toString());
+        String thumbnailURL = "https://regards.cnes.fr/api/v1/rs-catalog/downloads/URN:AIP:DATA:swh:a4456e48-3e24-3c32-baea-093b1f63e85d:V1/files/19273a25e605bf83658c27890576b041?scope=swh";
+        customizer.expectValue("$.features[0].properties.thumbnail", thumbnailURL);
+        // There is no quicklook inside this product, so quicklook value is also thumbnailURL
+        customizer.expectValue("$.features[0].properties.quicklook", thumbnailURL);
+
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
