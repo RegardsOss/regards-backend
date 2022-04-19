@@ -48,6 +48,7 @@ import io.vavr.collection.List;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,7 +56,6 @@ import org.springframework.context.annotation.Primary;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.UUID;
@@ -63,7 +63,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT {
+public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT implements InitializingBean {
 
     public static final String THE_TENANT = "the-tenant";
     public static final String THE_USER = "the-user";
@@ -79,8 +79,8 @@ public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT {
     @Autowired protected IExecutionEntityRepository execEntityRepo;
     @Autowired protected ITenantResolver tenantResolver;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         configureProcessUpdater(p -> p);
     }
 
@@ -128,7 +128,6 @@ public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT {
                         .execute(context)
                         .map(ExecutionContext::getExec);
                 }
-                @Override public void selfRegisterInRepo() {}
             };
         }
 

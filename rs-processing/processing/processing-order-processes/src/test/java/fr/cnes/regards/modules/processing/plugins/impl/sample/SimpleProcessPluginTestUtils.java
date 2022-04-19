@@ -94,7 +94,6 @@ public class SimpleProcessPluginTestUtils {
             @Override public String name() {
                 return "JOB";
             }
-            @Override public void selfRegisterInRepo() { }
             @Override public Mono<PExecution> run(ExecutionContext context) {
                 return Mono.just(context.getExec());
             }

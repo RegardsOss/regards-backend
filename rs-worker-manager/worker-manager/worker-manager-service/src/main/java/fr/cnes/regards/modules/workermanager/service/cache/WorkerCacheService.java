@@ -1,12 +1,12 @@
 package fr.cnes.regards.modules.workermanager.service.cache;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 
 @Service
-public class WorkerCacheService {
+public class WorkerCacheService implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkerCacheService.class);
 
@@ -41,8 +41,8 @@ public class WorkerCacheService {
     @Autowired
     private WorkerConfigCacheService workerConfigCacheService;
 
-    @PostConstruct
-    private void initCache() {
+    @Override
+    public void afterPropertiesSet() {
         cache = CacheBuilder.newBuilder().expireAfterWrite(Duration.of(expireInCacheDuration, ChronoUnit.SECONDS))
                 .build();
     }

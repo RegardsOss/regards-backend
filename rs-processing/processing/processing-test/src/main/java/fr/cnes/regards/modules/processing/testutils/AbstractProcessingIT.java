@@ -28,6 +28,7 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,7 +44,6 @@ import org.testcontainers.containers.Container;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -81,7 +81,7 @@ import java.util.Random;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 
-public abstract class AbstractProcessingIT {
+public abstract class AbstractProcessingIT implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProcessingIT.class);
 
@@ -134,8 +134,8 @@ public abstract class AbstractProcessingIT {
         }
     }
 
-    @PostConstruct
-    public void setup() {
+    @Override
+    public void afterPropertiesSet() {
         migrationHelper.migrateSchema(dataSource, R2DBCDB_NAME);
     }
 

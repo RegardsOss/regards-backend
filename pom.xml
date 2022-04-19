@@ -1757,21 +1757,6 @@
 			</dependency>
 			<!-- xml -->
 			<dependency>
-				<groupId>com.sun.xml.bind</groupId>
-				<artifactId>jaxb-xjc</artifactId>
-				<version>${com.sun.xml.bind.jaxb-xjc.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.xml.bind</groupId>
-				<artifactId>jaxb-impl</artifactId>
-				<version>${com.sun.xml.bind.jaxb-impl.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jvnet.jaxb2_commons</groupId>
-				<artifactId>jaxb2-namespace-prefix</artifactId>
-				<version>${org.jvnet.jaxb2_commons.jaxb2-namespace-prefix.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.dom4j</groupId>
 				<artifactId>dom4j</artifactId>
 				<version>${org.dom4j.version}</version>

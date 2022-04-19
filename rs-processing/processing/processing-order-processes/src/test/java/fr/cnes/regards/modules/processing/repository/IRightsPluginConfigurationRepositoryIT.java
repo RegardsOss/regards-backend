@@ -42,7 +42,6 @@ public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT
     @Autowired
     IRightsPluginConfigurationRepository rightsRepo;
 
-    @Override
     @Before
     public void setup() {
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);

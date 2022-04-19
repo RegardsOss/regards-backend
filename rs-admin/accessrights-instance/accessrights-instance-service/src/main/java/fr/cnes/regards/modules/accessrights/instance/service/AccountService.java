@@ -44,6 +44,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -55,7 +56,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
 @Service
 @InstanceTransactional
 @EnableScheduling
-public class AccountService implements IAccountService {
+public class AccountService implements IAccountService, InitializingBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
@@ -149,8 +149,8 @@ public class AccountService implements IAccountService {
         this.projectService = projectService;
     }
 
-    @PostConstruct
-    public void initialize() throws EntityInvalidException {
+    @Override
+    public void afterPropertiesSet() throws EntityInvalidException {
         passwordRegexPattern = Pattern.compile(this.passwordRegex);
         if (!this.existAccount(rootAdminUserLogin)) {
             Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin, rootAdminUserPassword);

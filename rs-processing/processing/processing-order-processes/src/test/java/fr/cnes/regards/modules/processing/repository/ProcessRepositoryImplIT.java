@@ -70,7 +70,6 @@ public class ProcessRepositoryImplIT extends AbstractProcessingIT {
 
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
         engineRepo.register(new IWorkloadEngine() {
-            @Override public void selfRegisterInRepo() { }
             @Override public String name() { return "JOBS"; }
             @Override
             public Mono<PExecution> run(ExecutionContext context) {

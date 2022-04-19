@@ -47,13 +47,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
-import javax.annotation.PostConstruct;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -72,7 +72,7 @@ import java.util.stream.Collectors;
 @Service
 @MultitenantTransactional
 @RefreshScope
-public class OrderDownloadService implements IOrderDownloadService {
+public class OrderDownloadService implements IOrderDownloadService, InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderDownloadService.class);
 
@@ -114,8 +114,8 @@ public class OrderDownloadService implements IOrderDownloadService {
     }
 
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         if (noProxyHostsString != null) {
             Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));

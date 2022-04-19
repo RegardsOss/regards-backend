@@ -21,11 +21,10 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import javax.annotation.PostConstruct;
 
 /**
  * Delegate the processing to someone else, just communicating with it through amqp.
@@ -33,7 +32,7 @@ import javax.annotation.PostConstruct;
  * @author gandrieu
  */
 @Component
-public class DemoEngine implements IWorkloadEngine {
+public class DemoEngine implements IWorkloadEngine, InitializingBean {
 
     private final IWorkloadEngineRepository engineRepo;
 
@@ -50,8 +49,9 @@ public class DemoEngine implements IWorkloadEngine {
         return null;
     }
 
-    @PostConstruct
-    @Override public void selfRegisterInRepo() {
+    @Override
+    public void afterPropertiesSet() {
+        // selfRegisterInRepo
         engineRepo.register(this);
     }
 }

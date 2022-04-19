@@ -46,12 +46,12 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,7 +65,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @MultitenantTransactional
 @Service
-public class PluginService implements IPluginService {
+public class PluginService implements IPluginService, InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
@@ -116,8 +116,8 @@ public class PluginService implements IPluginService {
         this.gson = gson;
     }
 
-    @PostConstruct
-    public void setup() {
+    @Override
+    public void afterPropertiesSet() {
         PluginUtils.setup(packagesToScan == null ? null : Arrays.asList(packagesToScan), gson);
     }
 

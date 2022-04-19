@@ -28,11 +28,10 @@ import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepos
 import io.vavr.collection.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import javax.annotation.PostConstruct;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
@@ -46,7 +45,7 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
  * @author gandrieu
  */
 @Component
-public class JobWorkloadEngine implements IWorkloadEngine {
+public class JobWorkloadEngine implements IWorkloadEngine, InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobWorkloadEngine.class);
 
@@ -73,8 +72,8 @@ public class JobWorkloadEngine implements IWorkloadEngine {
     }
 
     @Override
-    @PostConstruct
-    public void selfRegisterInRepo() {
+    public void afterPropertiesSet() {
+        // selfRegisterInRepo
         engineRepo.register(this);
     }
 

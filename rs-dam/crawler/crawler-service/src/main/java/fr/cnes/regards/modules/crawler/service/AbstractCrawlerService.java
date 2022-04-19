@@ -1,17 +1,5 @@
 package fr.cnes.regards.modules.crawler.service;
 
-import java.lang.reflect.ParameterizedType;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-
-import javax.annotation.PreDestroy;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -19,6 +7,16 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.event.AbstractEntityEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.lang.reflect.ParameterizedType;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 /**
  * Abstract crawler service.
@@ -26,7 +24,7 @@ import fr.cnes.regards.modules.dam.domain.entities.event.AbstractEntityEvent;
  * (CrawlerService)
  * @author oroussel
  */
-public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> {
+public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> implements DisposableBean {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractCrawlerService.class);
 
@@ -106,8 +104,9 @@ public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> {
     /**
      * Ask for termination of daemon process
      */
-    @PreDestroy
-    private void endCrawl() {
+    @Override
+    public void destroy() {
+        // endCrawl
         stopAsked = true;
     }
 

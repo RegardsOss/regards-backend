@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.model.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.IRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionFactory;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Restriction service
@@ -36,7 +34,7 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  *
  */
 @Service
-public class RestrictionService {
+public class RestrictionService implements InitializingBean {
 
     /**
      * List of all available restriction<br/>
@@ -44,8 +42,8 @@ public class RestrictionService {
      */
     private List<IRestriction> restrictions;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         restrictions = new ArrayList<>();
         restrictions.add(RestrictionFactory.buildEnumerationRestriction());
         restrictions.add(RestrictionFactory.buildFloatRangeRestriction(null, null, false, false));

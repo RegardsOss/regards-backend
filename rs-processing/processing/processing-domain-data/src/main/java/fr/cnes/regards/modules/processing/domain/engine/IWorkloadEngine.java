@@ -37,6 +37,4 @@ public interface IWorkloadEngine {
 
     Mono<PExecution> run(ExecutionContext context);
 
-    void selfRegisterInRepo();
-
 }

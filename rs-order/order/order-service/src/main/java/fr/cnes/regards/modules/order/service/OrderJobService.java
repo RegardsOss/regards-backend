@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -39,7 +40,6 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PreDestroy;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import java.util.List;
@@ -54,7 +54,7 @@ import java.util.UUID;
 @MultitenantTransactional
 @RefreshScope
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
+public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, DisposableBean {
 
     /**
      * Number of concurrent storage files retrieval jobs per user
@@ -88,8 +88,8 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
         subscriber.subscribeTo(JobEvent.class, this);
     }
 
-    @PreDestroy
-    public void beforeDestroy() {
+    @Override
+    public void destroy() {
         subscriber.unsubscribeFrom(JobEvent.class, false);
     }
 

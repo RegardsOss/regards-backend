@@ -14,6 +14,7 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +26,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeTypeUtils;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,7 +35,7 @@ import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfigu
 
 @Component
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<DownloadableFile> {
+public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<DownloadableFile>, InitializingBean {
 
     public static final String TITLE = "Download quota errors";
 
@@ -95,8 +95,8 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
         this.errors = errors;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         self = applicationContext.getBean(DownloadQuotaExceededReporter.class);
 
         // start schedulers only if not in "noscheduler" profile (i.e. disable schedulers for tests)

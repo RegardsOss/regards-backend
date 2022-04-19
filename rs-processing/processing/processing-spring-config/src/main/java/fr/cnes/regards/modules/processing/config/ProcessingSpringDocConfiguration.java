@@ -3,9 +3,8 @@ package fr.cnes.regards.modules.processing.config;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.springdoc.core.SpringDocUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 
@@ -15,10 +14,11 @@ import java.time.OffsetDateTime;
  * @author gandrieu
  */
 @Configuration
-public class ProcessingSpringDocConfiguration {
+public class ProcessingSpringDocConfiguration implements InitializingBean {
 
-    @PostConstruct
-    public void initSpringDoc() {
+    @Override
+    public void afterPropertiesSet() {
+        // initSpringDoc
         SpringDocUtils.getConfig()
                 .replaceWithSchema(Duration.class, new NumberSchema().description("Duration in nanoseconds"))
                 .replaceWithSchema(OffsetDateTime.class, new StringSchema()

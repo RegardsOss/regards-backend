@@ -27,10 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.PostConstruct;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
@@ -41,7 +41,7 @@ import java.util.UUID;
  * @author svissier
  * @author Marc Sordi
  */
-public class RegardsAmqpAdmin implements IAmqpAdmin {
+public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
 
     public static final String UNICAST_BASE_EXCHANGE_NAME = "unicast";
 
@@ -108,8 +108,8 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         this.microserviceTypeId = microserviceTypeId;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         // Fallback if no microservice instance properties was given
         if (microserviceTypeId == null) {
             microserviceTypeId = microserviceName;

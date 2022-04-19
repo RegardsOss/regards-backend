@@ -9,11 +9,10 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -52,7 +51,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  * @author oroussel
  */
 @Service
-public class JobService implements IJobService {
+public class JobService implements IJobService, InitializingBean, DisposableBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
@@ -115,8 +114,8 @@ public class JobService implements IJobService {
     /**
      * Destroy or refresh
      */
-    @PreDestroy
-    public void preDestroy() {
+    @Override
+    public void destroy() {
         subscriber.unsubscribeFrom(StopJobEvent.class, false);
         LOGGER.info("Shutting down job thread pool...");
         // Avoid pulling new jobs
@@ -134,8 +133,8 @@ public class JobService implements IJobService {
     /**
      * Thread pool is built at postConstruct pĥase to have poolSize filled BUT before manage is called by JobInitializer
      */
-    @PostConstruct
-    private void init() {
+    @Override
+    public void afterPropertiesSet() {
         threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
     }
 
@@ -314,7 +313,7 @@ public class JobService implements IJobService {
             LOGGER.warn("Waiting task interrupted");
         }
         threadPool = null;
-        this.init();
+        this.afterPropertiesSet();
         LOGGER.info("JOB Service reinitialized and all jobs stopped !");
     }
 

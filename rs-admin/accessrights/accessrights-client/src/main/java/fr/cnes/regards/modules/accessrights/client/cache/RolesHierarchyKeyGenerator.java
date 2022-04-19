@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.accessrights.client.cache;
 
 import java.lang.reflect.Method;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.util.StringUtils;
 
@@ -36,7 +35,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author Sébastien Binda
  *
  */
-public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator {
+public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator, InitializingBean {
 
     /**
      * Class logger
@@ -57,8 +56,8 @@ public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator {
         this.tenantResolver = tenantResolver;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         LOGGER.info("___- ADMIN CLIENT CACHE -___ Cache is enabled for roleHierarchy !");
     }
 

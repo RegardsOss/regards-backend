@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -46,7 +47,6 @@ import org.springframework.util.MimeType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 @Service
 @MultitenantTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class OrderDataFileService implements IOrderDataFileService {
+public class OrderDataFileService implements IOrderDataFileService, InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderDataFileService.class);
 
@@ -111,8 +111,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         this.processingEventSender = processingEventSender;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
                 : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         if (noProxyHostsString != null) {

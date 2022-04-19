@@ -21,10 +21,9 @@ package fr.cnes.regards.modules.access.services.service.ui;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -54,7 +53,7 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 
 @Service(value = "pluginService")
 public class UIPluginDefinitionService
-        implements IUIPluginDefinitionService, ApplicationListener<ApplicationReadyEvent> {
+        implements IUIPluginDefinitionService, ApplicationListener<ApplicationReadyEvent> , InitializingBean {
 
     /**
      * Class logger
@@ -111,8 +110,8 @@ public class UIPluginDefinitionService
     /**
      * Init
      */
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         if (isMultitenentMicroservice) {
             // Multitenant version of the microservice.
             for (final String tenant : tenantResolver.getAllActiveTenants()) {

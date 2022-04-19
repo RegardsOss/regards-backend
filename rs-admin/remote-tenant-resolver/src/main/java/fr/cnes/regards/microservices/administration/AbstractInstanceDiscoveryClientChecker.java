@@ -19,11 +19,9 @@
 package fr.cnes.regards.microservices.administration;
 
 import java.util.List;
-
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
@@ -33,7 +31,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
  * @author Marc Sordi
  *
  */
-public abstract class AbstractInstanceDiscoveryClientChecker {
+public abstract class AbstractInstanceDiscoveryClientChecker implements InitializingBean {
 
     /**
      * Class logger
@@ -63,8 +61,8 @@ public abstract class AbstractInstanceDiscoveryClientChecker {
         }
     }
 
-    @PostConstruct
-    public void doCheck() {
+    @Override
+    public void afterPropertiesSet() {
         checkAvailability(ADMIN_INSTANCE_ID);
     }
 

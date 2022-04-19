@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
-import javax.annotation.PostConstruct;
-
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
@@ -28,13 +26,14 @@ import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * This class helps to configure virtual hosts at runtime listening to tenant events. The system uses the AMQP manager
  * virtual host no to be tenant dependent.
  * @author Marc Sordi
  */
-public class AmqpEventHandler {
+public class AmqpEventHandler implements InitializingBean {
 
     /**
      * Used to configure tenant virtual hosts
@@ -61,8 +60,8 @@ public class AmqpEventHandler {
     /**
      * Manage virtual hosts according to tenants
      */
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         // Listen to tenant events
         instanceSubscriber.subscribeTo(TenantCreatedEvent.class, new TenantCreationHandler());
         instanceSubscriber.subscribeTo(TenantDeletedEvent.class, new TenantDeletionHandler());

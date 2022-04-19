@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.access.services.client.cache;
 
 import java.lang.reflect.Method;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.util.StringUtils;
 
@@ -36,7 +35,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author Sébastien Binda
  *
  */
-public class ServiceAggregatorKeyGenerator implements IServiceAggregatorKeyGenerator {
+public class ServiceAggregatorKeyGenerator implements IServiceAggregatorKeyGenerator, InitializingBean {
 
     /**
      * Class logger
@@ -57,8 +56,8 @@ public class ServiceAggregatorKeyGenerator implements IServiceAggregatorKeyGener
         this.authResolver = authResolver;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         LOGGER.info("___- SERVICE AGGREGATOR CLIENT CACHE -___ Cache is enabled for service aggregator !");
     }
 

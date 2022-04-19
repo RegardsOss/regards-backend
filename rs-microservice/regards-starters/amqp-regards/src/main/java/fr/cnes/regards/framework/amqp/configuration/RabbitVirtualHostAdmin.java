@@ -23,13 +23,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -51,7 +50,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  * @author svissier
  * @author Marc Sordi
  */
-public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
+public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, InitializingBean {
 
     /**
      * Class logger
@@ -163,8 +162,8 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     /**
      * Manage virtual hosts according to tenants
      */
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
 
         // Initialize AMQP instance manager VHOST
         addVhost(AmqpChannel.AMQP_INSTANCE_MANAGER);

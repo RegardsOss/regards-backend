@@ -43,7 +43,7 @@ public class RestrictionServiceTest {
     @Before
     public void before() {
         restrictionService = new RestrictionService();
-        restrictionService.init();
+        restrictionService.afterPropertiesSet();
     }
 
     private void testRestriction(PropertyType pPropertyType, int pMatchedRestrictions,

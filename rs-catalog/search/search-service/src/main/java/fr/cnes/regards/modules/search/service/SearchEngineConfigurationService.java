@@ -18,23 +18,7 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Lists;
-
 import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -57,6 +41,19 @@ import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Service to handle {@link SearchEngineConfiguration} entities.
@@ -65,7 +62,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
  */
 @Service
 @MultitenantTransactional
-public class SearchEngineConfigurationService implements ISearchEngineConfigurationService {
+public class SearchEngineConfigurationService implements ISearchEngineConfigurationService, InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineConfigurationService.class);
 
@@ -86,8 +83,8 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Autowired
     private IDatasetClient datasetClient;
 
-    @PostConstruct
-    public void listenForDatasetEvents() {
+    @Override
+    public void afterPropertiesSet() {
         // Subscribe to entity events in order to delete links to deleted dataset.
         subscriber.subscribeTo(BroadcastEntityEvent.class, new DeleteEntityEventHandler());
     }

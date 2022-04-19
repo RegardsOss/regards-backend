@@ -22,12 +22,12 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  *
  * @author Marc Sordi
  */
-public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
+public abstract class AbstractModuleManager<S> implements IModuleManager<S>, InitializingBean {
 
     protected static final String PROPERTY_FILE = "module.properties";
 
@@ -65,15 +65,15 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
                 .map(i -> requiredType.cast(i.getTypedValue())).collect(Collectors.toSet());
     }
 
-    @PostConstruct
-    protected void init() throws ModuleException {
+    @Override
+    public void afterPropertiesSet() throws Exception{
         info = loadInformation();
         validate(info);
     }
 
     /**
      * Load {@link ModuleInformation} from property file. Property file
-     * {@link IModuleManager#PROPERTY_FILE} is loaded from the same package as the manager implementation.
+     * {@link IModuleManager#getModuleInformation} is loaded from the same package as the manager implementation.
      */
     ModuleInformation loadInformation() throws ModuleException {
         ModuleInformation info = new ModuleInformation();

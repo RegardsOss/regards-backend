@@ -22,10 +22,9 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 import java.util.Set;
 
 /**
@@ -35,7 +34,7 @@ import java.util.Set;
  *
  */
 @Component
-public class SuborderSizeCounter {
+public class SuborderSizeCounter implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SuborderSizeCounter.class);
 
@@ -50,8 +49,8 @@ public class SuborderSizeCounter {
     /**
      * Method called at creation AND after a resfresh
      */
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         // Compute storageBucketSize from storageBucketSizeMb filled by Spring
         storageBucketSize = storageBucketSizeMb * 1024L * 1024L;
         LOGGER.info("SuborderSizeCounter created/refreshed with, storageBucketSize={}", storageBucketSize);

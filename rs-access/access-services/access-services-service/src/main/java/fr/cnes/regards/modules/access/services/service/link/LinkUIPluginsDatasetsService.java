@@ -20,8 +20,7 @@ package fr.cnes.regards.modules.access.services.service.link;
 
 import java.util.ArrayList;
 
-import javax.annotation.PostConstruct;
-
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +47,7 @@ import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
  */
 @Service
 @RegardsTransactional
-public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsService {
+public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsService, InitializingBean {
 
     /**
      * Runtime tenant resolver
@@ -68,8 +67,8 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
     /**
      * Post-construct initialization
      */
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         // Subscribe to entity events in order to delete links to deleted dataset.
         subscriber.subscribeTo(BroadcastEntityEvent.class, new DeleteEntityEventHandler());
     }

@@ -15,6 +15,7 @@ import fr.cnes.regards.modules.storage.domain.event.QuotaUpdateEvent;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -44,7 +44,7 @@ import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfigu
 @Component
 @MultitenantTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class QuotaManagerImpl implements IQuotaManager {
+public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
 
     @Value("${regards.storage.rate.expiration.tick:120}")
     private long rateExpirationTick;
@@ -96,8 +96,8 @@ public class QuotaManagerImpl implements IQuotaManager {
         this.self = quotaManager;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
 
         // init diffs and diffsAcc by tenant
         tenantResolver.getAllActiveTenants().forEach(tenant -> {

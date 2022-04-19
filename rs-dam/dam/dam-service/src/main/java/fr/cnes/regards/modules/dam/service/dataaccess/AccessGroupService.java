@@ -30,11 +30,10 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGro
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.PublicAccessGroupEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 import java.util.Optional;
 
 /**
@@ -45,7 +44,7 @@ import java.util.Optional;
  */
 @Service
 @MultitenantTransactional
-public class AccessGroupService implements IAccessGroupService {
+public class AccessGroupService implements IAccessGroupService, InitializingBean {
 
     public static final String ACCESS_GROUP_ALREADY_EXIST_ERROR_MESSAGE = "Access Group of name %s already exists! Name of an access group has to be unique.";
 
@@ -69,8 +68,8 @@ public class AccessGroupService implements IAccessGroupService {
         this.tenantResolver = tenantResolver;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         // Ensure the existence of the default Group Access for Documents.
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

@@ -21,13 +21,13 @@ import fr.cnes.regards.modules.model.service.IModelService;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -35,7 +35,7 @@ import java.util.Optional;
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
 @ActiveProfiles({"noscheduler","test"}) // Disable scheduling, this will activate IngesterService during all tests
 @TestPropertySource(locations = { "classpath:test.properties" })
-public class GeometryIT {
+public class GeometryIT implements InitializingBean {
 
     private static final String TENANT = "GEOM";
 
@@ -72,9 +72,9 @@ public class GeometryIT {
 
     private Collection collection2;
 
-    @PostConstruct
-    public void initEs() {
-
+    @Override
+    public void afterPropertiesSet() {
+        // initEs
         // Simulate spring boot ApplicationStarted event to start mapping for each tenants.
         gsonAttributeFactoryHandler.onApplicationEvent(null);
 

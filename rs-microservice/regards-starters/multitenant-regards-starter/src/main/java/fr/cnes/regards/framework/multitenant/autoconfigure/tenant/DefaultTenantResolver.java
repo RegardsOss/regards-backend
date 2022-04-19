@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.framework.multitenant.autoconfigure.tenant;
 
-import javax.annotation.PostConstruct;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.springframework.beans.factory.annotation.Value;
-
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * Resolve tenant base on configuration properties
  * @author msordi
  */
-public class DefaultTenantResolver implements ITenantResolver {
+public class DefaultTenantResolver implements ITenantResolver, InitializingBean {
 
     /**
      * List of configurated tenants
@@ -44,8 +43,8 @@ public class DefaultTenantResolver implements ITenantResolver {
      */
     private Set<String> tenants;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         tenants = new TreeSet<>();
         if (localTenants != null) {
             Collections.addAll(tenants, localTenants);

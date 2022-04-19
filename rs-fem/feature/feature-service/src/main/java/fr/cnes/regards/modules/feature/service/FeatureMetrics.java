@@ -23,13 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +44,7 @@ import io.micrometer.core.instrument.Tag;
  *
  */
 @Component
-public class FeatureMetrics {
+public class FeatureMetrics implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureMetrics.class);
 
@@ -120,8 +118,8 @@ public class FeatureMetrics {
         }
     }
 
-    @PostConstruct
-    public void initialize() {
+    @Override
+    public void afterPropertiesSet() {
         if (properties.isMetricsEnabled()) {
 
             List<Tag> tags = Arrays.asList(Tag.of(METRIC_TYPE_TAG, METRIC_TYPE),

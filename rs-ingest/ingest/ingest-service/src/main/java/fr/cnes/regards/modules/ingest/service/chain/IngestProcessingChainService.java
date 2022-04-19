@@ -18,35 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.strategy.FieldNamePatternExclusionStrategy;
@@ -64,6 +39,23 @@ import fr.cnes.regards.modules.ingest.dao.IngestProcessingChainSpecifications;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.chain.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.chain.plugin.DefaultSipValidation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Ingest processing service
@@ -73,7 +65,7 @@ import fr.cnes.regards.modules.ingest.service.chain.plugin.DefaultSipValidation;
  */
 @Service
 @MultitenantTransactional
-public class IngestProcessingChainService implements IIngestProcessingChainService {
+public class IngestProcessingChainService implements IIngestProcessingChainService, InitializingBean {
 
     public static final String DEFAULT_VALIDATION_PLUGIN_CONF_LABEL = "DefaultSIPValidation";
 
@@ -99,8 +91,8 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
     @Autowired
     private IPublisher publisher;
 
-    @PostConstruct
-    public void initDefaultPluginPackages() {
+    @Override
+    public void afterPropertiesSet() {
         // Initialize specific GSON instance
         GsonBuilder customBuilder = gsonBuilderFactory.newBuilder();
         customBuilder.addSerializationExclusionStrategy(new FieldNamePatternExclusionStrategy("id"));
