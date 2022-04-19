@@ -62,10 +62,8 @@
             <artifactId>gson-regards</artifactId>
         </dependency>
         <dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-			<scope>provided</scope>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
   		</dependency>
         <!-- little trick for tests in jpa-regards-data, will that work? -->
         <dependency>
@@ -90,19 +88,9 @@
             <artifactId>regards-test-reporting</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- <dependency> -->
-        <!-- <groupId>fr.cnes.regards.framework.test</groupId> -->
-        <!-- <artifactId>regards-test</artifactId> -->
-        <!-- <scope>test</scope> -->
-        <!-- </dependency> -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

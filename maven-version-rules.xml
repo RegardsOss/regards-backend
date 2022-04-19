@@ -15,14 +15,4 @@
 		<ignoreVersion type="regex">(?i).*Draft(?:-?\d+)?</ignoreVersion>
 	</ignoreVersions>
 
-<!--
-	<rules>
-		<rule groupId="org.hibernate.javax.persistence" comparisonMethod="maven">
-			<ignoreVersions>
-				<ignoreVersion type="regex">.*Draft.*</ignoreVersion>
-				<ignoreVersion>1.0.0.Draft-16</ignoreVersion>
-			</ignoreVersions>
-		</rule>
-	</rules>
--->
 </ruleset>

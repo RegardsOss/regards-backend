@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.utils.file;
 
+import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,8 +9,6 @@ import java.nio.file.Path;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

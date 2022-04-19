@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.model.service;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.transaction.Transactional;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.exception.UnsupportedRestrictionException;
+import javax.transaction.Transactional;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Attribute management service

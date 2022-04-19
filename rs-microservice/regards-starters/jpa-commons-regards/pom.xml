@@ -78,18 +78,13 @@
         	<groupId>com.zaxxer</groupId>
         	<artifactId>HikariCP</artifactId>
         </dependency>
-        <!-- To remove when we upgrade hibernate-core to 5.2.0 -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-java8</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
 		<dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.el</artifactId>
+            <artifactId>jakarta.el</artifactId>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>

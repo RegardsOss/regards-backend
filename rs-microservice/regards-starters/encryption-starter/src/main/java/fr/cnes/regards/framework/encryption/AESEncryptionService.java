@@ -1,10 +1,10 @@
 package fr.cnes.regards.framework.encryption;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -13,13 +13,11 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
-import fr.cnes.regards.framework.encryption.exception.EncryptionException;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

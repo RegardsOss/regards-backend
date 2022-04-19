@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.util.Date;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
+import fr.cnes.regards.modules.notification.domain.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +28,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MimeTypeUtils;
 
-import fr.cnes.regards.modules.notification.domain.Notification;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.util.Date;
 
 /**
  * Implementation of the {@link ISendingStrategy}.<br>
