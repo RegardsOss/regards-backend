@@ -38,7 +38,9 @@ public class LicenseTestFactory {
 
     protected static final long EXPLOIT_ID = 1L;
 
-    protected static final long INSTANCE_ADMIN_ID = 2L;
+    protected static final long INSTANCE_ADMIN_ID = -1L;
+
+    private static final long PUBLIC_ID = -2L;
 
     public static ProjectUser anInstanceAdmin() {
         ProjectUser user = new ProjectUser();
@@ -53,6 +55,15 @@ public class LicenseTestFactory {
         user.setId(EXPLOIT_ID);
         user.setRole(new Role(DefaultRole.EXPLOIT.name()));
         user.setEmail("exploit@email.fr");
+        user.setLicenseAccepted(false);
+        return user;
+    }
+
+    public static ProjectUser aPublicUser() {
+        ProjectUser user = new ProjectUser();
+        user.setId(PUBLIC_ID);
+        user.setRole(new Role(DefaultRole.PUBLIC.name()));
+        user.setEmail("public@regards.com");
         user.setLicenseAccepted(false);
         return user;
     }

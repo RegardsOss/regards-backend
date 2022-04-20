@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.accessrights.service.license;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class LicenseRetrieveTest extends LicenseServiceTest {
 
@@ -64,6 +64,18 @@ public class LicenseRetrieveTest extends LicenseServiceTest {
     }
 
     @Test
+    public void license_is_refused_for_public_user_and_license_on_project() throws Exception {
+        givenUser = LicenseTestFactory.aPublicUser();
+        givenProject = LicenseTestFactory.aProjectWithLicence();
+        licenseService = givenLicenseService();
+
+        LicenseDTO license = licenseService.retrieveLicenseState();
+
+        assertThat(license.isAccepted()).isFalse();
+        assertThat(license.getLicenceLink()).isEqualTo(LicenseTestFactory.LINK_TO_LICENSE);
+    }
+
+    @Test
     public void evaluate_license_acceptation_otherwise() throws Exception {
         givenUser = LicenseTestFactory.anExploitWithoutLicense();
         givenProject = LicenseTestFactory.aProjectWithLicence();
@@ -81,8 +93,8 @@ public class LicenseRetrieveTest extends LicenseServiceTest {
         givenProject = LicenseTestFactory.aMissingProject();
         licenseService = givenLicenseService();
 
-        assertThatExceptionOfType(EntityNotFoundException.class) //
-            .isThrownBy(() -> licenseService.retrieveLicenseState());
+        Assertions.assertThatExceptionOfType(EntityNotFoundException.class) //
+                  .isThrownBy(() -> licenseService.retrieveLicenseState());
     }
 
 }

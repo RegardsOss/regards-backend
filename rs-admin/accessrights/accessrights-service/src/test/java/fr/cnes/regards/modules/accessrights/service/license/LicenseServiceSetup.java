@@ -66,7 +66,7 @@ public class LicenseServiceSetup {
         licenseService = new LicenseService();
         ReflectionTestUtils.setField(licenseService, "projectUserService", mockUserAccesses());
         ReflectionTestUtils.setField(licenseService, "projectsClient", mockProject());
-        ReflectionTestUtils.setField(licenseService, "authResolver", mockRole());
+        ReflectionTestUtils.setField(licenseService, "authResolver", mockAuthentification());
         ReflectionTestUtils.setField(licenseService, "runtimeTenantResolver", mockTenant());
         ReflectionTestUtils.setField(licenseService, "publisher", mockPublisher());
     }
@@ -84,22 +84,32 @@ public class LicenseServiceSetup {
 
     private void mockUser() {
         try {
-            when(userService.retrieveCurrentUser()).thenReturn(givenUser);
+            when(userService.retrieveCurrentUser()).thenAnswer(i -> fakeUser());
         } catch (EntityNotFoundException e) {
             fail("Problem while mocking current user");
         }
     }
 
+    private ProjectUser fakeUser() throws EntityNotFoundException {
+        if (givenUser.equals(LicenseTestFactory.aPublicUser())) {
+            throw new EntityNotFoundException("public user not handled.");
+        } else if (givenUser.equals(LicenseTestFactory.anInstanceAdmin())) {
+            throw new EntityNotFoundException("instance admin not handled.");
+        }
+        return givenUser;
+    }
+
     private IProjectsClient mockProject() {
         IProjectsClient projectClient = mock(IProjectsClient.class);
-        when(projectClient.retrieveProject(givenProject.getName())) //
-            .thenAnswer(i -> {
-                if (givenProject.getName().equals(LicenseTestFactory.A_MISSING_PROJECT)) {
-                    throw new EntityNotFoundException("not found");
-                }
-                return projectResponse(givenProject);
-            });
+        when(projectClient.retrieveProject(givenProject.getName())).thenAnswer(i -> fakeProject());
         return projectClient;
+    }
+
+    private ResponseEntity<EntityModel<Project>> fakeProject() throws EntityNotFoundException {
+        if (givenProject.getName().equals(LicenseTestFactory.A_MISSING_PROJECT)) {
+            throw new EntityNotFoundException("not found");
+        }
+        return projectResponse(givenProject);
     }
 
     private ResponseEntity<EntityModel<Project>> projectResponse(Project project) {
@@ -109,10 +119,19 @@ public class LicenseServiceSetup {
         return ResponseEntity.status(status).headers(headers).body(body);
     }
 
-    private IAuthenticationResolver mockRole() {
+    private IAuthenticationResolver mockAuthentification() {
         IAuthenticationResolver authResolver = mock(IAuthenticationResolver.class);
-        when(authResolver.getRole()).thenReturn(givenUser.getRole().getName());
+        mockRole(authResolver);
+        mockAuthUser(authResolver);
         return authResolver;
+    }
+
+    private void mockRole(IAuthenticationResolver authResolver) {
+        when(authResolver.getRole()).thenReturn(givenUser.getRole().getName());
+    }
+
+    private void mockAuthUser(IAuthenticationResolver authResolver) {
+        when(authResolver.getUser()).thenReturn(givenUser.getEmail());
     }
 
     private IRuntimeTenantResolver mockTenant() {

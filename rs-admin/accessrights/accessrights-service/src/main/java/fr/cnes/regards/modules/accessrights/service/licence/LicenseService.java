@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.LicenseAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.LicenseEvent;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import org.slf4j.Logger;
@@ -82,7 +83,12 @@ public class LicenseService implements ILicenseService {
     @Override
     public LicenseDTO retrieveLicenseState() throws EntityNotFoundException {
         String licenceLink = retrieveProject(runtimeTenantResolver.getTenant()).getLicenceLink();
-        boolean isLicenseAccepted = isInstanceAdmin() || noLicense(licenceLink) || isLicenseAcceptedByUser();
+        // TODO public user and instance admin special cases
+        // should be handled in ProjectUserService.
+        // ProjectUserService should create special instances of ProjectUser for theses cases.
+        boolean isLicenseAccepted =
+            noLicense(licenceLink) || (!isPublicUser() && (isInstanceAdmin() || isLicenseAcceptedByUser()));
+
         return new LicenseDTO(isLicenseAccepted, licenceLink);
     }
 
@@ -95,6 +101,10 @@ public class LicenseService implements ILicenseService {
             throw new EntityNotFoundException(pProjectName, Project.class);
         }
         return response.getBody().getContent();
+    }
+
+    private boolean isPublicUser() {
+        return authResolver.getUser().equals(ProjectUserService.PUBLIC_USER_EMAIL);
     }
 
     private boolean isInstanceAdmin() {
