@@ -97,7 +97,9 @@ public class CatalogDownloadTester {
         // On ne mocke que la vérification d'accès.
         // On n'a pas besoin d'initialiser complétement le service
         // qui a plusieurs responsabilités.
-        return new CatalogSearchServiceMock(null, null, null, null, null);
+        CatalogSearchServiceMock searchService = new CatalogSearchServiceMock(null, null, null, null, null);
+        searchService.mockGet();
+        return searchService;
     }
 
     private LicenseAccessor mockLicenseAccesses() {
@@ -134,7 +136,7 @@ public class CatalogDownloadTester {
         return controller.downloadFile(productUrn, fileChecksum, CONTENT_IN_LINE, acceptLicense, servletResponse);
     }
 
-    public ResponseEntity<Void> testProductAccess(UniformResourceName productUrn) {
-        return controller.testProductAccess(productUrn.toString());
+    public ResponseEntity<Void> testProductAccess(UniformResourceName productUrn, String fileChecksum) {
+        return controller.testProductAccess(productUrn.toString(), fileChecksum);
     }
 }

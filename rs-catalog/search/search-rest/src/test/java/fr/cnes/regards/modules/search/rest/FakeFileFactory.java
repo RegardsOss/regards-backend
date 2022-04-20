@@ -18,14 +18,103 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-public class FakeFileFactory {
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
 
-    public String validFile() {
-        return "checksumOk";
-    }
+import java.util.Arrays;
+import java.util.List;
+
+public class FakeFileFactory {
 
     public String invalidFile() {
         return "checksumKo";
     }
 
+    public List<DataFile> allDataFiles() {
+        return Arrays.asList(quicklook_sd(),
+                             quicklook_md(),
+                             quicklook_hd(),
+                             thumbnail(),
+                             document(),
+                             rawadata(),
+                             description(),
+                             aip(),
+                             other());
+    }
+
+    public List<String> validFiles() {
+        return Arrays.asList(validFile(),
+                             quicklook_sd().getChecksum(),
+                             quicklook_md().getChecksum(),
+                             quicklook_hd().getChecksum(),
+                             thumbnail().getChecksum(),
+                             document().getChecksum());
+    }
+
+    public String validFile() {
+        return "checksumOk";
+    }
+
+    public DataFile quicklook_sd() {
+        DataFile file = new DataFile();
+        file.setChecksum("quicklook_sd");
+        file.setDataType(DataType.QUICKLOOK_SD);
+        return file;
+    }
+
+    public DataFile quicklook_md() {
+        DataFile file = new DataFile();
+        file.setChecksum("quicklook_md");
+        file.setDataType(DataType.QUICKLOOK_MD);
+        return file;
+    }
+
+    public DataFile quicklook_hd() {
+        DataFile file = new DataFile();
+        file.setChecksum("quicklook_hd");
+        file.setDataType(DataType.QUICKLOOK_HD);
+        return file;
+    }
+
+    public DataFile thumbnail() {
+        DataFile file = new DataFile();
+        file.setChecksum("thumbnail");
+        file.setDataType(DataType.THUMBNAIL);
+        return file;
+    }
+
+    public DataFile document() {
+        DataFile file = new DataFile();
+        file.setChecksum("thumbnail");
+        file.setDataType(DataType.DOCUMENT);
+        return file;
+    }
+
+    public DataFile rawadata() {
+        DataFile file = new DataFile();
+        file.setChecksum("rawdata");
+        file.setDataType(DataType.RAWDATA);
+        return file;
+    }
+
+    public DataFile description() {
+        DataFile file = new DataFile();
+        file.setChecksum("description");
+        file.setDataType(DataType.DESCRIPTION);
+        return file;
+    }
+
+    public DataFile aip() {
+        DataFile file = new DataFile();
+        file.setChecksum("aip_file");
+        file.setDataType(DataType.AIP);
+        return file;
+    }
+
+    public DataFile other() {
+        DataFile file = new DataFile();
+        file.setChecksum("other_file");
+        file.setDataType(DataType.OTHER);
+        return file;
+    }
 }

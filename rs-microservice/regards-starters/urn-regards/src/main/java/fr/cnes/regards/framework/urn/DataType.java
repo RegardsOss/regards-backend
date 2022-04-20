@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.urn;
 
 /**
  * Entity types
+ *
  * @author lmieulet
  * @author Marc Sordi
  */
@@ -28,18 +29,11 @@ public enum DataType {
     /**
      * Available data types
      */
-    RAWDATA,
-    QUICKLOOK_SD,
-    QUICKLOOK_MD,
-    QUICKLOOK_HD,
-    DOCUMENT,
-    THUMBNAIL,
-    OTHER,
-    AIP,
-    DESCRIPTION;
+    RAWDATA, QUICKLOOK_SD, QUICKLOOK_MD, QUICKLOOK_HD, DOCUMENT, THUMBNAIL, OTHER, AIP, DESCRIPTION;
 
     @Override
     public String toString() {
         return this.name();
     }
+
 }

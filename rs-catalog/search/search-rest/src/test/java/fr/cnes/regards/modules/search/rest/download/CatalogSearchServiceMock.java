@@ -18,10 +18,17 @@
  */
 package fr.cnes.regards.modules.search.rest.download;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
+import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.search.rest.FakeProductFactory;
 import fr.cnes.regards.modules.search.service.CatalogSearchService;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
@@ -30,6 +37,8 @@ import fr.cnes.regards.modules.search.service.IPageableConverter;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -45,32 +54,65 @@ public class CatalogSearchServiceMock extends CatalogSearchService {
 
     private final ICatalogSearchService accessVerification;
 
+    private final FakeFileFactory files;
+
+    private final FakeProductFactory products;
+
+    private boolean mockGet;
+
     public CatalogSearchServiceMock(ISearchService searchService,
                                     IOpenSearchService openSearchService,
                                     IAccessRightFilter accessRightFilter,
                                     IFacetConverter facetConverter,
                                     IPageableConverter pageableConverter) {
         super(searchService, openSearchService, accessRightFilter, facetConverter, pageableConverter);
+        products = new FakeProductFactory();
+        files = new FakeFileFactory();
         accessVerification = mockAccessVerification();
+        // Enables the activation of mock for searchService.get
+        // depending on context.
+        mockGet = false;
+    }
 
+    public void mockGet() {
+        mockGet = true;
     }
 
     private ICatalogSearchService mockAccessVerification() {
         try {
-            FakeProductFactory products = new FakeProductFactory();
             ICatalogSearchService searchService = mock(ICatalogSearchService.class);
-            when(searchService.hasAccess(products.unknownProduct())).thenThrow(new EntityNotFoundException("not found"));
-            when(searchService.hasAccess(products.unauthorizedProduct())).thenReturn(false);
-            when(searchService.hasAccess(products.validProduct())).thenReturn(true);
+            when(searchService.get(products.unknownProduct())).thenThrow(new EntityNotFoundException("product not found"));
+            when(searchService.get(products.unauthorizedProduct())).thenThrow(new EntityOperationForbiddenException(
+                "product unauthorized"));
+            AbstractEntity<?> fakeProduct = fakeProduct();
+            when(searchService.get(products.validProduct())).thenReturn(fakeProduct);
             return searchService;
-        } catch (EntityNotFoundException e) {
-            throw new RuntimeException("problems while mocking product access verification", e);
+        } catch (EntityNotFoundException | EntityOperationForbiddenException e) {
+            throw new AssertionError("problems while mocking product access verification");
         }
     }
 
-    @Override
-    public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException {
-        return accessVerification.hasAccess(urn);
+    private AbstractEntity<?> fakeProduct() {
+        AbstractEntity entity = mock(AbstractEntity.class);
+        when(entity.getFiles()).thenReturn(oneFileOfEachType());
+        return entity;
     }
 
+    private Multimap<DataType, DataFile> oneFileOfEachType() {
+        Multimap<DataType, DataFile> multimap = ArrayListMultimap.create();
+        files.allDataFiles()
+             .stream()
+             .collect(Collectors.toMap(DataFile::getDataType, file -> file))
+             .forEach(multimap::put);
+        return multimap;
+    }
+
+    @Override
+    public <E extends AbstractEntity<?>> E get(UniformResourceName urn)
+        throws EntityOperationForbiddenException, EntityNotFoundException {
+        if (mockGet) {
+            return accessVerification.get(urn);
+        }
+        return super.get(urn);
+    }
 }

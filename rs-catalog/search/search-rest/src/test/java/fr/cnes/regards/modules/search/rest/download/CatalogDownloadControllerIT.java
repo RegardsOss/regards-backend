@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.search.rest.FakeProductFactory;
+import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,6 +66,9 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
     @Autowired
     private IStorageRestClient storageClient;
 
+    @Autowired
+    private ICatalogSearchService searchService;
+
     public CatalogDownloadControllerIT() {
         fileFactory = new FakeFileFactory();
         productFactory = new FakeProductFactory();
@@ -77,6 +81,7 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
     @Before
     public void prepareData() throws ModuleException, InterruptedException {
         initIndex(getDefaultTenant());
+        ((CatalogSearchServiceMock) searchService).mockGet();
     }
 
     protected void initIndex(String index) {
@@ -106,7 +111,8 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
         setupStorageDownload(StorageDownloadStatus.NOMINAL);
 
         RequestBuilderCustomizer requestVerifications = customizer().expectStatus(HttpStatus.LOCKED)
-            .expectValue("license", LicenseClientMock.LINK_TO_LICENCE);
+                                                                    .expectValue("license",
+                                                                                 LicenseClientMock.LINK_TO_LICENCE);
 
         ResultActions mvcResult = downloadAndVerifyRequest(productFactory.validProduct(),
                                                            fileFactory.validFile(),

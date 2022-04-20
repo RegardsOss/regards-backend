@@ -13,6 +13,7 @@ import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import org.mockito.ArgumentMatchers;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -35,50 +36,59 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
 
     private final IStorageRestClient storageClient;
 
+    private FakeFileFactory files;
+
     public IStorageRestClientMock() {
         storageClient = mock(IStorageRestClient.class);
     }
 
     public void setup(StorageDownloadStatus downloadStatus) {
+        files = new FakeFileFactory();
         mockFileDownload(downloadStatus);
     }
 
     private void mockFileDownload(StorageDownloadStatus downloadStatus) {
-        FakeFileFactory fileFactory = new FakeFileFactory();
-
         if (downloadStatus == StorageDownloadStatus.HTTP_ERROR) {
-            when(storageClient.downloadFile(eq(fileFactory.validFile()), any())) //
-                .thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST, "http error"));
+            when(storageClient.downloadFile(validFiles(), any())) //
+                                                                  .thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST,
+                                                                                                          "http error"));
         } else if (downloadStatus == StorageDownloadStatus.FAILURE) {
-            when(storageClient.downloadFile(eq(fileFactory.validFile()), any())) //
-                .thenReturn(storageResponse(HttpStatus.NOT_FOUND, "errors."));
+            when(storageClient.downloadFile(validFiles(), any())) //
+                                                                  .thenReturn(storageResponse(HttpStatus.NOT_FOUND,
+                                                                                              "errors."));
         } else {
-            when(storageClient.downloadFile(eq(fileFactory.validFile()), any())). //
-                thenReturn(storageResponse(HttpStatus.OK, "content"));
-
             // Can't inline because response is mocked (can't mock during mock creation)
             Response invalidResponse = invalidStorageResponse();
-            when(storageClient.downloadFile(eq(fileFactory.invalidFile()), any())) //
-                .thenReturn(invalidResponse);
+            when(storageClient.downloadFile(eq(files.invalidFile()), any())) //
+                                                                             .thenReturn(invalidResponse);
+
+            when(storageClient.downloadFile(validFiles(), any())). //
+                                                                       thenReturn(storageResponse(HttpStatus.OK,
+                                                                                                  "content"));
+
         }
+    }
+
+    private String validFiles() {
+        return ArgumentMatchers.argThat(s -> files.validFiles().contains(s));
     }
 
     private Response storageResponse(HttpStatus status, String fileContent) {
         return Response.builder()
-            .status(status.value())
-            .headers(headers())
-            .body(fileContent.getBytes())
-            .request(request())
-            .build();
+                       .status(status.value())
+                       .headers(headers())
+                       .body(fileContent.getBytes())
+                       .request(request())
+                       .build();
     }
 
     private Response invalidStorageResponse() {
         return Response.builder()
-            .status(HttpStatus.OK.value())
-            .headers(headers())
-            .body(body())
-            .request(request())
-            .build();
+                       .status(HttpStatus.OK.value())
+                       .headers(headers())
+                       .body(body())
+                       .request(request())
+                       .build();
     }
 
     private Map<String, Collection<String>> headers() {

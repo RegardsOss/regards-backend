@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
  *
  * @author Thomas Fache
  **/
-@Event(target = Target.MICROSERVICE)
+@Event(target = Target.ALL)
 public class LicenseEvent implements ISubscribable {
 
     // We use a generic event on license with an action
@@ -44,12 +44,12 @@ public class LicenseEvent implements ISubscribable {
         // For deserialisation
     }
 
-    public LicenseEvent(LicenseAction theAction, String userMail, String theLicenseLink) {
+    public LicenseEvent(LicenseAction licenseAction, String userMail, String licenseLink) {
         // No need to add the tenant.
         // It is added by regards-amqp.
-        action = theAction;
+        action = licenseAction;
         user = userMail;
-        licenseLink = theLicenseLink;
+        this.licenseLink = licenseLink;
     }
 
     public LicenseAction getAction() {

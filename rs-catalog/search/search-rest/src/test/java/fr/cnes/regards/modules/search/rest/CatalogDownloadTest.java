@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.search.rest.download.StorageDownloadStatus;
 import org.junit.Test;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
@@ -59,7 +60,7 @@ public class CatalogDownloadTest {
     public void fail_if_product_is_not_found() throws Exception {
         CatalogDownloadTester downloader = new CatalogDownloadTester();
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> downloader.downloadFile(productFactory.unknownProduct()
-                                                                                                              .toString(),
+                                                                                                                        .toString(),
                                                                                                           fileFactory.validFile()));
     }
 
@@ -78,6 +79,7 @@ public class CatalogDownloadTest {
                                                                     fileFactory.validFile());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.LOCKED);
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThat(response.hasBody()).isTrue();
         assertThat(response.getBody()).isInstanceOf(MissingLicenseDownload.class);
         MissingLicenseDownload body = (MissingLicenseDownload) response.getBody();
