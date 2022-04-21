@@ -191,6 +191,9 @@ pipeline {
             sh label: "POST-FAILURE-TASK -- Print Second RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
                 && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second', returnStatus:true
 
+            sh label: "POST-FAILURE-TASK -- Print S3 Minio logs", script: 'cd ' + CI_DIR + ' \
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-s3-minio', returnStatus:true
+
         }
         cleanup {
             sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
@@ -214,28 +217,29 @@ def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst
     // become
     // regardsossbackendfeature2fimprovejenkinsstages31
     def dockerProject = PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()
-    def dockerCommand = 'docker run --rm -i                                                          \
-                        --name ' + dockerProject + '_maven_' + regardsMs + '                         \
-                        -v ${WORKSPACE}:/app_to_build                                                \
-                        -v /DATA/maven-multibranch-repository:/localRepository                       \
-                        -v /usr/bin/docker:/bin/docker                                               \
-                        -v /var/run/docker.sock:/var/run/docker.sock                                 \
-                        -e BRANCH_NAME="${BRANCH_NAME}"                                              \
-                        -e BRANCH_NAME_VERSION="${BRANCH_NAME_VERSION}"                              \
-                        -e WORKSPACE="${WORKSPACE}"                                                  \
-                        -e IGNORE_HASH="${IGNORE_HASH}"                                              \
-                        -e CI_DIR="regards-ci/docker"                                                \
-                        -e MODE="' + mode + '"                                                       \
-                        -e REGARDS_HOME="${REGARDS_HOME}"                                            \
-                        -e REGARDS_MS="' + regardsMs + '"                                            '
+    def dockerCommand = 'docker run --rm -i                                                                    \
+                        --name ' + dockerProject + '_maven_' + regardsMs + '                                   \
+                        -v ${WORKSPACE}:/app_to_build                                                          \
+                        -v /DATA/maven-multibranch-repository:/localRepository                                 \
+                        -v /usr/bin/docker:/bin/docker                                                         \
+                        -v /var/run/docker.sock:/var/run/docker.sock                                           \
+                        -e BRANCH_NAME="${BRANCH_NAME}"                                                        \
+                        -e BRANCH_NAME_VERSION="${BRANCH_NAME_VERSION}"                                        \
+                        -e WORKSPACE="${WORKSPACE}"                                                            \
+                        -e IGNORE_HASH="${IGNORE_HASH}"                                                        \
+                        -e CI_DIR="regards-ci/docker"                                                          \
+                        -e MODE="' + mode + '"                                                                 \
+                        -e REGARDS_HOME="${REGARDS_HOME}"                                                      \
+                        -e REGARDS_MS="' + regardsMs + '"                                                      '
     if (isRequiringCots) {
         def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
-        dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432"          \
-                         --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq   \
-                         --link ' + dockerProject + '_rs-elasticsearch_1:rs-elasticsearch            \
-                         --link ' + dockerProject + '_rs-postgres_1:rs-postgres                      '
+        dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432 rs-s3-minio:9000"   \
+                         --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq             \
+                         --link ' + dockerProject + '_rs-elasticsearch_1:rs-elasticsearch                      \
+                         --link ' + dockerProject + '_rs-s3-minio_1:rs-s3-minio                                \
+                         --link ' + dockerProject + '_rs-postgres_1:rs-postgres                                '
     }
-    dockerCommand +=    ' --network="regards_IT_network"                                             \
+    dockerCommand +=    ' --network="regards_IT_network"                                                       \
                         ' + MVN_IMAGE
     sh script: dockerCommand, label: label
 }

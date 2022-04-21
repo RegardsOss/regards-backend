@@ -39,6 +39,12 @@ services:
       - IPC_LOCK
     networks:
       - regards_IT_network
+  
+  rs-s3-minio:
+    image: 172.26.46.158/regards-s3-minio
+    networks:
+      - regards_IT_network
+
 
 networks:
   regards_IT_network:

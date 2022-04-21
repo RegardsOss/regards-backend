@@ -164,6 +164,9 @@
 		<vavr-gson.version>0.10.2</vavr-gson.version>
 		<lucene.queryparser.version>8.8.2</lucene.queryparser.version>
 
+		<!-- amazon -->
+		<software.amazon.awssdk.s3.version>2.17.46</software.amazon.awssdk.s3.version>
+
 		<!-- Default compilation parameters -->
 		<!-- Skip executing tests -->
 		<skipTests>false</skipTests>
@@ -192,6 +195,10 @@
 
 		<!-- Test dependency versions -->
 		<org.assertj.version>3.22.0</org.assertj.version>
+		<org.testcontainers.version>1.16.3</org.testcontainers.version>
+		<org.jeasy.easy-random-core.version>4.2.0</org.jeasy.easy-random-core.version>
+		<com.thedeanda.lorem.version>2.1</com.thedeanda.lorem.version>
+		<de.sven-jacobs.loremipsum.version>1.0</de.sven-jacobs.loremipsum.version>
 	</properties>
 
 	<modules>
@@ -2142,6 +2149,13 @@
 				<artifactId>lucene-queryparser</artifactId>
 				<version>${lucene.queryparser.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>s3</artifactId>
+				<version>${software.amazon.awssdk.s3.version}</version>
+			</dependency>
+
 			<!-- DTO Mapper -->
 			<dependency>
 				<groupId>org.mapstruct</groupId>
@@ -2184,6 +2198,26 @@
 				<groupId>org.junit.vintage</groupId>
 				<artifactId>junit-vintage-engine</artifactId>
 				<version>${junit-vintage-engine.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers</artifactId>
+				<version>${org.testcontainers.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jeasy</groupId>
+				<artifactId>easy-random-core</artifactId>
+				<version>${org.jeasy.easy-random-core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.thedeanda</groupId>
+				<artifactId>lorem</artifactId>
+				<version>${com.thedeanda.lorem.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>de.sven-jacobs</groupId>
+				<artifactId>loremipsum</artifactId>
+				<version>${de.sven-jacobs.loremipsum.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -2234,6 +2268,9 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
+			<properties>
+				<spring.profiles.active>local-test</spring.profiles.active>
+			</properties>
 			<build>
 				<resources>
 					<resource>
@@ -2262,6 +2299,9 @@
 		</profile>
 		<profile>
 			<id>CI</id>
+			<properties>
+				<spring.profiles.active>ci</spring.profiles.active>
+			</properties>
 			<build>
 				<resources>
 					<resource>
