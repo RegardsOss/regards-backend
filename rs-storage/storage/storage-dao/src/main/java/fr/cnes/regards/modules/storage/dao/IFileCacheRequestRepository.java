@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,15 +28,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link FileCacheRequest} entities.
  *
  * @author Sébatien Binda
- *
  */
 public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequest, Long> {
 
@@ -49,8 +47,10 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     Page<FileCacheRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
-    Page<FileCacheRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
-            Long maxId, Pageable page);
+    Page<FileCacheRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage,
+                                                                     FileRequestStatus status,
+                                                                     Long maxId,
+                                                                     Pageable page);
 
     Set<FileCacheRequest> findByGroupId(String groupId);
 
@@ -70,13 +70,15 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     @Modifying
     @Query("update FileCacheRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
-    int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
-            @Param("id") Long id);
+    int updateError(@Param("status") FileRequestStatus status,
+                    @Param("errorCause") String errorCause,
+                    @Param("id") Long id);
 
     @Modifying
     @Query("update FileCacheRequest fcr set fcr.status = :status, fcr.jobId = :jobId where fcr.id = :id")
-    int updateStatusAndJobId(@Param("status") FileRequestStatus pending, @Param("jobId") String jobId,
-            @Param("id") Long id);
+    int updateStatusAndJobId(@Param("status") FileRequestStatus pending,
+                             @Param("jobId") String jobId,
+                             @Param("id") Long id);
 
     @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")
     Long getPendingFileSize();

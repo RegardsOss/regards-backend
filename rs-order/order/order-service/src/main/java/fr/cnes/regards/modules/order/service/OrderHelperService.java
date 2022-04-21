@@ -46,34 +46,59 @@ public class OrderHelperService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderHelperService.class);
 
+    private final JWTService jwtService;
+
+    private final IJobInfoService jobInfoService;
+
+    private final IAuthenticationResolver authenticationResolver;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final IProjectUsersClient projectUsersClient;
+
     @Value("${regards.order.secret}")
     private String secret;
+
     @Value("${zuul.prefix}")
     private String urlPrefix;
+
     @Value("${spring.application.name}")
     private String microserviceName;
 
     @Value("${regards.order.cache.isadmin.size:1000}")
     private long maxCacheSize;
+
     @Value("${regards.order.cache.isadmin.ttl:10}")
     private long cacheTtl;
 
     private LoadingCache<String, Boolean> isAdminCache;
 
-    private final JWTService jwtService;
-    private final IJobInfoService jobInfoService;
-    private final IAuthenticationResolver authenticationResolver;
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-    private final IProjectUsersClient projectUsersClient;
-
-    public OrderHelperService(JWTService jwtService, IJobInfoService jobInfoService, IAuthenticationResolver authenticationResolver, IRuntimeTenantResolver runtimeTenantResolver,
-                              IProjectUsersClient projectUsersClient
-    ) {
+    public OrderHelperService(JWTService jwtService,
+                              IJobInfoService jobInfoService,
+                              IAuthenticationResolver authenticationResolver,
+                              IRuntimeTenantResolver runtimeTenantResolver,
+                              IProjectUsersClient projectUsersClient) {
         this.jwtService = jwtService;
         this.jobInfoService = jobInfoService;
         this.authenticationResolver = authenticationResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.projectUsersClient = projectUsersClient;
+    }
+
+    public static boolean isOrderEffectivelyInPause(Order order) {
+        // No associated jobInfo or all associated jobs finished
+        return order.getDatasetTasks()
+                    .stream()
+                    .flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                    .noneMatch(ft -> ft.getJobInfo() != null) || order.getDatasetTasks()
+                                                                      .stream()
+                                                                      .flatMap(dsTask -> dsTask.getReliantTasks()
+                                                                                               .stream())
+                                                                      .filter(ft -> ft.getJobInfo() != null)
+                                                                      .map(ft -> ft.getJobInfo()
+                                                                                   .getStatus()
+                                                                                   .getStatus())
+                                                                      .allMatch(JobStatus::isFinished);
     }
 
     @EventListener
@@ -82,9 +107,18 @@ public class OrderHelperService {
     }
 
     @MultitenantTransactional
-    public UUID createStorageSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, long orderId, String owner, int subOrderDuration, String role, int priority) {
+    public UUID createStorageSubOrder(DatasetTask datasetTask,
+                                      Set<OrderDataFile> orderDataFiles,
+                                      long orderId,
+                                      String owner,
+                                      int subOrderDuration,
+                                      String role,
+                                      int priority) {
 
-        LOGGER.info("Creating storage sub-order of {} files (Order: {} - Owner: {})", orderDataFiles.size(), orderId, owner);
+        LOGGER.info("Creating storage sub-order of {} files (Order: {} - Owner: {})",
+                    orderDataFiles.size(),
+                    orderId,
+                    owner);
 
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(orderId);
@@ -93,11 +127,12 @@ public class OrderHelperService {
 
         // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
         JobInfo storageJobInfo = new JobInfo(true);
-        storageJobInfo.setParameters(
-                new FilesJobParameter(orderDataFiles.stream().map(OrderDataFile::getId).toArray(Long[]::new)),
-                new SubOrderAvailabilityPeriodJobParameter(subOrderDuration),
-                new UserJobParameter(owner), new UserRoleJobParameter(role)
-        );
+        storageJobInfo.setParameters(new FilesJobParameter(orderDataFiles.stream()
+                                                                         .map(OrderDataFile::getId)
+                                                                         .toArray(Long[]::new)),
+                                     new SubOrderAvailabilityPeriodJobParameter(subOrderDuration),
+                                     new UserJobParameter(owner),
+                                     new UserRoleJobParameter(role));
         storageJobInfo.setOwner(owner);
         storageJobInfo.setClassName(StorageFilesJob.class.getName());
         storageJobInfo.setPriority(priority);
@@ -109,9 +144,15 @@ public class OrderHelperService {
     }
 
     @MultitenantTransactional
-    public void createExternalSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, long orderId, String owner) {
+    public void createExternalSubOrder(DatasetTask datasetTask,
+                                       Set<OrderDataFile> orderDataFiles,
+                                       long orderId,
+                                       String owner) {
 
-        LOGGER.info("Creating external sub-order of {} files (Order: {} - Owner: {})", orderDataFiles.size(), orderId, owner);
+        LOGGER.info("Creating external sub-order of {} files (Order: {} - Owner: {})",
+                    orderDataFiles.size(),
+                    orderId,
+                    owner);
 
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(orderId);
@@ -125,7 +166,9 @@ public class OrderHelperService {
         jobInfoService.updateExpirationDate(expirationDate, jobInfosId);
     }
 
-    public OffsetDateTime computeOrderExpirationDate(OffsetDateTime currentDate, int subOrderCount, int subOrderDuration) {
+    public OffsetDateTime computeOrderExpirationDate(OffsetDateTime currentDate,
+                                                     int subOrderCount,
+                                                     int subOrderDuration) {
         OffsetDateTime fromDate = OffsetDateTime.now();
         if (currentDate != null && currentDate.isAfter(fromDate)) {
             fromDate = currentDate;
@@ -134,35 +177,20 @@ public class OrderHelperService {
         return fromDate.plusHours(hoursCount);
     }
 
-    public static boolean isOrderEffectivelyInPause(Order order) {
-        // No associated jobInfo or all associated jobs finished
-        return order.getDatasetTasks()
-                .stream()
-                .flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .noneMatch(ft -> ft.getJobInfo() != null)
-                || order.getDatasetTasks()
-                .stream()
-                .flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .filter(ft -> ft.getJobInfo() != null)
-                .map(ft -> ft.getJobInfo().getStatus().getStatus())
-                .allMatch(JobStatus::isFinished);
-    }
-
     public String buildUrl() {
-        return urlPrefix + "/" + new String(UriUtils.encode(microserviceName, Charset.defaultCharset().name()).getBytes(), StandardCharsets.US_ASCII);
+        return urlPrefix + "/" + new String(UriUtils.encode(microserviceName, Charset.defaultCharset().name())
+                                                    .getBytes(), StandardCharsets.US_ASCII);
     }
 
     public String generateToken4PublicEndpoint(Order order) {
-        return jwtService.generateToken(
-                runtimeTenantResolver.getTenant(),
-                authenticationResolver.getUser(),
-                authenticationResolver.getUser(),
-                authenticationResolver.getRole(),
-                order.getExpirationDate(),
-                Collections.singletonMap(IOrderService.ORDER_ID_KEY, order.getId().toString()),
-                secret,
-                true
-        );
+        return jwtService.generateToken(runtimeTenantResolver.getTenant(),
+                                        authenticationResolver.getUser(),
+                                        authenticationResolver.getUser(),
+                                        authenticationResolver.getRole(),
+                                        order.getExpirationDate(),
+                                        Collections.singletonMap(IOrderService.ORDER_ID_KEY, order.getId().toString()),
+                                        secret,
+                                        true);
     }
 
     public String getCurrentUserRole() {
@@ -177,7 +205,9 @@ public class OrderHelperService {
         String role;
         try {
             FeignSecurityManager.asSystem();
-            role = HateoasUtils.unwrap(projectUsersClient.retrieveProjectUserByEmail(user).getBody()).getRole().getName();
+            role = HateoasUtils.unwrap(projectUsersClient.retrieveProjectUserByEmail(user).getBody())
+                               .getRole()
+                               .getName();
         } finally {
             FeignSecurityManager.reset();
         }
@@ -204,22 +234,22 @@ public class OrderHelperService {
 
     private void initIsAdminCache() {
         isAdminCache = CacheBuilder.newBuilder()
-                .maximumSize(maxCacheSize)
-                .expireAfterWrite(cacheTtl, TimeUnit.MINUTES)
-                .build(
-                        new CacheLoader<String, Boolean>() {
-                            @Override
-                            public Boolean load(String user) {
-                                boolean isAdmin;
-                                try {
-                                    FeignSecurityManager.asSystem();
-                                    isAdmin = projectUsersClient.isAdmin(user).getBody();
-                                } finally {
-                                    FeignSecurityManager.reset();
-                                }
-                                return isAdmin;
-                            }
-                        });
+                                   .maximumSize(maxCacheSize)
+                                   .expireAfterWrite(cacheTtl, TimeUnit.MINUTES)
+                                   .build(new CacheLoader<String, Boolean>() {
+
+                                       @Override
+                                       public Boolean load(String user) {
+                                           boolean isAdmin;
+                                           try {
+                                               FeignSecurityManager.asSystem();
+                                               isAdmin = projectUsersClient.isAdmin(user).getBody();
+                                           } finally {
+                                               FeignSecurityManager.reset();
+                                           }
+                                           return isAdmin;
+                                       }
+                                   });
     }
 
 }

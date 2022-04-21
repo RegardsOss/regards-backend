@@ -18,25 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -49,16 +30,33 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Test class
  *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests" },
-        locations = { "classpath:application-test.properties" })
+    locations = { "classpath:application-test.properties" })
 public class FileCacheRequestServiceTest extends AbstractStorageTest {
 
     @Autowired
@@ -72,8 +70,8 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // we override cache setting values for tests
-        dynamicTenantSettingService
-                .update(StorageSetting.CACHE_PATH_NAME, Paths.get("target", "cache", getDefaultTenant()));
+        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME,
+                                           Paths.get("target", "cache", getDefaultTenant()));
         dynamicTenantSettingService.update(StorageSetting.CACHE_MAX_SIZE_NAME, 10L);
     }
 
@@ -87,13 +85,14 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         Assert.assertFalse("No cache request should be created",
                            fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
 
-        Mockito.verify(fileEventPublisher, Mockito.times(1)).available(Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any());
+        Mockito.verify(fileEventPublisher, Mockito.times(1))
+               .available(Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any());
 
     }
 
@@ -239,8 +238,8 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
 
     @Test
     public void makeAvailable_plugin_restoration_error() throws InterruptedException, ExecutionException {
-        FileReference fileRef = this
-                .generateRandomStoredNearlineFileReference("restoError.file1.test", Optional.empty());
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference("restoError.file1.test",
+                                                                               Optional.empty());
         fileCacheRequestService.makeAvailable(Sets.newHashSet(fileRef.getMetaInfo().getChecksum()),
                                               OffsetDateTime.now().plusDays(1),
                                               UUID.randomUUID().toString());
@@ -310,13 +309,14 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
                                               UUID.randomUUID().toString());
         Assert.assertTrue("A cache request should be done for the near line file to download",
                           fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
-        Mockito.verify(fileEventPublisher, Mockito.never()).available(Mockito.any(),
-                                                                      Mockito.any(),
-                                                                      Mockito.any(),
-                                                                      Mockito.any(),
-                                                                      Mockito.any(),
-                                                                      Mockito.any(),
-                                                                      Mockito.any());
+        Mockito.verify(fileEventPublisher, Mockito.never())
+               .available(Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any());
     }
 
     @Test
@@ -328,15 +328,16 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
                                               OffsetDateTime.now().plusDays(1),
                                               UUID.randomUUID().toString());
         Assert.assertFalse(
-                "No cache request should be created for the near line file to download as it is available in cache",
-                fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
-        Mockito.verify(fileEventPublisher, Mockito.times(1)).available(Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any(),
-                                                                       Mockito.any());
+            "No cache request should be created for the near line file to download as it is available in cache",
+            fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).isPresent());
+        Mockito.verify(fileEventPublisher, Mockito.times(1))
+               .available(Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any(),
+                          Mockito.any());
     }
 
 }
