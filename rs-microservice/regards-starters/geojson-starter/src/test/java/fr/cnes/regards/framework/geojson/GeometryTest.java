@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.framework.geojson;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import fr.cnes.regards.framework.geojson.geometry.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,23 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import fr.cnes.regards.framework.geojson.coordinates.Positions;
-import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiPoint;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.geojson.geometry.Unlocated;
-
 /**
  * Test GeoJson geometry (de)serialization
+ *
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
@@ -70,6 +62,7 @@ public class GeometryTest {
         // Write
         Feature feature = new Feature();
         feature.setId(id);
+
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
         JsonObject jsonObject = jsonElement.getAsJsonObject();
@@ -83,12 +76,10 @@ public class GeometryTest {
 
     @Test
     public void point() {
-        Double longitude = -10.0;
-        Double latitude = 20.0;
 
         // Write
         Feature feature = new Feature();
-        feature.setGeometry(IGeometry.point(IGeometry.position(longitude, latitude)));
+        feature.setGeometry(GeometryFactory.createPoint());
 
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
@@ -97,7 +88,7 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.POINT.getType());
+        Assert.assertEquals(GeoJsonType.POINT, geometryObject.get(TYPE).getAsString());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
@@ -117,9 +108,7 @@ public class GeometryTest {
 
         // Write
         Feature feature = new Feature();
-
-        MultiPoint geometry = IGeometry.multiPoint(IGeometry.position(-170.0, 25.25), IGeometry.position(70.0, 10.10));
-        feature.setGeometry(geometry);
+        feature.setGeometry(GeometryFactory.createMultiPoint());
 
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
@@ -128,7 +117,7 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.MULTIPOINT.getType());
+        Assert.assertEquals(GeoJsonType.MULTIPOINT, geometryObject.get(TYPE).getAsString());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
@@ -148,11 +137,7 @@ public class GeometryTest {
 
         // Write
         Feature feature = new Feature();
-
-        Positions lineStringCoordinates = IGeometry
-                .toLineStringCoordinates(IGeometry.position(-170.0, 25.25), IGeometry.position(70.0, 10.10));
-        LineString geometry = IGeometry.lineString(lineStringCoordinates);
-        feature.setGeometry(geometry);
+        feature.setGeometry(GeometryFactory.createLineString());
 
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
@@ -161,7 +146,7 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.LINESTRING.getType());
+        Assert.assertEquals(GeoJsonType.LINESTRING, geometryObject.get(TYPE).getAsString());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
@@ -181,16 +166,7 @@ public class GeometryTest {
 
         // Write
         Feature feature = new Feature();
-
-        Positions lineStringCoordinates1 = IGeometry
-                .toLineStringCoordinates(IGeometry.position(-170.0, 25.25), IGeometry.position(70.0, 10.10));
-
-        Positions lineStringCoordinates2 = IGeometry
-                .toLineStringCoordinates(IGeometry.position(-90.0, 90.0), IGeometry.position(33.33, 77.77));
-
-        MultiLineString geometry = IGeometry.multiLineString(lineStringCoordinates1, lineStringCoordinates2);
-
-        feature.setGeometry(geometry);
+        feature.setGeometry(GeometryFactory.createMultiLineString());
 
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
@@ -199,7 +175,7 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.MULTILINESTRING.getType());
+        Assert.assertEquals(GeoJsonType.MULTILINESTRING, geometryObject.get(TYPE).getAsString());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
@@ -219,20 +195,7 @@ public class GeometryTest {
 
         // Write
         Feature feature = new Feature();
-
-        Positions exteriorRing = IGeometry
-                .toLinearRingCoordinates(IGeometry.position(-170.0, 20.0), IGeometry.position(-170.0, 10.0),
-                                         IGeometry.position(-140.0, 10.0), IGeometry.position(-140.0, 20.0),
-                                         IGeometry.position(-170.0, 20.0));
-
-        Positions hole = IGeometry
-                .toLinearRingCoordinates(IGeometry.position(-160.0, 17.0), IGeometry.position(-150.0, 17.0),
-                                         IGeometry.position(-150.0, 13.0), IGeometry.position(-160.0, 13.0),
-                                         IGeometry.position(-160.0, 17.0));
-
-        Polygon geometry = IGeometry.polygon(IGeometry.toPolygonCoordinates(exteriorRing, hole));
-
-        feature.setGeometry(geometry);
+        feature.setGeometry(GeometryFactory.createPolygon());
 
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
@@ -241,7 +204,7 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.POLYGON.getType());
+        Assert.assertEquals(GeoJsonType.POLYGON, geometryObject.get(TYPE).getAsString());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
@@ -261,21 +224,7 @@ public class GeometryTest {
 
         // Write
         Feature feature = new Feature();
-
-        Positions exteriorRing = IGeometry
-                .toLinearRingCoordinates(IGeometry.position(-170.0, 20.0), IGeometry.position(-170.0, 10.0),
-                                         IGeometry.position(-140.0, 10.0), IGeometry.position(-140.0, 20.0),
-                                         IGeometry.position(-170.0, 20.0));
-
-        Positions hole = IGeometry
-                .toLinearRingCoordinates(IGeometry.position(-160.0, 17.0), IGeometry.position(-150.0, 17.0),
-                                         IGeometry.position(-150.0, 13.0), IGeometry.position(-160.0, 13.0),
-                                         IGeometry.position(-160.0, 17.0));
-
-        MultiPolygon geometry = IGeometry.multiPolygon(IGeometry.toPolygonCoordinates(exteriorRing, hole),
-                                                       IGeometry.toPolygonCoordinates(exteriorRing, hole));
-
-        feature.setGeometry(geometry);
+        feature.setGeometry(GeometryFactory.createMultiPolygon());
 
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
@@ -284,7 +233,7 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.MULTIPOLYGON.getType());
+        Assert.assertEquals(GeoJsonType.MULTIPOLYGON, geometryObject.get(TYPE).getAsString());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
@@ -304,20 +253,7 @@ public class GeometryTest {
 
         // Write
         Feature feature = new Feature();
-
-        GeometryCollection geometry = IGeometry.geometryCollection(IGeometry.point(IGeometry.position(0.0, 10.0)),
-                                                                   IGeometry.lineString(IGeometry
-                                                                                                .toLineStringCoordinates(
-                                                                                                        IGeometry
-                                                                                                                .position(
-                                                                                                                        10.0,
-                                                                                                                        13.0),
-                                                                                                        IGeometry
-                                                                                                                .position(
-                                                                                                                        25.0,
-                                                                                                                        39.0))));
-
-        feature.setGeometry(geometry);
+        feature.setGeometry(GeometryFactory.createGeometryCollection());
 
         JsonElement jsonElement = gson.toJsonTree(feature);
         Assert.assertTrue(jsonElement.isJsonObject());
@@ -326,7 +262,7 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.GEOMETRY_COLLECTION.getType());
+        Assert.assertEquals(GeoJsonType.GEOMETRY_COLLECTION, geometryObject.get(TYPE).getAsString());
         Assert.assertTrue(geometryObject.has(GEOMETRIES));
 
         // Get geometries
@@ -336,12 +272,12 @@ public class GeometryTest {
         // Get first geometry
         geometryObject = geometries.get(0).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.POINT.getType());
+        Assert.assertEquals(GeoJsonType.POINT, geometryObject.get(TYPE).getAsString());
 
         // Get second geometry
         geometryObject = geometries.get(1).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.LINESTRING.getType());
+        Assert.assertEquals(GeoJsonType.LINESTRING, geometryObject.get(TYPE).getAsString());
 
         LOGGER.debug(jsonElement.toString());
 

@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 
 /**
  * Gson adapter for GeoJson geometry
+ *
  * @author Marc Sordi
  */
 @GsonTypeAdapterFactory
@@ -33,14 +34,14 @@ public class GeometryTypeAdapterFactory extends PolymorphicTypeAdapterFactory<IG
 
     public GeometryTypeAdapterFactory() {
         super(IGeometry.class, "type");
-        registerSubtype(Point.class, GeoJsonType.POINT.getType());
-        registerSubtype(MultiPoint.class, GeoJsonType.MULTIPOINT.getType());
-        registerSubtype(LineString.class, GeoJsonType.LINESTRING.getType());
-        registerSubtype(MultiLineString.class, GeoJsonType.MULTILINESTRING.getType());
-        registerSubtype(Polygon.class, GeoJsonType.POLYGON.getType());
-        registerSubtype(MultiPolygon.class, GeoJsonType.MULTIPOLYGON.getType());
-        registerSubtype(GeometryCollection.class, GeoJsonType.GEOMETRY_COLLECTION.getType());
-        registerSubtype(Unlocated.class, GeoJsonType.UNLOCATED.getType(), true); // Serialize nulls
+        registerSubtype(Point.class, GeoJsonType.POINT);
+        registerSubtype(MultiPoint.class, GeoJsonType.MULTIPOINT);
+        registerSubtype(LineString.class, GeoJsonType.LINESTRING);
+        registerSubtype(MultiLineString.class, GeoJsonType.MULTILINESTRING);
+        registerSubtype(Polygon.class, GeoJsonType.POLYGON);
+        registerSubtype(MultiPolygon.class, GeoJsonType.MULTIPOLYGON);
+        registerSubtype(GeometryCollection.class, GeoJsonType.GEOMETRY_COLLECTION);
+        registerSubtype(Unlocated.class, GeoJsonType.UNLOCATED, true); // Serialize nulls
     }
 
     /**

@@ -6,7 +6,7 @@
  * REGARDS is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * =at your option) any later version.
  *
  * REGARDS is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,30 +21,35 @@ package fr.cnes.regards.framework.geojson;
 /**
  * RFC 7946 -August 2016<br/>
  * All availble GeoJson types
- * @author Marc Sordi
+ *
+ * @author Stephane Cortine
  */
-public enum GeoJsonType {
+// constant class in order to serialize/deserialize easy with GSON or JACKSON framework
+public final class GeoJsonType {
 
-    FEATURE("Feature"),
-    FEATURE_COLLECTION("FeatureCollection"),
+    public static final String FEATURE = "Feature";
+
+    public static final String FEATURE_COLLECTION = "FeatureCollection";
+
     // Geometry
-    POINT("Point"),
-    MULTIPOINT("MultiPoint"),
-    LINESTRING("LineString"),
-    MULTILINESTRING("MultiLineString"),
-    POLYGON("Polygon"),
-    MULTIPOLYGON("MultiPolygon"),
-    GEOMETRY_COLLECTION("GeometryCollection"),
+    public static final String POINT = "Point";
+
+    public static final String MULTIPOINT = "MultiPoint";
+
+    public static final String LINESTRING = "LineString";
+
+    public static final String MULTILINESTRING = "MultiLineString";
+
+    public static final String POLYGON = "Polygon";
+
+    public static final String MULTIPOLYGON = "MultiPolygon";
+
+    public static final String GEOMETRY_COLLECTION = "GeometryCollection";
+
     // Custom unlocated
-    UNLOCATED("Unlocated");
+    public static final String UNLOCATED = "Unlocated";
 
-    private String type;
-
-    GeoJsonType(String name) {
-        this.type = name;
+    private GeoJsonType() {
     }
 
-    public String getType() {
-        return type;
-    }
 }

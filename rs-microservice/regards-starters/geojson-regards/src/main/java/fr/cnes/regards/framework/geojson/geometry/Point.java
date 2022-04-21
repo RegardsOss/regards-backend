@@ -43,7 +43,7 @@ public class Point extends AbstractGeometry<Position> {
     }
 
     public double[] toArray() {
-        return coordinates.toArray();
+        return coordinates.size() == 2 ? new double[] {coordinates.getLongitude(), coordinates.getLatitude()} : new double[] {coordinates.getLongitude(), coordinates.getLatitude(), coordinates.getAltitude().get()};
     }
 
     /**

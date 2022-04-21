@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.geojson.coordinates;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -25,13 +27,26 @@ import java.util.stream.Collectors;
 /**
  * Not in RFC 7946 -August 2016<br/>
  * GeoJson consistent set of positions representation.<br/>
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("serial")
 public class Positions extends ArrayList<Position> {
 
     /**
+     * Create a Positions from array { { longitude, latitude }, {}, ... }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static Positions fromArray(double[][] lonLats) {
+        Positions positions = new Positions();
+        Arrays.stream(lonLats).forEach(lonLat -> positions.add(Position.fromArray(lonLat)));
+        return positions;
+    }
+
+    /**
      * Check that this set of positions is or not a line string. A line string has at least 2 positions.
+     *
      * @return true if line string
      */
     public boolean isLineString() {
@@ -41,6 +56,7 @@ public class Positions extends ArrayList<Position> {
     /**
      * Check that this set of positions is or not a linear ring. A linear ring has at least 4 positions. Its first and
      * latest positions MUST be equivalents.
+     *
      * @return true if linear ring.
      */
     public boolean isLinearRing() {
@@ -60,20 +76,9 @@ public class Positions extends ArrayList<Position> {
     }
 
     /**
-     * Return positions as double[][] (array of positions as double[] { longitude, latitude })
+     * Return positions as double[][] (array of positions as Double[] { longitude, latitude } or { longitude, latitude, altitude })
      */
     public double[][] toArray() {
-        return this.stream().map(Position::toArray).toArray(double[][]::new);
-    }
-
-    /**
-     * Create a Positions from array { { longitude, latitude }, {}, ... }
-     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
-     * done concerning input values.</B>
-     */
-    public static Positions fromArray(double[][] lonLats) {
-        Positions positions = new Positions();
-        Arrays.stream(lonLats).forEach(lonLat -> positions.add(Position.fromArray(lonLat)));
-        return positions;
+        return this.stream().map(position -> ArrayUtils.toPrimitive(position.toArray())).toArray(double[][]::new);
     }
 }

@@ -25,12 +25,13 @@ import java.util.Optional;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJsonObject common model
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractGeoJsonObject {
 
     @NotNull
-    protected GeoJsonType type;
+    protected String type;
 
     /**
      * Optional bounding box
@@ -43,11 +44,11 @@ public abstract class AbstractGeoJsonObject {
      */
     protected String crs;
 
-    public AbstractGeoJsonObject(GeoJsonType type) {
+    protected AbstractGeoJsonObject(String type) {
         this.type = type;
     }
 
-    public GeoJsonType getType() {
+    public String getType() {
         return type;
     }
 
@@ -99,6 +100,6 @@ public abstract class AbstractGeoJsonObject {
         } else if (!crs.equals(other.crs)) {
             return false;
         }
-        return (type == other.type);
+        return (type.equals(other.type));
     }
 }

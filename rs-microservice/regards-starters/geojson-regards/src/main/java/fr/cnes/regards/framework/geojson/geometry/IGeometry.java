@@ -18,41 +18,29 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
-import java.util.Arrays;
-
+import com.google.common.base.Preconditions;
+import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
+import fr.cnes.regards.framework.geojson.coordinates.Position;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-import fr.cnes.regards.framework.geojson.GeoJsonType;
-import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
-import fr.cnes.regards.framework.geojson.coordinates.Position;
-import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import java.util.Arrays;
 
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson geometry declaration and geometry builder.
+ *
  * @author Marc Sordi
  */
 public interface IGeometry {
 
     Logger LOGGER = LoggerFactory.getLogger(IGeometry.class);
 
-    GeoJsonType getType();
-
-    void setCrs(String crs);
-
-    @SuppressWarnings("unchecked")
-    default <T extends IGeometry> T withCrs(String crs) {
-        this.setCrs(crs);
-        return (T) this;
-    }
-
-    <R> R accept(IGeometryVisitor<R> visitor);
-
     /**
      * Define a GeoJson without geometry
+     *
      * @return {@link Unlocated}
      */
     static Unlocated unlocated() {
@@ -61,9 +49,10 @@ public interface IGeometry {
 
     /**
      * Create a new {@link Position}
+     *
      * @param longitude longitude
-     * @param latitude latitude
-     * @param altitude altitude
+     * @param latitude  latitude
+     * @param altitude  altitude
      * @return {@link Position}
      */
     static Position position(Double longitude, Double latitude, Double altitude) {
@@ -72,8 +61,9 @@ public interface IGeometry {
 
     /**
      * Create a new {@link Position}
+     *
      * @param longitude longitude
-     * @param latitude latitude
+     * @param latitude  latitude
      * @return {@link Position}
      */
     static Position position(Double longitude, Double latitude) {
@@ -91,6 +81,7 @@ public interface IGeometry {
 
     /**
      * Create a new {@link Point} geometry
+     *
      * @param single single position required
      * @return {@link Point}
      */
@@ -102,6 +93,7 @@ public interface IGeometry {
 
     /**
      * Create new {@link MultiPoint} geometry
+     *
      * @param positions multiple points. At least two is required.
      * @return {@link MultiPoint}
      */
@@ -116,6 +108,7 @@ public interface IGeometry {
 
     /**
      * Utility method to create {@link LineString} coordinates. Useful for {@link MultiLineString} creation.
+     *
      * @param positions positions representing the line string. At least 2 positions is required.
      * @return {@link Positions} (i.e a list of at least 2 {@link Position})
      */
@@ -131,9 +124,10 @@ public interface IGeometry {
 
     /**
      * Create a new {@link LineString} geometry
+     *
      * @param lineString positions representing the line string. Use
-     * {@link IGeometry#toLineStringCoordinates(Position...)}
-     * to create line string coordinates.
+     *                   {@link IGeometry#toLineStringCoordinates(Position...)}
+     *                   to create line string coordinates.
      * @return {@link LineString}
      */
     static LineString lineString(Positions lineString) {
@@ -145,9 +139,10 @@ public interface IGeometry {
 
     /**
      * Create a new {@link MultiLineString} geometry
+     *
      * @param lineStrings list of line strings. Use {@link IGeometry#toLineStringCoordinates(Position...)} to create
-     * each
-     * line string coordinates.
+     *                    each
+     *                    line string coordinates.
      * @return {@link MultiLineString}
      */
     static MultiLineString multiLineString(Positions... lineStrings) {
@@ -162,9 +157,10 @@ public interface IGeometry {
     /**
      * Utility method to create closed {@link LineString} coordinates also called <b>linear ring</b>. Useful for
      * {@link Polygon} coordinates creation.
+     *
      * @param positions positions representing the linear string. At least 4 positions is required. The first and
-     * last
-     * positions MUST be equivalent.
+     *                  last
+     *                  positions MUST be equivalent.
      * @return {@link Positions} (i.e a list of at least 4 {@link Position})
      */
     static Positions toLinearRingCoordinates(Position... positions) {
@@ -180,10 +176,11 @@ public interface IGeometry {
 
     /**
      * Utility method to create {@link Polygon} coordinates. Useful for {@link Polygon} creation.
+     *
      * @param exteriorRing counterclockwise exterior ring. Use {@link IGeometry#toLinearRingCoordinates(Position...)} to
-     * create this ring.
-     * @param holes clockwise interior rings. Use {@link IGeometry#toLinearRingCoordinates(Position...)} to create
-     * holes.
+     *                     create this ring.
+     * @param holes        clockwise interior rings. Use {@link IGeometry#toLinearRingCoordinates(Position...)} to create
+     *                     holes.
      * @return {@link Polygon}
      */
     static PolygonPositions toPolygonCoordinates(Positions exteriorRing, Positions... holes) {
@@ -204,9 +201,10 @@ public interface IGeometry {
 
     /**
      * Create a new {@link Polygon} geometry
+     *
      * @param linearRings counterclockwise exterior ring + clockwise holes. Use
-     * {@link IGeometry#toPolygonCoordinates(Positions, Positions...)} to
-     * create the polygon coordinates
+     *                    {@link IGeometry#toPolygonCoordinates(Positions, Positions...)} to
+     *                    create the polygon coordinates
      * @return {@link Polygon}
      */
     static Polygon polygon(PolygonPositions linearRings) {
@@ -217,6 +215,7 @@ public interface IGeometry {
 
     /**
      * Create a new {@link MultiPolygon} geometry
+     *
      * @param polygons list of polygons coordinates
      * @return {@link MultiPolygon}
      */
@@ -228,6 +227,7 @@ public interface IGeometry {
 
     /**
      * Create a new {@link GeometryCollection}
+     *
      * @param geometries list of geometries. Use other geometry construction method to fill this collection.
      * @return {@link GeometryCollection}
      */
@@ -299,6 +299,7 @@ public interface IGeometry {
      * latitude of all points. No need to close the polygon by specifying last two values as first twos.<br/>
      * As parameter is double[] instead of Double[], int values can also be used.<br/>
      * Intent of this method is principaly to be used for tests
+     *
      * @param lonLats point1 longitude, point2 latitude, point2 long, point2 latitude, ...
      */
     static Polygon simplePolygon(double... lonLats) {
@@ -321,6 +322,7 @@ public interface IGeometry {
      * points. No need to close the polygon by specifying last two values as first twos.<br/>
      * As parameter is double[] instead of Double[], int values can also be used.<br/>
      * Intent of this method is principaly to be used for tests
+     *
      * @param lonLats point1 longitude, point2 latitude, point2 long, point2 latitude, ...
      */
     static Polygon simpleClockwisePolygon(double... lonLats) {
@@ -338,4 +340,16 @@ public interface IGeometry {
         ArrayUtils.reverse(positions);
         return polygon(toPolygonCoordinates(positions(positions)));
     }
+
+    String getType();
+
+    void setCrs(String crs);
+
+    @SuppressWarnings("unchecked")
+    default <T extends IGeometry> T withCrs(String crs) {
+        this.setCrs(crs);
+        return (T) this;
+    }
+
+    <R> R accept(IGeometryVisitor<R> visitor);
 }

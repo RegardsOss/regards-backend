@@ -18,62 +18,77 @@
  */
 package fr.cnes.regards.framework.geojson.coordinates;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson geometry position representation
+ *
  * @author Marc Sordi
  */
-public class Position {
-
-    private Double longitude;
-
-    private Double latitude;
-
-    private Double altitude = null;
+public class Position extends ArrayList<Double> {
 
     public Position() {
-        // Useful for serialization
+        super();
     }
 
     public Position(Double longitude, Double latitude) {
-        this.longitude = longitude;
-        this.latitude = latitude;
+        super(2);
+        super.add(longitude);
+        super.add(latitude);
+
     }
 
     public Position(Double longitude, Double latitude, Double altitude) {
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.altitude = altitude;
+        super(3);
+        super.add(longitude);
+        super.add(latitude);
+        super.add(altitude);
+    }
+
+    /**
+     * Create a Position from array(size 2 or 3 coordinates) : { longitude, latitude } or {  longitude, latitude, altitude }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static Position fromArray(double[] coordinates) {
+        if (coordinates.length == 2) {
+            return new Position(coordinates[0], coordinates[1]);
+        } else if (coordinates.length == 3) {
+            return new Position(coordinates[0], coordinates[1], coordinates[2]);
+        } else {
+            throw new IllegalArgumentException(
+                    "Position should at least have 2 coordinates: longitude and latitude, or 3 (longitude, latitude, altitude)");
+        }
     }
 
     public Double getLongitude() {
-        return longitude;
-    }
-
-    public Double getLatitude() {
-        return latitude;
+        return get(0);
     }
 
     /**
      * Useful for normalization
      */
     public void setLongitude(Double longitude) {
-        this.longitude = longitude;
+        set(0, longitude);
+    }
+
+    public Double getLatitude() {
+        return get(1);
     }
 
     public Optional<Double> getAltitude() {
-        return Optional.ofNullable(altitude);
+        return size() == 2 ? Optional.empty() : Optional.of(get(2));
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((altitude == null) ? 0 : altitude.hashCode());
-        result = (prime * result) + ((latitude == null) ? 0 : latitude.hashCode());
-        result = (prime * result) + ((longitude == null) ? 0 : longitude.hashCode());
+        result = (prime * result) + (getAltitude().isPresent() ? getAltitude().get().hashCode() : 0);
+        result = (prime * result) + ((getLatitude() == null) ? 0 : getLatitude().hashCode());
+        result = (prime * result) + ((getLongitude() == null) ? 0 : getLongitude().hashCode());
         return result;
     }
 
@@ -89,30 +104,30 @@ public class Position {
             return false;
         }
         Position other = (Position) obj;
-        if (altitude == null) {
-            if (other.altitude != null) {
+        if (!getAltitude().isPresent()) {
+            if (other.getAltitude().isPresent()) {
                 return false;
             }
-        } else if (!altitude.equals(other.altitude)) {
+        } else if (!getAltitude().equals(other.getAltitude())) {
             return false;
         }
-        if (latitude == null) {
-            if (other.latitude != null) {
+        if (getLatitude() == null) {
+            if (other.getLatitude() != null) {
                 return false;
             }
-        } else if (!latitude.equals(other.latitude)) {
+        } else if (!getLatitude().equals(other.getLatitude())) {
             return false;
         }
-        if (longitude == null) {
-            return other.longitude == null;
+        if (getLongitude() == null) {
+            return other.getLongitude() == null;
         } else {
-            return longitude.equals(other.longitude);
+            return getLongitude().equals(other.getLongitude());
         }
     }
 
     @Override
     public String toString() {
-        if (altitude != null) {
+        if (getAltitude().isPresent()) {
             return getLongitude() + ", " + getLatitude() + ", " + getAltitude();
         } else {
             return getLongitude() + ", " + getLatitude();
@@ -120,18 +135,12 @@ public class Position {
     }
 
     /**
-     * Return position as double[] where first index is longitude and seconde latitude
+     * Return position as Double[] where first index is longitude and second latitude and if exists third altitude
      */
-    public double[] toArray() {
-        return new double[] { longitude, latitude };
-    }
-
-    /**
-     * Create a Position from array { longitude, latitude }
-     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
-     * done concerning input values.</B>
-     */
-    public static Position fromArray(double[] lonLat) {
-        return new Position(lonLat[0], lonLat[1]);
+    @Override
+    public Double[] toArray() {
+        return getAltitude().isPresent() ?
+                new Double[] { getLongitude(), getLatitude(), getAltitude().get() } :
+                new Double[] { getLongitude(), getLatitude() };
     }
 }

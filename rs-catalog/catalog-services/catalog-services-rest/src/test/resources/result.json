@@ -22,7 +22,7 @@
     "tags": [],
     "groups": [],
     "wgs84": {
-      "type": "UNLOCATED"
+      "type": "Unlocated"
     },
     "feature": {
       "providerId": "DO1",
@@ -42,13 +42,13 @@
         "last": false
       },
       "geometry": {
-        "type": "UNLOCATED"
+        "type": "Unlocated"
       },
       "normalizedGeometry": {
-        "type": "UNLOCATED"
+        "type": "Unlocated"
       },
       "properties": [],
-      "type": "FEATURE"
+      "type": "Feature"
     }
   },
   {
@@ -74,7 +74,7 @@
     "tags": [],
     "groups": [],
     "wgs84": {
-      "type": "UNLOCATED"
+      "type": "Unlocated"
     },
     "feature": {
       "providerId": "DO2",
@@ -94,13 +94,13 @@
         "last": false
       },
       "geometry": {
-        "type": "UNLOCATED"
+        "type": "Unlocated"
       },
       "normalizedGeometry": {
-        "type": "UNLOCATED"
+        "type": "Unlocated"
       },
       "properties": [],
-      "type": "FEATURE"
+      "type": "Feature"
     }
   }
 ]

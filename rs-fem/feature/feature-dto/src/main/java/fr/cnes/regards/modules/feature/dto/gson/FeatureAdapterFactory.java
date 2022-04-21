@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.dto.gson;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- *
  * Merge array of properties
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @GsonTypeAdapterFactory
 public class FeatureAdapterFactory extends PolymorphicTypeAdapterFactory<Feature> {
@@ -42,7 +39,13 @@ public class FeatureAdapterFactory extends PolymorphicTypeAdapterFactory<Feature
 
     public FeatureAdapterFactory() {
         super(Feature.class, "type");
-        registerSubtype(Feature.class, GeoJsonType.FEATURE.getType(), true);
+        registerSubtype(Feature.class, GeoJsonType.FEATURE, true);
+    }
+
+    private static IllegalArgumentException objectRequiredException(JsonElement jsonElement) {
+        String errorMessage = String.format("Unexpected JSON element %s. Object required.", jsonElement.toString());
+        LOGGER.error(errorMessage);
+        return new IllegalArgumentException(errorMessage);
     }
 
     @Override
@@ -73,11 +76,5 @@ public class FeatureAdapterFactory extends PolymorphicTypeAdapterFactory<Feature
         JsonObject entity = jsonElement.getAsJsonObject();
         FeatureProperties.beforeRead(entity);
         return entity;
-    }
-
-    private static IllegalArgumentException objectRequiredException(JsonElement jsonElement) {
-        String errorMessage = String.format("Unexpected JSON element %s. Object required.", jsonElement.toString());
-        LOGGER.error(errorMessage);
-        return new IllegalArgumentException(errorMessage);
     }
 }

@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.geojson.coordinates.Positions;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson MultiPoint representation
+ *
  * @author Marc Sordi
  */
 public class MultiPoint extends AbstractGeometry<Positions> {
@@ -33,9 +34,20 @@ public class MultiPoint extends AbstractGeometry<Positions> {
         coordinates = new Positions();
     }
 
-    public MultiPoint(GeoJsonType type) {
+    protected MultiPoint(String type) {
         super(type);
         coordinates = new Positions();
+    }
+
+    /**
+     * Create a MultiPoint from array  { { longitude, latitude }, {}, ... }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static MultiPoint fromArray(double[][] lonLats) {
+        MultiPoint multiPoint = new MultiPoint();
+        multiPoint.coordinates = Positions.fromArray(lonLats);
+        return multiPoint;
     }
 
     @Override
@@ -50,17 +62,6 @@ public class MultiPoint extends AbstractGeometry<Positions> {
 
     public double[][] toArray() {
         return coordinates.toArray();
-    }
-
-    /**
-     * Create a MultiPoint from array  { { longitude, latitude }, {}, ... }
-     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
-     * done concerning input values.</B>
-     */
-    public static MultiPoint fromArray(double[][] lonLats) {
-        MultiPoint multiPoint = new MultiPoint();
-        multiPoint.coordinates = Positions.fromArray(lonLats);
-        return multiPoint;
     }
 
 }
