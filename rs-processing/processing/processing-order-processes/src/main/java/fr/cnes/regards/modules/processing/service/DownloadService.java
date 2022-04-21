@@ -14,33 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service;
-
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.EXTERNAL_DOWNLOAD_ERROR;
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.INTERNAL_DOWNLOAD_ERROR;
-import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Proxy;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferFactory;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.ResponseStreamProxy;
@@ -56,8 +31,32 @@ import fr.cnes.regards.modules.processing.order.OrderInputFileMetadata;
 import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.collection.Set;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.EXTERNAL_DOWNLOAD_ERROR;
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.INTERNAL_DOWNLOAD_ERROR;
+import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
 
 /**
  * This class provides implementations for downloading files from storage or through a proxy.
@@ -82,8 +81,10 @@ public class DownloadService implements IDownloadService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    public DownloadService(Proxy proxy, @Qualifier("nonProxyHosts") Set<String> nonProxyHosts,
-            IStorageRestClient storageClient, IRuntimeTenantResolver runtimeTenantResolver) {
+    public DownloadService(Proxy proxy,
+                           @Qualifier("nonProxyHosts") Set<String> nonProxyHosts,
+                           IStorageRestClient storageClient,
+                           IRuntimeTenantResolver runtimeTenantResolver) {
         this.proxy = proxy;
         this.nonProxyHosts = nonProxyHosts;
         this.storageClient = storageClient;
@@ -93,7 +94,10 @@ public class DownloadService implements IDownloadService {
     @Override
     public Mono<Path> download(PInputFile file, Path dest) {
         return createParentFolderIfNeeded(dest).flatMap(d -> discriminateInternalExternal(file, d))
-                .doOnError(t -> LOGGER.error("Failed to download {} into {}", file, dest, t));
+                                               .doOnError(t -> LOGGER.error("Failed to download {} into {}",
+                                                                            file,
+                                                                            dest,
+                                                                            t));
     }
 
     private Mono<Path> discriminateInternalExternal(PInputFile file, Path dest) {
@@ -110,19 +114,25 @@ public class DownloadService implements IDownloadService {
     }
 
     private Mono<Path> internalDownload(String checksum, Path dest) {
-        return Mono.subscriberContext().map(ctx -> ctx.get(PExecution.class))
-                .flatMap(exec -> internalDownloadWithTenant(checksum, dest, exec.getTenant(), exec.getUserName()));
+        return Mono.subscriberContext()
+                   .map(ctx -> ctx.get(PExecution.class))
+                   .flatMap(exec -> internalDownloadWithTenant(checksum, dest, exec.getTenant(), exec.getUserName()));
     }
 
     private Mono<Path> internalDownloadWithTenant(String checksum, Path dest, String tenant, String user) {
         return Mono.fromCallable(() -> {
-            Files.createDirectories(dest.getParent());
-            Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(tenant, user, checksum);
-            return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-        }).flatMap(voidMono -> voidMono.map(n -> dest))
-                .onErrorResume(mustWrap(),
-                               errorWithContextMono(PExecution.class, (exec, t) -> new InternalDownloadException(exec,
-                                       "Failed to download internal " + checksum + " into " + dest, t)));
+                       Files.createDirectories(dest.getParent());
+                       Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(tenant, user, checksum);
+                       return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                   })
+                   .flatMap(voidMono -> voidMono.map(n -> dest))
+                   .onErrorResume(mustWrap(),
+                                  errorWithContextMono(PExecution.class,
+                                                       (exec, t) -> new InternalDownloadException(exec,
+                                                                                                  "Failed to download internal "
+                                                                                                      + checksum
+                                                                                                      + " into " + dest,
+                                                                                                  t)));
     }
 
     public Flux<DataBuffer> downloadUsingStorageRestClient(String tenant, String user, String checksum) {
@@ -139,9 +149,11 @@ public class DownloadService implements IDownloadService {
                     throw new DownloadQuotaExceededException(user, checksum);
                 } else {
                     response.close();
-                    throw new IOException(String
-                            .format("Internal download failed for user %s for checksum %s, storage answered with status %s",
-                                    user, checksum, response.status()));
+                    throw new IOException(String.format(
+                        "Internal download failed for user %s for checksum %s, storage answered with status %s",
+                        user,
+                        checksum,
+                        response.status()));
                 }
             } finally {
                 FeignSecurityManager.reset();
@@ -152,14 +164,22 @@ public class DownloadService implements IDownloadService {
 
     private Mono<Path> externalDownload(URL url, Path dest) {
         return Mono.fromCallable(() -> {
-            try (InputStream is = DownloadUtils.getInputStreamThroughProxy(url, proxy, nonProxyHosts.toJavaSet(),
-                                                                           10_000)) {
-                FileUtils.copyToFile(is, dest.toFile());
-            }
-            return dest;
-        }).onErrorResume(mustWrap(),
-                         errorWithContextMono(PExecution.class, (exec, t) -> new ExternalDownloadException(exec,
-                                 String.format("Failed to download external %s into %s", url, dest), t)));
+                       try (InputStream is = DownloadUtils.getInputStreamThroughProxy(url,
+                                                                                      proxy,
+                                                                                      nonProxyHosts.toJavaSet(),
+                                                                                      10_000)) {
+                           FileUtils.copyToFile(is, dest.toFile());
+                       }
+                       return dest;
+                   })
+                   .onErrorResume(mustWrap(),
+                                  errorWithContextMono(PExecution.class,
+                                                       (exec, t) -> new ExternalDownloadException(exec,
+                                                                                                  String.format(
+                                                                                                      "Failed to download external %s into %s",
+                                                                                                      url,
+                                                                                                      dest),
+                                                                                                  t)));
     }
 
     public static class InternalDownloadException extends ProcessingExecutionException {
