@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM 172.26.46.158/regards-bash
 ENV REGARDS_HOME /regards
 # Docker volume for clients
 ENV REGARDS_CLIENTS /regards-clients
