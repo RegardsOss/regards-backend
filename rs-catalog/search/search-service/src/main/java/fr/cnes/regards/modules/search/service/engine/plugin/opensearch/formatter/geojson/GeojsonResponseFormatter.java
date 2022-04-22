@@ -79,8 +79,8 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
     @Override
     protected void addResponseLinks(List<Link> links) {
         response.setLinks(links.stream()
-                              .map(link -> new GeoJsonLink(link, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
-                              .collect(Collectors.toList()));
+                               .map(link -> new GeoJsonLink(link, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+                               .collect(Collectors.toList()));
     }
 
     @Override
@@ -146,11 +146,11 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
         // Other types like icon or enclosure are handle in extensions (example : media)
         String title = String.format("GeoJson link for %s", feature.getId());
         this.feature.setLinks(entityLinks.stream()
-                                  .map(link -> new GeoJsonLink(link,
-                                                            GeoJsonLink.LINK_ALTERNATE_REL,
-                                                            title,
-                                                            GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
-                                  .collect(Collectors.toList()));
+                                         .map(link -> new GeoJsonLink(link,
+                                                                      GeoJsonLink.LINK_ALTERNATE_REL,
+                                                                      title,
+                                                                      GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+                                         .collect(Collectors.toList()));
     }
 
     @Override

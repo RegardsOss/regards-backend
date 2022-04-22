@@ -113,7 +113,7 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
     protected Optional<Object> getEntityPropertyValue(EntityFeature entity,
                                                       ParameterConfiguration parameterConfiguration) {
         String jsonPath = parameterConfiguration.getAttributeModelJsonPath()
-            .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
+                                                .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
         IProperty<?> entityProperty = entity.getProperty(jsonPath);
         if (entityProperty != null) {
             return Optional.of(entityProperty.getValue());

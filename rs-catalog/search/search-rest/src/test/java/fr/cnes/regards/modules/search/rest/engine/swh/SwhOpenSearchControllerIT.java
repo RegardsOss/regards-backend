@@ -77,11 +77,11 @@ import java.util.*;
     properties = { "regards.tenant=swh", "spring.jpa.properties.hibernate.default_schema=swh" })
 public class SwhOpenSearchControllerIT extends AbstractEngineIT {
 
+    public static final OffsetDateTime CREATION_DATE = OffsetDateTime.now();
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SwhOpenSearchControllerIT.class);
 
     private static final String ENGINE_TYPE = "opensearch";
-
-    public static final OffsetDateTime CREATION_DATE = OffsetDateTime.now();
 
     private final OffsetDateTime lastUpdateSpot4 = OffsetDateTime.of(2020, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
 
@@ -224,7 +224,7 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
 
                 DataObject dataObject = new DataObject(dataModel, getDefaultTenant(), providerId, label);
                 UniformResourceName ipId = UniformResourceName.fromString(feature.getAsJsonPrimitive("id")
-                                                                              .getAsString());
+                                                                                 .getAsString());
                 dataObject.setIpId(ipId);
                 dataObject.setCreationDate(CREATION_DATE);
                 // Not all products share the same platform name; so we use it to have two different date
@@ -402,8 +402,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         String atomUrl = "OpenSearchDescription/Url[@type='" + MediaType.APPLICATION_ATOM_XML_VALUE + "']";
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=65]").exists());
         customizer.expect(MockMvcResultMatchers.xpath(
-                atomUrl + "/Parameter[@name='illuminationAzimuthAngle' and @value='{eo:illuminationAzimuthAngle}']")
-                              .exists());
+                                                   atomUrl + "/Parameter[@name='illuminationAzimuthAngle' and @value='{eo:illuminationAzimuthAngle}']")
+                                               .exists());
         customizer.expect(MockMvcResultMatchers.xpath(
             atomUrl + "/Parameter[@name='Platform' and @value='{eo:platform}']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(
@@ -411,8 +411,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(
             atomUrl + "/Parameter[@name='CloudCover' and @value='{eo:cloudCover}']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(
-                atomUrl + "/Parameter[@name='illuminationElevationAngle' and @value='{eo:illuminationElevationAngle}']")
-                              .exists());
+                                                   atomUrl + "/Parameter[@name='illuminationElevationAngle' and @value='{eo:illuminationElevationAngle}']")
+                                               .exists());
         customizer.expect(MockMvcResultMatchers.xpath(
             atomUrl + "/Parameter[@name='ProcessingDate' and @value='{eo:processingDate}']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(
@@ -426,7 +426,7 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(
             atomUrl + "/Parameter[@name='ProcessingLevel' and @value='{eo:processingLevel}']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='updated' and @value='{updated}']")
-                              .exists());
+                                               .exists());
         long startTime = System.currentTimeMillis();
         performDefaultGet(
             SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
@@ -464,7 +464,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.expectValue("$.features[0].properties.acquisitionInformation[0].instrument.instrumentShortName",
                                "HRVIR2");
         customizer.expectValue("$.features[0].properties.PlatformName", "SPOT4");
-        customizer.expectValue("$.features[0].properties.creationDate", CREATION_DATE.withOffsetSameInstant(ZoneOffset.UTC).toString());
+        customizer.expectValue("$.features[0].properties.creationDate",
+                               CREATION_DATE.withOffsetSameInstant(ZoneOffset.UTC).toString());
         customizer.expectValue("$.features[0].properties.updated", lastUpdateSpot4.toString());
         String thumbnailURL = "https://regards.cnes.fr/api/v1/rs-catalog/downloads/URN:AIP:DATA:swh:a4456e48-3e24-3c32-baea-093b1f63e85d:V1/files/19273a25e605bf83658c27890576b041?scope=swh";
         customizer.expectValue("$.features[0].properties.thumbnail", thumbnailURL);
@@ -500,7 +501,6 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         logDuration(startTime);
     }
 
-
     @Test
     public void searchDataobjectsWithUpdatedFilter() {
         searchDataobjectWithUpdatedFilter(lastUpdateSpot5.toString(), 148);
@@ -533,8 +533,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("1")));
         customizer.expect(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("1")));
         customizer.expect(MockMvcResultMatchers.xpath(
-                "feed/entry[1]/metaDataProperty/EarthObservationMetaData/processing/ProcessingInformation/processingDate")
-                              .string(Matchers.is("\"2019-08-21T00:03:09Z\"")));
+                                                   "feed/entry[1]/metaDataProperty/EarthObservationMetaData/processing/ProcessingInformation/processingDate")
+                                               .string(Matchers.is("\"2019-08-21T00:03:09Z\"")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",

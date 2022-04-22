@@ -65,21 +65,30 @@ public interface IOpenSearchExtension {
     /**
      * Create the {@link Module} needed by the rome library to generate the specificity of the extension on each entity of the XML+Atom response.
      * Used to format opensearch response into ATOM+XML format for the current extension.
-     *  @param entity              {@link AbstractEntity} entity to write in XML+Atom format
+     *
+     * @param entity              {@link AbstractEntity} entity to write in XML+Atom format
      * @param paramConfigurations {@link ParameterConfiguration} opensearch parameters configurations.
      * @param entry               {@link Entry} ATOM feed entry in which add the extension format
      * @param gson                {@link Gson} tool to serialize objects.
      * @param scope               {@link String} current tenant
      */
-    void formatAtomResponseEntry(AbstractEntity<EntityFeature> entity, List<ParameterConfiguration> paramConfigurations, Entry entry, Gson gson, String scope);
+    void formatAtomResponseEntry(AbstractEntity<EntityFeature> entity,
+                                 List<ParameterConfiguration> paramConfigurations,
+                                 Entry entry,
+                                 Gson gson,
+                                 String scope);
 
     /**
      * Add parameter into the given {@link Feature} for the {@link EntityFeature} for Geojson response
-     *  @param entity              {@link AbstractEntity} to write in geojson format.
+     *
+     * @param entity              {@link AbstractEntity} to write in geojson format.
      * @param paramConfigurations {@link ParameterConfiguration} opensearch parameters configurations.
      * @param feature             {@link Feature} from geojson standard
      */
-    void formatGeoJsonResponseFeature(AbstractEntity<EntityFeature> entity, List<ParameterConfiguration> paramConfigurations, Feature feature, String token);
+    void formatGeoJsonResponseFeature(AbstractEntity<EntityFeature> entity,
+                                      List<ParameterConfiguration> paramConfigurations,
+                                      Feature feature,
+                                      String token);
 
     /**
      * Get the parameter standardised value for the given {@link OpenSearchParameter}, if the extension defines it

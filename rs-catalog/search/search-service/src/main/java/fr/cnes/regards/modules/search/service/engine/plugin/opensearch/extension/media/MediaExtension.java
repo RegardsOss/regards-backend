@@ -74,8 +74,8 @@ public class MediaExtension extends AbstractExtension {
     public static final String ATOM_MEDIA_CAT_REF = "http://www.opengis.net/spec/EOMPOM/1.0";
 
     private static final List<DataType> QUICKLOOK_DATA_TYPES = Lists.newArrayList(DataType.QUICKLOOK_SD,
-                                                                                 DataType.QUICKLOOK_MD,
-                                                                                 DataType.QUICKLOOK_HD);
+                                                                                  DataType.QUICKLOOK_MD,
+                                                                                  DataType.QUICKLOOK_HD);
 
     /**
      * Convert a {@link DataFile} to a {@link GeoJsonLink}. Only for publicly available resource like QUICKLOOK and THUMBNAIL
@@ -124,23 +124,21 @@ public class MediaExtension extends AbstractExtension {
     }
 
     private Collection<GeoJsonLink> getRawdataLinks(Collection<DataFile> rawdataDataFiles, String scope) {
-        return rawdataDataFiles.stream()
-            .map(dataFile -> getGeoJsonLink(dataFile, scope))
-            .collect(Collectors.toList());
+        return rawdataDataFiles.stream().map(dataFile -> getGeoJsonLink(dataFile, scope)).collect(Collectors.toList());
     }
 
     private Collection<GeoJsonLink> getAllQuicklookTypesLinks(Multimap<DataType, DataFile> medias, String scope) {
         List<DataFile> allQuicklooksTypesDataFiles = QUICKLOOK_DATA_TYPES.stream()
-            .map(medias::get)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+                                                                         .map(medias::get)
+                                                                         .flatMap(Collection::stream)
+                                                                         .collect(Collectors.toList());
         return getImageLinks(allQuicklooksTypesDataFiles, scope);
     }
 
     private Collection<GeoJsonLink> getImageLinks(Collection<DataFile> thumbnailDataFiles, String scope) {
         return thumbnailDataFiles.stream()
-            .map(dataFile -> getGeoJsonLink(dataFile, scope))
-            .collect(Collectors.toList());
+                                 .map(dataFile -> getGeoJsonLink(dataFile, scope))
+                                 .collect(Collectors.toList());
     }
 
     private void addFeatureProperty(Feature feature, String propertyKey, Optional<String> propertyValue) {
@@ -172,9 +170,9 @@ public class MediaExtension extends AbstractExtension {
                                                           DataType dataType,
                                                           String scope) {
         return medias.get(dataType)
-            .stream()
-            .findFirst()
-            .map(dataFile -> DataFileHrefBuilder.getDataFileHref(dataFile, scope));
+                     .stream()
+                     .findFirst()
+                     .map(dataFile -> DataFileHrefBuilder.getDataFileHref(dataFile, scope));
 
     }
 
