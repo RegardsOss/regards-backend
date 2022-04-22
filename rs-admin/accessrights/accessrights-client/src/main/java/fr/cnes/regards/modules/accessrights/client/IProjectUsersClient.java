@@ -59,7 +59,7 @@ public interface IProjectUsersClient {
      */
     @GetMapping(value = ROOT_PATH, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
-        @RequestParam ProjectUserSearchParameters parameters, @SpringQueryMap Pageable pageable);
+            ProjectUserSearchParameters parameters, @SpringQueryMap Pageable pageable);
 
     /**
      * Retrieve all users with a pending access request.
@@ -114,6 +114,7 @@ public interface IProjectUsersClient {
 
     /**
      * Retrieve the {@link ProjectUser} of current authenticated user
+     *
      * @return a {@link ProjectUser}
      */
     @GetMapping(value = ROOT_PATH + "/myuser", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -132,7 +133,6 @@ public interface IProjectUsersClient {
      * retrieveRoleProjectUserList
      *
      * @param pRoleId role identifier to retrieve users.
-     *
      * @return {@link PagedModel} of {@link ProjectUser}
      */
     @GetMapping(value = ROOT_PATH + "/roles/{role_id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -143,7 +143,6 @@ public interface IProjectUsersClient {
      * Retrieve pages of project user which role, represented by its name, is the one provided
      *
      * @param pRole role name
-     *
      * @return page of project user which role, represented by its name, is the one provided
      */
     @GetMapping(value = ROOT_PATH + "/roles", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
