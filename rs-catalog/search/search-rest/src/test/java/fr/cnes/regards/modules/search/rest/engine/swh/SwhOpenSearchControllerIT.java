@@ -68,6 +68,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -465,7 +466,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
                                "HRVIR2");
         customizer.expectValue("$.features[0].properties.PlatformName", "SPOT4");
         customizer.expectValue("$.features[0].properties.creationDate",
-                               CREATION_DATE.withOffsetSameInstant(ZoneOffset.UTC).toString());
+                               CREATION_DATE.withOffsetSameInstant(ZoneOffset.UTC)
+                                            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         customizer.expectValue("$.features[0].properties.updated", lastUpdateSpot4.toString());
         String thumbnailURL = "https://regards.cnes.fr/api/v1/rs-catalog/downloads/URN:AIP:DATA:swh:a4456e48-3e24-3c32-baea-093b1f63e85d:V1/files/19273a25e605bf83658c27890576b041?scope=swh";
         customizer.expectValue("$.features[0].properties.thumbnail", thumbnailURL);
