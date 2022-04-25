@@ -18,34 +18,11 @@
  */
 package fr.cnes.regards.modules.model.service;
 
-import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Strings;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.model.dao.AttributeModelSpecifications;
-import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
-import fr.cnes.regards.modules.model.dao.IAttributePropertyRepository;
-import fr.cnes.regards.modules.model.dao.IFragmentRepository;
-import fr.cnes.regards.modules.model.dao.IModelAttrAssocRepository;
-import fr.cnes.regards.modules.model.dao.IRestrictionRepository;
+import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.modules.model.dao.*;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeProperty;
@@ -59,6 +36,14 @@ import fr.cnes.regards.modules.model.dto.event.ModelChangeEvent;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.event.NewFragmentAttributeEvent;
 import fr.cnes.regards.modules.model.service.exception.UnsupportedRestrictionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
+import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * Manage global attribute life cycle
@@ -207,15 +192,11 @@ public class AttributeModelService implements IAttributeModelService {
         // Before deletion, look for already linked models
         Collection<ModelAttrAssoc> assocs = modelAttrAssocRepository.findAllByAttributeId(attributeId);
         if (!assocs.isEmpty()) {
-            Set<Long> modelIds = new HashSet<>();
             Set<String> modelNames = new HashSet<>();
-            assocs.forEach(a -> {
-                modelIds.add(a.getModel().getId());
-                modelNames.add(a.getModel().getName());
-            });
-            // Check if linked models not already used, so attribute must not be deleted
+            assocs.forEach(a -> modelNames.add(a.getModel().getName()));
             if (linkServices != null) {
                 for (IModelLinkService linkService : linkServices) {
+                    // Check if some linked model not already used, so attribute must not be deleted
                     if (!linkService.isAttributeDeletable(modelNames)) {
                         return false;
                     }

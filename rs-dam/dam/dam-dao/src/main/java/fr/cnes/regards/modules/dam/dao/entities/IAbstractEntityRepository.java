@@ -89,12 +89,19 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
     Set<T> findAllByModelName(String pModelName);
 
     /**
-     * Find all entities complient with the given modelName
-     * @param modelIds model list
+     * Find all entities matching given modelIds
+     * @param modelIds a list of model ids
      * @return entities complient with the given model
      */
     @EntityGraph(attributePaths = { "tags", "groups", "model" })
     Set<T> findAllByModelIdIn(Set<Long> modelIds);
+
+    /**
+     * Count nb entities matching given modelIds
+     * @param modelIds a list of model ids
+     * @return count of entities matching
+     */
+    long countByModelIdIn(Set<Long> modelIds);
 
     @EntityGraph(attributePaths = { "tags", "groups", "model" })
     Set<T> findAllByModelNameIn(Collection<String> modelNames);
@@ -125,7 +132,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
      * @return true if no entity exists linked with at least one model
      */
     default boolean isLinkedToEntities(Set<Long> modelIds) {
-        return !findAllByModelIdIn(modelIds).isEmpty();
+        return countByModelIdIn(modelIds) > 0;
     }
 
     /**

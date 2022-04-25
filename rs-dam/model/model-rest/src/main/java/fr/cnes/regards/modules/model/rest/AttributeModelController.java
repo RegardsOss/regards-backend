@@ -122,7 +122,7 @@ public class AttributeModelController implements IResourceController<AttributeMo
      * Retrieve all attributes. The request can be filtered by {@link PropertyType}
      * @param type filter by type
      * @param fragmentName filter by fragment
-     * @param modelIds
+     * @param modelNames
      * @param noLink
      * @return list of {@link AttributeModel}
      */
