@@ -18,10 +18,14 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
+import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
+import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
+import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.storage.domain.database.request.*;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,20 +33,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
-import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
-import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
-import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service to handle {@link FileRequestStatus} for new requests of all types.<br/>
@@ -111,7 +104,7 @@ public class RequestStatusService {
         // Delay storage request if an other storage request is already running for the same file to store
         else if (storageReqRepo
                 .existsByStorageAndMetaInfoChecksumAndStatusIn(storage, checksum,
-                                                               Sets.newHashSet(FileRequestStatus.RUNNING_STATUS))) {
+                                                               FileRequestStatus.RUNNING_STATUS)) {
             status = FileRequestStatus.DELAYED;
         }
         return status;
@@ -235,7 +228,7 @@ public class RequestStatusService {
             }
             storageReqRepo.updateError(
                                        FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
-                                                                              OffsetDateTime.now().toString()),
+                                                                              OffsetDateTime.now()),
                                        r.getId());
         }
         reqGrpService.deleteRequestGroups(FileRequestType.STORAGE);
@@ -251,7 +244,7 @@ public class RequestStatusService {
             }
             deletionReqRepo.updateError(
                                         FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
-                                                                               OffsetDateTime.now().toString()),
+                                                                               OffsetDateTime.now()),
                                         r.getId());
         }
         reqGrpService.deleteRequestGroups(FileRequestType.DELETION);
@@ -262,7 +255,7 @@ public class RequestStatusService {
         Page<FileCopyRequest> pendings = copyReqRepo.findByStatus(FileRequestStatus.PENDING, PageRequest.of(0, 10_000));
         for (FileCopyRequest r : pendings) {
             copyReqRepo.updateError(FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
-                                                                           OffsetDateTime.now().toString()),
+                                                                           OffsetDateTime.now()),
                                     r.getId());
         }
         reqGrpService.deleteRequestGroups(FileRequestType.COPY);
@@ -278,7 +271,7 @@ public class RequestStatusService {
             }
             cacheReqRepo.updateError(
                                      FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
-                                                                            OffsetDateTime.now().toString()),
+                                                                            OffsetDateTime.now()),
                                      r.getId());
         }
         reqGrpService.deleteRequestGroups(FileRequestType.AVAILABILITY);

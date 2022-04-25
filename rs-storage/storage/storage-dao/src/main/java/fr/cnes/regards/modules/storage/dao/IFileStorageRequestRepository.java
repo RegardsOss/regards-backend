@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,8 +27,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link FileStorageRequest} entities.
@@ -92,7 +91,7 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
     Page<FileStorageRequest> findByStatusAndSessionOwnerAndSession(FileRequestStatus error, String source, String session, Pageable pageToRequest);
 
     boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage, String checksum,
-            Set<FileRequestStatus> ruuninstatus);
+            Set<FileRequestStatus> ruuningStatus);
 
     Set<FileStorageRequest> findByMetaInfoChecksumIn(Set<String> checksums);
 

@@ -174,10 +174,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     Long countByClassNameAndParameters_NameAndParameters_ValueAndStatusStatusIn(String className, String parameterName, String parameterValue, JobStatus... jobStatuses);
 
-    /**
-     * @param className
-     * @param statuses
-     * @return
-     */
     Page<JobInfo> findByClassNameAndStatusStatusIn(String className, JobStatus[] statuses, Pageable page);
+
+    Collection<JobInfo> findAllByClassNameAndParametersValueContaining(String className, String partOfParameterValue);
 }
