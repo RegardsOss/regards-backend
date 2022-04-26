@@ -57,9 +57,9 @@ public interface IProjectUsersClient {
      * @param parameters search parameters as request params
      * @return a {@link List} of {@link ProjectUser}
      */
-    @GetMapping(value = ROOT_PATH, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ROOT_PATH + "/search", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
-            ProjectUserSearchParameters parameters, @SpringQueryMap Pageable pageable);
+            @RequestBody ProjectUserSearchParameters parameters, @SpringQueryMap Pageable pageable);
 
     /**
      * Retrieve all users with a pending access request.
@@ -98,7 +98,7 @@ public interface IProjectUsersClient {
      *
      * @param pUserId             The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser The new {@link ProjectUser}
-     * @return{@link ProjectUser}
+     * @return {@link ProjectUser}
      */
     @PutMapping(value = ROOT_PATH + "/{user_id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long pUserId, @RequestBody ProjectUser pUpdatedProjectUser);

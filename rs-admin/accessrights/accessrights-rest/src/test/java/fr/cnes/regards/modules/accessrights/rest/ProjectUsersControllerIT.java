@@ -31,10 +31,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessReposit
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.*;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserExportService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
@@ -162,7 +159,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
-        performDefaultGet(ProjectUsersController.TYPE_MAPPING, customizer().expectStatusOk(), ERROR_MESSAGE);
+        performDefaultPost(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.SEARCH_USERS, new ProjectUserSearchParameters(), customizer().expectStatusOk(), ERROR_MESSAGE);
     }
 
     @Test
@@ -414,11 +411,13 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         testUser.setAccessGroups(new HashSet<>(Collections.singletonList("groupFilter")));
 
         // When
-        String path = ProjectUsersController.TYPE_MAPPING;
-        RequestBuilderCustomizer customizer = customizer().addParameter("accessGroup", "groupFilter").expectStatusOk();
+        String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.SEARCH_USERS;
+        ProjectUserSearchParameters searchParameters = new ProjectUserSearchParameters();
+        searchParameters.setAccessGroup("groupFilter");
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
 
         // Then
-        ResultActions results = performDefaultGet(path, customizer, "error");
+        ResultActions results = performDefaultPost(path, searchParameters, customizer, "error");
         String content = results.andReturn().getResponse().getContentAsString();
         assertTrue(content.contains(otherUser.getEmail()));
         assertFalse(content.contains(projectUser.getEmail()));

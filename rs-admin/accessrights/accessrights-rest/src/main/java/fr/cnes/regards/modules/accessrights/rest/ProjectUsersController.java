@@ -77,6 +77,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     public static final String EMAIL_VERIFICATION_SEND = EMAIL + "/verification/resend";
     public static final String EXPORT = "/export";
     public static final String COUNT_BY_ACCESS_GROUP = "/count";
+    public static final String SEARCH_USERS = "/search";
 
     private final IProjectUserService projectUserService;
     private final ProjectUserWorkflowManager projectUserWorkflowManager;
@@ -106,10 +107,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @param pagedResourcesAssembler assembler
      * @return a {@link List} of {@link ProjectUser}
      */
-    @GetMapping
+    @PostMapping(SEARCH_USERS)
     @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
-            ProjectUserSearchParameters parameters,
+            @RequestBody ProjectUserSearchParameters parameters,
             @PageableDefault(sort = "created", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler
     ) {
