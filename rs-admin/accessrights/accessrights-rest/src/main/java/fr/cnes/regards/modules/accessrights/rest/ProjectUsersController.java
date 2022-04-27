@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationDto;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -84,7 +85,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     public static final String EMAIL_ORIGIN = EMAIL + "/origin/{origin}";
 
-    public static final String EMAIL_VERIFICATION_SEND = EMAIL + "/verification/resend";
+    public static final String EMAIL_VERIFICATION_SEND = "/email/verification/resend";
 
     public static final String EXPORT = "/export";
 
@@ -357,11 +358,13 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(EMAIL_VERIFICATION_SEND)
+    @PostMapping(EMAIL_VERIFICATION_SEND)
     @ResourceAccess(description = "Send a new verification email for a user creation", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> sendVerificationEmail(@PathVariable("email") String email)
+    public ResponseEntity<Void> sendVerificationEmail(@Valid @RequestBody EmailVerificationDto emailVerificationDto)
         throws EntityNotFoundException {
-        projectUserService.sendVerificationEmail(email);
+        projectUserService.sendVerificationEmail(emailVerificationDto.getEmail(),
+                                                 emailVerificationDto.getOriginUrl(),
+                                                 emailVerificationDto.getRequestLink());
         return ResponseEntity.ok().build();
     }
 
@@ -439,13 +442,6 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                         "activeAccess",
                                         LinkRelation.of("active"),
                                         idParam);
-            }
-            if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(element.getStatus())) {
-                resourceService.addLink(resource,
-                                        clazz,
-                                        "sendVerificationEmail",
-                                        LinkRelation.of("sendVerificationEmail"),
-                                        MethodParamFactory.build(String.class, element.getEmail()));
             }
         }
         return resource;

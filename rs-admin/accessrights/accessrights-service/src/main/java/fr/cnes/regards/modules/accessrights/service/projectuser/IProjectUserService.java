@@ -224,7 +224,7 @@ public interface IProjectUserService {
      */
     boolean canDelete(ProjectUser projectUser);
 
-    void sendVerificationEmail(String email) throws EntityNotFoundException;
+    void sendVerificationEmail(String email, String originUrl, String requestLink) throws EntityNotFoundException;
 
     void updateQuota(Map<String, Long> currentQuotaByEmail);
 

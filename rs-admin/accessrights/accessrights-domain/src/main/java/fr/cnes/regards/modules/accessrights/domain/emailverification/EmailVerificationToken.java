@@ -38,9 +38,9 @@ import java.util.UUID;
 public class EmailVerificationToken {
 
     /**
-     * Expiration delay in minutes (=24 hours)
+     * Expiration delay in minutes (=72 hours)
      */
-    private static final int EXPIRATION = 60 * 24;
+    private static final int EXPIRATION = 60 * 24 * 3;
 
     /**
      * Id
@@ -105,12 +105,19 @@ public class EmailVerificationToken {
      */
     public EmailVerificationToken(final ProjectUser pProjectUser, final String pOriginUrl, final String pRequestLink) {
         super();
-        token = UUID.randomUUID().toString();
+        this.generateToken();
         projectUser = pProjectUser;
         originUrl = pOriginUrl;
         requestLink = pRequestLink;
         expiryDate = calculateExpiryDate(EXPIRATION);
         verified = false;
+    }
+
+    /**
+     * Generate a new random token
+     */
+    public void generateToken() {
+        token = UUID.randomUUID().toString();
     }
 
     /**

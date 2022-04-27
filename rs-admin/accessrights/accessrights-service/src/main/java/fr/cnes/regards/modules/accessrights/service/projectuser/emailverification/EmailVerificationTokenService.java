@@ -90,6 +90,19 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     public void deleteTokenForProjectUser(final ProjectUser pProjectUser) {
         Optional<EmailVerificationToken> token = tokenRepository.findByProjectUser(pProjectUser);
         token.ifPresent(tokenRepository::delete);
+    }
 
+    @Override
+    public boolean projectUserTokenExists(ProjectUser pProjectUser) {
+        return tokenRepository.findByProjectUser(pProjectUser).isPresent();
+    }
+
+    @Override
+    public void update(ProjectUser pProjectUser) throws EntityNotFoundException {
+        EmailVerificationToken token = tokenRepository.findByProjectUser(pProjectUser)
+                                                      .orElseThrow(() -> new EntityNotFoundException(pProjectUser.getEmail(),
+                                                                                                     EmailVerificationToken.class));
+        token.generateToken();
+        tokenRepository.save(token);
     }
 }

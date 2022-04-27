@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.accessrights.service.config.AccessRightsTemplateConfiguration;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
@@ -101,6 +102,8 @@ public class ProjectUserService implements IProjectUserService {
     @Value("${regards.accounts.root.user.login}")
     private String instanceAdminUserEmail;
 
+    private final IEmailVerificationTokenService emailVerificationTokenService;
+
     public ProjectUserService(IAuthenticationResolver authenticationResolver,
                               IProjectUserRepository projectUserRepository,
                               IRoleService roleService,
@@ -109,7 +112,8 @@ public class ProjectUserService implements IProjectUserService {
                               AccountUtilsService accountUtilsService,
                               AccessRightsEmailService accessRightsEmailService,
                               ProjectUserGroupService projectUserGroupService,
-                              QuotaHelperService quotaHelperService) {
+                              QuotaHelperService quotaHelperService,
+                              IEmailVerificationTokenService emailVerificationTokenService) {
         this.authenticationResolver = authenticationResolver;
         this.projectUserRepository = projectUserRepository;
         this.roleService = roleService;
@@ -119,6 +123,7 @@ public class ProjectUserService implements IProjectUserService {
         this.accessRightsEmailService = accessRightsEmailService;
         this.projectUserGroupService = projectUserGroupService;
         this.quotaHelperService = quotaHelperService;
+        this.emailVerificationTokenService = emailVerificationTokenService;
     }
 
     @Override
@@ -442,8 +447,15 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public void sendVerificationEmail(String email) throws EntityNotFoundException {
+    public void sendVerificationEmail(String email, String originUrl, String requestLink)
+        throws EntityNotFoundException {
         ProjectUser projectUser = retrieveOneByEmail(email);
+        // Create new email verification token
+        if (emailVerificationTokenService.projectUserTokenExists(projectUser)) {
+            emailVerificationTokenService.update(projectUser);
+        } else {
+            emailVerificationTokenService.create(projectUser, originUrl, requestLink);
+        }
         if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(projectUser.getStatus())) {
             eventPublisher.publishEvent(new OnGrantAccessEvent(projectUser));
         }
