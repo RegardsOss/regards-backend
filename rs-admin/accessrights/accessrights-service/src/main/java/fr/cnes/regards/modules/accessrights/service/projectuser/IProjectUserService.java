@@ -37,6 +37,7 @@ import java.util.Optional;
 
 /**
  * Strategy interface to handle Read an Update operations on access settings.
+ *
  * @author Xavier-Alexandre Brochard
  */
 public interface IProjectUserService {
@@ -44,7 +45,7 @@ public interface IProjectUserService {
     /**
      * Retrieve the paged {@link List} of all {@link ProjectUser}s filtered by given properties.
      *
-     * @param pageable  the paging information
+     * @param pageable   the paging information
      * @param parameters search parameters as request params
      * @return The list of project users
      */
@@ -52,6 +53,7 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
+     *
      * @param pUserId The {@link ProjectUser}'s <code>id</code>
      * @return The project user
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
@@ -60,6 +62,7 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
+     *
      * @param pEmail The {@link ProjectUser}'s <code>email</code>
      * @return The project user
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
@@ -68,6 +71,7 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>email</code>.
+     *
      * @param pEmail The {@link ProjectUser}'s <code>email</code>
      * @return The project user
      */
@@ -75,6 +79,7 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the current {@link ProjectUser}.
+     *
      * @return The project user
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with <code>email</code> equal to the one set in current tenant
      *                                 could be found
@@ -101,11 +106,15 @@ public interface IProjectUserService {
      * @return
      * @throws EntityException
      */
-    ProjectUser create(AccessRequestDto accessRequestDto, boolean isExternal, UserStatus userStatus, AccountStatus accountStatus) throws EntityException;
+    ProjectUser create(AccessRequestDto accessRequestDto,
+                       boolean isExternal,
+                       UserStatus userStatus,
+                       AccountStatus accountStatus) throws EntityException;
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
-     * @param pUserId The {@link ProjectUser} <code>id</code>
+     *
+     * @param pUserId             The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser The new {@link ProjectUser}
      * @return {@link ProjectUser}
      * @throws EntityException <br>
@@ -119,7 +128,8 @@ public interface IProjectUserService {
     /**
      * Update the main informations for {@link ProjectUser} of id <code>pUserId</code>. The calculated informations are
      * not overidden.
-     * @param pUserId The {@link ProjectUser} <code>id</code>
+     *
+     * @param pUserId             The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser The new {@link ProjectUser}
      * @return {@link ProjectUser}
      * @throws EntityException <br>
@@ -132,7 +142,8 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the {@link Account} of passed <code>id</code>.
-     * @param pEmail The {@link ProjectUser}'s <code>id</code>
+     *
+     * @param pEmail            The {@link ProjectUser}'s <code>id</code>
      * @param pBorrowedRoleName The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
      * @return The list of resources access
      * @throws EntityException <br>
@@ -142,19 +153,21 @@ public interface IProjectUserService {
      *                         be found<br>
      */
     List<ResourcesAccess> retrieveProjectUserAccessRights(String pEmail, String pBorrowedRoleName)
-            throws EntityException;
+        throws EntityException;
 
     /**
      * Update the the {@link List} of <code>permissions</code>.
-     * @param pLogin The {@link ProjectUser}'s <code>login</code>
+     *
+     * @param pLogin                   The {@link ProjectUser}'s <code>login</code>
      * @param pUpdatedUserAccessRights The {@link List} of {@link ResourcesAccess} to set
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     void updateUserAccessRights(String pLogin, List<ResourcesAccess> pUpdatedUserAccessRights)
-            throws EntityNotFoundException;
+        throws EntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link ResourcesAccess} of the {@link ProjectUser} with passed <code>login</code>.
+     *
      * @param pLogin The {@link ProjectUser} <code>login</code>
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
@@ -162,6 +175,7 @@ public interface IProjectUserService {
 
     /**
      * Return the {@link List} of {@link MetaData} on the {@link ProjectUser} of passed <code>id</code>.
+     *
      * @param pUserId The {@link ProjectUser}'s <code>id</code>
      * @return The list of meta data
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
@@ -170,16 +184,17 @@ public interface IProjectUserService {
 
     /**
      * Set the passed {@link MetaData} onto the {@link ProjectUser} of passed <code>id</code>
-     * @param pUserId The {@link ProjectUser}'s <code>id</code>
+     *
+     * @param pUserId              The {@link ProjectUser}'s <code>id</code>
      * @param pUpdatedUserMetaData The {@link List} of {@link MetaData} to set
      * @return {@link MetaData}s updated
-     *
      * @throws EntityNotFoundException Thhrown when not project user of passed <code>id</code> could be found
      */
     List<MetaData> updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
 
     /**
      * Clear the {@link List} of {@link MetaData} of the {@link ProjectUser} with passed <code>id</code>.
+     *
      * @param pUserId The {@link ProjectUser} <code>id</code>
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
@@ -187,6 +202,7 @@ public interface IProjectUserService {
 
     /**
      * Retrieve all access requests.
+     *
      * @param pPageable the pagination information
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
      */

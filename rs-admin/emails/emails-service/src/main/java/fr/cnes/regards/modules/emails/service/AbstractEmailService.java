@@ -31,8 +31,9 @@ import javax.mail.internet.MimeMessage;
 
 /**
  * Class AbstractEmailService
- *
+ * <p>
  * Standard function of mail service to handle sending mails.
+ *
  * @author Sébastien Binda
  */
 public abstract class AbstractEmailService implements IEmailService {
@@ -45,7 +46,10 @@ public abstract class AbstractEmailService implements IEmailService {
         sendMailWithSender(message, null, null, sender);
     }
 
-    public void sendMailWithSender(SimpleMailMessage message, String attachmentName, InputStreamSource attSource, String sender) {
+    public void sendMailWithSender(SimpleMailMessage message,
+                                   String attachmentName,
+                                   InputStreamSource attSource,
+                                   String sender) {
 
         try {
 

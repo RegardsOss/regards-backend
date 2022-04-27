@@ -399,7 +399,7 @@ public class ProjectUserService implements IProjectUserService {
                                                                                  AccessRightsTemplateConfiguration.USER_CREATED_TEMPLATE_NAME)
                                                                              .setDefaultMessage(
                                                                                  "User account created : "
-                                                                                 + projectUser.getEmail());
+                                                                                     + projectUser.getEmail());
             accessRightsEmailService.sendEmail(wrapper);
         }
 
