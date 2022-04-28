@@ -443,6 +443,13 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                         LinkRelation.of("active"),
                                         idParam);
             }
+            if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(element.getStatus())) {
+                resourceService.addLink(resource,
+                                        clazz,
+                                        "sendVerificationEmail",
+                                        LinkRelation.of("sendVerificationEmail"),
+                                        MethodParamFactory.build(EmailVerificationDto.class));
+            }
         }
         return resource;
     }
