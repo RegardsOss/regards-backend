@@ -23,6 +23,7 @@ import javax.persistence.Converter;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 /**
  * This {@link AttributeConverter} allows to convert a {@link OffsetDateTime} to persist with JPA.
@@ -36,7 +37,8 @@ public class OffsetDateTimeAttributeConverter implements AttributeConverter<Offs
     public Timestamp convertToDatabaseColumn(OffsetDateTime offsetDateTime) {
         return (offsetDateTime == null) ? null :
                 // Take UTC date as local date to have an UTC date into database
-                Timestamp.valueOf(offsetDateTime.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
+                // truncate to microseconds because postgres timestamp has a resolution of 1 microsecond
+                Timestamp.valueOf(offsetDateTime.truncatedTo(ChronoUnit.MICROS).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
     }
 
     @Override

@@ -30,18 +30,20 @@ import fr.cnes.regards.framework.modules.session.manager.service.clean.session.M
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotJob;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotScheduler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Test blocking of {@link ManagerCleanJob} and {@link ManagerSnapshotJob}
@@ -57,7 +59,7 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsIT {
     /**
      * Reference date for tests
      */
-    private static final OffsetDateTime UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30);
+    private static final OffsetDateTime UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30).truncatedTo(ChronoUnit.MICROS);
 
     @Autowired
     private ManagerCleanScheduler cleanScheduler;

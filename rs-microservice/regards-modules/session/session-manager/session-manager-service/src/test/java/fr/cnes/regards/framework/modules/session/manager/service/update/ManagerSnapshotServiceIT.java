@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.modules.session.manager.service.AbstractManager
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +53,7 @@ import org.springframework.test.context.TestPropertySource;
 @ActiveProfiles(value = { "noscheduler" })
 public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
 
-    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC);
+    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;

@@ -18,17 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.service.cache;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import org.apache.commons.compress.utils.Lists;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,19 +40,17 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
-import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
-import fr.cnes.regards.modules.storage.domain.StorageSetting;
-import fr.cnes.regards.modules.storage.domain.database.CacheFile;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Test class for cache service.
@@ -91,7 +90,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
     public void createCacheFile() throws MalformedURLException {
         // Initialize new file in cache
         String checksum = UUID.randomUUID().toString();
-        OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
+        OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1).truncatedTo(ChronoUnit.MICROS);
         Assert.assertFalse("File should not referenced in cache", service.getCacheFile(checksum).isPresent());
         service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
                         DataType.RAWDATA.name(), new URL("file", null, "/plop/test.file.test"), expirationDate,
@@ -100,7 +99,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertTrue("Invalid expiration date", expirationDate.isEqual(oCf.get().getExpirationDate()));
         // Try to reference again the same file in cache
-        OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2);
+        OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2).truncatedTo(ChronoUnit.MICROS);
         service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
                         DataType.RAWDATA.name(), new URL("file", null, "/plop/test.file.test"), newExpirationDate,
                         UUID.randomUUID().toString());

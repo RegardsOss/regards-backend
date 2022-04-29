@@ -28,28 +28,16 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.plugins.Arcad3IsoprobeDensiteProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +50,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -88,7 +85,6 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
 
     private static final Path TARGET_BROWSE_PATH = TARGET_BASE_PATH.resolve("browse");
 
-
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
@@ -106,7 +102,6 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         Files.createDirectories(TARGET_BROWSE_PATH);
     }
 
-    @SuppressWarnings("deprecation")
     public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
 
         // Create a processing chain
@@ -207,7 +202,7 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         FileUtils.copyDirectory(SRC_BROWSE_PATH.toFile(), TARGET_BROWSE_PATH.toFile(), false);
 
         AcquisitionProcessingChain processingChain = createProcessingChain();
-        String session1 = "session1";
+        String session1 = "session1-workflow";
         doAcquire(processingChain, session1, true);
 
         // Reset last modification date
@@ -219,16 +214,16 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
             }
         }
 
-        String session2 = "session2";
+        String session2 = "session2-workflow";
         doAcquire(processingChain, session2, true);
 
         // wait the registration of all StepPropertyUpdateRequests
         // Session1 : 1requestRunning + 3filesAcquired + 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
         // ---> 8 steps
-        waitStepRegistration("session1", 8);
+        waitStepRegistration(session1, 8);
         // Session2 : 1requestRunning + 3filesAcquired + 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
         // ---> 8 steps
-        waitStepRegistration("session2", 8);
+        waitStepRegistration(session2, 8);
         // launch the generation of sessionStep from StepPropertyUpdateRequests
         this.agentService
                 .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
@@ -243,7 +238,7 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         FileUtils.copyDirectory(SRC_DATA_PATH.toFile(), TARGET_DATA_PATH.toFile(), false);
 
         AcquisitionProcessingChain processingChain = createProcessingChain();
-        String session1 = "session1";
+        String session1 = "session1-two-phase";
         doAcquire(processingChain, session1, false);
 
         // Prepare data (browse data)
@@ -251,34 +246,45 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
 
         // Reload chain from database
         processingChain = acquisitionProcessingChainRepository.findCompleteById(processingChain.getId());
-        String session2 = "session2";
+        String session2 = "session2-two-phase";
         doAcquire(processingChain, session2, false);
 
         // wait the registration of all StepPropertyUpdateRequests
-        waitStepRegistration("session1", 2);
-        waitStepRegistration("session2", 7);
+        // Session1 : 1filesAcquired + 1incomplete
+        // ---> 2 steps
+        waitStepRegistration(session1, 2);
+        // Session2 : 1requestRunning + 3filesAcquired+ 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
+        // ---> 8 steps
+        waitStepRegistration(session2, 8);
         // launch the generation of sessionStep from StepPropertyUpdateRequests
         this.agentService
                 .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
         // check result
         assertSessionStep(processingChain.getLabel(), session1, 1L, null, 1L, null);
-        assertSessionStep(processingChain.getLabel(), session2, 2L, 0L, null, 1L);
+        assertSessionStep(processingChain.getLabel(), session2, 3L, 0L, null, 1L);
     }
 
-    private void waitStepRegistration(String session, int nbSteps) throws InterruptedException {
-        long now = System.currentTimeMillis(), end = now + 60000L;
-        int count;
-        logger.info("Waiting for StepPropertyUpdateRequests creation for session {}", session);
-        do {
-            count = this.stepRepo.findBySession(session).size();
-            now = System.currentTimeMillis();
-            if (count != nbSteps) {
-                Thread.sleep(30000L);
-            }
-        } while (count != nbSteps && now < end);
-
-        Assert.assertEquals("Unexpected number of step events created. Check the workflow through events collected in "
-                                + "t_step_property_update_request", nbSteps, count);
+    private void waitStepRegistration(String session, int nbSteps) {
+        long init = 2L; // wait for creation of steps 2s
+        long timeout = 30L; // timeout 30s
+        long intervalBetweenDBQueries = 100L; // 100 ms
+        AtomicInteger nbStepsCreated = new AtomicInteger();
+        try {
+            logger.info("Waiting for registration of {} StepPropertyUpdateRequests for session {}", nbSteps, session);
+            Awaitility.await()
+                    .atMost(timeout, TimeUnit.SECONDS)
+                    .with()
+                    .pollInterval(intervalBetweenDBQueries, TimeUnit.MILLISECONDS)
+                    .until(() -> {
+                        runtimeTenantResolver.forceTenant(getDefaultTenant());
+                        nbStepsCreated.set(this.stepRepo.findBySession(session).size());
+                        return nbStepsCreated.get() == nbSteps;
+                    });
+        } catch (ConditionTimeoutException e) {
+            Assert.fail(String.format("Unexpected number of step events created for session %s : expected %d steps instead of %d.%n" +
+                                      "Check the workflow through events collected in t_step_property_update_request. %n" +
+                                      "Cause : %s", session, nbSteps, nbStepsCreated.get(),e));
+        }
     }
 
     private void assertSessionStep(String sessionOwner, String session, Long acquiredFiles, Long completed,

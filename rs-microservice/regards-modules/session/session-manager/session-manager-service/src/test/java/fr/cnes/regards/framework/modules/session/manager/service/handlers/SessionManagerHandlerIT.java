@@ -24,15 +24,17 @@ import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
 import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Test for {@link SessionManagerHandler}
@@ -43,7 +45,7 @@ import org.springframework.test.context.TestPropertySource;
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public class SessionManagerHandlerIT extends AbstractManagerServiceUtilsIT {
 
-    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC);
+    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
 
     @Test
     @Purpose("Test if session step is stored with its associated snapshot process")

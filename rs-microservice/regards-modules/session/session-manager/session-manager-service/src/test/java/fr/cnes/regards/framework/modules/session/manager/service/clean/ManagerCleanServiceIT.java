@@ -30,18 +30,20 @@ import fr.cnes.regards.framework.modules.session.manager.service.AbstractManager
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanService;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Test for {@link ManagerCleanService}
@@ -66,7 +68,7 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
 
     @Override
     public void doInit() {
-        UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSessionSteps);
+        UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSessionSteps).truncatedTo(ChronoUnit.MICROS);
     }
 
     @Test

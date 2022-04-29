@@ -28,14 +28,16 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepPrope
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test for {@link AgentSnapshotService}
@@ -47,7 +49,9 @@ import org.springframework.test.context.TestPropertySource;
 @ActiveProfiles({ "noscheduler" })
 public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
 
-    private static final OffsetDateTime CREATION_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30);
+    private static final OffsetDateTime CREATION_DATE = OffsetDateTime.now(ZoneOffset.UTC)
+                                                                      .minusDays(30)
+                                                                      .truncatedTo(ChronoUnit.MICROS);
 
     @Test
     @Purpose("Test if session steps are correctly generated from step property requests")
