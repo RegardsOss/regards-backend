@@ -589,8 +589,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
      * Check if imported fragment contains the same attributes as existing one
      * @param fragmentName {@link Fragment} name
      * @param attModels list of imported fragment {@link AttributeModel}
-     * @return true if existing fragment {@link AttributeModel} match with this ones.
-     * @throws ModuleException if error occurs!
+     * @return true if existing fragment {@link AttributeModel} match with this one.
      */
     private boolean containsExactly(String fragmentName, List<AttributeModel> attModels) {
         // Get existing fragment attributes
@@ -598,22 +597,22 @@ public class ModelService implements IModelService, IModelAttrAssocService {
 
         // Check size
         if (attModels.size() != existingAttModels.size()) {
-            LOGGER.error(String.format("Existing fragment \"%s\" contains exactly %s unique attributes (not %s).",
-                                       fragmentName, existingAttModels.size(), attModels.size()));
+            LOGGER.error("Existing fragment {} contains exactly {} unique attributes (not {}).",
+                                       fragmentName, existingAttModels.size(), attModels.size());
             return false;
         }
 
         // Check attributes
         for (AttributeModel attMod : attModels) {
             if (!fragmentName.equals(attMod.getFragment().getName())) {
-                LOGGER.error(String.format("Attribute \"%s\" not part of fragment \"%s\" but \"%s\".)",
-                                           attMod.getName(), fragmentName, attMod.getFragment().getName()));
+                LOGGER.error("Attribute {} not part of fragment {} but {}.",
+                                           attMod.getName(), fragmentName, attMod.getFragment().getName());
                 return false;
             }
 
             if (!existingAttModels.contains(attMod)) {
-                LOGGER.error(String.format("Unknown attribute \"%s\" in fragment \"%s\".", attMod.getName(),
-                                           fragmentName));
+                LOGGER.error("Unknown attribute {} in fragment {}.", attMod.getName(),
+                                           fragmentName);
                 return false;
             }
         }

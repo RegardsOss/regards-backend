@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.modules.dam.dao.entities.ICollectionRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelLinkService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marc SORDI
@@ -53,22 +53,14 @@ public class DamModelLinkService implements IModelLinkService {
 
     @Override
     public boolean isAttributeDeletable(Set<String> modelNames) {
+        Set<Long> modelIds = modelNames.stream()
+                                       .map(modelName -> modelRepository.findByName(modelName))
+                                       .filter(Objects::nonNull)
+                                       .map(Model::getId)
+                                       .collect(Collectors.toSet());
 
-        Set<Long> modelIds = new HashSet<>();
-        if (modelNames != null) {
-            for (String name : modelNames) {
-                Model model = modelRepository.findByName(name);
-                if (model != null) {
-                    modelIds.add(model.getId());
-                }
-            }
-        }
-
-        if (datasetRepository.isLinkedToEntities(modelIds) || collectionRepository.isLinkedToEntities(modelIds)
-                || datasetRepository.isLinkedToDatasetsAsDataModel(modelNames)) {
-            return false;
-        }
-        return true;
+        return !datasetRepository.isLinkedToEntities(modelIds) && !collectionRepository.isLinkedToEntities(modelIds)
+            && !datasetRepository.isLinkedToDatasetsAsDataModel(modelNames);
     }
 
 }

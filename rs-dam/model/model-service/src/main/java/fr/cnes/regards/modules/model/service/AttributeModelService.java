@@ -43,7 +43,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Manage global attribute life cycle
@@ -191,19 +195,13 @@ public class AttributeModelService implements IAttributeModelService {
     public boolean isDeletable(Long attributeId) {
         // Before deletion, look for already linked models
         Collection<ModelAttrAssoc> assocs = modelAttrAssocRepository.findAllByAttributeId(attributeId);
-        if (!assocs.isEmpty()) {
-            Set<String> modelNames = new HashSet<>();
-            assocs.forEach(a -> modelNames.add(a.getModel().getName()));
-            if (linkServices != null) {
-                for (IModelLinkService linkService : linkServices) {
-                    // Check if some linked model not already used, so attribute must not be deleted
-                    if (!linkService.isAttributeDeletable(modelNames)) {
-                        return false;
-                    }
-                }
-            }
+        if (assocs.isEmpty() || linkServices == null) {
+            return true;
         }
-        return true;
+        Set<String> modelNames = assocs.stream().map(assoc -> assoc.getModel().getName()).collect(Collectors.toSet());
+        // Check if this attribute, that can be associated with several models, is not used by another entity
+        // If it is, the attribute must not be deleted
+        return linkServices.stream().allMatch(linkService -> linkService.isAttributeDeletable(modelNames));
     }
 
     @Override

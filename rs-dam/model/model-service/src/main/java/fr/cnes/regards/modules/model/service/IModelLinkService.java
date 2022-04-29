@@ -32,5 +32,5 @@ public interface IModelLinkService {
     /**
      * Check if an attribute linked to these models is deleteble
      */
-    public boolean isAttributeDeletable(Set<String> modelNames);
+    boolean isAttributeDeletable(Set<String> modelNames);
 }
