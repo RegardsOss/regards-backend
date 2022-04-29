@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -41,7 +40,6 @@ import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.templates.service.TemplateService;
-import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +50,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -204,11 +200,7 @@ public class OrderCreationService implements IOrderCreationService {
         order = orderRepository.save(order);
         LOGGER.info("Order (id: {}) saved with status {}", order.getId(), order.getStatus());
         if (order.getStatus() != OrderStatus.FAILED) {
-            try {
-                sendOrderCreationEmail(order);
-            } catch (ModuleException e) {
-                LOGGER.warn("Error while attempting to send order creation email (order has been created anyway)", e);
-            }
+            sendOrderCreationEmail(order);
             orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
         }
         applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));
@@ -326,7 +318,7 @@ public class OrderCreationService implements IOrderCreationService {
         }
     }
 
-    private void sendOrderCreationEmail(Order order) throws ModuleException {
+    private void sendOrderCreationEmail(Order order) {
         // Generate token
         String tokenRequestParam =
             IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(order);
@@ -351,12 +343,7 @@ public class OrderCreationService implements IOrderCreationService {
             dataMap.put("orders_url", host + order.getFrontendUrl());
 
             // Create mail
-            String message;
-            try {
-                message = templateService.render(OrderTemplateConf.ORDER_CREATED_TEMPLATE_NAME, dataMap);
-            } catch (TemplateException e) {
-                throw new RsRuntimeException(e);
-            }
+            String message = templateService.render(OrderTemplateConf.ORDER_CREATED_TEMPLATE_NAME, dataMap);
 
             // Send it
             FeignSecurityManager.asSystem();
@@ -364,8 +351,8 @@ public class OrderCreationService implements IOrderCreationService {
                                   String.format("Order number %d is confirmed", order.getId()),
                                   null,
                                   order.getOwner());
-        } catch (HttpServerErrorException | HttpClientErrorException e) {
-            throw new ModuleException(e);
+        } catch (Exception e) {
+            LOGGER.warn("Error while attempting to send order creation email (order has been created anyway)", e);
         }
         FeignSecurityManager.reset();
     }

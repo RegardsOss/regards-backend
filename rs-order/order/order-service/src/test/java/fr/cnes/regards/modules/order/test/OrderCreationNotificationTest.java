@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.test;
 import feign.Request;
 import feign.RetryableException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -34,7 +35,6 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
@@ -42,10 +42,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpServerErrorException;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 
+import static fr.cnes.regards.modules.order.test.FakeExceptions.*;
 import static fr.cnes.regards.modules.order.test.MailClientMocks.aMailClient;
+import static fr.cnes.regards.modules.order.test.TemplateServiceMocks.aTemplateService;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -58,6 +61,13 @@ public class OrderCreationNotificationTest {
     private IOrderJobService jobOrderService;
 
     private OrderCreationService orderCreation;
+
+    private TemplateService templateService;
+
+    public OrderCreationNotificationTest() {
+        mailClient = aMailClient().nominal();
+        templateService = aTemplateService().nominal();
+    }
 
     private Order givenOrder(OrderStatus orderStatus) {
         Order givenOrder = new Order();
@@ -83,7 +93,7 @@ public class OrderCreationNotificationTest {
                                         mockSpringPublisher(),
                                         mockCurrentTenant(),
                                         null,
-                                        mockTemplateService());
+                                        templateService);
     }
 
     private IOrderRepository mockOrderRepo() {
@@ -124,20 +134,9 @@ public class OrderCreationNotificationTest {
         return currentTenant;
     }
 
-    private TemplateService mockTemplateService() {
-        try {
-            TemplateService templateService = mock(TemplateService.class);
-            when(templateService.render(any(), any())).thenReturn("TEMPLATED");
-            return templateService;
-        } catch (TemplateException e) {
-            throw new RuntimeException("Fail to initialize template service mock", e);
-        }
-    }
-
     @Test
     public void send_mail_if_order_is_successfully_created() throws Exception {
         givenOrder = givenOrder(OrderStatus.PENDING);
-        mailClient = aMailClient().nominal();
 
         orderCreation = givenOrderCreationServiceUnderTest();
         orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
@@ -150,7 +149,6 @@ public class OrderCreationNotificationTest {
     @Test
     public void dont_send_mail_if_order_failed() throws Exception {
         givenOrder = givenOrder(OrderStatus.FAILED);
-        mailClient = aMailClient().nominal();
 
         orderCreation = givenOrderCreationServiceUnderTest();
         orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
@@ -161,12 +159,12 @@ public class OrderCreationNotificationTest {
     @Test
     public void a_mail_http_failure_does_not_stop_order_creation_process() throws Exception {
         givenOrder = givenOrder(OrderStatus.PENDING);
-        mailClient = aMailClient().sendMailThrows(httpException());
+        mailClient = aMailClient().sendMailRaises(aHttpException());
 
         orderCreation = givenOrderCreationServiceUnderTest();
         orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
 
-        // The mail exception is thrown
+        // The mail exception is raised but handled
         // but it doesn't stop order creation process
         // => Jobs are queued (manageUserOrderStorageFilesJobInfos)
         verify(mailClient).sendEmail(any(), any(), any(), any());
@@ -176,52 +174,120 @@ public class OrderCreationNotificationTest {
     @Test
     public void a_mail_timeout_failure_does_not_stop_order_creation_process() throws Exception {
         givenOrder = givenOrder(OrderStatus.PENDING);
-        mailClient = aMailClient().sendMailThrows(mailTimeoutException());
+        mailClient = aMailClient().sendMailRaises(aMailTimeoutException());
 
         orderCreation = givenOrderCreationServiceUnderTest();
+        orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
 
-        // Mail timeout exception is raised by mail notification
-        // It is not handled by order creation process
-        // The exception isn't catched
-        // and the order creation stops
-        // The jobs aren't queued
-        // => Bug CNES (ref 635)
-        Basket basket = new Basket();
-        Assertions.assertThatExceptionOfType(mailTimeoutException().getClass())
-                  .isThrownBy(() -> orderCreation.completeOrderCreation(basket, null, "ROLE", 0, null));
+        // The mail exception is raised but handled
+        // but it doesn't stop order creation process
+        // => Jobs are queued (manageUserOrderStorageFilesJobInfos)
+        verify(mailClient).sendEmail(any(), any(), any(), any());
+        verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
     }
 
     @Test
-    public void order_creation_fails_if_an_unexpected_mail_failure_occurred() throws Exception {
+    public void an_unexpected_mail_failure_does_not_stop_order_creation() throws Exception {
         givenOrder = givenOrder(OrderStatus.PENDING);
-        mailClient = aMailClient().sendMailThrows(unexpectedException());
+        mailClient = aMailClient().sendMailRaises(anUnexpectedException());
 
         orderCreation = givenOrderCreationServiceUnderTest();
+        orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
 
-        // Unexpected exception is raised by mail notification
-        // It is not handled by order creation process
-        // The exception isn't catched
-        // and the order creation stops
-        // The jobs aren't queued
-        // => Bug CNES (ref 635)
-        Basket basket = new Basket();
-        Assertions.assertThatExceptionOfType(RuntimeException.class)
-                  .isThrownBy(() -> orderCreation.completeOrderCreation(basket, null, "ROLE", 0, null));
+        verify(mailClient).sendEmail(any(), any(), any(), any());
+        verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
     }
 
-    private HttpServerErrorException httpException() {
+    @Test
+    public void a_mail_template_failure_does_not_stop_order_creation_process() throws Exception {
+        givenOrder = givenOrder(OrderStatus.PENDING);
+        templateService = aTemplateService().renderRaises(aTemplateException());
+
+        orderCreation = givenOrderCreationServiceUnderTest();
+        orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
+
+        verify(templateService).render(any(), any());
+        verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
+    }
+
+    @Test
+    public void an_io_error_on_mail_templating_does_not_stop_order_creation_process() throws Exception {
+        givenOrder = givenOrder(OrderStatus.PENDING);
+        templateService = aTemplateService().renderRaises(anExceptionWhenIOErrorOnTemplating());
+
+        orderCreation = givenOrderCreationServiceUnderTest();
+        orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
+
+        verify(templateService).render(any(), any());
+        verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
+    }
+
+    @Test
+    public void an_unexpected_error_on_templating_does_not_stop_order_creation_process() throws Exception {
+        givenOrder = givenOrder(OrderStatus.PENDING);
+        templateService = aTemplateService().renderRaises(anUnexpectedException());
+
+        orderCreation = givenOrderCreationServiceUnderTest();
+        orderCreation.completeOrderCreation(new Basket(), null, "ROLE", 0, null);
+
+        verify(templateService).render(any(), any());
+        verify(jobOrderService).manageUserOrderStorageFilesJobInfos("USER");
+    }
+}
+
+class FakeExceptions {
+
+    public static HttpServerErrorException aHttpException() {
         return new HttpServerErrorException(HttpStatus.ACCEPTED);
     }
 
-    private RetryableException mailTimeoutException() {
+    public static RetryableException aMailTimeoutException() {
         Request request = Request.create(Request.HttpMethod.GET, "test", new HashMap<>(), Request.Body.empty());
         return new RetryableException(1, "", Request.HttpMethod.POST, null, request);
     }
 
-    private RuntimeException unexpectedException() {
-        return new RuntimeException("mail unexpected failure");
+    public static TemplateException aTemplateException() {
+        return mock(TemplateException.class);
     }
 
+    public static RsRuntimeException anExceptionWhenIOErrorOnTemplating() {
+        return new RsRuntimeException(new IOException());
+    }
+
+    public static RuntimeException anUnexpectedException() {
+        return new RuntimeException("mail unexpected failure");
+    }
+}
+
+class TemplateServiceMocks {
+
+    private final TemplateService templateService;
+
+    private TemplateServiceMocks() {
+        templateService = mock(TemplateService.class);
+    }
+
+    public static TemplateServiceMocks aTemplateService() {
+        return new TemplateServiceMocks();
+    }
+
+    public TemplateService nominal() {
+        try {
+            when(templateService.render(any(), any())).thenReturn("TEMPLATED");
+            return templateService;
+        } catch (TemplateException e) {
+            throw new RuntimeException("Fail to mock template service.");
+        }
+    }
+
+    public TemplateService renderRaises(Exception e) {
+        try {
+            when(templateService.render(any(), any())).thenThrow(e);
+            return templateService;
+        } catch (TemplateException e1) {
+            throw new RuntimeException("Fail to mock template service.");
+        }
+    }
 }
 
 class MailClientMocks {
@@ -240,8 +306,9 @@ class MailClientMocks {
         return mailClient;
     }
 
-    public IEmailClient sendMailThrows(Exception e) {
+    public IEmailClient sendMailRaises(Exception e) {
         when(mailClient.sendEmail(any(), any(), any(), any())).thenThrow(e);
         return mailClient;
     }
 }
+
