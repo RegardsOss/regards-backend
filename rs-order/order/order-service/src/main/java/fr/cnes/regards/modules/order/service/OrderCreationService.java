@@ -67,28 +67,48 @@ public class OrderCreationService implements IOrderCreationService {
 
     private static final int MAX_BUCKET_FILE_COUNT = 5_000;
 
+    private final IOrderRepository orderRepository;
+
+    private final IOrderDataFileService dataFileService;
+
+    private final IOrderJobService orderJobService;
+
+    private final BasketSelectionPageSearch basketSelectionPageSearch;
+
+    private final OrderHelperService orderHelperService;
+
+    private final IProjectsClient projectClient;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final IOrderProcessingService orderProcessingService;
+
+    private final TemplateService templateService;
+
+    private final INotificationClient notificationClient;
+
+    private final IEmailClient emailClient;
+
+    private final SuborderSizeCounter suborderSizeCounter;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     @Autowired
     private IOrderCreationService self;
 
-    private final IOrderRepository orderRepository;
-    private final IOrderDataFileService dataFileService;
-    private final IOrderJobService orderJobService;
-    private final BasketSelectionPageSearch basketSelectionPageSearch;
-    private final OrderHelperService orderHelperService;
-    private final IProjectsClient projectClient;
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-    private final IOrderProcessingService orderProcessingService;
-    private final TemplateService templateService;
-    private final INotificationClient notificationClient;
-    private final IEmailClient emailClient;
-    private final SuborderSizeCounter suborderSizeCounter;
-    private final ApplicationEventPublisher applicationEventPublisher;
-
-    public OrderCreationService(IOrderRepository orderRepository, IOrderDataFileService dataFileService, IOrderJobService orderJobService,
-                                BasketSelectionPageSearch basketSelectionPageSearch, SuborderSizeCounter suborderSizeCounter, INotificationClient notificationClient,
-                                IEmailClient emailClient, OrderHelperService orderHelperService, IProjectsClient projectClient, ApplicationEventPublisher applicationEventPublisher,
-                                IRuntimeTenantResolver runtimeTenantResolver, IOrderProcessingService orderProcessingService, TemplateService templateService
-    ) {
+    public OrderCreationService(IOrderRepository orderRepository,
+                                IOrderDataFileService dataFileService,
+                                IOrderJobService orderJobService,
+                                BasketSelectionPageSearch basketSelectionPageSearch,
+                                SuborderSizeCounter suborderSizeCounter,
+                                INotificationClient notificationClient,
+                                IEmailClient emailClient,
+                                OrderHelperService orderHelperService,
+                                IProjectsClient projectClient,
+                                ApplicationEventPublisher applicationEventPublisher,
+                                IRuntimeTenantResolver runtimeTenantResolver,
+                                IOrderProcessingService orderProcessingService,
+                                TemplateService templateService) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
         this.orderJobService = orderJobService;
@@ -104,11 +124,14 @@ public class OrderCreationService implements IOrderCreationService {
         this.templateService = templateService;
     }
 
-
     @Override
     @Async
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void asyncCompleteOrderCreation(Basket basket, Long orderId, int subOrderDuration, String role, String tenant) {
+    public void asyncCompleteOrderCreation(Basket basket,
+                                           Long orderId,
+                                           int subOrderDuration,
+                                           String role,
+                                           String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
         self.completeOrderCreation(basket, orderId, role, subOrderDuration, tenant);
     }
@@ -130,20 +153,29 @@ public class OrderCreationService implements IOrderCreationService {
             // Dataset selections
             for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
                 if (dsSel.hasProcessing()) {
-                    orderCounts = orderProcessingService.manageProcessedDatasetSelection(order, dsSel, tenant, owner, role, orderCounts, subOrderDuration);
+                    orderCounts = orderProcessingService.manageProcessedDatasetSelection(order,
+                                                                                         dsSel,
+                                                                                         tenant,
+                                                                                         owner,
+                                                                                         role,
+                                                                                         orderCounts,
+                                                                                         subOrderDuration);
                     hasProcessing = true;
                 } else {
                     orderCounts = manageDatasetSelection(order, role, priority, orderCounts, dsSel, subOrderDuration);
                 }
             }
 
-            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(null, orderCounts.getSubOrderCount(), subOrderDuration);
+            OffsetDateTime expirationDate = orderHelperService.computeOrderExpirationDate(null,
+                                                                                          orderCounts.getSubOrderCount(),
+                                                                                          subOrderDuration);
             order.setExpirationDate(expirationDate);
             orderHelperService.updateJobInfosExpirationDate(expirationDate, orderCounts.getJobInfoIdSet());
 
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
-            if (!hasProcessing && (orderCounts.getInternalFilesCount() == 0) && (orderCounts.getExternalFilesCount() > 0)) {
+            if (!hasProcessing && (orderCounts.getInternalFilesCount() == 0) && (orderCounts.getExternalFilesCount()
+                                                                                 > 0)) {
                 // Because external files haven't size set (files.size isn't allowed to be mapped on DatasourcePlugins
                 // other than AipDatasourcePlugin which manage only internal files), these will not be taken into
                 // account by {@see OrderService#updateCurrentOrdersComputedValues}
@@ -179,11 +211,15 @@ public class OrderCreationService implements IOrderCreationService {
             }
             orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
         }
-
         applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));
     }
 
-    private OrderCounts manageDatasetSelection(Order order, String role, int priority, OrderCounts orderCounts, BasketDatasetSelection dsSel, int subOrderDuration) {
+    private OrderCounts manageDatasetSelection(Order order,
+                                               String role,
+                                               int priority,
+                                               OrderCounts orderCounts,
+                                               BasketDatasetSelection dsSel,
+                                               int subOrderDuration) {
 
         DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, DataTypeSelection.ALL.getFileTypes());
 
@@ -199,14 +235,21 @@ public class OrderCreationService implements IOrderCreationService {
                 dispatchFeatureFilesInBuckets(order, feature, storageBucketFiles, externalBucketFiles);
 
                 // If sum of files size > storageBucketSize, add a new bucket
-                if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.storageBucketTooBig(storageBucketFiles)) {
+                if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.storageBucketTooBig(
+                    storageBucketFiles)) {
                     orderCounts.addToInternalFilesCount(storageBucketFiles.size());
-                    orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask, storageBucketFiles, order, subOrderDuration, role, priority));
+                    orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask,
+                                                                        storageBucketFiles,
+                                                                        order,
+                                                                        subOrderDuration,
+                                                                        role,
+                                                                        priority));
                     orderCounts.incrSubOrderCount();
                     storageBucketFiles.clear();
                 }
                 // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
-                if ((externalBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.externalBucketTooBig(externalBucketFiles)) {
+                if ((externalBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.externalBucketTooBig(
+                    externalBucketFiles)) {
                     orderCounts.addToExternalFilesCount(externalBucketFiles.size());
                     self.createExternalSubOrder(dsTask, externalBucketFiles, order);
                     externalBucketFiles.clear();
@@ -216,7 +259,12 @@ public class OrderCreationService implements IOrderCreationService {
         // Manage remaining files on each type of buckets
         if (!storageBucketFiles.isEmpty()) {
             orderCounts.addToInternalFilesCount(storageBucketFiles.size());
-            orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask, storageBucketFiles, order, subOrderDuration, role, priority));
+            orderCounts.addJobInfoId(self.createStorageSubOrder(dsTask,
+                                                                storageBucketFiles,
+                                                                order,
+                                                                subOrderDuration,
+                                                                role,
+                                                                priority));
             orderCounts.incrSubOrderCount();
         }
         if (!externalBucketFiles.isEmpty()) {
@@ -234,7 +282,10 @@ public class OrderCreationService implements IOrderCreationService {
     /**
      * Dispatch {@link DataFile}s of given {@link EntityFeature} into internal or external buckets.
      */
-    private void dispatchFeatureFilesInBuckets(Order order, EntityFeature feature, Set<OrderDataFile> storageBucketFiles, Set<OrderDataFile> externalBucketFiles) {
+    private void dispatchFeatureFilesInBuckets(Order order,
+                                               EntityFeature feature,
+                                               Set<OrderDataFile> storageBucketFiles,
+                                               Set<OrderDataFile> externalBucketFiles) {
         for (DataFile dataFile : feature.getFiles().values()) {
             // ONLY orderable data files can be ordered !!! (ie RAWDATA and QUICKLOOKS
             if (DataTypeSelection.ALL.getFileTypes().contains(dataFile.getDataType())) {
@@ -248,28 +299,37 @@ public class OrderCreationService implements IOrderCreationService {
         }
     }
 
-    private void addExternalFileToExternalBucket(Order order, Set<OrderDataFile> externalBucketFiles, DataFile datafile, EntityFeature feature) {
+    private void addExternalFileToExternalBucket(Order order,
+                                                 Set<OrderDataFile> externalBucketFiles,
+                                                 DataFile datafile,
+                                                 EntityFeature feature) {
         OrderDataFile orderDataFile = new OrderDataFile(datafile, feature.getId(), order.getId());
         // An external file is immediately set to AVAILABLE status because it needs nothing more to be downloaded
         orderDataFile.setState(FileState.AVAILABLE);
         externalBucketFiles.add(orderDataFile);
     }
 
-    private void addInternalFileToStorageBucket(Order order, Set<OrderDataFile> storageBucketFiles, DataFile dataFile, EntityFeature feature) {
+    private void addInternalFileToStorageBucket(Order order,
+                                                Set<OrderDataFile> storageBucketFiles,
+                                                DataFile dataFile,
+                                                EntityFeature feature) {
         OrderDataFile orderDataFile = new OrderDataFile(dataFile, feature.getId(), order.getId());
         storageBucketFiles.add(orderDataFile);
         // Send a very useful notification if file is bigger than bucket size
         if (orderDataFile.getFilesize() > suborderSizeCounter.getStorageBucketSize()) {
             // To send a notification, NotificationClient needs it
-            notificationClient.notify(String.format("File \"%s\" is bigger than sub-order size", orderDataFile.getFilename()),
-                                      "Order creation", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN
-            );
+            notificationClient.notify(String.format("File \"%s\" is bigger than sub-order size",
+                                                    orderDataFile.getFilename()),
+                                      "Order creation",
+                                      NotificationLevel.WARNING,
+                                      DefaultRole.PROJECT_ADMIN);
         }
     }
 
     private void sendOrderCreationEmail(Order order) throws ModuleException {
         // Generate token
-        String tokenRequestParam = IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(order);
+        String tokenRequestParam =
+            IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(order);
 
         FeignSecurityManager.asSystem();
         try {
@@ -284,8 +344,9 @@ public class OrderCreationService implements IOrderCreationService {
             dataMap.put("expiration_date", order.getExpirationDate().toString());
             dataMap.put("project", runtimeTenantResolver.getTenant());
             dataMap.put("order_label", order.getId().toString());
-            dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam
-                    + "&scope=" + runtimeTenantResolver.getTenant());
+            dataMap.put("metalink_download_url",
+                        urlStart + "/user/orders/metalink/download?" + tokenRequestParam + "&scope="
+                        + runtimeTenantResolver.getTenant());
             dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
             dataMap.put("orders_url", host + order.getFrontendUrl());
 
@@ -299,7 +360,10 @@ public class OrderCreationService implements IOrderCreationService {
 
             // Send it
             FeignSecurityManager.asSystem();
-            emailClient.sendEmail(message, String.format("Order number %d is confirmed", order.getId()), null, order.getOwner());
+            emailClient.sendEmail(message,
+                                  String.format("Order number %d is confirmed", order.getId()),
+                                  null,
+                                  order.getOwner());
         } catch (HttpServerErrorException | HttpClientErrorException e) {
             throw new ModuleException(e);
         }
@@ -313,9 +377,20 @@ public class OrderCreationService implements IOrderCreationService {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public UUID createStorageSubOrder(DatasetTask datasetTask, Set<OrderDataFile> bucketFiles, Order order, int subOrderDuration, String role, int priority) {
+    public UUID createStorageSubOrder(DatasetTask datasetTask,
+                                      Set<OrderDataFile> bucketFiles,
+                                      Order order,
+                                      int subOrderDuration,
+                                      String role,
+                                      int priority) {
         dataFileService.create(bucketFiles);
-        return orderHelperService.createStorageSubOrder(datasetTask, bucketFiles, order.getId(), order.getOwner(), subOrderDuration, role, priority);
+        return orderHelperService.createStorageSubOrder(datasetTask,
+                                                        bucketFiles,
+                                                        order.getId(),
+                                                        order.getOwner(),
+                                                        subOrderDuration,
+                                                        role,
+                                                        priority);
     }
 
     /**
