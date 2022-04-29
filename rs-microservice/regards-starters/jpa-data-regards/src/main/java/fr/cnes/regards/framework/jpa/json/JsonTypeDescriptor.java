@@ -33,16 +33,15 @@
  */
 package fr.cnes.regards.framework.jpa.json;
 
-import java.lang.reflect.Type;
-import java.util.Properties;
-
+import fr.cnes.regards.framework.gson.utils.ParameterizedTypeImpl;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
 import org.hibernate.usertype.DynamicParameterizedType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.gson.utils.ParameterizedTypeImpl;
+import java.lang.reflect.Type;
+import java.util.Properties;
 
 /**
  * @author Vlad Mihalcea

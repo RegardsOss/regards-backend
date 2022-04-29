@@ -19,7 +19,9 @@
 package fr.cnes.regards.framework.gson;
 
 import com.google.common.collect.Multimap;
-import com.google.gson.*;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
 import fr.cnes.regards.framework.gson.adapters.*;
 import fr.cnes.regards.framework.gson.adapters.actuator.ApplicationMappingsAdapter;
 import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
@@ -43,6 +45,7 @@ import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
 
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -73,7 +76,9 @@ public final class GsonCustomizer {
     private static void customizeBuilder(GsonBuilder builder) {
         builder.registerTypeHierarchyAdapter(Path.class, new PathAdapter().nullSafe());
         builder.registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe());
+        builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter().nullSafe());
         builder.registerTypeAdapter(MimeType.class, new MimeTypeAdapter().nullSafe());
+        builder.registerTypeAdapter(Optional.class, new OptionalAdapter<>());
         builder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
         builder.registerTypeHierarchyAdapter(MultiValueMap.class, new MultiValueMapAdapter());
         builder.setExclusionStrategies(new GsonIgnoreExclusionStrategy(), new PagedModelExclusionStrategy());
@@ -83,6 +88,10 @@ public final class GsonCustomizer {
         builder.registerTypeAdapter(SystemHealth.class, new SystemHealthAdapter());
         builder.registerTypeAdapter(BeanDescriptor.class, new BeanDescriptorAdapter());
         builder.registerTypeAdapter(ApplicationMappings.class, new ApplicationMappingsAdapter());
+
+        // Custom adapters for java collections
+        builder.registerTypeAdapterFactory(ListAdapter.FACTORY);
+        builder.registerTypeAdapterFactory(SetAdapter.FACTORY);
     }
 
     /**

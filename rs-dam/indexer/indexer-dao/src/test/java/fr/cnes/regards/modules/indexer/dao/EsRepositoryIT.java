@@ -13,6 +13,7 @@ import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Point;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -47,6 +48,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.UnknownHostException;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -397,6 +399,7 @@ public class EsRepositoryIT {
                     .registerTypeAdapterFactory(new FeatureTypeAdapterFactory())
                     .registerTypeAdapter(UniformResourceName.class, new UrnAdpater())
                     .registerTypeAdapter(IGeometry.class, new IGeometryAdapter())
+                    .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
                     .registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter()).create();
 
             repository = new EsRepository(gson,

@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.jpa.json;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-
 import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
+
+import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
  * Utility class allowing us to serialize and deserialize object to and from JSON
@@ -70,6 +70,10 @@ public final class GsonUtil {
         return gson.toJson(object);
     }
 
+    public static String toString(Object object, Type type) {
+        return gson.toJson(object, type);
+    }
+
     /**
      * Convert JAVA object to JSON element
      * @param object java object to convert
@@ -87,7 +91,7 @@ public final class GsonUtil {
      * @return java object clone
      */
     public static <T> T clone(T object, Type type) {
-        return fromString(toString(object), type);
+        return fromString(toString(object, type), type);
     }
 
     /**

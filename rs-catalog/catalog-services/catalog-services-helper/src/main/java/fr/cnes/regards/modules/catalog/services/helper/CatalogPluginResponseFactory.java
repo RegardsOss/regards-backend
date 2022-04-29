@@ -18,17 +18,12 @@
  */
 package fr.cnes.regards.modules.catalog.services.helper;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import fr.cnes.regards.framework.gson.GsonCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -37,11 +32,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.google.common.io.ByteStreams;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Factory to handle CatalogPlugin services streaming response.
@@ -228,7 +227,8 @@ public class CatalogPluginResponseFactory {
      */
     public static ResponseEntity<StreamingResponseBody> createJsonSuccessResponse(HttpServletResponse response,
             Object responseContent, boolean prettyPrint) {
-        GsonBuilder builder = new GsonBuilder();
+        // FIXME: should use GsonBuilderFactory with spring context configuration
+        GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty());
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition("result.json"));
         headers.setContentType(MediaType.APPLICATION_JSON);

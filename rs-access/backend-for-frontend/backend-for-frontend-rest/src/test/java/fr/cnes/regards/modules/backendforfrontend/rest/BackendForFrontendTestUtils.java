@@ -21,9 +21,8 @@ package fr.cnes.regards.modules.backendforfrontend.rest;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import fr.cnes.regards.framework.gson.strategy.PagedModelExclusionStrategy;
+import fr.cnes.regards.framework.gson.GsonCustomizer;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -46,6 +45,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Declare static variables for tests.
@@ -144,7 +144,8 @@ public class BackendForFrontendTestUtils {
      */
     public static final ResponseEntity<List<EntityModel<PluginServiceDto>>> SERVICES_FOR_DATASET_1;
 
-    private static Gson gson = (new GsonBuilder()).setExclusionStrategies(new PagedModelExclusionStrategy()).create();
+    // FIXME: should use GsonBuilderFactory with spring context configuration
+    private static final Gson gson = GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty()).create();
 
 
 

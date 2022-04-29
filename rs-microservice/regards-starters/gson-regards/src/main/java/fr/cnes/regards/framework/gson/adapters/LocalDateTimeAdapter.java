@@ -25,63 +25,50 @@ import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAccessor;
 
 /**
  * ISO 8601 date adapter
  * This TypeAdapter is used in method GsonAutoConfiguration#customizeBuilder.
- * The aim is to be able to read a date time with or without Time zone specified and to format date time with UTC Time
- * Zone (ie. Z)
- * @author Marc Sordi
- * @author oroussel
+ * The aim is to be able to read a local date time
+
+ * @author Iliana Ghazali
  */
-public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
+public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
 
     /**
      * ISO date time official support (UTC)
-     * When parsing, either no offset, Z or +HH:mm offset.
-     * When formatting, Z as offset if UTC or +HH:mm
      */
     public static final DateTimeFormatter ISO_DATE_TIME_UTC = new DateTimeFormatterBuilder().parseCaseInsensitive()
-            .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME).optionalStart().appendOffset("+HH:MM", "Z").toFormatter();
+        .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toFormatter();
 
     /**
      * Writing date with UTC ISO 8601 format
      */
     @Override
-    public void write(JsonWriter out, OffsetDateTime date) throws IOException {
-        out.value(date.atZoneSameInstant(ZoneOffset.UTC).format(ISO_DATE_TIME_UTC));
+    public void write(JsonWriter out, LocalDateTime value) throws IOException {
+        out.value(value.format(ISO_DATE_TIME_UTC));
     }
 
     @Override
-    public OffsetDateTime read(JsonReader in) throws IOException {
+    public LocalDateTime read(JsonReader in) throws IOException {
         return parse(in.nextString());
     }
 
-    public static OffsetDateTime parse(String date) {
+    public static LocalDateTime parse(String date) {
         try {
-            TemporalAccessor temporalAccessor = ISO_DATE_TIME_UTC.parse(date);
-            // Zoned date
-            if (temporalAccessor.isSupported(ChronoField.OFFSET_SECONDS)) {
-                return OffsetDateTime.from(temporalAccessor);
-            } else { // No zone specified => UTC date time
-                return OffsetDateTime.of(LocalDateTime.from(temporalAccessor), ZoneOffset.UTC);
-            }
+            return LocalDateTime.parse(date, ISO_DATE_TIME_UTC);
         } catch (DateTimeParseException e) {
             throw new JsonIOException("Date could not be parsed", e);
         }
     }
 
-    public static String format(OffsetDateTime date) {
+    public static String format(LocalDateTime date) {
         String formattedDate = null;
         if (date != null) {
-            formattedDate = ISO_DATE_TIME_UTC.format(date.withOffsetSameInstant(ZoneOffset.UTC));
+            formattedDate = ISO_DATE_TIME_UTC.format(date);
         }
         return formattedDate;
     }
