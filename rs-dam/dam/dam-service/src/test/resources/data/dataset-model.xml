@@ -2,7 +2,8 @@
 <!--
 	Last changes :
 -->
-<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
     <name>DATASET001</name>
     <description>Hydrology datasets (one per data type)</description>
     <version>0.1.0</version>
