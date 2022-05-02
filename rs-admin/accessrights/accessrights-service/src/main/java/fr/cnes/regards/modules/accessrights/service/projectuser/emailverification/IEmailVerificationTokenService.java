@@ -81,11 +81,11 @@ public interface IEmailVerificationTokenService {
     boolean projectUserTokenExists(final ProjectUser pProjectUser);
 
     /**
-     * Update an email verification token with a new generated token
+     * Generate a new token for the given project user.
      *
      * @param pProjectUser the project user.
      * @throws EntityNotFoundException if the token could not be found
      */
-    void update(final ProjectUser pProjectUser) throws EntityNotFoundException;
+    void generateNewToken(final ProjectUser pProjectUser) throws EntityNotFoundException;
 
 }

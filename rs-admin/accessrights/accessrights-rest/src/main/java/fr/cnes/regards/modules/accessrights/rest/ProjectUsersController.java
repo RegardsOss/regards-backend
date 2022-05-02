@@ -362,9 +362,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResourceAccess(description = "Send a new verification email for a user creation", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> sendVerificationEmail(@Valid @RequestBody EmailVerificationDto emailVerificationDto)
         throws EntityNotFoundException {
-        projectUserService.sendVerificationEmail(emailVerificationDto.getEmail(),
-                                                 emailVerificationDto.getOriginUrl(),
-                                                 emailVerificationDto.getRequestLink());
+        projectUserService.sendVerificationEmail(emailVerificationDto);
         return ResponseEntity.ok().build();
     }
 

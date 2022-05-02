@@ -98,11 +98,12 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     }
 
     @Override
-    public void update(ProjectUser pProjectUser) throws EntityNotFoundException {
+    public void generateNewToken(ProjectUser pProjectUser) throws EntityNotFoundException {
         EmailVerificationToken token = tokenRepository.findByProjectUser(pProjectUser)
                                                       .orElseThrow(() -> new EntityNotFoundException(pProjectUser.getEmail(),
                                                                                                      EmailVerificationToken.class));
         token.generateToken();
+        token.updateExpiryDate();
         tokenRepository.save(token);
     }
 }

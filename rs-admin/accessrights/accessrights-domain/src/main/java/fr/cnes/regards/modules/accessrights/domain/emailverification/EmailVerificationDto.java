@@ -55,26 +55,12 @@ public class EmailVerificationDto {
         return email;
     }
 
-    public EmailVerificationDto setEmail(String email) {
-        this.email = email;
-        return this;
-    }
-
     public String getOriginUrl() {
         return originUrl;
-    }
-
-    public EmailVerificationDto setOriginUrl(String originUrl) {
-        this.originUrl = originUrl;
-        return this;
     }
 
     public String getRequestLink() {
         return requestLink;
     }
-
-    public EmailVerificationDto setRequestLink(String requestLink) {
-        this.requestLink = requestLink;
-        return this;
-    }
+    
 }

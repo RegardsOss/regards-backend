@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationDto;
 import fr.cnes.regards.modules.accessrights.domain.projects.*;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserEvent;
@@ -447,14 +448,15 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public void sendVerificationEmail(String email, String originUrl, String requestLink)
-        throws EntityNotFoundException {
-        ProjectUser projectUser = retrieveOneByEmail(email);
+    public void sendVerificationEmail(EmailVerificationDto emailVerificationDto) throws EntityNotFoundException {
+        ProjectUser projectUser = retrieveOneByEmail(emailVerificationDto.getEmail());
         // Create new email verification token
         if (emailVerificationTokenService.projectUserTokenExists(projectUser)) {
-            emailVerificationTokenService.update(projectUser);
+            emailVerificationTokenService.generateNewToken(projectUser);
         } else {
-            emailVerificationTokenService.create(projectUser, originUrl, requestLink);
+            emailVerificationTokenService.create(projectUser,
+                                                 emailVerificationDto.getOriginUrl(),
+                                                 emailVerificationDto.getRequestLink());
         }
         if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(projectUser.getStatus())) {
             eventPublisher.publishEvent(new OnGrantAccessEvent(projectUser));

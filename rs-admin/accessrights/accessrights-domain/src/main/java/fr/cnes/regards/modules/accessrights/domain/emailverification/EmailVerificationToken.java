@@ -38,9 +38,9 @@ import java.util.UUID;
 public class EmailVerificationToken {
 
     /**
-     * Expiration delay in minutes (=72 hours)
+     * Expiration delay in days
      */
-    private static final int EXPIRATION = 60 * 24 * 3;
+    private static final int EXPIRATION = 3;
 
     /**
      * Id
@@ -106,10 +106,10 @@ public class EmailVerificationToken {
     public EmailVerificationToken(final ProjectUser pProjectUser, final String pOriginUrl, final String pRequestLink) {
         super();
         this.generateToken();
+        this.updateExpiryDate();
         projectUser = pProjectUser;
         originUrl = pOriginUrl;
         requestLink = pRequestLink;
-        expiryDate = calculateExpiryDate(EXPIRATION);
         verified = false;
     }
 
@@ -121,13 +121,10 @@ public class EmailVerificationToken {
     }
 
     /**
-     * Calculate expiration date
-     *
-     * @param pExpiryTimeInMinutes the expiration time in minutes
-     * @return the expiration date
+     * Update the expiry date
      */
-    private LocalDateTime calculateExpiryDate(final long pExpiryTimeInMinutes) {
-        return LocalDateTime.now().plusMinutes(pExpiryTimeInMinutes);
+    public void updateExpiryDate() {
+        expiryDate = LocalDateTime.now().plusDays(EXPIRATION);
     }
 
     /**

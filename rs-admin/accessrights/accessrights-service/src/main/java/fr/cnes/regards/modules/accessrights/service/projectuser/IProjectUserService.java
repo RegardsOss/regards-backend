@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentif
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationDto;
 import fr.cnes.regards.modules.accessrights.domain.projects.*;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -224,7 +225,7 @@ public interface IProjectUserService {
      */
     boolean canDelete(ProjectUser projectUser);
 
-    void sendVerificationEmail(String email, String originUrl, String requestLink) throws EntityNotFoundException;
+    void sendVerificationEmail(EmailVerificationDto emailVerificationDto) throws EntityNotFoundException;
 
     void updateQuota(Map<String, Long> currentQuotaByEmail);
 
