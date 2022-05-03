@@ -24,7 +24,6 @@ import com.google.common.cache.LoadingCache;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -38,44 +37,35 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class RuleCache {
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private IRuleRepository ruleRepo;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Rule cache is used to avoid useless database request as models rarely change!<br/>
      * tenant key -> attributes val
      */
-    private final LoadingCache<String, Set<Rule>> ruleCachePerTenant = CacheBuilder.newBuilder()
-                                                                                   .build(new CacheLoader<String, Set<Rule>>() {
+    private final LoadingCache<String, Set<Rule>> ruleCachePerTenant;
 
-                                                                                       @Override
-                                                                                       public Set<Rule> load(String tenant) {
-                                                                                           return ruleRepo.findByRulePluginActiveTrue();
-                                                                                       }
-                                                                                   });
+    public RuleCache(IRuntimeTenantResolver runtimeTenantResolver, IRuleRepository ruleRepo) {
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        ruleCachePerTenant = CacheBuilder.newBuilder().build(new CacheLoader<String, Set<Rule>>() {
+
+            @Override
+            public Set<Rule> load(String tenant) {
+                return ruleRepo.findByRulePluginActiveTrue();
+            }
+        });
+    }
 
     /**
      * Get all enabled {@link Rule} for the current tenant if the cache is empty we will load it
      * with data from database
      *
      * @return all enabled {@link Rule}
-     * @throws ExecutionException
+     * @throws ExecutionException if access to repository raises a checked exception
      */
-    protected Set<Rule> getRules() throws ExecutionException {
+    public Set<Rule> getRules() throws ExecutionException {
         String tenant = runtimeTenantResolver.getTenant();
         return ruleCachePerTenant.get(tenant);
-    }
-
-    /**
-     * Clean all {@link Rule} in cache for a tenant
-     *
-     * @param tenant to clean
-     */
-    public void clear(String tenant) {
-        ruleCachePerTenant.invalidate(tenant);
     }
 
     /**

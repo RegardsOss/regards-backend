@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import com.google.common.collect.Sets;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -36,7 +35,7 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
@@ -62,7 +61,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Collection;
+import java.util.HashSet;
 
+import static fr.cnes.regards.modules.notifier.service.PluginConfigurationTestBuilder.aPlugin;
 import static org.junit.Assert.fail;
 
 public abstract class AbstractNotificationMultitenantServiceIT extends AbstractMultitenantServiceIT {
@@ -97,6 +98,9 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
 
     @Autowired
     protected IJobInfoRepository jobInforepo;
+
+    @Autowired
+    protected IPluginService pluginService;
 
     @Autowired
     protected IRecipientService recipientService;
@@ -134,11 +138,10 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
     @SpyBean
     protected NotificationRegistrationService notificationRegistrationService;
 
-
     @Before
     public void before() throws Exception {
         RECIPIENT_FAIL = true;
-        this.ruleCache.clear(runtimeTenantResolver.getTenant());
+        this.ruleCache.clear();
         this.recipientErrorRepo.deleteAll();
         this.notificationRequestRepository.deleteAll();
         this.ruleRepo.deleteAll();
@@ -182,7 +185,7 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
      * @throws InterruptedException
      */
     public void waitDatabaseCreation(JpaRepository<?, ?> repo, int expectedNumber, int timeout)
-            throws InterruptedException {
+        throws InterruptedException {
         long notificationActionNumber = 0;
         int cpt = 0;
         do {
@@ -193,7 +196,8 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
 
         if (notificationActionNumber != expectedNumber) {
             fail(String.format("Wrong notifications number in database after timeout expected %s got %s",
-                               expectedNumber, notificationActionNumber));
+                               expectedNumber,
+                               notificationActionNumber));
         }
     }
 
@@ -206,39 +210,36 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
      */
     protected void initPlugins(boolean fail) throws ModuleException {
         // configuration of the rule plugin
-        PluginConfiguration rulePlugin = new PluginConfiguration();
-        rulePlugin.setBusinessId("testRule");
-        rulePlugin.setVersion("1.0.0");
-        rulePlugin.setLabel("test");
-        rulePlugin.setPluginId("DefaultRuleMatcher");
-
-        StringPluginParam param = IPluginParam.build("attributeToSeek", "nature");
-        rulePlugin.getParameters().add(param);
-        param = IPluginParam.build("attributeValueToSeek", "TM");
-        rulePlugin.getParameters().add(param);
-
-        Collection<String> recipients = Sets.newHashSet();
         // configuration of the default recipient sender plugin
-        PluginConfiguration recipientPlugin = new PluginConfiguration();
-        recipientPlugin.setBusinessId(fail ? "failRecipient" : "testRecipient");
-        recipientPlugin.setVersion("1.0.0");
-        recipientPlugin.setLabel("test recipient");
-        recipientPlugin.setPluginId(fail ? RecipientSenderFail.PLUGIN_ID : RecipientSender3.PLUGIN_ID);
-        recipientService.createOrUpdateRecipient(recipientPlugin);
-        recipients.add(recipientPlugin.getBusinessId());
+        String id = fail ? "failRecipient" : "testRecipient";
+        String pluginId = fail ? RecipientSenderFail.PLUGIN_ID : RecipientSender3.PLUGIN_ID;
+        PluginConfiguration recipientPlugin = aPlugin().identified(id)
+                                                       .named("test recipient")
+                                                       .withPluginId(pluginId)
+                                                       .build();
+        pluginService.savePluginConfiguration(recipientPlugin);
+        Collection<String> recipientIds = new HashSet<>();
+        recipientIds.add(recipientPlugin.getBusinessId());
 
         // configuration of the fake recipient sender (for test)
+        // TODO Pourquoi créer autant de Recipients ? 2 suffiraient a priori
         for (int i = 1; i < RECIPIENTS_PER_RULE; i++) {
-            PluginConfiguration rp = new PluginConfiguration();
-            rp.setBusinessId("testRecipient" + (i + 1));
-            rp.setVersion("1.0.0");
-            rp.setLabel("test recipient");
-            rp.setPluginId("RecipientSender" + (i + 1));
-            rp = recipientService.createOrUpdateRecipient(rp);
-            recipients.add(rp.getBusinessId());
+            PluginConfiguration rp = aPlugin().identified("testRecipient" + (i + 1))
+                                              .named("test recipient")
+                                              .inVersion("1.0.0")
+                                              .withPluginId("RecipientSender" + (i + 1))
+                                              .build();
+            pluginService.savePluginConfiguration(rp);
+            recipientIds.add(rp.getBusinessId());
         }
 
-        ruleService.createOrUpdateRule(RuleDTO.build(rulePlugin, recipients));
+        PluginConfiguration rulePlugin = aPlugin().identified("testRule")
+                                                  .named("test")
+                                                  .withPluginId("DefaultRuleMatcher")
+                                                  .parameterized_by(IPluginParam.build("attributeToSeek", "nature"))
+                                                  .parameterized_by(IPluginParam.build("attributeValueToSeek", "TM"))
+                                                  .build();
+        ruleService.createOrUpdateRule(RuleDTO.build(rulePlugin, recipientIds));
     }
 
     /**
@@ -248,7 +249,7 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
      */
     protected JsonObject initElement(String name) {
         try (InputStream input = this.getClass().getResourceAsStream(name);
-                Reader reader = new InputStreamReader(input)) {
+            Reader reader = new InputStreamReader(input)) {
 
             return gson.fromJson(CharStreams.toString(reader), JsonObject.class);
         } catch (IOException e) {
@@ -260,7 +261,7 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
 
     protected NotificationRequestEvent getEvent(String name) {
         try (InputStream input = this.getClass().getResourceAsStream(name);
-                Reader reader = new InputStreamReader(input)) {
+            Reader reader = new InputStreamReader(input)) {
             return gson.fromJson(CharStreams.toString(reader), NotificationRequestEvent.class);
         } catch (IOException e) {
             String errorMessage = "Cannot import event";
@@ -269,3 +270,4 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
         }
     }
 }
+

@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender5;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationManager;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.*;
@@ -34,13 +37,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=rules", "regards.amqp.enabled=false",
     "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" })
-public class RuleServiceIT extends AbstractNotificationMultitenantServiceIT {
+public class ImportConfigurationIT extends AbstractNotificationMultitenantServiceTest {
 
-    private static final String RECIPIENT_1 = "recipient1";
+    public static final String RECIPIENT_1 = "recipient1";
 
-    private static final String RECIPIENT_2 = "recipient2";
+    public static final String RECIPIENT_2 = "recipient2";
 
-    private static final String RULE_1 = "rule1";
+    public static final String RULE_1 = "rule1";
+
+    @Autowired
+    private NotificationConfigurationManager manager;
 
     private PluginConfiguration firstRecipient;
 
@@ -60,63 +66,53 @@ public class RuleServiceIT extends AbstractNotificationMultitenantServiceIT {
                                    .withPluginId(RecipientSender5.PLUGIN_ID)
                                    .build();
 
-        firstRule = aRule(RULE_1);
-    }
-
-    private PluginConfiguration aRule(String withName) {
-        return aPlugin().identified(withName)
-                        .named("createConfiguration")
-                        .withPluginId("DefaultRuleMatcher")
-                        .parameterized_by(IPluginParam.build("attributeToSeek", "nature"))
-                        .parameterized_by(IPluginParam.build("attributeValueToSeek", "TM"))
-                        .build();
+        firstRule = aPlugin().identified(RULE_1)
+                             .named("createConfiguration")
+                             .withPluginId("DefaultRuleMatcher")
+                             .parameterized_by(IPluginParam.build("attributeToSeek", "nature"))
+                             .parameterized_by(IPluginParam.build("attributeValueToSeek", "TM"))
+                             .build();
     }
 
     @Test
-    public void created_rules_are_retrievable() throws Exception {
-        pluginService.savePluginConfiguration(firstRecipient);
-        pluginService.savePluginConfiguration(secondRecipient);
-
-        RuleDTO ruleToCreate = RuleDTO.build(firstRule, Collections.singleton(RECIPIENT_1));
-        ruleService.createOrUpdateRule(ruleToCreate);
-
-        Optional<RuleDTO> actualRule = ruleService.getRule(RULE_1);
-        assertThat(actualRule).isPresent();
-        assertThat(actualRule.get().getRulePluginConfiguration().getLabel()).isEqualTo("createConfiguration");
-        assertThat(actualRule.get().getRecipientsBusinessIds()).containsExactly(RECIPIENT_1);
-    }
-
-    @Test
-    public void rule_update_persists_modification_in_repository() throws Exception {
-        pluginService.savePluginConfiguration(firstRecipient);
-        pluginService.savePluginConfiguration(secondRecipient);
-        RuleDTO ruleToCreate = RuleDTO.build(firstRule, Collections.singleton(RECIPIENT_1));
-        ruleService.createOrUpdateRule(ruleToCreate);
-
-        RuleDTO toUpdate = ruleService.getRule(RULE_1)
-                                      .orElseThrow(() -> new AssertionError("rule is not found in repository"));
-        toUpdate.getRulePluginConfiguration().setLabel("newOne");
-        toUpdate.getRecipientsBusinessIds().add(RECIPIENT_2);
-        ruleService.createOrUpdateRule(toUpdate);
-
-        Optional<RuleDTO> actualRule = ruleService.getRule(RULE_1);
-        assertThat(actualRule).isPresent();
-        assertThat(actualRule.get().getRulePluginConfiguration().getLabel()).isEqualTo("newOne");
-        assertThat(actualRule.get().getRecipientsBusinessIds()).containsExactly(RECIPIENT_1, RECIPIENT_2);
-    }
-
-    @Test
-    public void rule_update_remove_obsolete_recipients() throws Exception {
+    public void import_configuration_create_elements_in_repository() throws Exception {
         pluginService.savePluginConfiguration(firstRecipient);
         pluginService.savePluginConfiguration(secondRecipient);
         List<String> recipients = Arrays.asList(RECIPIENT_1, RECIPIENT_2);
         RuleDTO ruleToCreate = RuleDTO.build(firstRule, new HashSet<>(recipients));
         ruleService.createOrUpdateRule(ruleToCreate);
 
-        RuleDTO toUpdate = ruleService.getRule(RULE_1).get();
+        ModuleConfiguration exportedConf = manager.exportConfiguration();
+        ruleService.deleteAll(Collections.emptyList());
+        recipientService.deleteAll(Collections.emptyList());
+        manager.importConfigurationAndLog(exportedConf);
+
+        assertThat(recipientService.getRecipients()).map(PluginConfiguration::getBusinessId)
+                                                    .contains(RECIPIENT_1, RECIPIENT_2);
+        Optional<RuleDTO> actualRule = ruleService.getRule(RULE_1);
+        assertThat(actualRule).isPresent();
+        assertThat(actualRule.get().getRecipientsBusinessIds()).containsExactly(RECIPIENT_1, RECIPIENT_2);
+    }
+
+    @Test
+    public void import_configuration_update_existing_elements_in_repository() throws Exception {
+        pluginService.savePluginConfiguration(firstRecipient);
+        pluginService.savePluginConfiguration(secondRecipient);
+        List<String> recipients = Arrays.asList(RECIPIENT_1, RECIPIENT_2);
+        RuleDTO ruleToCreate = RuleDTO.build(firstRule, new HashSet<>(recipients));
+        ruleService.createOrUpdateRule(ruleToCreate);
+        ModuleConfiguration exportedConf = manager.exportConfiguration();
+        RuleDTO toUpdate = ruleService.getRule(RULE_1)
+                                      .orElseThrow(() -> new AssertionError("rule is not found in repository"));
         toUpdate.getRecipientsBusinessIds().clear();
         toUpdate.getRecipientsBusinessIds().add(RECIPIENT_2);
         ruleService.createOrUpdateRule(toUpdate);
+        ModuleConfiguration exportedConf2 = manager.exportConfiguration();
+        ruleService.deleteAll(Collections.emptyList());
+        recipientService.deleteAll(Collections.emptyList());
+
+        manager.importConfigurationAndLog(exportedConf);
+        manager.importConfigurationAndLog(exportedConf2);
 
         Optional<RuleDTO> actualRule = ruleService.getRule(RULE_1);
         assertThat(actualRule).isPresent();
