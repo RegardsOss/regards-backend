@@ -4,7 +4,6 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
@@ -16,7 +15,7 @@ import java.util.UUID;
 
 /**
  * Handler of {@link WorkerHeartBeatEvent} events
- *
+ * <p>
  * NOTE : heartbeat queue is created with autoDelete amqp option. With this options tests will fails during queue
  * creation. So this handler bean is never instantiated in test context
  *
@@ -25,11 +24,11 @@ import java.util.UUID;
 @Component
 @Profile("!testAmqp")
 public class WorkerHeartBeatEventHandler
-        implements IBatchHandler<WorkerHeartBeatEvent>, ApplicationListener<ApplicationReadyEvent> {
+    implements IBatchHandler<WorkerHeartBeatEvent>, ApplicationListener<ApplicationReadyEvent> {
 
-    private ISubscriber subscriber;
+    private final ISubscriber subscriber;
 
-    private WorkerCacheService workerCacheService;
+    private final WorkerCacheService workerCacheService;
 
     public WorkerHeartBeatEventHandler(ISubscriber subscriber, WorkerCacheService workerCacheService) {
         this.subscriber = subscriber;
@@ -55,7 +54,8 @@ public class WorkerHeartBeatEventHandler
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Use a random uuid to create a unique queue for this instance of the microservice.
         // Heartbeat needs to be listened by each instance of microservice so a queue is bind to the exchange for each instance.
-        subscriber.subscribeTo(WorkerHeartBeatEvent.class, this,
+        subscriber.subscribeTo(WorkerHeartBeatEvent.class,
+                               this,
                                "regards.worker.manager.heartbeat." + UUID.randomUUID(),
                                "regards.worker.manager.heartbeat");
     }

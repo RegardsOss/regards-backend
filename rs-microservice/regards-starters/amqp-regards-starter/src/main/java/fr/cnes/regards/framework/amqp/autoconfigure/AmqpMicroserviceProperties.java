@@ -23,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 
 /**
  * class regrouping properties about the microservice
+ *
  * @author svissier
  */
 @Validated

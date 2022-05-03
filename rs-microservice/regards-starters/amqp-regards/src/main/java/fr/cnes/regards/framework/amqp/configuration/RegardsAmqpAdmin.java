@@ -37,12 +37,11 @@ import java.util.UUID;
 
 /**
  * This class manage tenant AMQP administration. Each tenant is hosted in an AMQP virtual host.<br/>
+ *
  * @author svissier
  * @author Marc Sordi
  */
 public class RegardsAmqpAdmin implements IAmqpAdmin {
-
-    private static final String DOT = ".";
 
     public static final String UNICAST_BASE_EXCHANGE_NAME = "unicast";
 
@@ -58,12 +57,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      */
     public static final Integer MAX_PRIORITY = 255;
 
-    /**
-     * Class logger
-     */
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdmin.class);
-
     public static final String DLX_SUFFIX = ".DLX";
 
     public static final String DLQ_SUFFIX = ".DLQ";
@@ -71,6 +64,19 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     public static final String REGARDS_DLX = "regards" + DLX_SUFFIX;
 
     public static final String REGARDS_DLQ = "regards" + DLQ_SUFFIX;
+
+    private static final String DOT = ".";
+
+    /**
+     * Class logger
+     */
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdmin.class);
+
+    /*
+     * Namespace used in queue and exchange naming
+     */
+    private final String namespace;
 
     /**
      * Bean allowing us to declare queue, exchange, binding
@@ -91,11 +97,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * Moreover, related queues will be created with <b>auto delete</b> capabilities.
      */
     private String microserviceInstanceId;
-
-    /*
-     * Namespace used in queue and exchange naming
-     */
-    private final String namespace;
 
     /**
      * Whether above instance identifier is generated or not. If so, queues using instance identifier will be auto delete queues.
@@ -133,22 +134,25 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         Exchange exchange;
         switch (channel.getWorkerMode()) {
             case UNICAST:
-                exchange = ExchangeBuilder.directExchange(
-                        channel.getExchangeName().orElse(getUnicastExchangeName())).durable(true).build();
+                exchange = ExchangeBuilder.directExchange(channel.getExchangeName().orElse(getUnicastExchangeName()))
+                                          .durable(true)
+                                          .build();
                 break;
             case BROADCAST:
                 if (channel.getRoutingKey().isPresent()) {
-                    exchange = ExchangeBuilder.topicExchange(
-                                    channel.getExchangeName().orElse(
-                                    getBroadcastExchangeName(channel.getEventType().getName(),
-                                                             channel.getTarget())))
-                            .durable(true)
-                            .build();
+                    exchange = ExchangeBuilder.topicExchange(channel.getExchangeName()
+                                                                    .orElse(getBroadcastExchangeName(channel.getEventType()
+                                                                                                            .getName(),
+                                                                                                     channel.getTarget())))
+                                              .durable(true)
+                                              .build();
                 } else {
-                    exchange = ExchangeBuilder.fanoutExchange(channel.getExchangeName().orElse(
-                            getBroadcastExchangeName(channel.getEventType().getName(), channel.getTarget())))
-                            .durable(true)
-                            .build();
+                    exchange = ExchangeBuilder.fanoutExchange(channel.getExchangeName()
+                                                                     .orElse(getBroadcastExchangeName(channel.getEventType()
+                                                                                                             .getName(),
+                                                                                                      channel.getTarget())))
+                                              .durable(true)
+                                              .build();
                 }
                 break;
             default:
@@ -218,20 +222,21 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         switch (channel.getWorkerMode()) {
             case UNICAST:
                 // Useful for publishing unicast event and subscribe to a unicast exchange
-                builder = QueueBuilder.durable(channel.getQueueName().orElse(
-                        getUnicastQueueName(tenant, channel.getEventType(), channel.getTarget())));
+                builder = QueueBuilder.durable(channel.getQueueName()
+                                                      .orElse(getUnicastQueueName(tenant,
+                                                                                  channel.getEventType(),
+                                                                                  channel.getTarget())));
                 if (channel.isDeclareDlq()) {
-                    builder = builder
-                            .deadLetterExchange(dlx)
-                            .deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY);
+                    builder = builder.deadLetterExchange(dlx).deadLetterRoutingKey(dlrk).maxPriority(MAX_PRIORITY);
                 }
                 break;
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
                 if (channel.getHandlerType().isPresent()) {
 
-                    String qn = channel.getQueueName().orElse(
-                            getSubscriptionQueueName(channel.getHandlerType().get(), channel.getTarget()));
+                    String qn = channel.getQueueName()
+                                       .orElse(getSubscriptionQueueName(channel.getHandlerType().get(),
+                                                                        channel.getTarget()));
 
                     builder = QueueBuilder.durable(qn).maxPriority(MAX_PRIORITY);
 
@@ -271,9 +276,10 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * {@link Target} restriction.<br/>
      * Tenant is used for working queues naming to prevent starvation of a project. Otherwise, some projects may
      * monopolize a single multitenant queue!
-     * @param tenant tenant (useful for queue naming in single virtual host and compatible with multiple virtual hosts)
+     *
+     * @param tenant    tenant (useful for queue naming in single virtual host and compatible with multiple virtual hosts)
      * @param eventType event type
-     * @param target {@link Target}
+     * @param target    {@link Target}
      * @return queue name
      */
     @Override
@@ -299,6 +305,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * Subscription queue name based on event {@link IHandler} type name and {@link Target} restriction. The uniqueness
      * of the queue is guaranteed by the combination of microservice type, id and handler for {@link Target#ALL}
      * type.
+     *
      * @param handlerType event handler
      * @return queue name
      */
@@ -328,18 +335,25 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
-    public Binding declareBinding(Queue queue, Exchange exchange, WorkerMode workerMode, Optional<String> broadcastRoutingKey) {
+    public Binding declareBinding(Queue queue,
+                                  Exchange exchange,
+                                  WorkerMode workerMode,
+                                  Optional<String> broadcastRoutingKey) {
 
         Binding binding;
         switch (workerMode) {
             case UNICAST:
-                binding = BindingBuilder.bind(queue).to((DirectExchange) exchange)
-                        .with(getRoutingKey(Optional.of(queue), WorkerMode.UNICAST, Optional.empty()));
+                binding = BindingBuilder.bind(queue)
+                                        .to((DirectExchange) exchange)
+                                        .with(getRoutingKey(Optional.of(queue), WorkerMode.UNICAST, Optional.empty()));
                 break;
             case BROADCAST:
                 if (broadcastRoutingKey.isPresent()) {
-                    binding = BindingBuilder.bind(queue).to((TopicExchange) exchange)
-                            .with(getRoutingKey(Optional.of(queue), WorkerMode.BROADCAST, broadcastRoutingKey));
+                    binding = BindingBuilder.bind(queue)
+                                            .to((TopicExchange) exchange)
+                                            .with(getRoutingKey(Optional.of(queue),
+                                                                WorkerMode.BROADCAST,
+                                                                broadcastRoutingKey));
                 } else {
                     binding = BindingBuilder.bind(queue).to((FanoutExchange) exchange);
                 }
@@ -381,7 +395,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     public void purgeQueue(String queueName, boolean noWait) {
         rabbitAdmin.purgeQueue(queueName, noWait);
     }
-
 
     @Override
     public boolean isQueueEmpty(String queueName) {
