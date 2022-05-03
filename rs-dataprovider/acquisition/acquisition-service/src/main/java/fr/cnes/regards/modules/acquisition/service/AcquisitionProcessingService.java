@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.*;
 import fr.cnes.regards.modules.acquisition.domain.*;
@@ -65,6 +66,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MimeTypeUtils;
 
@@ -584,40 +586,77 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public List<String> getExecutionBlockers(AcquisitionProcessingChain processingChain) {
-
         List<String> blockers = new ArrayList<>();
 
-        Set<String> pluginBusinessIdSet = new HashSet<>();
+        // Blockers for Scan plugins
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
-            pluginBusinessIdSet.add(fileInfo.getScanPlugin().getBusinessId());
+            blockers.addAll(computePluginBlocker(processingChain,
+                                                 fileInfo.getScanPlugin().getBusinessId(),
+                                                 String.format("Scan plugin for file descriptor %s",
+                                                               fileInfo.getComment())));
         }
-        pluginBusinessIdSet.add(processingChain.getValidationPluginConf().getBusinessId());
-        pluginBusinessIdSet.add(processingChain.getProductPluginConf().getBusinessId());
-        pluginBusinessIdSet.add(processingChain.getGenerateSipPluginConf().getBusinessId());
-        processingChain.getPostProcessSipPluginConf()
-                       .ifPresent(pluginConfiguration -> pluginBusinessIdSet.add(processingChain.getPostProcessSipPluginConf()
-                                                                                                .get()
-                                                                                                .getBusinessId()));
 
-        pluginBusinessIdSet.forEach(businessId -> {
-            try {
-                Object plugin = pluginService.getPlugin(businessId);
-                if (plugin instanceof IChainBlockingPlugin) {
-                    blockers.addAll(((IChainBlockingPlugin) plugin).getExecutionBlockers(processingChain));
-                }
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                LOGGER.error("Unable to evaluate chain blocking plugins", e);
-            }
-        });
+        // Blockers for Validation plugin
+        blockers.addAll(computePluginBlocker(processingChain,
+                                             processingChain.getValidationPluginConf().getBusinessId(),
+                                             "Validation plugin"));
+
+        // Blockers for Product plugin
+        blockers.addAll(computePluginBlocker(processingChain,
+                                             processingChain.getProductPluginConf().getBusinessId(),
+                                             "Product plugin"));
+
+        // Blockers for Generate Sip plugin
+        blockers.addAll(computePluginBlocker(processingChain,
+                                             processingChain.getGenerateSipPluginConf().getBusinessId(),
+                                             "Generate Sip plugin"));
+
+        // Blocker for Post-processing Sip Plugin if used
+        if (processingChain.getPostProcessSipPluginConf().isPresent()) {
+            blockers.addAll(computePluginBlocker(processingChain,
+                                                 processingChain.getPostProcessSipPluginConf().get().getBusinessId(),
+                                                 "Post-processing Sip plugin"));
+        }
 
         return blockers;
+    }
+
+    /**
+     * Compute potential blockers for the given plugin
+     *
+     * @param processingChain the processing chain
+     * @param pluginId        the business id of the plugin to check
+     * @param pluginName      the name of the plugin displayed in error messages and logs
+     * @return the eventual blockers for the given plugin
+     */
+    private List<String> computePluginBlocker(AcquisitionProcessingChain processingChain,
+                                              String pluginId,
+                                              String pluginName) {
+        try {
+            Object plugin = pluginService.getPlugin(pluginId);
+            if (plugin instanceof IChainBlockingPlugin) {
+                return ((IChainBlockingPlugin) plugin).getExecutionBlockers(processingChain);
+            }
+        } catch (PluginUtilsRuntimeException e) {
+            LOGGER.error(String.format("Could not instantiate %s.", pluginName), e);
+            return Arrays.asList(String.format("Could not instantiate %s. Check logs to get more information.",
+                                               pluginName));
+        } catch (NotAvailablePluginConfigurationException e) {
+            LOGGER.error(String.format("%s is not active.", pluginName), e);
+            return Arrays.asList(String.format("%s is not active.", pluginName));
+        } catch (ModuleException e) {
+            LOGGER.error("Unable to evaluate chain blocking plugins", e);
+            return Arrays.asList("Unable to evaluate chain blocking plugins");
+        }
+        return new ArrayList<>();
     }
 
     @Override
     public boolean hasExecutionBlockers(AcquisitionProcessingChain chain, boolean doNotify) {
 
-        List<String> executionBlockers = getExecutionBlockers(chain);
+        List<String> executionBlockers = self.getExecutionBlockers(chain);
         boolean hasExecutionBlockers = !CollectionUtils.isEmpty(executionBlockers);
 
         if (hasExecutionBlockers && doNotify) {
@@ -1095,7 +1134,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         monitor.setActive(isProductAcquisitionJobActive,
                           productService.countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain,
                                                                                                  ProductSIPState.SCHEDULED));
-        monitor.getExecutionBlockers().addAll(getExecutionBlockers(chain));
+        monitor.getExecutionBlockers().addAll(self.getExecutionBlockers(chain));
         return monitor;
     }
 
