@@ -62,25 +62,28 @@ import java.util.stream.Stream;
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class NotificationMatchingService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationMatchingService.class);
-
     protected static final String OPTIMIST_LOCK_LOG_MSG = "Another schedule has updated some of the requests handled by this method while it was running.";
 
-    private IPluginService pluginService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationMatchingService.class);
 
-    private NotificationConfigurationProperties properties;
+    private final IPluginService pluginService;
 
-    private INotificationClient notificationClient;
+    private final NotificationConfigurationProperties properties;
 
-    private INotificationRequestRepository notificationRequestRepository;
+    private final INotificationClient notificationClient;
 
-    private IPublisher publisher;
+    private final INotificationRequestRepository notificationRequestRepository;
 
-    private NotificationMatchingService self;
+    private final IPublisher publisher;
+
+    private final NotificationMatchingService self;
 
     public NotificationMatchingService(INotificationRequestRepository notificationRequestRepository,
-            IPublisher publisher, IPluginService pluginService, NotificationConfigurationProperties properties,
-            INotificationClient notificationClient, NotificationMatchingService notificationMatchingService) {
+                                       IPublisher publisher,
+                                       IPluginService pluginService,
+                                       NotificationConfigurationProperties properties,
+                                       INotificationClient notificationClient,
+                                       NotificationMatchingService notificationMatchingService) {
         this.notificationRequestRepository = notificationRequestRepository;
         this.publisher = publisher;
         this.pluginService = pluginService;
@@ -88,14 +91,18 @@ public class NotificationMatchingService {
         this.notificationClient = notificationClient;
         this.self = notificationMatchingService;
     }
-    
+
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Pair<Integer, Integer> matchRequestNRecipient() {
         LOGGER.debug("------------------------ Starting MATCHING");
         long startTime = System.currentTimeMillis();
-        List<NotificationRequest> grantedToBeMatched = notificationRequestRepository
-                .findByState(NotificationState.GRANTED, PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc(NotificationRequest.REQUEST_DATE_JPQL_NAME))))
-                .getContent();
+        List<NotificationRequest> grantedToBeMatched = notificationRequestRepository.findByState(NotificationState.GRANTED,
+                                                                                                 PageRequest.of(0,
+                                                                                                                properties.getMaxBulkSize(),
+                                                                                                                Sort.by(
+                                                                                                                    Order.asc(
+                                                                                                                        NotificationRequest.REQUEST_DATE_JPQL_NAME))))
+                                                                                    .getContent();
         Pair<Integer, Integer> result = matchRequestNRecipientRetryable(grantedToBeMatched);
         LOGGER.debug("------------------------ Stopping MATCHING in {} ms", System.currentTimeMillis() - startTime);
         return result;
@@ -109,7 +116,11 @@ public class NotificationMatchingService {
             // we retry until it succeed because if it does not succeed on first time it is most likely because of
             // another scheduled method that would then most likely happen at next invocation because execution delays are fixed
             // Moreover, we cannot retry on the same content as it has to be reloaded from DB
-            return matchRequestNRecipientRetryable(notificationRequestRepository.findAllById(toBeMatched.stream().map(NotificationRequest::getId).collect(Collectors.toSet())));
+            return matchRequestNRecipientRetryable(notificationRequestRepository.findAllById(toBeMatched.stream()
+                                                                                                        .map(
+                                                                                                            NotificationRequest::getId)
+                                                                                                        .collect(
+                                                                                                            Collectors.toSet())));
         }
     }
 
@@ -141,7 +152,8 @@ public class NotificationMatchingService {
                     couldBeMatched.add(rule);
                 } catch (ModuleException | NotAvailablePluginConfigurationException | PluginMetadataNotFoundRuntimeException | PluginUtilsRuntimeException e) {
                     // exception from rule plugin instantiation
-                    LOGGER.error(String.format("Error while get plugin with id %S", rule.getRulePlugin().getBusinessId()), e);
+                    LOGGER.error(String.format("Error while get plugin with id %S",
+                                               rule.getRulePlugin().getBusinessId()), e);
                     // we do not set notification request in error so that we can later handle recipients that could be matched
                     // moreover, we do not stop the matching process as we want to process recipients as soon as possible
                     // the only drawback is that it is possible to process one recipient twice in case multiple rules
@@ -159,32 +171,36 @@ public class NotificationMatchingService {
         // None of the notification requests have been set in state error
         // But there is indeed an issue that can only be resolved later (thanks to human interaction) so we need to say
         // the request has been in error so callers can handle it and ask for retry later.
-        publisher.publish(
-                requestsCouldNotBeMatched.stream()
-                        .map(request -> new NotifierEvent(request.getRequestId(), request.getRequestOwner(), NotificationState.ERROR))
-                        .collect(Collectors.toList()));
+        publisher.publish(requestsCouldNotBeMatched.stream()
+                                                   .map(request -> new NotifierEvent(request.getRequestId(),
+                                                                                     request.getRequestOwner(),
+                                                                                     NotificationState.ERROR))
+                                                   .collect(Collectors.toList()));
         if (!cannotBeInstantiatedRules.isEmpty()) {
             String message = cannotBeInstantiatedRules.stream()
-                    .map(couldNotBeInstantiated -> String.format("%s plugin with id %s could not be instantiated so notifier cannot fully handle any requests for now.",
-                            couldNotBeInstantiated.getPluginClassName(), couldNotBeInstantiated.getBusinessId()))
-                    .collect(Collectors.joining("<br>", "<p>", "</p>"));
-            notificationClient.notify(message, String.format("Some %s plugins could not be instantiated", IRuleMatcher.class.getSimpleName()),
-                    NotificationLevel.FATAL, MediaType.TEXT_HTML, DefaultRole.ADMIN);
+                                                      .map(couldNotBeInstantiated -> String.format(
+                                                          "%s plugin with id %s could not be instantiated so notifier cannot fully handle any requests for now.",
+                                                          couldNotBeInstantiated.getPluginClassName(),
+                                                          couldNotBeInstantiated.getBusinessId()))
+                                                      .collect(Collectors.joining("<br>", "<p>", "</p>"));
+            notificationClient.notify(message,
+                                      String.format("Some %s plugins could not be instantiated",
+                                                    IRuleMatcher.class.getSimpleName()),
+                                      NotificationLevel.FATAL,
+                                      MediaType.TEXT_HTML,
+                                      DefaultRole.ADMIN);
         }
         // do not forget to handle all requests that were not matched by any rule and so should be considered successful
         // right now (for simplicity issue lets set its state to SCHEDULED and wait for the check to be done)
-        Predicate<NotificationRequest> isSchedulable =
-                r -> Stream.of(
-                                !requestsCouldNotBeMatched.contains(r),
-                                !requestsActuallyMatched.contains(r),
-                                // because of retry logic in case of previous error in the matching process,
-                                // we have to check that nothing is to be done (already planned)
-                                // This case can happen if the rule that could not be matched earlier does not match the request
-                                r.getRecipientsToSchedule().isEmpty(),
-                                r.getRecipientsInError().isEmpty(),
-                                r.getRecipientsScheduled().isEmpty(),
-                                r.getRulesToMatch().isEmpty())
-                        .allMatch(b -> b);
+        Predicate<NotificationRequest> isSchedulable = r -> Stream.of(!requestsCouldNotBeMatched.contains(r),
+                                                                      !requestsActuallyMatched.contains(r),
+                                                                      // because of retry logic in case of previous error in the matching process,
+                                                                      // we have to check that nothing is to be done (already planned)
+                                                                      // This case can happen if the rule that could not be matched earlier does not match the request
+                                                                      r.getRecipientsToSchedule().isEmpty(),
+                                                                      r.getRecipientsInError().isEmpty(),
+                                                                      r.getRecipientsScheduled().isEmpty(),
+                                                                      r.getRulesToMatch().isEmpty()).allMatch(b -> b);
 
         toBeMatched.stream().filter(isSchedulable).forEach(request -> request.setState(NotificationState.SCHEDULED));
 

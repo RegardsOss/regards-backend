@@ -44,8 +44,8 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of recipient service
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Service
 @MultitenantTransactional
@@ -93,7 +93,7 @@ public class RecipientService implements IRecipientService {
 
     @Override
     public PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration recipientPluginConf)
-            throws ModuleException {
+        throws ModuleException {
         PluginConfiguration result;
         if (recipientPluginConf.getId() == null) {
             result = pluginService.savePluginConfiguration(recipientPluginConf);
@@ -112,8 +112,10 @@ public class RecipientService implements IRecipientService {
         // Check  if a rule is associated to the recipient first
         for (Rule rule : ruleRepository.findByRecipientsBusinessId(id)) {
             // Remove  recipient to delete
-            rule.setRecipients(rule.getRecipients().stream().filter(c -> !c.getBusinessId().equals(id))
-                                       .collect(Collectors.toSet()));
+            rule.setRecipients(rule.getRecipients()
+                                   .stream()
+                                   .filter(c -> !c.getBusinessId().equals(id))
+                                   .collect(Collectors.toSet()));
         }
         // Delete associated errors
         recipientErrorRepository.deleteByRecipientBusinessId(id);
@@ -129,7 +131,6 @@ public class RecipientService implements IRecipientService {
         for (PluginConfiguration conf : pluginService.getPluginConfigurationsByType(IRecipientNotifier.class)) {
             recipientErrorRepository.deleteByRecipientBusinessId(conf.getBusinessId());
             pluginToDelete.add(conf.getBusinessId());
-
         }
         // Clean cache
         ruleCache.clear();

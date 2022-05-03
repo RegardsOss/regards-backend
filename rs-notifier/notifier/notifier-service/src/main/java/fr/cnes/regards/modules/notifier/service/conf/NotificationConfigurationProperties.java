@@ -25,7 +25,6 @@ import org.springframework.context.annotation.Configuration;
  * notifier configuration properties
  *
  * @author Marc SORDI
- *
  */
 @Configuration
 public class NotificationConfigurationProperties {

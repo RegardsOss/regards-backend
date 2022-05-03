@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.Set;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
-import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
-
 /**
  * Service for recipient({@link PluginConfiguration}) manipulation
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public interface IRecipientService {
 
@@ -40,7 +39,8 @@ public interface IRecipientService {
 
     /**
      * Create or update a recipient({@link PluginConfiguration}) from a recipient({@link PluginConfiguration})
-     * @return recipient({@link PluginConfiguration}) from the created recipient({@link PluginConfiguration})
+     *
+     * @return recipient({ @ link PluginConfiguration }) from the created recipient({@link PluginConfiguration})
      * @throws ModuleException if during an update id is unknow
      */
     PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration toCreate) throws ModuleException;
@@ -52,12 +52,14 @@ public interface IRecipientService {
 
     /**
      * Delete all plugin configurations for {@link IRecipientNotifier} plugin type
+     *
      * @return plugin businessIds to delete
      */
     Set<String> deleteAll(Collection<String> deletionErrors);
 
     /**
      * schedule {@link fr.cnes.regards.modules.notifier.service.job.NotificationJob} for each recipient
+     *
      * @return number of {@link fr.cnes.regards.modules.notifier.service.job.NotificationJob} scheduled
      */
     int scheduleNotificationJobs();

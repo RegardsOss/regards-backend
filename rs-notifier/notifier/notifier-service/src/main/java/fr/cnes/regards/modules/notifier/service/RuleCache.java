@@ -49,17 +49,18 @@ public class RuleCache {
      * tenant key -> attributes val
      */
     private final LoadingCache<String, Set<Rule>> ruleCachePerTenant = CacheBuilder.newBuilder()
-            .build(new CacheLoader<String, Set<Rule>>() {
+                                                                                   .build(new CacheLoader<String, Set<Rule>>() {
 
-                @Override
-                public Set<Rule> load(String tenant) {
-                    return ruleRepo.findByRulePluginActiveTrue();
-                }
-            });
+                                                                                       @Override
+                                                                                       public Set<Rule> load(String tenant) {
+                                                                                           return ruleRepo.findByRulePluginActiveTrue();
+                                                                                       }
+                                                                                   });
 
     /**
      * Get all enabled {@link Rule} for the current tenant if the cache is empty we will load it
      * with data from database
+     *
      * @return all enabled {@link Rule}
      * @throws ExecutionException
      */
@@ -83,5 +84,4 @@ public class RuleCache {
     public void clear() {
         ruleCachePerTenant.invalidate(runtimeTenantResolver.getTenant());
     }
-
 }

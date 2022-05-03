@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 /**
  * Configuration manager for current module
+ *
  * @author Sébastien Binda
  */
 @Component
@@ -109,7 +110,6 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
             LOGGER.warn(IMPORT_FAIL_MESSAGE, ex);
             importErrors.add(ex.getMessage());
         }
-
         return importErrors;
     }
 
@@ -127,25 +127,32 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
 
         // Export rule recipient associations
         Page<RuleDTO> rules = ruleService.getRules(PageRequest.of(0, 100_000));
-        configurations.addAll(rules.getContent().stream()
-                .map(r -> ModuleConfigurationItem.build(toRuleRecipientsAssoc(r))).collect(Collectors.toSet()));
+        configurations.addAll(rules.getContent()
+                                   .stream()
+                                   .map(r -> ModuleConfigurationItem.build(toRuleRecipientsAssoc(r)))
+                                   .collect(Collectors.toSet()));
 
         return ModuleConfiguration.build(info, true, configurations);
     }
 
     /**
      * Get all {@link PluginConfiguration}s of the {@link ModuleConfigurationItem}s
+     *
      * @param items {@link ModuleConfigurationItem}s
-     * @return  {@link PluginConfiguration}s
+     * @return {@link PluginConfiguration}s
      */
     private Set<PluginConfiguration> getPluginConfs(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
-                .map(i -> (PluginConfiguration) i.getTypedValue()).collect(Collectors.toSet());
+        return items.stream()
+                    .filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
+                    .map(i -> (PluginConfiguration) i.getTypedValue())
+                    .collect(Collectors.toSet());
     }
 
     private Set<RuleRecipientsAssociation> getRulesRecipientsAssoc(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> RuleRecipientsAssociation.class.isAssignableFrom(i.getKey()))
-                .map(i -> (RuleRecipientsAssociation) i.getTypedValue()).collect(Collectors.toSet());
+        return items.stream()
+                    .filter(i -> RuleRecipientsAssociation.class.isAssignableFrom(i.getKey()))
+                    .map(i -> (RuleRecipientsAssociation) i.getTypedValue())
+                    .collect(Collectors.toSet());
     }
 
     private RuleRecipientsAssociation toRuleRecipientsAssoc(RuleDTO rule) {

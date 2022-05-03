@@ -19,19 +19,14 @@
 package fr.cnes.regards.modules.notifier.dto.in;
 
 import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.amqp.event.*;
+
 import javax.validation.constraints.NotNull;
-
 import java.time.OffsetDateTime;
-
-import com.google.gson.JsonElement;
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * An event contain a JSON element plus an action
+ *
  * @author Kevin Marchois
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)

@@ -52,7 +52,7 @@ public class NotificationConfigurationService {
     private IRuleService ruleService;
 
     public void importConfiguration(Set<PluginConfiguration> configurations,
-            Set<RuleRecipientsAssociation> associations) throws ModuleException {
+                                    Set<RuleRecipientsAssociation> associations) throws ModuleException {
 
         Map<String, PluginConfiguration> rulePluginConfs = new HashMap<>();
         Class<IRuleMatcher> ruleClass = IRuleMatcher.class;
@@ -60,8 +60,8 @@ public class NotificationConfigurationService {
 
         Map<String, PluginConfiguration> recipientPluginConfs = new HashMap<>();
         Class<IRecipientNotifier> recipientClass = IRecipientNotifier.class;
-        List<PluginConfiguration> existingRecipientPluginConfs = pluginService
-                .getPluginConfigurationsByType(recipientClass);
+        List<PluginConfiguration> existingRecipientPluginConfs = pluginService.getPluginConfigurationsByType(
+            recipientClass);
 
         // Dispatch existing configurations
         existingRulePluginConfs.forEach(p -> rulePluginConfs.put(p.getBusinessId(), p));
@@ -83,10 +83,12 @@ public class NotificationConfigurationService {
                     // Manage recipients
                     createOrUpdate(recipientPluginConfs, conf);
                 } else {
-                    String errorMessage = String
-                            .format("Expecting %s or %s plugin type but found %s for plugin with business id %s",
-                                    ruleClass.getName(), recipientClass.getName(), pluginMeta.getInterfaceNames(),
-                                    conf.getBusinessId());
+                    String errorMessage = String.format(
+                        "Expecting %s or %s plugin type but found %s for plugin with business id %s",
+                        ruleClass.getName(),
+                        recipientClass.getName(),
+                        pluginMeta.getInterfaceNames(),
+                        conf.getBusinessId());
                     LOGGER.error(errorMessage);
                     throw new ModuleException(errorMessage);
                 }
@@ -100,9 +102,9 @@ public class NotificationConfigurationService {
                 // Check target rule
                 PluginConfiguration ruleConf = rulePluginConfs.get(asso.getRuleId());
                 if (ruleConf == null) {
-                    String errorMessage = String
-                            .format("Unknown RULE plugin business id %s in rule/recipient association",
-                                    asso.getRuleId());
+                    String errorMessage = String.format(
+                        "Unknown RULE plugin business id %s in rule/recipient association",
+                        asso.getRuleId());
                     LOGGER.error(errorMessage);
                     throw new ModuleException(errorMessage);
                 }
@@ -111,9 +113,10 @@ public class NotificationConfigurationService {
                 for (String recipientLabel : asso.getRecipientIds()) {
                     PluginConfiguration recipientConf = recipientPluginConfs.get(recipientLabel);
                     if (recipientConf == null) {
-                        String errorMessage = String
-                                .format("Unknown RECIPIENT plugin business id %s in association with RULE %s",
-                                        recipientLabel, asso.getRuleId());
+                        String errorMessage = String.format(
+                            "Unknown RECIPIENT plugin business id %s in association with RULE %s",
+                            recipientLabel,
+                            asso.getRuleId());
                         LOGGER.error(errorMessage);
                         throw new ModuleException(errorMessage);
                     }
@@ -126,7 +129,7 @@ public class NotificationConfigurationService {
     }
 
     private void createOrUpdate(Map<String, PluginConfiguration> existing, PluginConfiguration conf)
-            throws ModuleException {
+        throws ModuleException {
         PluginConfiguration existingOne = existing.get(conf.getBusinessId());
         if (existingOne != null) {
             LOGGER.info("Updating existing plugin configuration {}", conf.getBusinessId());
@@ -137,7 +140,8 @@ public class NotificationConfigurationService {
         } else {
             // Add new configuration to existing ones
             existing.put(conf.getBusinessId(), pluginService.savePluginConfiguration(conf));
-            LOGGER.info("New plugin configuration {} created of type {}", conf.getBusinessId(),
+            LOGGER.info("New plugin configuration {} created of type {}",
+                        conf.getBusinessId(),
                         conf.getInterfaceNames());
         }
     }

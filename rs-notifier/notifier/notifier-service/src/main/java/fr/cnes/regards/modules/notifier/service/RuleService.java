@@ -43,8 +43,8 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation for rule service
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Service
 @MultitenantTransactional
@@ -112,8 +112,10 @@ public class RuleService implements IRuleService {
     @Override
     public Set<String> deleteAll(Collection<String> deletionErrors) {
         List<Rule> rules = ruleRepo.findAll();
-        Set<String> confToDelete = rules.stream().map(Rule::getRulePlugin).map(PluginConfiguration::getBusinessId)
-                .collect(Collectors.toSet());
+        Set<String> confToDelete = rules.stream()
+                                        .map(Rule::getRulePlugin)
+                                        .map(PluginConfiguration::getBusinessId)
+                                        .collect(Collectors.toSet());
         // Delete  rule associations
         notifRepo.deleteAll();
         ruleRepo.deleteAll();
@@ -123,7 +125,10 @@ public class RuleService implements IRuleService {
     }
 
     private RuleDTO toRuleDTO(Rule rule) {
-        return RuleDTO.build(rule.getRulePlugin(), rule.getRecipients().stream().map(PluginConfiguration::getBusinessId)
-                .collect(Collectors.toSet()));
+        return RuleDTO.build(rule.getRulePlugin(),
+                             rule.getRecipients()
+                                 .stream()
+                                 .map(PluginConfiguration::getBusinessId)
+                                 .collect(Collectors.toSet()));
     }
 }

@@ -1,5 +1,5 @@
 /*
-	 * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,50 +18,50 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.notifier.domain.Rule;
+import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import javax.validation.Valid;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.validation.Valid;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.RuleDTO;
-
 /**
  * @author kevin
- *
  */
 public interface IRuleService {
 
-    public Page<RuleDTO> getRules(Pageable page);
+    Page<RuleDTO> getRules(Pageable page);
 
     /**
      * Create or update a {@link Rule} from a {@link RuleDto}
+     *
      * @param toCreate
      * @return {@link RuleDto} from the created {@link Rule}
      * @throws ModuleException if during an update id is unknow
      */
-    public RuleDTO createOrUpdateRule(@Valid RuleDTO toCreate) throws ModuleException;
+    RuleDTO createOrUpdateRule(@Valid RuleDTO toCreate) throws ModuleException;
 
     /**
      * Delete a {@link Rule} by its id.  <br/>
+     *
      * @param id
      * @throws ModuleException
      */
-    public void deleteRule(String id) throws ModuleException;
+    void deleteRule(String id) throws ModuleException;
 
     /**
      * @param id
      */
-    public Optional<RuleDTO> getRule(String id);
+    Optional<RuleDTO> getRule(String id);
 
     /**
      * Delete all existing rules configured
+     *
      * @return plugin business ids to delete
      */
-    public Set<String> deleteAll(Collection<String> deletionErrors);
+    Set<String> deleteAll(Collection<String> deletionErrors);
 }

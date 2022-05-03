@@ -51,9 +51,9 @@ import java.util.stream.Collectors;
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class NotificationRegistrationService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRegistrationService.class);
-
     protected static final String OPTIMIST_LOCK_LOG_MSG = "Another schedule has updated some of the requests handled by this method while it was running.";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRegistrationService.class);
 
     private final Validator validator;
 
@@ -68,8 +68,11 @@ public class NotificationRegistrationService {
     private final NotificationRegistrationService self;
 
     public NotificationRegistrationService(INotificationRequestRepository notificationRequestRepository,
-            IPublisher publisher, Validator validator, INotificationClient notificationClient, RuleCache ruleCache,
-            NotificationRegistrationService notificationRegistrationService) {
+                                           IPublisher publisher,
+                                           Validator validator,
+                                           INotificationClient notificationClient,
+                                           RuleCache ruleCache,
+                                           NotificationRegistrationService notificationRegistrationService) {
         this.notificationRequestRepository = notificationRequestRepository;
         this.publisher = publisher;
         this.validator = validator;
@@ -79,7 +82,6 @@ public class NotificationRegistrationService {
     }
 
     public void registerNotificationRequests(List<NotificationRequestEvent> events) {
-
         if (!events.isEmpty()) {
 
             long startTime = System.currentTimeMillis();
@@ -93,7 +95,10 @@ public class NotificationRegistrationService {
             try {
                 Set<Rule> rules = ruleCache.getRules();
                 Set<NotificationRequest> notificationToRegister = notRetryEvents.stream()
-                        .map(event -> initNotificationRequest(event, rules)).collect(Collectors.toSet());
+                                                                                .map(event -> initNotificationRequest(
+                                                                                    event,
+                                                                                    rules))
+                                                                                .collect(Collectors.toSet());
                 notificationToRegister.remove(null);
                 notificationRequestRepository.saveAll(notificationToRegister);
                 LOGGER.debug("------------->>> {} notifications registered", notificationToRegister.size());
@@ -101,8 +106,10 @@ public class NotificationRegistrationService {
                 LOGGER.error(e.getMessage(), e);
                 // Rules could not be retrieved, so let deny everything.
                 List<NotifierEvent> denied = notRetryEvents.stream()
-                        .map(event -> new NotifierEvent(event.getRequestId(), event.getRequestOwner(), NotificationState.DENIED))
-                        .collect(Collectors.toList());
+                                                           .map(event -> new NotifierEvent(event.getRequestId(),
+                                                                                           event.getRequestOwner(),
+                                                                                           NotificationState.DENIED))
+                                                           .collect(Collectors.toList());
                 publisher.publish(denied);
             }
         }
@@ -123,8 +130,11 @@ public class NotificationRegistrationService {
     public Set<NotificationRequestEvent> handleRetryRequestsConcurrent(List<NotificationRequestEvent> events) {
 
         Map<String, NotificationRequestEvent> eventsPerRequestId = events.stream()
-                .collect(Collectors.toMap(NotificationRequestEvent::getRequestId, Function.identity()));
-        Set<NotificationRequest> alreadyKnownRequests = notificationRequestRepository.findAllByRequestIdIn(eventsPerRequestId.keySet());
+                                                                         .collect(Collectors.toMap(
+                                                                             NotificationRequestEvent::getRequestId,
+                                                                             Function.identity()));
+        Set<NotificationRequest> alreadyKnownRequests = notificationRequestRepository.findAllByRequestIdIn(
+            eventsPerRequestId.keySet());
         Set<NotificationRequest> updated = new HashSet<>();
         Set<NotifierEvent> responseToSend = new HashSet<>();
 
@@ -139,7 +149,9 @@ public class NotificationRegistrationService {
                 known.getRecipientsInError().clear();
                 known.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
                 updated.add(known);
-                responseToSend.add(new NotifierEvent(known.getRequestId(), known.getRequestOwner(), NotificationState.GRANTED));
+                responseToSend.add(new NotifierEvent(known.getRequestId(),
+                                                     known.getRequestOwner(),
+                                                     NotificationState.GRANTED));
                 // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
                 eventsPerRequestId.put(known.getRequestId(), null);
                 nbRequestRetriedForRecipientError++;
@@ -150,7 +162,9 @@ public class NotificationRegistrationService {
                 known.setState(NotificationState.GRANTED);
                 updated.add(known);
                 // This is a set so that we are not adding multiple time the same notifier event
-                responseToSend.add(new NotifierEvent(known.getRequestId(), known.getRequestOwner(), NotificationState.GRANTED));
+                responseToSend.add(new NotifierEvent(known.getRequestId(),
+                                                     known.getRequestOwner(),
+                                                     NotificationState.GRANTED));
                 // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
                 // in worst case this is done twice, not a problem
                 eventsPerRequestId.put(known.getRequestId(), null);
@@ -160,8 +174,10 @@ public class NotificationRegistrationService {
         publisher.publish(new ArrayList<>(responseToSend));
         notificationRequestRepository.saveAll(updated);
         LOGGER.debug(
-                "Out of {} request retried, {} have been handle for retry following recipient error, {} have been handle for retry following rule matching error",
-                updated.size(), nbRequestRetriedForRecipientError, nbRequestRetriedForRulesError);
+            "Out of {} request retried, {} have been handle for retry following recipient error, {} have been handle for retry following rule matching error",
+            updated.size(),
+            nbRequestRetriedForRecipientError,
+            nbRequestRetriedForRulesError);
         return eventsPerRequestId.values().stream().filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
@@ -176,11 +192,20 @@ public class NotificationRegistrationService {
         validator.validate(event, errors);
 
         if (!errors.hasErrors()) {
-            publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), NotificationState.GRANTED));
-            return new NotificationRequest(event.getPayload(), event.getMetadata(), event.getRequestId(), event.getRequestOwner(),
-                                           event.getRequestDate(), NotificationState.GRANTED, rules);
+            publisher.publish(new NotifierEvent(event.getRequestId(),
+                                                event.getRequestOwner(),
+                                                NotificationState.GRANTED));
+            return new NotificationRequest(event.getPayload(),
+                                           event.getMetadata(),
+                                           event.getRequestId(),
+                                           event.getRequestOwner(),
+                                           event.getRequestDate(),
+                                           NotificationState.GRANTED,
+                                           rules);
         }
-        notificationClient.notify(errors.toString(), "A NotificationRequestEvent received is invalid", NotificationLevel.ERROR,
+        notificationClient.notify(errors.toString(),
+                                  "A NotificationRequestEvent received is invalid",
+                                  NotificationLevel.ERROR,
                                   DefaultRole.ADMIN);
         publisher.publish(new NotifierEvent(event.getRequestId(), event.getRequestOwner(), NotificationState.DENIED));
         return null;

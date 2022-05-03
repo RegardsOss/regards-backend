@@ -61,11 +61,11 @@ import java.util.stream.Collectors;
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class NotificationProcessingService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationProcessingService.class);
+    public static final NotificationState[] RUNNING_STATES = { NotificationState.SCHEDULED };
 
     protected static final String OPTIMIST_LOCK_LOG_MSG = "Another schedule has updated some of the requests handled by this method while it was running.";
 
-    public static final NotificationState[] RUNNING_STATES = { NotificationState.SCHEDULED };
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationProcessingService.class);
 
     private final IPluginService pluginService;
 
@@ -80,8 +80,11 @@ public class NotificationProcessingService {
     private final NotificationProcessingService self;
 
     public NotificationProcessingService(INotificationRequestRepository notificationRequestRepository,
-            IPublisher publisher, IPluginService pluginService, NotificationConfigurationProperties properties,
-            IJobInfoService jobInfoService, NotificationProcessingService notificationProcessingService) {
+                                         IPublisher publisher,
+                                         IPluginService pluginService,
+                                         NotificationConfigurationProperties properties,
+                                         IJobInfoService jobInfoService,
+                                         NotificationProcessingService notificationProcessingService) {
         this.notificationRequestRepository = notificationRequestRepository;
         this.publisher = publisher;
         this.pluginService = pluginService;
@@ -90,21 +93,26 @@ public class NotificationProcessingService {
         this.self = notificationProcessingService;
     }
 
-    public Pair<Integer, Integer> processRequests(List<NotificationRequest> notificationRequests, PluginConfiguration recipient) {
+    public Pair<Integer, Integer> processRequests(List<NotificationRequest> notificationRequests,
+                                                  PluginConfiguration recipient) {
         // If recipient is null, it means it has been removed from all notification requests - therefore there's nothing to do
         if (recipient != null) {
             LOGGER.debug("Start processing for recipient {}", recipient.getLabel());
             Collection<NotificationRequest> notificationsInError = notifyRecipient(notificationRequests, recipient);
-            Pair<Integer, Integer> result = self.handleRecipientResults(notificationRequests, recipient, notificationsInError);
+            Pair<Integer, Integer> result = self.handleRecipientResults(notificationRequests,
+                                                                        recipient,
+                                                                        notificationsInError);
             LOGGER.debug("End processing for recipient {}", recipient.getLabel());
             return result;
         }
         return Pair.of(notificationRequests.size(), 0);
     }
 
-    private Collection<NotificationRequest> notifyRecipient(List<NotificationRequest> notificationRequests, PluginConfiguration recipientConfiguration) {
+    private Collection<NotificationRequest> notifyRecipient(List<NotificationRequest> notificationRequests,
+                                                            PluginConfiguration recipientConfiguration) {
         try {
-            Collection<NotificationRequest> errors = ((IRecipientNotifier) pluginService.getPlugin(recipientConfiguration.getBusinessId())).send(notificationRequests);
+            Collection<NotificationRequest> errors = ((IRecipientNotifier) pluginService.getPlugin(
+                recipientConfiguration.getBusinessId())).send(notificationRequests);
             return Optional.ofNullable(errors).orElse(Collections.emptySet());
         } catch (Exception e) {
             // If there is an exception, we consider none of the requests could be handled,
@@ -115,23 +123,26 @@ public class NotificationProcessingService {
     }
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public Pair<Integer, Integer> handleRecipientResults(List<NotificationRequest> notificationRequests, PluginConfiguration recipient,
-            Collection<NotificationRequest> notificationsInError
-    ) {
+    public Pair<Integer, Integer> handleRecipientResults(List<NotificationRequest> notificationRequests,
+                                                         PluginConfiguration recipient,
+                                                         Collection<NotificationRequest> notificationsInError) {
         try {
             return self.handleRecipientResultsConcurrent(notificationRequests, recipient, notificationsInError);
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
-            notificationRequests = notificationRequestRepository.findAllById(notificationRequests.stream().map(NotificationRequest::getId).collect(Collectors.toSet()));
+            notificationRequests = notificationRequestRepository.findAllById(notificationRequests.stream()
+                                                                                                 .map(
+                                                                                                     NotificationRequest::getId)
+                                                                                                 .collect(Collectors.toSet()));
             // Failure happens because of concurrent updates on notification request - for that reason we retry until it succeeds
             return handleRecipientResults(notificationRequests, recipient, notificationsInError);
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Pair<Integer, Integer> handleRecipientResultsConcurrent(List<NotificationRequest> notificationRequests, PluginConfiguration recipient,
-            Collection<NotificationRequest> notificationsInError
-    ) {
+    public Pair<Integer, Integer> handleRecipientResultsConcurrent(List<NotificationRequest> notificationRequests,
+                                                                   PluginConfiguration recipient,
+                                                                   Collection<NotificationRequest> notificationsInError) {
 
         notificationRequests.forEach(notificationRequest -> {
             if (notificationsInError.contains(notificationRequest)) {
@@ -159,25 +170,35 @@ public class NotificationProcessingService {
     }
 
     private Page<NotificationRequest> findPageToScheduleContaining(PluginConfiguration recipient) {
-        return notificationRequestRepository.findPageByStateAndRecipientsToScheduleContaining(NotificationState.TO_SCHEDULE_BY_RECIPIENT, recipient,
-                PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc(NotificationRequest.REQUEST_DATE_JPQL_NAME))));
+        return notificationRequestRepository.findPageByStateAndRecipientsToScheduleContaining(NotificationState.TO_SCHEDULE_BY_RECIPIENT,
+                                                                                              recipient,
+                                                                                              PageRequest.of(0,
+                                                                                                             properties.getMaxBulkSize(),
+                                                                                                             Sort.by(
+                                                                                                                 Order.asc(
+                                                                                                                     NotificationRequest.REQUEST_DATE_JPQL_NAME))));
     }
 
-    private Set<Long> scheduleJobForOneRecipientRetryable(PluginConfiguration recipient, List<NotificationRequest> requestsToSchedule) {
+    private Set<Long> scheduleJobForOneRecipientRetryable(PluginConfiguration recipient,
+                                                          List<NotificationRequest> requestsToSchedule) {
         try {
             return self.scheduleJobForOneRecipientConcurrent(recipient, requestsToSchedule);
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
             // Failure happens because of concurrent updates on notification request - for that reason we retry until it succeeds
             // Moreover, we cannot retry on the same content as it has to be reloaded from DB
-            return scheduleJobForOneRecipientRetryable(
-                    recipient,
-                    notificationRequestRepository.findAllById(requestsToSchedule.stream().map(NotificationRequest::getId).collect(Collectors.toSet())));
+            return scheduleJobForOneRecipientRetryable(recipient,
+                                                       notificationRequestRepository.findAllById(requestsToSchedule.stream()
+                                                                                                                   .map(
+                                                                                                                       NotificationRequest::getId)
+                                                                                                                   .collect(
+                                                                                                                       Collectors.toSet())));
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Set<Long> scheduleJobForOneRecipientConcurrent(PluginConfiguration recipient, List<NotificationRequest> requestsToSchedule) {
+    public Set<Long> scheduleJobForOneRecipientConcurrent(PluginConfiguration recipient,
+                                                          List<NotificationRequest> requestsToSchedule) {
         Set<Long> toScheduleId = new HashSet<>();
         if (!requestsToSchedule.isEmpty()) {
             for (NotificationRequest request : requestsToSchedule) {
@@ -192,19 +213,20 @@ public class NotificationProcessingService {
                 //    In this case we should not change state, so that the matching process takes place.
                 //  - if we are not in state GRANTED, it means it has not yet been retried.
                 //    In this case we have nothing to do, since the retry will take place (or not) later.
-                if (request.getRecipientsToSchedule().isEmpty()
-                        && (request.getRulesToMatch().isEmpty() || (request.getState() != NotificationState.GRANTED))) {
+                if (request.getRecipientsToSchedule().isEmpty() && (request.getRulesToMatch().isEmpty() || (
+                    request.getState() != NotificationState.GRANTED))) {
                     request.setState(NotificationState.SCHEDULED);
                 }
                 toScheduleId.add(request.getId());
             }
-            JobInfo notificationJobForRecipient = new JobInfo(
-                    false,
-                    0,
-                    Sets.newHashSet(new JobParameter(NotificationJob.NOTIFICATION_REQUEST_IDS, toScheduleId),
-                            new JobParameter(NotificationJob.RECIPIENT_BUSINESS_ID, recipient.getBusinessId())),
-                    null,
-                    NotificationJob.class.getName());
+            JobInfo notificationJobForRecipient = new JobInfo(false,
+                                                              0,
+                                                              Sets.newHashSet(new JobParameter(NotificationJob.NOTIFICATION_REQUEST_IDS,
+                                                                                               toScheduleId),
+                                                                              new JobParameter(NotificationJob.RECIPIENT_BUSINESS_ID,
+                                                                                               recipient.getBusinessId())),
+                                                              null,
+                                                              NotificationJob.class.getName());
             jobInfoService.createAsQueued(notificationJobForRecipient);
             notificationRequestRepository.saveAll(requestsToSchedule);
             return toScheduleId;
@@ -227,8 +249,10 @@ public class NotificationProcessingService {
 
             Page<NotificationRequest> completedRequests = findCompletedRequests();
 
-            Map<Boolean, List<NotificationRequest>> requestsByIsSuccessful =
-                    completedRequests.stream().collect(Collectors.partitioningBy(notificationRequest -> notificationRequest.getRecipientsInError().isEmpty()));
+            Map<Boolean, List<NotificationRequest>> requestsByIsSuccessful = completedRequests.stream()
+                                                                                              .collect(Collectors.partitioningBy(
+                                                                                                  notificationRequest -> notificationRequest.getRecipientsInError()
+                                                                                                                                            .isEmpty()));
             List<NotificationRequest> successRequests = requestsByIsSuccessful.get(true);
             List<NotificationRequest> errorRequests = requestsByIsSuccessful.get(false);
 
@@ -239,7 +263,9 @@ public class NotificationProcessingService {
             notificationRequestRepository.deleteInBatch(successRequests);
             // Update state to ERROR for all completed request in error
             notificationRequestRepository.updateState(NotificationState.ERROR,
-                                                      errorRequests.stream().map(r -> r.getId()).collect(Collectors.toSet()));
+                                                      errorRequests.stream()
+                                                                   .map(r -> r.getId())
+                                                                   .collect(Collectors.toSet()));
 
             result = Pair.of(successRequests.size(), errorRequests.size());
 
@@ -251,23 +277,34 @@ public class NotificationProcessingService {
     }
 
     private Page<NotificationRequest> findCompletedRequests() {
-        return notificationRequestRepository.findCompletedRequests(RUNNING_STATES, PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc(
-                NotificationRequest.REQUEST_DATE_JPQL_NAME))));
+        return notificationRequestRepository.findCompletedRequests(RUNNING_STATES,
+                                                                   PageRequest.of(0,
+                                                                                  properties.getMaxBulkSize(),
+                                                                                  Sort.by(Order.asc(NotificationRequest.REQUEST_DATE_JPQL_NAME))));
     }
 
     private NotifierEvent mapRequestToEvent(NotificationRequest notificationRequest) {
 
-        NotificationState notificationState = notificationRequest.getRecipientsInError().isEmpty() ? NotificationState.SUCCESS : NotificationState.ERROR;
-        NotifierEvent notifierEvent = new NotifierEvent(notificationRequest.getRequestId(), notificationRequest.getRequestOwner(), notificationState);
+        NotificationState notificationState = notificationRequest.getRecipientsInError().isEmpty() ?
+            NotificationState.SUCCESS :
+            NotificationState.ERROR;
+        NotifierEvent notifierEvent = new NotifierEvent(notificationRequest.getRequestId(),
+                                                        notificationRequest.getRequestOwner(),
+                                                        notificationState);
 
-        Set<Recipient> successRecipients = notificationRequest.getSuccessRecipients().stream()
-                .map(pluginConfiguration -> getRecipient(pluginConfiguration, RecipientStatus.SUCCESS))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Set<Recipient> errorRecipients = notificationRequest.getRecipientsInError().stream()
-                .map(pluginConfiguration -> getRecipient(pluginConfiguration, RecipientStatus.ERROR))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        Set<Recipient> successRecipients = notificationRequest.getSuccessRecipients()
+                                                              .stream()
+                                                              .map(pluginConfiguration -> getRecipient(
+                                                                  pluginConfiguration,
+                                                                  RecipientStatus.SUCCESS))
+                                                              .filter(Objects::nonNull)
+                                                              .collect(Collectors.toSet());
+        Set<Recipient> errorRecipients = notificationRequest.getRecipientsInError()
+                                                            .stream()
+                                                            .map(pluginConfiguration -> getRecipient(pluginConfiguration,
+                                                                                                     RecipientStatus.ERROR))
+                                                            .filter(Objects::nonNull)
+                                                            .collect(Collectors.toSet());
 
         notifierEvent.getRecipients().addAll(successRecipients);
         notifierEvent.getRecipients().addAll(errorRecipients);
