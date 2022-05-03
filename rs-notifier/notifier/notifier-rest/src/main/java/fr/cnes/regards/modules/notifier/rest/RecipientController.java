@@ -18,24 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.rest;
 
-import javax.validation.Valid;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -48,12 +30,25 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * REST interface for managing data {@link PluginConfiguration}(recipient)
+ *
  * @author kevin marchois
  * @author Sébastien Binda
- *
  */
 @RestController
 @RequestMapping(RecipientController.RECIPIENT)
@@ -73,6 +68,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
 
     /**
      * Get all {@link PluginConfiguration}(recipient) from database the result will be paginated
+     *
      * @return paged list of {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "List all recipient")
@@ -80,13 +76,14 @@ public class RecipientController implements IResourceController<PluginConfigurat
     @Operation(summary = "List all recipient", description = "List all recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Recipients") })
     public ResponseEntity<List<EntityModel<PluginConfiguration>>> getRecipients(
-            @Parameter(description = "Request page") Pageable page,
-            final PagedResourcesAssembler<PluginConfiguration> assembler) {
+        @Parameter(description = "Request page") Pageable page,
+        final PagedResourcesAssembler<PluginConfiguration> assembler) {
         return ResponseEntity.ok(toResources(recipientService.getRecipients()));
     }
 
     /**
      * Create a {@link PluginConfiguration}(recipient)
+     *
      * @return the created {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Create a recipient")
@@ -94,7 +91,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
     @Operation(summary = "Create a recipient", description = "Create a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Recipient") })
     public ResponseEntity<EntityModel<PluginConfiguration>> createRecipient(
-            @Parameter(description = "Recipient to create") @Valid @RequestBody PluginConfiguration toCreate) {
+        @Parameter(description = "Recipient to create") @Valid @RequestBody PluginConfiguration toCreate) {
         Assert.isNull(toCreate.getId(), "Its a creation id must be null!");
         try {
             return ResponseEntity.ok(toResource(recipientService.createOrUpdateRecipient(toCreate)));
@@ -106,6 +103,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
 
     /**
      * Update a {@link PluginConfiguration}(recipient)
+     *
      * @return the updated {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Update a recipient")
@@ -113,8 +111,8 @@ public class RecipientController implements IResourceController<PluginConfigurat
     @Operation(summary = "Update a recipient", description = "Update a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Recipient") })
     public ResponseEntity<EntityModel<PluginConfiguration>> updateRecipient(
-            @Parameter(description = "Recipient to update") @Valid @RequestBody PluginConfiguration toUpdate)
-            throws ModuleException {
+        @Parameter(description = "Recipient to update") @Valid @RequestBody PluginConfiguration toUpdate)
+        throws ModuleException {
         Assert.notNull(toUpdate.getId(), "Its a validation id must not be null!");
         return ResponseEntity.ok(toResource(recipientService.createOrUpdateRecipient(toUpdate)));
     }
@@ -127,8 +125,8 @@ public class RecipientController implements IResourceController<PluginConfigurat
     @Operation(summary = "Delete a recipient", description = "Delete a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRecipient(
-            @Parameter(description = "Recipient to delete id") @PathVariable("businessId") String businessId)
-            throws ModuleException {
+        @Parameter(description = "Recipient to delete id") @PathVariable("businessId") String businessId)
+        throws ModuleException {
         recipientService.deleteRecipient(businessId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

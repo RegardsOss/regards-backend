@@ -18,24 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.rest;
 
-import javax.validation.Valid;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -49,11 +31,24 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * REST interface for managing data {@link Rule}
- * @author kevin marchois
  *
+ * @author kevin marchois
  */
 @RestController
 @RequestMapping(RuleController.RULE)
@@ -73,6 +68,7 @@ public class RuleController implements IResourceController<RuleDTO> {
 
     /**
      * Get all {@link Rule} from database the result will be paginated and transformed to {@link RuleDTO}
+     *
      * @return paged list of {@link RuleDTO}
      */
     @ResourceAccess(description = "List all Rules")
@@ -80,12 +76,13 @@ public class RuleController implements IResourceController<RuleDTO> {
     @Operation(summary = "List all rules", description = "List all Rules")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All Rules") })
     public ResponseEntity<PagedModel<EntityModel<RuleDTO>>> getRules(
-            @Parameter(description = "Wanted page") Pageable page, final PagedResourcesAssembler<RuleDTO> assembler) {
+        @Parameter(description = "Wanted page") Pageable page, final PagedResourcesAssembler<RuleDTO> assembler) {
         return ResponseEntity.ok(toPagedResources(this.ruleService.getRules(page), assembler));
     }
 
     /**
      * Create a {@link Rule}
+     *
      * @return the created {@link Rule}
      */
     @ResourceAccess(description = "Create a Rule")
@@ -93,7 +90,7 @@ public class RuleController implements IResourceController<RuleDTO> {
     @Operation(summary = "Create a rule", description = "Create a Rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Rule") })
     public ResponseEntity<EntityModel<RuleDTO>> createRule(
-            @Parameter(description = "Rule to create") @Valid @RequestBody RuleDTO toCreate) {
+        @Parameter(description = "Rule to create") @Valid @RequestBody RuleDTO toCreate) {
         Assert.isNull(toCreate.getId(), "Its a creation id must be null!");
         try {
             return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toCreate)));
@@ -105,6 +102,7 @@ public class RuleController implements IResourceController<RuleDTO> {
 
     /**
      * Update a {@link Rule}
+     *
      * @return the updated {@link Rule}
      */
     @ResourceAccess(description = "Update a Rule")
@@ -112,7 +110,7 @@ public class RuleController implements IResourceController<RuleDTO> {
     @Operation(summary = "Update a rule", description = "Update a Rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Rule") })
     public ResponseEntity<EntityModel<RuleDTO>> updateRule(
-            @Parameter(description = "Rule to update") @Valid @RequestBody RuleDTO toUpdate) throws ModuleException {
+        @Parameter(description = "Rule to update") @Valid @RequestBody RuleDTO toUpdate) throws ModuleException {
         Assert.notNull(toUpdate.getId(), "Its a validation id must not be null!");
 
         return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toUpdate)));
