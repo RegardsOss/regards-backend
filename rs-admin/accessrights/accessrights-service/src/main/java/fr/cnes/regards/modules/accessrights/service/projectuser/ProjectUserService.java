@@ -97,13 +97,13 @@ public class ProjectUserService implements IProjectUserService {
 
     private final QuotaHelperService quotaHelperService;
 
+    private final IEmailVerificationTokenService emailVerificationTokenService;
+
     /**
      * Configured instance administrator user email/login
      */
     @Value("${regards.accounts.root.user.login}")
     private String instanceAdminUserEmail;
-
-    private final IEmailVerificationTokenService emailVerificationTokenService;
 
     public ProjectUserService(IAuthenticationResolver authenticationResolver,
                               IProjectUserRepository projectUserRepository,

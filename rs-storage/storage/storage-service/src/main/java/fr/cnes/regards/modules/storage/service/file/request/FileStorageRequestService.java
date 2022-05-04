@@ -89,6 +89,9 @@ public class FileStorageRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestService.class);
 
     @Autowired
+    protected FileStorageRequestService self;
+
+    @Autowired
     private IPluginService pluginService;
 
     @Autowired
@@ -105,9 +108,6 @@ public class FileStorageRequestService {
 
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
-
-    @Autowired
-    protected FileStorageRequestService self;
 
     @Autowired
     private RequestsGroupService reqGroupService;
@@ -165,7 +165,7 @@ public class FileStorageRequestService {
      *
      * @param requests         requests to handle
      * @param groupId          requests group identifier
-     * @param existingFiles     Already existing file references
+     * @param existingFiles    Already existing file references
      * @param existingRequests Already existing requests
      */
     private void doStore(Collection<FileStorageRequestDTO> requests,
@@ -179,37 +179,36 @@ public class FileStorageRequestService {
             long start = System.currentTimeMillis();
             // Check if the file already exists for the storage destination
             Optional<FileReference> oFileRef = existingFiles.stream()
-                                                           .filter(f -> f.getMetaInfo()
-                                                                         .getChecksum()
-                                                                         .equals(request.getChecksum())
-                                                                        && f.getLocation()
-                                                                            .getStorage()
-                                                                            .equals(request.getStorage()))
-                                                           .findFirst();
+                                                            .filter(f -> f.getMetaInfo()
+                                                                          .getChecksum()
+                                                                          .equals(request.getChecksum())
+                                                                && f.getLocation()
+                                                                    .getStorage()
+                                                                    .equals(request.getStorage()))
+                                                            .findFirst();
             Optional<FileStorageRequest> oReq = existingRequests.stream()
-                                                                .filter(fileStorageRequest -> fileStorageRequest.getMetaInfo()
-                                                                                                                .getChecksum()
-                                                                                                                .equals(
-                                                                                                                    request.getChecksum())
-                                                                                              && fileStorageRequest.getStorage()
-                                                                                                                   .equals(
-                                                                                                                       request.getStorage())
-                                                                                              && ((fileStorageRequest.getStatus()
-                                                                                                   == FileRequestStatus.TO_DO)
-                                                                                                  || (fileStorageRequest.getStatus()
-                                                                                                      == FileRequestStatus.ERROR)
-                                                                                                  || fileStorageRequest.getStatus()
-                                                                                                     == FileRequestStatus.PENDING))
+                                                                .filter(fileStorageRequest ->
+                                                                            fileStorageRequest.getMetaInfo()
+                                                                                              .getChecksum()
+                                                                                              .equals(request.getChecksum())
+                                                                                && fileStorageRequest.getStorage()
+                                                                                                     .equals(request.getStorage())
+                                                                                && ((fileStorageRequest.getStatus()
+                                                                                == FileRequestStatus.TO_DO) || (
+                                                                                fileStorageRequest.getStatus()
+                                                                                    == FileRequestStatus.ERROR)
+                                                                                || fileStorageRequest.getStatus()
+                                                                                == FileRequestStatus.PENDING))
                                                                 .findFirst();
             Optional<FileDeletionRequest> oDelReq = existingDeletionRequests.stream()
                                                                             .filter(f -> f.getFileReference()
                                                                                           .getMetaInfo()
                                                                                           .getChecksum()
                                                                                           .equals(request.getChecksum())
-                                                                                         && f.getStorage()
-                                                                                             .equals(request.getStorage())
-                                                                                         && f.getStatus()
-                                                                                             .equals(FileRequestStatus.TO_DO))
+                                                                                && f.getStorage()
+                                                                                    .equals(request.getStorage())
+                                                                                && f.getStatus()
+                                                                                    .equals(FileRequestStatus.TO_DO))
                                                                             .findFirst();
             RequestResult result = handleRequest(request, oFileRef, oReq, oDelReq, groupId);
             Optional<FileReference> optionalFileReference = result.getFileReference();
@@ -271,40 +270,6 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Internal private class to regroup information about handle {@link FileStorageRequestDTO} result.
-     * The result can be : <ul>
-     * <li> {@link FileReference} : If the request is associated to a file already referenced.</li>
-     * <li> {@link FileStorageRequest} : If the request is a new or updated storage request </li>
-     */
-    private static class RequestResult {
-
-        Optional<FileReference> fileReference = Optional.empty();
-
-        Optional<FileStorageRequest> storageRequest = Optional.empty();
-
-        public static RequestResult build(FileReference fileReference) {
-            RequestResult res = new RequestResult();
-            res.fileReference = Optional.ofNullable(fileReference);
-            return res;
-        }
-
-        public static RequestResult build(FileStorageRequest storageRequest) {
-            RequestResult res = new RequestResult();
-            res.storageRequest = Optional.ofNullable(storageRequest);
-            return res;
-        }
-
-        public Optional<FileReference> getFileReference() {
-            return fileReference;
-        }
-
-        public Optional<FileStorageRequest> getStorageRequest() {
-            return storageRequest;
-        }
-
-    }
-
-    /**
      * Store a new file to a given storage destination
      *
      * @param request {@link FileStorageRequestDTO} info about file to store
@@ -341,7 +306,7 @@ public class FileStorageRequestService {
                         existingReq.getId().toString());
                     if (jobHandlingExistingRequests.stream()
                                                    .allMatch(jobInfo -> jobInfo.getStatus().getStatus()
-                                                                        == JobStatus.FAILED)) {
+                                                       == JobStatus.FAILED)) {
                         existingReq.setStatus(FileRequestStatus.ERROR);
                         sessionNotifier.decrementRunningRequests(sessionOwner, session);
                         sessionNotifier.incrementErrorRequests(sessionOwner, session);
@@ -362,7 +327,7 @@ public class FileStorageRequestService {
                     this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
                     LOGGER.trace(
                         "[STORAGE REQUESTS] Existing request ({}) in ERROR state updated to handle same file of "
-                        + "request ({})",
+                            + "request ({})",
                         existingReq.getId(),
                         request.getFileName());
                     break;
@@ -374,19 +339,17 @@ public class FileStorageRequestService {
     }
 
     private RequestResult saveNewFileStorageRequest(FileStorageRequestDTO request,
-                                           String groupId,
-                                           String sessionOwner,
-                                           String session) {
+                                                    String groupId,
+                                                    String sessionOwner,
+                                                    String session) {
         Optional<String> cause = Optional.empty();
         Optional<FileRequestStatus> status = Optional.empty();
         // Check that URL is a valid
         try {
             new URL(request.getOriginUrl());
         } catch (MalformedURLException e) {
-            String errorMessage = "Invalid URL for file "
-                                  + request.getFileName()
-                                  + "storage. Cause : "
-                                  + e.getMessage();
+            String errorMessage =
+                "Invalid URL for file " + request.getFileName() + "storage. Cause : " + e.getMessage();
             LOGGER.error(errorMessage);
             status = Optional.of(FileRequestStatus.ERROR);
             cause = Optional.of(errorMessage);
@@ -973,6 +936,40 @@ public class FileStorageRequestService {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Internal private class to regroup information about handle {@link FileStorageRequestDTO} result.
+     * The result can be : <ul>
+     * <li> {@link FileReference} : If the request is associated to a file already referenced.</li>
+     * <li> {@link FileStorageRequest} : If the request is a new or updated storage request </li>
+     */
+    private static class RequestResult {
+
+        Optional<FileReference> fileReference = Optional.empty();
+
+        Optional<FileStorageRequest> storageRequest = Optional.empty();
+
+        public static RequestResult build(FileReference fileReference) {
+            RequestResult res = new RequestResult();
+            res.fileReference = Optional.ofNullable(fileReference);
+            return res;
+        }
+
+        public static RequestResult build(FileStorageRequest storageRequest) {
+            RequestResult res = new RequestResult();
+            res.storageRequest = Optional.ofNullable(storageRequest);
+            return res;
+        }
+
+        public Optional<FileReference> getFileReference() {
+            return fileReference;
+        }
+
+        public Optional<FileStorageRequest> getStorageRequest() {
+            return storageRequest;
+        }
+
     }
 
 }
