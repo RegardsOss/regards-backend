@@ -20,13 +20,14 @@ package fr.cnes.regards.modules.search.service.engine.plugin.opensearch;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -34,11 +35,10 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.dto.properties.DateProperty;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import fr.cnes.regards.modules.opensearch.service.parser.UpdatedParser;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.*;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
@@ -49,12 +49,13 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.descripti
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.ExtensionException;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.SearchParameter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.eo.EarthObservationExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.IResponseBuilder;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.AtomResponseBuilder;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.IResponseFormatter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.AtomResponseFormatter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeojsonResponseFormatter;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.common.Strings;
@@ -76,7 +77,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -100,6 +100,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public static final String REGARDS_EXTENSION_PARAMETER = "regardsExtension";
 
     public static final String MEDIA_EXTENSION_PARAMETER = "mediaExtension";
+
+    public static final String EARTH_OBSERVATION_EXTENSION_PARAMETER = "earthObservationExtension";
 
     public static final String EXTRA_DESCRIPTION = "opensearchdescription.xml";
 
@@ -131,13 +133,15 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private Configuration configuration;
 
     @Autowired
-    private IAuthenticationResolver authResolver;
-
-    @Autowired
     protected ICatalogSearchService catalogSearchService;
 
     @PluginParameter(name = ENGINE_PARAMETERS, label = "Search engine global configuration")
     private EngineConfiguration engineConfiguration;
+
+    private List<String> ignoredParams = new ArrayList<>();
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * To build resource links
@@ -154,6 +158,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @PluginParameter(name = MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
     private MediaExtension mediaExtension;
 
+    @PluginParameter(name = EARTH_OBSERVATION_EXTENSION_PARAMETER, label = "Open search Earth Observation extension")
+    private EarthObservationExtension earthObservationExtension;
+
     @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true,
             markdown = "OpensearchParameter.md")
     private List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
@@ -163,6 +170,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         if (paramConfigurations == null) {
             paramConfigurations = Lists.newArrayList();
         }
+        initIgnoredQueryParams();
     }
 
     @Override
@@ -173,7 +181,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @Override
     public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser,
             IEntityLinkBuilder linkBuilder) throws ModuleException {
-        FacetPage<EntityFeature> facetPage = searchService.search(parser.parse(context), context.getSearchType(), null,
+        FacetPage<AbstractEntity<EntityFeature>> facetPage = catalogSearchService.search(parser.parse(context), context.getSearchType(), null,
                                                                   getPagination(context));
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
@@ -182,10 +190,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ResponseEntity<Object> getEntity(SearchContext context, IEntityLinkBuilder linkBuilder)
             throws ModuleException {
         // Retrieve entity
-        EntityFeature entity = searchService.get(context.getUrn().get());
+        AbstractEntity<EntityFeature> entity = catalogSearchService.get(context.getUrn().get());
         // add fake pagination for whatever reason it seems we have to response a list and not a single item....
         context.setPageable(PageRequest.of(0, 1));
-        FacetPage<EntityFeature> facetPage = new FacetPage<>(Collections.singletonList(entity), Sets.newHashSet(),
+        FacetPage<AbstractEntity<EntityFeature>> facetPage = new FacetPage<>(Collections.singletonList(entity), Sets.newHashSet(),
                 getPagination(context), 1);
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
@@ -193,9 +201,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
         // First parse q parameter for searchTerms if any.
         QueryParser queryParser = new QueryParser(finder);
-        ICriterion searchTermsCriterion = queryParser.parse(queryParams);
+        ICriterion qCriterion = queryParser.parse(queryParams);
+        ICriterion qAndUpdatedCriterion = ICriterion.and(qCriterion, new UpdatedParser().parse(queryParams));
         // Then parse all parameters (open search parameters extension)
-        return ICriterion.and(searchTermsCriterion, parseParametersExt(queryParams));
+        return ICriterion.and(qAndUpdatedCriterion, parseParametersExt(queryParams));
     }
 
     @Override
@@ -215,7 +224,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
             return new ResponseEntity<>(
                     descriptionBuilder.build(context, parse(context),
-                                             Arrays.asList(mediaExtension, regardsExtension, timeExtension),
+                                             Arrays.asList(mediaExtension, regardsExtension, timeExtension, earthObservationExtension),
                                              paramConfigurations, engineConfiguration, dataset, linkBuilder),
                     headers, HttpStatus.OK);
         } else {
@@ -246,33 +255,16 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return formatted response
      * @throws UnsupportedMediaTypesException from {@link #getBuilder(SearchContext)}
      */
-    private Object formatResponse(FacetPage<EntityFeature> page, SearchContext context, IEntityLinkBuilder linkBuilder)
+    private Object formatResponse(FacetPage<AbstractEntity<EntityFeature>> page, SearchContext context, IEntityLinkBuilder linkBuilder)
             throws UnsupportedMediaTypesException {
-        IResponseBuilder<?> builder = getBuilder(context);
+        IResponseFormatter<?> builder = getBuilder(context);
         builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration, linkBuilder
                 .buildExtraLink(resourceService, context, IanaLinkRelations.SELF, EXTRA_DESCRIPTION).getHref(), context,
                             configuration, page, linkBuilder.buildPaginationLinks(resourceService, page, context));
         page.getContent()
-                .forEach(e -> builder.addEntity(e, getEntityLastUpdateDate(e), paramConfigurations,
-                                                linkBuilder.buildEntityLinks(resourceService, context, e)));
+                .forEach(e -> builder.addEntity(e, paramConfigurations,
+                                                linkBuilder.buildEntityLinks(resourceService, context, e.getFeature())));
         return builder.build();
-    }
-
-    /**
-     * Retrieve the last update date of the given entity.
-     * @param entity {@link EntityFeature}
-     * @return Optional<OffsetDateTime>
-     */
-    private Optional<OffsetDateTime> getEntityLastUpdateDate(EntityFeature entity) {
-        Optional<OffsetDateTime> date = Optional.empty();
-        if (engineConfiguration.getEntityLastUpdateDatePropertyPath() != null) {
-            IProperty<?> dateAttribute = entity.getProperty(engineConfiguration.getEntityLastUpdateDatePropertyPath());
-            if (dateAttribute instanceof DateProperty) {
-                DateProperty dateAttr = (DateProperty) dateAttribute;
-                return Optional.ofNullable(dateAttr.getValue());
-            }
-        }
-        return date;
     }
 
     /**
@@ -283,7 +275,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<SearchParameter> attributes = buildParameters(queryParams);
 
         return ICriterion.and(timeExtension.buildCriterion(attributes), mediaExtension.buildCriterion(attributes),
-                              regardsExtension.buildCriterion(attributes));
+                              regardsExtension.buildCriterion(attributes), earthObservationExtension.buildCriterion(attributes));
     }
 
     private Pair<AttributeModel, ParameterConfiguration> getParameterAttribute(String queryParam)
@@ -316,9 +308,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<SearchParameter> searchParameters = Lists.newArrayList();
         for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
             try {
-                // Ignore special query parameter (q) or empty values
-                if (!queryParam.getKey().equals(configuration.getQueryParameterName())
-                        && ((queryParam.getValue().size() != 1)
+                // Ignore special query parameter (q, scope, token...) or empty values
+                if (validQueryParam(queryParam.getKey()) &&
+                        ((queryParam.getValue().size() > 1)
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     Pair<AttributeModel, ParameterConfiguration> attributeConf = getParameterAttribute(queryParam
                             .getKey());
@@ -335,26 +327,44 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         return searchParameters;
     }
 
+    private boolean validQueryParam(String key) {
+        return !ignoredParams.contains(key);
+    }
+
+    private void initIgnoredQueryParams() {
+        ignoredParams.add(QueryParser.QUERY_PARAMETER);
+        ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
+        ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME);
+        ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT);
+        ignoredParams.add(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE);
+        ignoredParams.add(UpdatedParser.UPDATED_PARAMETER);
+        ignoredParams.add("scope");
+        ignoredParams.add("token");
+        ignoredParams.add("_pretty");
+    }
+
     /**
      * Retrieve a response builder from existing ones matching the {@link MediaType} from the {@link SearchContext}
      * @param context {@link SearchContext}
-     * @return {@link IResponseBuilder}
+     * @return {@link IResponseFormatter}
      * @throws UnsupportedMediaTypesException when asked media type is not handled
      */
-    private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
-        IResponseBuilder<?> responseBuilder;
+    private IResponseFormatter<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
+        IResponseFormatter<?> responseBuilder;
+        String currentTenant = runtimeTenantResolver.getTenant();
 
         if (context.getHeaders().getAccept().stream().anyMatch(MediaType.APPLICATION_JSON::isCompatibleWith)) {
-            responseBuilder = new GeojsonResponseBuilder(authResolver.getToken());
+            responseBuilder = new GeojsonResponseFormatter(currentTenant);
         } else if (context.getHeaders().getAccept().stream()
                 .anyMatch(MediaType.APPLICATION_ATOM_XML::isCompatibleWith)) {
-            responseBuilder = new AtomResponseBuilder(gson, authResolver.getToken());
+            responseBuilder = new AtomResponseFormatter(gson, currentTenant);
         } else {
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
         }
         responseBuilder.addExtension(timeExtension);
         responseBuilder.addExtension(mediaExtension);
         responseBuilder.addExtension(regardsExtension);
+        responseBuilder.addExtension(earthObservationExtension);
         return responseBuilder;
     }
 

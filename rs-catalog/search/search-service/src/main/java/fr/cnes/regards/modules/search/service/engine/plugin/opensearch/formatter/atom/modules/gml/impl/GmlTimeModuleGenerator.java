@@ -35,6 +35,8 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter
 
 /**
  * Module generator to handle TIME & GEO opensearch parameters into ATOM format responses.
+ * This ModuleGenerator is executed by rome (see rome.properties)
+ *
  * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
  */

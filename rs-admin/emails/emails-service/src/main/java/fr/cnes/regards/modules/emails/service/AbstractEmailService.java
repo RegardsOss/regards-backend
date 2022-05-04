@@ -31,8 +31,9 @@ import javax.mail.internet.MimeMessage;
 
 /**
  * Class AbstractEmailService
- *
+ * <p>
  * Standard function of mail service to handle sending mails.
+ *
  * @author Sébastien Binda
  */
 public abstract class AbstractEmailService implements IEmailService {
@@ -45,7 +46,10 @@ public abstract class AbstractEmailService implements IEmailService {
         sendMailWithSender(message, null, null, sender);
     }
 
-    public void sendMailWithSender(SimpleMailMessage message, String attachmentName, InputStreamSource attSource, String sender) {
+    public void sendMailWithSender(SimpleMailMessage message,
+                                   String attachmentName,
+                                   InputStreamSource attSource,
+                                   String sender) {
 
         try {
 
@@ -61,8 +65,9 @@ public abstract class AbstractEmailService implements IEmailService {
             if (message.getCc() != null) {
                 helper.setCc(message.getCc());
             }
-            if ((message.getFrom() != null) && !message.getFrom().isEmpty()) {
-                helper.setFrom(message.getFrom());
+            String from = message.getFrom();
+            if ((from != null) && !from.isEmpty()) {
+                helper.setFrom(from);
             } else {
                 helper.setFrom(sender);
             }
@@ -86,6 +91,7 @@ public abstract class AbstractEmailService implements IEmailService {
                              message.getTo(),
                              message.getSubject(),
                              Throwables.getRootCause(e).toString());
+            getLogger().debug("Unable to send mail. Cause: ", e);
         }
     }
 

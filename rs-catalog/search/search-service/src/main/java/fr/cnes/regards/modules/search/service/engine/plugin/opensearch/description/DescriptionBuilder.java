@@ -18,29 +18,7 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Lists;
-import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
-import org.elasticsearch.search.aggregations.metrics.ParsedStats;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkRelation;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.Sets;
-
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
@@ -61,6 +39,8 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionTy
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import fr.cnes.regards.modules.opensearch.service.parser.UpdatedParser;
 import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -71,11 +51,25 @@ import fr.cnes.regards.modules.search.schema.UrlType;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameterOption;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
-import fr.cnes.regards.modules.search.service.SearchException;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Configuration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import org.apache.commons.compress.utils.Lists;
+import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
+import org.elasticsearch.search.aggregations.metrics.ParsedStats;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Opensearch description.xml builder.
@@ -84,11 +78,6 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension
  */
 @Component
 public class DescriptionBuilder {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DescriptionBuilder.class);
 
     public static final String OPENSEARCH_PAGINATION_COUNT = "count";
 
@@ -103,6 +92,17 @@ public class DescriptionBuilder {
      * Workaround for Mizar implementation. As it does not use the value but the parameter name.
      */
     public static final String OPENSEARCH_PAGINATION_PAGE_NAME = "page";
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(DescriptionBuilder.class);
+
+    /**
+     * Global configuration for description metadatas
+     */
+    @Autowired
+    public Configuration configuration;
 
     /**
      * {@link IRuntimeTenantResolver} instance
@@ -129,30 +129,24 @@ public class DescriptionBuilder {
     private IAttributeFinder finder;
 
     /**
-     * Global configuration for description metadatas
-     */
-    @Autowired
-    public Configuration configuration;
-
-    /**
      * Build an OpenSearch descriptor for the current tenant(i.e. project) on the given path and entity type
      *
      * @param context        {@link SearchContext}
      * @param extensions     {@link IOpenSearchExtension} extensions to use
      * @param parameterConfs {@link ParameterConfiguration}s parameters configuration.
+     * @param dataset
      * @return {@link OpenSearchDescription}
      */
-    public OpenSearchDescription build(SearchContext context, ICriterion criterion,
-                                       List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs,
-                                       EngineConfiguration engineConf, Optional<EntityFeature> dataset, IEntityLinkBuilder linkBuilder)
-            throws ModuleException {
-
-        // Retrieve informations about current projet
-        String currentTenant = tenantResolver.getTenant();
+    public OpenSearchDescription build(SearchContext context,
+                                       ICriterion criterion,
+                                       List<IOpenSearchExtension> extensions,
+                                       List<ParameterConfiguration> parameterConfs,
+                                       EngineConfiguration engineConf,
+                                       Optional<EntityFeature> dataset,
+                                       IEntityLinkBuilder linkBuilder) throws ModuleException {
 
         // Get all attributes for the given search type.
-        List<DescriptionParameter> descParameters = getDescParameters(criterion, context, parameterConfs,
-                currentTenant);
+        List<DescriptionParameter> descParameters = getDescParameters(criterion, context, parameterConfs);
 
         // Build descriptor generic metadatas
         OpenSearchDescription desc = buildMetadata(engineConf, dataset);
@@ -165,12 +159,21 @@ public class DescriptionBuilder {
 
         // Build urls
         Link searchLink = linkBuilder.buildPaginationLink(resourceService, context, LinkRelation.of("search"));
-        desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE,
-                context.getQueryParams().isEmpty()));
-        desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE,
-                context.getQueryParams().isEmpty()));
-        desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE,
-                context.getQueryParams().isEmpty()));
+        desc.getUrl()
+            .add(buildUrl(parameters,
+                          searchLink.getHref(),
+                          MediaType.APPLICATION_ATOM_XML_VALUE,
+                          context.getQueryParams().isEmpty()));
+        desc.getUrl()
+            .add(buildUrl(parameters,
+                          searchLink.getHref(),
+                          GeoJsonMediaType.APPLICATION_GEOJSON_VALUE,
+                          context.getQueryParams().isEmpty()));
+        desc.getUrl()
+            .add(buildUrl(parameters,
+                          searchLink.getHref(),
+                          MediaType.APPLICATION_JSON_VALUE,
+                          context.getQueryParams().isEmpty()));
 
         // Apply active extensions to global description
         extensions.stream().filter(IOpenSearchExtension::isActivated).forEach(ext -> ext.applyToDescription(desc));
@@ -219,7 +222,9 @@ public class DescriptionBuilder {
      * @param queryDelimiter whether to inject "?" into template or not
      * @return {@link UrlType}
      */
-    private UrlType buildUrl(List<OpenSearchParameter> parameters, String endpoint, String mediaType,
+    private UrlType buildUrl(List<OpenSearchParameter> parameters,
+                             String endpoint,
+                             String mediaType,
                              boolean queryDelimiter) {
         UrlType url = new UrlType();
         url.getParameter().addAll(parameters);
@@ -245,8 +250,9 @@ public class DescriptionBuilder {
     private QueryType buildQuery(List<DescriptionParameter> descParameters) {
         QueryType query = new QueryType();
         query.setRole("example");
-        query.setSearchTerms(getSearchTermExample(descParameters.stream().map(DescriptionParameter::getAttributeModel)
-                .collect(Collectors.toList())));
+        query.setSearchTerms(getSearchTermExample(descParameters.stream()
+                                                                .map(DescriptionParameter::getAttributeModel)
+                                                                .collect(Collectors.toList())));
         return query;
     }
 
@@ -264,7 +270,7 @@ public class DescriptionBuilder {
         // Add standard q parameter
         OpenSearchParameter qParameter = new OpenSearchParameter();
         qParameter.setTitle(configuration.getQueryParameterTitle());
-        qParameter.setName(configuration.getQueryParameterName());
+        qParameter.setName(QueryParser.QUERY_PARAMETER);
         qParameter.setValue(String.format("{%s}", configuration.getQueryParameterValue()));
         parameters.add(qParameter);
 
@@ -274,7 +280,7 @@ public class DescriptionBuilder {
 
         for (IOpenSearchExtension ext : extensions) {
             if (ext.isActivated()) {
-                parameters.addAll(ext.addParametersToDescription());
+                parameters.addAll(ext.getDescriptorBasicExtensionParameters());
             }
         }
 
@@ -293,6 +299,13 @@ public class DescriptionBuilder {
         startPageParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_PAGE));
         startPageParameter.setMinInclusive("0");
         parameters.add(startPageParameter);
+
+        OpenSearchParameter updatedParameter = new OpenSearchParameter();
+        updatedParameter.setTitle(
+            "Filter features on updated field, return all features having or after the provided date");
+        updatedParameter.setName(UpdatedParser.UPDATED_PARAMETER);
+        updatedParameter.setValue(String.format("{%s}", UpdatedParser.UPDATED_PARAMETER));
+        parameters.add(updatedParameter);
 
         return parameters;
     }
@@ -313,7 +326,7 @@ public class DescriptionBuilder {
         parameter.setValue(String.format("{%s}", descParameter.getAttributeModel().getName()));
         parameter.setTitle(descParameter.getAttributeModel().getDescription());
         if ((descParameter.getAttributeModel().getRestriction() != null)
-                && RestrictionType.PATTERN.equals(descParameter.getAttributeModel().getRestriction().getType())) {
+            && RestrictionType.PATTERN.equals(descParameter.getAttributeModel().getRestriction().getType())) {
             PatternRestriction restriction = (PatternRestriction) descParameter.getAttributeModel().getRestriction();
             parameter.setPattern(restriction.getPattern());
         }
@@ -335,7 +348,8 @@ public class DescriptionBuilder {
 
         for (IOpenSearchExtension ext : extensions) {
             if (ext.isActivated()) {
-                ext.applyToDescriptionParameter(parameter, descParameter);
+                Optional<String> value = ext.getDescriptorParameterValue(descParameter);
+                value.ifPresent(parameter::setValue);
             }
         }
         return parameter;
@@ -350,11 +364,12 @@ public class DescriptionBuilder {
      * @param criterion      {@link ICriterion} search criterion
      * @param context        {@link SearchContext}
      * @param parameterConfs {@link ParameterConfiguration} configured parameters.
-     * @param pCurrentTenant {@link String} tenant or project.
      * @return {@link Map}<{@link AttributeModel}, {@link QueryableAttribute}>
      */
-    private List<DescriptionParameter> getDescParameters(ICriterion criterion, SearchContext context,
-                                                         List<ParameterConfiguration> parameterConfs, String pCurrentTenant) throws ModuleException {
+    private List<DescriptionParameter> getDescParameters(ICriterion criterion,
+                                                         SearchContext context,
+                                                         List<ParameterConfiguration> parameterConfs)
+        throws ModuleException {
 
         List<DescriptionParameter> parameters = Lists.newArrayList();
 
@@ -362,7 +377,9 @@ public class DescriptionBuilder {
         Set<QueryableAttribute> queryableAttributes = Sets.newHashSet();
         for (AttributeModel att : getModelAttributes(context)) {
             Optional<ParameterConfiguration> conf = parameterConfs.stream()
-                    .filter(pc -> pc.getAttributeModelJsonPath().equals(att.getJsonPath())).findFirst();
+                                                                  .filter(pc -> pc.getAttributeModelJsonPath()
+                                                                                  .equals(att.getJsonPath()))
+                                                                  .findFirst();
             QueryableAttribute queryableAtt = createEmptyQueryableAttribute(att, conf);
             if (!queryableAttributes.contains(queryableAtt)) {
                 queryableAttributes.add(queryableAtt);
@@ -380,7 +397,7 @@ public class DescriptionBuilder {
             // Retrieve all AttributeModel for the given searchType and dataset if any
             ResponseEntity<Collection<ModelAttrAssoc>> assocsResponse;
             if (context.getDatasetUrn().isPresent()) {
-                if(context.getDatasetUrn().get().isLast()) {
+                if (context.getDatasetUrn().get().isLast()) {
                     throw new ModuleException("You must use the dataset id(URN) and not the virtualId!");
                 } else {
                     assocsResponse = datasetClient.getModelAttrAssocsForDataInDataset(context.getDatasetUrn().get());
@@ -393,8 +410,10 @@ public class DescriptionBuilder {
                 LOGGER.error("Trying to contact microservice responsible for Model but couldn't contact it");
                 throw new ModuleException("Unable to contact model controller");
             } else {
-                List<AttributeModel> attributes = assocsResponse.getBody().stream().map(ModelAttrAssoc::getAttribute)
-                        .collect(Collectors.toList());
+                List<AttributeModel> attributes = assocsResponse.getBody()
+                                                                .stream()
+                                                                .map(ModelAttrAssoc::getAttribute)
+                                                                .collect(Collectors.toList());
                 attributes = AbstractAttributeHelper.computeAttributes(attributes);
                 // Return computed attributes without specific JSON ones that are not queriable.
                 return attributes.stream().filter(a -> a.getType() != PropertyType.JSON).collect(Collectors.toList());
@@ -423,8 +442,11 @@ public class DescriptionBuilder {
 
         // Set aggregation stats conf if present
         if (conf.isPresent()) {
-            return new QueryableAttribute(name, null, att.isTextAttribute(), conf.get().getOptionsCardinality(),
-                    att.isBooleanAttribute());
+            return new QueryableAttribute(name,
+                                          null,
+                                          att.isTextAttribute(),
+                                          conf.get().getOptionsCardinality(),
+                                          att.isBooleanAttribute());
         } else {
             return new QueryableAttribute(name, null, att.isTextAttribute(), 0, att.isBooleanAttribute());
         }
@@ -447,8 +469,8 @@ public class DescriptionBuilder {
             case ALL:
             case DATAOBJECTS_RETURN_DATASETS:
             default:
-                throw new UnsupportedOperationException(
-                        String.format("Unsupproted entity type for open search. %s", searchType));
+                throw new UnsupportedOperationException(String.format("Unsupproted entity type for open search. %s",
+                                                                      searchType));
         }
     }
 
@@ -471,8 +493,10 @@ public class DescriptionBuilder {
                     break;
                 case DATE_ARRAY:
                     result.append(attr.getFullJsonPath()).append(":");
-                    result.append("{ISO-8601 date} OR ").append(attr.getFullJsonPath()).append(":")
-                            .append("{ISO-8601 date}");
+                    result.append("{ISO-8601 date} OR ")
+                          .append(attr.getFullJsonPath())
+                          .append(":")
+                          .append("{ISO-8601 date}");
                     break;
                 case DATE_INTERVAL:
                     result.append(attr.getFullJsonPath()).append(":");
@@ -508,8 +532,10 @@ public class DescriptionBuilder {
                     break;
                 case INTEGER_ARRAY:
                     result.append(attr.getFullJsonPath()).append(":");
-                    result.append("{integer value} OR ").append(attr.getJsonPath()).append(":")
-                            .append("{integer value}");
+                    result.append("{integer value} OR ")
+                          .append(attr.getJsonPath())
+                          .append(":")
+                          .append("{integer value}");
                     break;
                 case LONG_INTERVAL:
                     result.append(attr.getFullJsonPath()).append(":");
@@ -536,7 +562,7 @@ public class DescriptionBuilder {
                     break;
                 default:
                     throw new IllegalArgumentException(
-                            attr.getType() + " is not handled for open search descriptor generation");
+                        attr.getType() + " is not handled for open search descriptor generation");
             }
             sj.add(result.toString());
         }

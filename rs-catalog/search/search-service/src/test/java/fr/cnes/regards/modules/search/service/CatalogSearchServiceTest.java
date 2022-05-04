@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -27,7 +25,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -35,7 +32,6 @@ import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.feature.CollectionFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
@@ -72,9 +68,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Unit test for {@link CatalogSearchService}.
@@ -240,58 +233,6 @@ public class CatalogSearchServiceTest {
 
         // Check
         Mockito.verify(searchService).search(searchKey, pageable, expectedCriterion, facets);
-    }
-
-    /**
-     * Test of the method hasAccess
-     *
-     * @throws EntityNotFoundException
-     * @throws EntityOperationForbiddenException
-     * @throws OpenSearchUnknownParameter
-     */
-    @Test
-    public void testHasAccess() throws EntityOperationForbiddenException, EntityNotFoundException {
-        DataObject toReturn = Mockito.mock(DataObject.class);
-        Multimap<DataType, DataFile> multiMap = ArrayListMultimap.create();
-        multiMap.put(DataType.RAWDATA, new DataFile());
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
-        CatalogSearchService mock = Mockito.spy(catalogSearchService);
-        Mockito.when(toReturn.getFiles()).thenReturn(multiMap);
-        Mockito.doReturn(toReturn).when(mock).get((Mockito.any(UniformResourceName.class)));
-        assertTrue(mock.hasAccess(urn));
-    }
-
-    /**
-     * Test of the method hasAccess the multimap will contain an other value than RAWDATA so we will
-     * expect false result for hasAccess
-     *
-     * @throws EntityNotFoundException
-     * @throws EntityOperationForbiddenException
-     * @throws OpenSearchUnknownParameter
-     */
-    @Test
-    public void testHasAccessForbidden() throws EntityOperationForbiddenException, EntityNotFoundException {
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
-        CatalogSearchService mock = Mockito.spy(catalogSearchService);
-        Mockito.doThrow(EntityOperationForbiddenException.class)
-               .when(mock)
-               .get((Mockito.any(UniformResourceName.class)));
-        assertFalse(mock.hasAccess(urn));
-    }
-
-    /**
-     * Test of the method hasAccess with the throwing of a EntityNotFoundException
-     *
-     * @throws EntityNotFoundException
-     * @throws EntityOperationForbiddenException
-     * @throws OpenSearchUnknownParameter
-     */
-    @Test(expected = EntityNotFoundException.class)
-    public void testHasAccessNotFound() throws EntityOperationForbiddenException, EntityNotFoundException {
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
-        CatalogSearchService mock = Mockito.spy(catalogSearchService);
-        Mockito.doThrow(new EntityNotFoundException("")).when(mock).get((Mockito.any(UniformResourceName.class)));
-        assertFalse(mock.hasAccess(urn));
     }
 
     @Test

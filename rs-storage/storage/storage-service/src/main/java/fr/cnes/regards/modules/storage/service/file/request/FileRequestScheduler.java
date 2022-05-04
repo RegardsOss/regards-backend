@@ -18,8 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.time.Instant;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.storage.domain.database.request.*;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,21 +35,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import net.javacrumbs.shedlock.core.LockAssert;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
+import java.time.Instant;
 
 /**
  * Scheduler to periodically handle bulk requests :<br />
@@ -51,7 +44,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  * <li> {@link FileCopyRequest} for copy</li>
  * <li> {@link FileCacheRequest} for availability</li>
  * </ul>
- *
+ * <p>
  * NOTE : Number of parallel schedule execution is defined by spring configuration property regards.scheduler.pool.size.
  *
  * @author Sébastien Binda
@@ -97,52 +90,57 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     @Autowired
     private RequestStatusService reqStatusService;
 
-    @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
-
     private final Task handleRequestsTask = () -> {
         LockAssert.assertLocked();
         handleGroupRequests();
+        handleExpiredCacheRequests();
         handleFileCacheRequests();
         handleFileStorageRequests();
         handleFileDeletionRequests();
         handleFileCopyRequests();
     };
 
-    public void handleFileStorageRequests() throws ModuleException {
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
+
+    public void handleFileStorageRequests() {
         reqStatusService.checkDelayedStorageRequests();
         fileStorageRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet(), Sets.newHashSet());
     }
 
-    public void handleFileCacheRequests() throws ModuleException {
+    public void handleFileCacheRequests() {
         reqStatusService.checkDelayedCacheRequests();
         fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
     }
 
-    public void handleFileDeletionRequests() throws ModuleException {
+    private void handleExpiredCacheRequests() {
+        fileCacheRequestService.cleanExpiredCacheRequests();
+    }
+
+    public void handleFileDeletionRequests() {
         reqStatusService.checkDelayedDeleteRequests();
         fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Sets.newHashSet());
     }
 
-    public void handleFileCopyRequests() throws ModuleException {
+    public void handleFileCopyRequests() {
         reqStatusService.checkDelayedCopyRequests();
         fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
     }
 
-    public void handleGroupRequests() throws ModuleException {
+    public void handleGroupRequests() {
         reqGrpService.checkRequestsGroupsDone();
     }
 
     @Scheduled(initialDelayString = "${regards.storage.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.storage.schedule.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+        fixedDelayString = "${regards.storage.schedule.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, STORAGE_ACTIONS);
-                lockingTaskExecutors
-                        .executeWithLock(handleRequestsTask,
-                                         new LockConfiguration(STORAGE_LOCK, Instant.now().plusSeconds(1200)));
+                lockingTaskExecutors.executeWithLock(handleRequestsTask,
+                                                     new LockConfiguration(STORAGE_LOCK,
+                                                                           Instant.now().plusSeconds(1200)));
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
             } finally {

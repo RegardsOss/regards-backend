@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import java.util.Set;
-import java.util.UUID;
-
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -37,6 +28,13 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.rest.SearchEngineConfigurationController;
 import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * {@link SearchEngineConfiguration} tests
@@ -54,7 +52,7 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "10");
         // 2 conf initialized in test + 1 conf initialized by default in tenant
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(3)));
+        customizer.expectValue("$.metadata.totalElements", 3);
         performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING, customizer, "Search all error");
     }
 
@@ -65,7 +63,7 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "10");
         customizer.addParameter(SearchEngineConfigurationController.ENGINE_TYPE, LegacySearchEngine.PLUGIN_ID);
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(1)));
+        customizer.expectValue("$.metadata.totalElements", 1);
         performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING, customizer, "Search by engine type error");
     }
 

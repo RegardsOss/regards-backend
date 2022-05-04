@@ -379,6 +379,13 @@ public class RequestBuilderCustomizer {
     }
 
     /**
+     * Add a ResultMatcher expecting given jsonPath matches given pattern
+     */
+    public RequestBuilderCustomizer expectValueMatchesPattern(String jsonPath, String regex) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath, Matchers.matchesPattern(regex)));
+    }
+
+    /**
      * Add a ResultMatcher expecting given jsonPath has given value
      */
     public RequestBuilderCustomizer expectValueContains(String jsonPath, Object value) {

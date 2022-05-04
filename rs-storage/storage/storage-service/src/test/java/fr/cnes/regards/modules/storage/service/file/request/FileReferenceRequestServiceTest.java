@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.request;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -77,7 +76,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void referenceFileDuringDeletion() throws InterruptedException, ExecutionException, EntityNotFoundException {
+    public void referenceFileDuringDeletion() throws InterruptedException, ExecutionException {
 
         String tenant = runtimeTenantResolver.getTenant();
         // Reference & store a file
@@ -110,7 +109,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
 
         // check that there is always a deletion request in pending state
         Optional<FileDeletionRequest> ofdr = fileDeletionRequestRepo.findByFileReferenceId(fdr.getId());
-        oFileRef = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
+        fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File deletion request should always exists", ofdr.isPresent());
         Assert.assertEquals("File deletion request should always be running", FileRequestStatus.PENDING,
                             ofdr.get().getStatus());
@@ -129,7 +128,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
 
         // Simulate deletion request ends
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
-                fileEventPublisher, new FileDeletionRequestJob());
+                                                                                    new FileDeletionRequestJob());
         manager.deletionSucceed(fdr);
         fileRefEventHandler.handleBatch(Lists.newArrayList(FileReferenceEvent
                 .build(fileRefChecksum, fileRefStorage, FileReferenceEventType.FULLY_DELETED, null, "Deletion succeed",
@@ -174,7 +173,7 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void referenceFileWithInvalidURL() throws ModuleException {
+    public void referenceFileWithInvalidURL() {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5", "file.test",
                 1024L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(OFFLINE_CONF_LABEL, "anywhere://in/this/directory/file.test");

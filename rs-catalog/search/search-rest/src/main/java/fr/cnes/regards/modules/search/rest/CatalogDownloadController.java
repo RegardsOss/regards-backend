@@ -18,38 +18,48 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import feign.Response;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.ResponseStreamProxy;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.autoconfigure.CustomCacheControlHeadersWriter;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.search.domain.download.Download;
+import fr.cnes.regards.modules.search.rest.download.CatalogDownloadResponse;
+import fr.cnes.regards.modules.search.rest.download.LicenseAccessor;
+import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import feign.Response;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.feign.ResponseStreamProxy;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.autoconfigure.CustomCacheControlHeadersWriter;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.search.service.ICatalogSearchService;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.http.MediaType.ALL_VALUE;
 
 /**
@@ -63,23 +73,32 @@ import static org.springframework.http.MediaType.ALL_VALUE;
 @RequestMapping(path = CatalogDownloadController.PATH_DOWNLOAD)
 public class CatalogDownloadController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogDownloadController.class);
-
     public static final String PATH_DOWNLOAD = "/downloads";
 
-    public static final String DOWNLOAD_AIP_FILE = "/{aip_id}/files/{checksum}";
+    private static final String DOWNLOAD_AIP_FILE = "/{aip_id}/files/{checksum}";
 
-    public static final String DOWNLOAD_DAM_FILE = DOWNLOAD_AIP_FILE + "/dam";
+    private static final String DOWNLOAD_DAM_FILE = DOWNLOAD_AIP_FILE + "/dam";
 
     /**
      * AIP ID path parameter
      */
-    public static final String AIP_ID_PATH_PARAM = "aip_id";
+    private static final String AIP_ID_PATH_PARAM = "aip_id";
 
     /**
      * checksum path parameter
      */
-    public static final String CHECKSUM_PATH_PARAM = "checksum";
+    private static final String CHECKSUM_PATH_PARAM = "checksum";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CatalogDownloadController.class);
+
+    private static final List<DataType> PUBLIC_FILES = Arrays.asList(DataType.QUICKLOOK_SD,
+                                                                     DataType.QUICKLOOK_MD,
+                                                                     DataType.QUICKLOOK_HD,
+                                                                     DataType.THUMBNAIL,
+                                                                     DataType.DOCUMENT);
+
+    @Autowired
+    private ICatalogSearchService searchService;
 
     @Autowired
     private IStorageRestClient storageRestClient;
@@ -87,90 +106,206 @@ public class CatalogDownloadController {
     @Autowired
     private IAttachmentClient attachmentClient;
 
-    /**
-     * Business search service
-     */
     @Autowired
-    protected ICatalogSearchService searchService;
+    private LicenseAccessor licenseAccessor;
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @RequestMapping(path = DOWNLOAD_DAM_FILE, method = RequestMethod.GET, produces = ALL_VALUE)
     @ResourceAccess(description = "Proxy download for dam locally stored files", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadDamFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
                                                                @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
-                                                               @RequestParam(name = "origin", required = false) String origin,
-                                                               @RequestParam(name="isContentInline", required=false) Boolean isContentInline,
+                                                               @RequestParam(name = "origin", required = false)
+                                                                   String origin,
+                                                               @RequestParam(name = "isContentInline", required = false)
+                                                                   Boolean isContentInline,
                                                                HttpServletResponse response) throws IOException {
         FeignSecurityManager.asSystem();
         try {
             Response damResp = attachmentClient.getFile(aipId, checksum, origin, isContentInline);
-            return getInputStreamResourceResponseEntity(checksum, response, damResp);
+            if (damResp.status() != HttpStatus.OK.value()) {
+                LOGGER.error("Error downloading file {} from storage", checksum);
+            }
+            addHeaders(damResp, response);
+            return formatDamResponse(damResp);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
-                            e.getMessage()),
-                    e);
+                                       e.getMessage()), e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
             FeignSecurityManager.reset();
         }
     }
 
-    private ResponseEntity<InputStreamResource> getInputStreamResourceResponseEntity(String checksum, HttpServletResponse response, Response fileDownloadResponse) throws IOException {
-        InputStreamResource isr = null;
-        HttpHeaders headers = new HttpHeaders();
-        // Add all headers from storage microservice fileDownloadResponse except for cache control ones.
-        // This download endpoints must not activate cache control. Cache control is handled by CustomCacheControlHeaderWriter
-        for (Entry<String, Collection<String>> h : fileDownloadResponse.headers().entrySet()) {
-            if ((!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.CACHE_CONTROL))
-                    && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.EXPIRES))
-                    && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.PRAGMA))) {
-                h.getValue().forEach(v -> response.setHeader(h.getKey(), v));
-            }
-        }
-        if (fileDownloadResponse.status() == HttpStatus.OK.value()) {
-            isr = new InputStreamResource(new ResponseStreamProxy(fileDownloadResponse));
-        } else {
-            LOGGER.error("Error downloading file {} from storage", checksum);
-            // if body is not null, forward the error content too
-            if (fileDownloadResponse.body() != null) {
-                isr = new InputStreamResource(new ResponseStreamProxy(fileDownloadResponse));
-            }
-        }
-        return ResponseEntity.status(fileDownloadResponse.status()).headers(headers).body(isr);
+    private ResponseEntity<InputStreamResource> formatDamResponse(Response fromDamResponse) throws IOException {
+        return ResponseEntity.status(fromDamResponse.status())
+                             .headers(new HttpHeaders())
+                             .body(computeDamBody(fromDamResponse));
+    }
+
+    private InputStreamResource computeDamBody(Response fromDamResponse) throws IOException {
+        // Even if dam response is an error,
+        // the body should be added in Response body
+        return fromDamResponse.body() != null ?
+            new InputStreamResource(new ResponseStreamProxy(fromDamResponse)) :
+            null;
     }
 
     /**
-     * Download a file that user has right to
-     * @param aipId aip id where is the file
-     * @param checksum checksum on the file
-     * @return the file to download
+     * Endpoint that enables to verify product access before download files of this product.
+     * It verifies the user privileges and the license acceptation.
+     *
+     * @param productUrn   product identifier
+     * @param fileChecksum
+     * @return empty response containing only a status that indicates product access state.
+     */
+    @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.HEAD, produces = ALL_VALUE)
+    @ResourceAccess(description = "test product access and license acceptation before download.",
+                    role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> testProductAccess(@PathVariable(AIP_ID_PATH_PARAM) String productUrn,
+                                                  @PathVariable(CHECKSUM_PATH_PARAM) String fileChecksum) {
+        // Same Status than GET endpoint but without storage download part
+        HttpStatus status = HttpStatus.OK;
+        try {
+            if (!isLicenseFreeFile(productUrn, fileChecksum) && isLicenseUnaccepted()) {
+                status = HttpStatus.LOCKED;
+            }
+        } catch (EntityOperationForbiddenException e) {
+            status = HttpStatus.FORBIDDEN;
+        } catch (EntityNotFoundException e) {
+            status = HttpStatus.NOT_FOUND;
+        } catch (ExecutionException e) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return ResponseEntity.status(status).build();
+    }
+
+    /**
+     * Endpoint to download a file from external acces (gui or api).
+     * It checks user privileges and licence acceptation
+     * before downloading the file.
+     *
+     * @param aipId           product id to download
+     * @param checksum        checksum of the file to download
+     * @param isContentInline isContentInline when parameter value is true, server disable a browser security that disallow file content display inside the webapp
+     * @param acceptLicense   indicate if the user want to automatically accept the license
+     * @param response        http response, used to set the response headers
+     * @return response body and status
+     * @throws ModuleException if an error occurred during the licence verification or the file download
+     * @throws IOException     if the downloaded file is not streamable
      */
     @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET, produces = ALL_VALUE)
     @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
-            @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
-            @RequestParam(name="isContentInline", required=false) Boolean isContentInline,
-            HttpServletResponse response) throws ModuleException, IOException {
-        UniformResourceName urn = UniformResourceName.fromString(aipId);
-        if (this.searchService.hasAccess(urn)) {
-            // To download through storage client we must be authenticate as user in order to
-            // impact the download quotas, but we upgrade the privileges so that the request passes.
-            FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+    public ResponseEntity<Download> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
+                                                 @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
+                                                 @RequestParam(name = "isContentInline", required = false)
+                                                     Boolean isContentInline,
+                                                 @RequestParam(name = "acceptLicense",
+                                                               required = false,
+                                                               defaultValue = "false") Boolean acceptLicense,
+                                                 HttpServletResponse response) throws ModuleException, IOException {
+        // Accept flag enable the license acceptation before file download
+        if (acceptLicense) {
             try {
-                Response storageResp = storageRestClient.downloadFile(checksum, isContentInline);
-                return getInputStreamResourceResponseEntity(checksum, response, storageResp);
+                acceptLicense();
             } catch (HttpClientErrorException | HttpServerErrorException e) {
-                LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
-                                           e.getMessage()),
-                             e);
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            } finally {
-                FeignSecurityManager.reset();
+                return CatalogDownloadResponse.internalError(checksum, e);
             }
         }
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        return downloadFile(aipId, checksum, isContentInline, response);
+    }
 
+    private void acceptLicense() throws ModuleException {
+        licenseAccessor.acceptLicense(authResolver.getUser(), runtimeTenantResolver.getTenant());
+    }
+
+    private ResponseEntity<Download> downloadFile(String aipId,
+                                                  String checksum,
+                                                  Boolean isContentInline,
+                                                  HttpServletResponse response) throws ModuleException, IOException {
+        try {
+            if (!isLicenseFreeFile(aipId, checksum) && isLicenseUnaccepted()) {
+                String linkToAcceptAndDownload = linkToDownloadWithLicense(aipId, checksum, isContentInline, response);
+                return CatalogDownloadResponse.acceptLicenceBeforeDownload(linkToLicense(), linkToAcceptAndDownload);
+            }
+            // To download through storage client we must be authenticated as user in order to
+            // impact the download quotas, but we upgrade the privileges so that the request passes.
+            FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+            return doDownloadFile(checksum, isContentInline, response);
+        } catch (EntityOperationForbiddenException e) {
+            return CatalogDownloadResponse.unauthorizedAccess();
+        } catch (HttpClientErrorException | HttpServerErrorException | ExecutionException e) {
+            return CatalogDownloadResponse.internalError(checksum, e);
+        } finally {
+            FeignSecurityManager.reset();
+        }
+    }
+
+    private boolean isLicenseFreeFile(String aipId, String checksum)
+        throws EntityOperationForbiddenException, EntityNotFoundException {
+        // Note: if file is not found in catalog
+        // We don't raise an exception
+        // storage will raise an error (or not)
+        return searchService.get(UniformResourceName.fromString(aipId))
+                            .getFiles()
+                            .values()
+                            .stream()
+                            .filter(file -> file.getChecksum().equals(checksum))
+                            .findFirst()
+                            .map(DataFile::getDataType)
+                            .filter(PUBLIC_FILES::contains)
+                            .isPresent();
+    }
+
+    private LicenseDTO retrieveLicense() throws ExecutionException {
+        return licenseAccessor.retrieveLicense(authResolver.getUser(), runtimeTenantResolver.getTenant());
+    }
+
+    private boolean isLicenseUnaccepted() throws ExecutionException {
+        return !retrieveLicense().isAccepted();
+    }
+
+    private String linkToLicense() throws ExecutionException {
+        return retrieveLicense().getLicenceLink();
+    }
+
+    private String linkToDownloadWithLicense(String aipId,
+                                             String file,
+                                             Boolean isContentInline,
+                                             HttpServletResponse response) throws ModuleException, IOException {
+        CatalogDownloadController thisClass = methodOn(CatalogDownloadController.class);
+        ResponseEntity<Download> thisDownload = thisClass.downloadFile(aipId, file, isContentInline, true, response);
+        return linkTo(thisDownload).withRel("accept").toUri().toString();
+    }
+
+    private ResponseEntity<Download> doDownloadFile(String checksum,
+                                                    Boolean isContentInline,
+                                                    HttpServletResponse response) throws IOException {
+        Response storageResponse = storageRestClient.downloadFile(checksum, isContentInline);
+        addHeaders(storageResponse, response);
+        return storageResponse.status() == HttpStatus.OK.value() ?
+            CatalogDownloadResponse.successfulDownload(storageResponse) :
+            CatalogDownloadResponse.failedDownload(storageResponse);
+    }
+
+    private void addHeaders(Response fromStorageResponse, HttpServletResponse inResponse) {
+        // Add storage headers in the response
+        // CacheControl headers are filtered because This download endpoints must not activate cache control.
+        // Headers are not added in ResponseEntity but in HttpServletResponse
+        // because headers are not correctly handled in ResponseEntity
+        // in integration with Feign.
+        fromStorageResponse.headers()
+                           .entrySet()
+                           .stream()
+                           .filter(header -> !CustomCacheControlHeadersWriter.isCacheControlHeader(header.getKey()))
+                           .forEach(header -> addHeaders(header, inResponse));
+    }
+
+    private void addHeaders(Map.Entry<String, Collection<String>> fromHeader, HttpServletResponse inResponse) {
+        fromHeader.getValue().forEach(value -> inResponse.setHeader(fromHeader.getKey(), value));
     }
 }

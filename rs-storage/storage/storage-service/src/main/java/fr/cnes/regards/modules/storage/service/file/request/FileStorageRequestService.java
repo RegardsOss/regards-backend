@@ -23,8 +23,10 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -64,12 +66,35 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -109,6 +134,8 @@ public class FileStorageRequestService {
 
     private final SessionNotifier sessionNotifier;
 
+    private IJobInfoRepository jobInfoRepo;
+
     protected FileStorageRequestService self;
 
     @Value("${regards.storage.storage.requests.days.before.expiration:5}")
@@ -129,7 +156,8 @@ public class FileStorageRequestService {
                                      FileDeletionRequestService fileDelReqService,
                                      FileReferenceRequestService fileRefReqService,
                                      RequestStatusService reqStatusService,
-                                     SessionNotifier sessionNotifier) {
+                                     SessionNotifier sessionNotifier,
+                                     IJobInfoRepository jobInfoRepo) {
         this.pluginService = pluginService;
         this.fileStorageRequestRepo = fileStorageRequestRepo;
         this.jobInfoService = jobInfoService;
@@ -143,12 +171,13 @@ public class FileStorageRequestService {
         this.fileRefReqService = fileRefReqService;
         this.reqStatusService = reqStatusService;
         this.sessionNotifier = sessionNotifier;
+        this.jobInfoRepo = jobInfoRepo;
     }
 
     /**
      * Initialize new storage requests from Flow items.
      *
-     * @param list
+     * @param list storage requests
      */
     public void store(List<StorageFlowItem> list) {
         Set<String> checksums = list.stream()
@@ -156,11 +185,11 @@ public class FileStorageRequestService {
                                     .flatMap(Set::stream)
                                     .map(FileStorageRequestDTO::getChecksum)
                                     .collect(Collectors.toSet());
-        Set<FileReference> existingOnes = fileRefService.search(checksums);
+        Set<FileReference> existingFiles = fileRefService.search(checksums);
         Set<FileStorageRequest> existingRequests = fileStorageRequestRepo.findByMetaInfoChecksumIn(checksums);
         Set<FileDeletionRequest> existingDeletionRequests = fileDelReqService.searchByChecksums(checksums);
         for (StorageFlowItem item : list) {
-            doStore(item.getFiles(), item.getGroupId(), existingOnes, existingRequests, existingDeletionRequests);
+            doStore(item.getFiles(), item.getGroupId(), existingFiles, existingRequests, existingDeletionRequests);
             reqGroupService.granted(item.getGroupId(),
                                     FileRequestType.STORAGE,
                                     item.getFiles().size(),
@@ -169,17 +198,17 @@ public class FileStorageRequestService {
     }
 
     /**
-     * Initialize new storage requests for a given group identifier. Parameter existingOnes is passed to improve performance in bulk creation to
+     * Initialize new storage requests for a given group identifier. Parameter existingFiles is passed to improve performance in bulk creation to
      * avoid requesting {@link IFileReferenceRepository} on each request.
      *
      * @param requests         requests to handle
      * @param groupId          requests group identifier
-     * @param existingOnes     Already existing file references
+     * @param existingFiles    Already existing file references
      * @param existingRequests Already existing requests
      */
     private void doStore(Collection<FileStorageRequestDTO> requests,
                          String groupId,
-                         Collection<FileReference> existingOnes,
+                         Collection<FileReference> existingFiles,
                          Set<FileStorageRequest> existingRequests,
                          Set<FileDeletionRequest> existingDeletionRequests) {
         // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
@@ -187,21 +216,27 @@ public class FileStorageRequestService {
         for (FileStorageRequestDTO request : requests) {
             long start = System.currentTimeMillis();
             // Check if the file already exists for the storage destination
-            Optional<FileReference> oFileRef = existingOnes.stream()
-                                                           .filter(f -> f.getMetaInfo()
-                                                                         .getChecksum()
-                                                                         .equals(request.getChecksum())
-                                                               && f.getLocation()
-                                                                   .getStorage()
-                                                                   .equals(request.getStorage()))
-                                                           .findFirst();
+            Optional<FileReference> oFileRef = existingFiles.stream()
+                                                            .filter(f -> f.getMetaInfo()
+                                                                          .getChecksum()
+                                                                          .equals(request.getChecksum())
+                                                                && f.getLocation()
+                                                                    .getStorage()
+                                                                    .equals(request.getStorage()))
+                                                            .findFirst();
             Optional<FileStorageRequest> oReq = existingRequests.stream()
-                                                                .filter(f -> f.getMetaInfo()
-                                                                              .getChecksum()
-                                                                              .equals(request.getChecksum())
-                                                                    && f.getStorage().equals(request.getStorage()) && (
-                                                                    (f.getStatus() == FileRequestStatus.TO_DO) || (
-                                                                        f.getStatus() == FileRequestStatus.ERROR)))
+                                                                .filter(fileStorageRequest ->
+                                                                            fileStorageRequest.getMetaInfo()
+                                                                                              .getChecksum()
+                                                                                              .equals(request.getChecksum())
+                                                                                && fileStorageRequest.getStorage()
+                                                                                                     .equals(request.getStorage())
+                                                                                && ((fileStorageRequest.getStatus()
+                                                                                == FileRequestStatus.TO_DO) || (
+                                                                                fileStorageRequest.getStatus()
+                                                                                    == FileRequestStatus.ERROR)
+                                                                                || fileStorageRequest.getStatus()
+                                                                                == FileRequestStatus.PENDING))
                                                                 .findFirst();
             Optional<FileDeletionRequest> oDelReq = existingDeletionRequests.stream()
                                                                             .filter(f -> f.getFileReference()
@@ -214,15 +249,19 @@ public class FileStorageRequestService {
                                                                                     .equals(FileRequestStatus.TO_DO))
                                                                             .findFirst();
             RequestResult result = handleRequest(request, oFileRef, oReq, oDelReq, groupId);
-            if (result.getFileReference().isPresent()) {
+            Optional<FileReference> optionalFileReference = result.getFileReference();
+            if (optionalFileReference.isPresent()) {
                 // Update file reference in the list of file references existing
-                existingOnes.removeIf(f -> f.getId().equals(result.getFileReference().get().getId()));
-                existingOnes.add(result.getFileReference().get());
+                existingFiles.removeIf(f -> f.getId().equals(optionalFileReference.get().getId()));
+                existingFiles.add(optionalFileReference.get());
             }
-            if (result.getStorageRequest().isPresent()) {
-                // Update file reference in the list of file references existing
-                existingRequests.removeIf(f -> f.getId().equals(result.getStorageRequest().get().getId()));
-                existingRequests.add(result.getStorageRequest().get());
+            Optional<FileStorageRequest> optionalStorageRequest = result.getStorageRequest();
+            if (optionalStorageRequest.isPresent()) {
+                // Update storage request in the list of existing storage requests
+                existingRequests.removeIf(storageRequest -> storageRequest.getId()
+                                                                          .equals(optionalStorageRequest.get()
+                                                                                                        .getId()));
+                existingRequests.add(optionalStorageRequest.get());
             }
             LOGGER.trace("[STORAGE REQUESTS] New request ({}) handled in {} ms",
                          request.getFileName(),
@@ -276,7 +315,6 @@ public class FileStorageRequestService {
      * @param oReq    {@link FileStorageRequest} associated to given {@link FileStorageRequestDTO} if already exists
      * @param groupId business request identifier
      * @return {@link FileReference} if the file is already referenced.
-     * @throws MalformedURLException
      */
     private RequestResult handleRequest(FileStorageRequestDTO request,
                                         Optional<FileReference> fileRef,
@@ -292,50 +330,83 @@ public class FileStorageRequestService {
         if (fileRef.isPresent()) {
             // handle file
             return handleFileToStoreAlreadyExists(fileRef.get(), request, oDeletionReq, groupId);
-        } else if (oReq.isPresent() && oReq.get().getStatus() == FileRequestStatus.ERROR) {
-            // If request already exists and in ERROR status retry exiting one instead of create a new request
+        } else if (oReq.isPresent()) {
             FileStorageRequest existingReq = oReq.get();
-            existingReq.update(request, groupId);
-            // Allow retry of error requests when the same request is sent
-            existingReq.setStatus(FileRequestStatus.TO_DO);
-            // decrement errors to the session agent for the previous request session
-            this.sessionNotifier.decrementErrorRequests(existingReq.getSessionOwner(), existingReq.getSession());
-            // increment new request running for the new session
-            this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
-            LOGGER.trace("[STORAGE REQUESTS] Existing request ({}) in ERROR state updated to handle same file of "
-                             + "request ({})", existingReq.getId(), request.getFileName());
+            switch (existingReq.getStatus()) {
+                case DELAYED:
+                case TO_DO:
+                    return saveNewFileStorageRequest(request, groupId, sessionOwner, session);
+                case PENDING:
+                    // check whether job is still alive
+                    // to know if this request is still running, lets get all FAILED jobs since existing requests date
+                    Collection<JobInfo> jobHandlingExistingRequests = jobInfoRepo.findAllByClassNameAndParametersValueContaining(
+                        FileStorageRequestJob.class.getCanonicalName(),
+                        existingReq.getId().toString());
+                    if (jobHandlingExistingRequests.stream()
+                                                   .allMatch(jobInfo -> jobInfo.getStatus().getStatus()
+                                                       == JobStatus.FAILED)) {
+                        existingReq.setStatus(FileRequestStatus.ERROR);
+                        sessionNotifier.decrementRunningRequests(sessionOwner, session);
+                        sessionNotifier.incrementErrorRequests(sessionOwner, session);
+                        // There is no break because we want to get into the case ERROR
+                    } else {
+                        return saveNewFileStorageRequest(request, groupId, sessionOwner, session);
+                    }
+                case ERROR:
+                    // If request already exists and in ERROR status retry exiting one instead of create a new request
+                    existingReq.update(request, groupId);
+                    // retry
+                    // Allow retry of error requests when the same request is sent
+                    existingReq.setStatus(FileRequestStatus.TO_DO);
+                    // decrement errors to the session agent for the previous request session
+                    this.sessionNotifier.decrementErrorRequests(existingReq.getSessionOwner(),
+                                                                existingReq.getSession());
+                    // increment new request running for the new session
+                    this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
+                    LOGGER.trace(
+                        "[STORAGE REQUESTS] Existing request ({}) in ERROR state updated to handle same file of "
+                            + "request ({})",
+                        existingReq.getId(),
+                        request.getFileName());
+                    break;
+            }
             return RequestResult.build(existingReq);
         } else {
-            Optional<String> cause = Optional.empty();
-            Optional<FileRequestStatus> status = Optional.empty();
-            // Check that URL is a valid
-            try {
-                new URL(request.getOriginUrl());
-            } catch (MalformedURLException e) {
-                String errorMessage =
-                    "Invalid URL for file " + request.getFileName() + "storage. Cause : " + e.getMessage();
-                LOGGER.error(errorMessage);
-                status = Optional.of(FileRequestStatus.ERROR);
-                cause = Optional.of(errorMessage);
-            }
-            return RequestResult.build(createNewFileStorageRequest(Sets.newHashSet(request.getOwner()),
-                                                                   request.buildMetaInfo(),
-                                                                   request.getOriginUrl(),
-                                                                   request.getStorage(),
-                                                                   request.getOptionalSubDirectory(),
-                                                                   groupId,
-                                                                   cause,
-                                                                   status,
-                                                                   sessionOwner,
-                                                                   session));
+            return saveNewFileStorageRequest(request, groupId, sessionOwner, session);
         }
+    }
+
+    private RequestResult saveNewFileStorageRequest(FileStorageRequestDTO request,
+                                                    String groupId,
+                                                    String sessionOwner,
+                                                    String session) {
+        Optional<String> cause = Optional.empty();
+        Optional<FileRequestStatus> status = Optional.empty();
+        // Check that URL is a valid
+        try {
+            new URL(request.getOriginUrl());
+        } catch (MalformedURLException e) {
+            String errorMessage =
+                "Invalid URL for file " + request.getFileName() + "storage. Cause : " + e.getMessage();
+            LOGGER.error(errorMessage);
+            status = Optional.of(FileRequestStatus.ERROR);
+            cause = Optional.of(errorMessage);
+        }
+        return RequestResult.build(createNewFileStorageRequest(Sets.newHashSet(request.getOwner()),
+                                                               request.buildMetaInfo(),
+                                                               request.getOriginUrl(),
+                                                               request.getStorage(),
+                                                               request.getOptionalSubDirectory(),
+                                                               groupId,
+                                                               cause,
+                                                               status,
+                                                               sessionOwner,
+                                                               session));
     }
 
     /**
      * Search for {@link FileStorageRequest}s matching the given destination storage and checksum
      *
-     * @param destinationStorage
-     * @param checksum
      * @return {@link FileStorageRequest}
      */
     @Transactional(readOnly = true)
@@ -356,7 +427,6 @@ public class FileStorageRequestService {
     /**
      * Search for all {@link FileStorageRequest}s
      *
-     * @param pageable
      * @return {@link FileStorageRequest}s by page
      */
     @Transactional(readOnly = true)
@@ -367,7 +437,6 @@ public class FileStorageRequestService {
     /**
      * Search for {@link FileStorageRequest}s associated to the given destination storage location.
      *
-     * @param pageable
      * @return {@link FileStorageRequest}s by page
      */
     @Transactional(readOnly = true)
@@ -504,12 +573,6 @@ public class FileStorageRequestService {
         return jobList;
     }
 
-    /**
-     * @param jobList
-     * @param storage
-     * @param owners
-     * @param status
-     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean scheduleJobsByStorage(Collection<JobInfo> jobList,
                                          String storage,
@@ -531,7 +594,6 @@ public class FileStorageRequestService {
             filesPage = fileStorageRequestRepo.findAllByStorageAndStatusAndIdGreaterThan(storage, status, maxId, page);
         }
         if (filesPage.hasContent()) {
-            maxId = filesPage.stream().max(Comparator.comparing(FileStorageRequest::getId)).get().getId();
             // SESSION HANDLING
             // if status is in error state decrement the number of requests in error
             if (status.equals(FileRequestStatus.ERROR)) {
@@ -556,8 +618,6 @@ public class FileStorageRequestService {
     /**
      * Schedule {@link FileStorageRequestJob}s for all given {@link FileStorageRequest}s and a given storage location.
      *
-     * @param storage
-     * @param fileStorageRequests
      * @return {@link JobInfo}s scheduled
      */
     private Collection<JobInfo> scheduleJobsByStorage(String storage,
@@ -597,8 +657,6 @@ public class FileStorageRequestService {
      * Schedule a {@link JobInfo} for the given {@link  FileStorageWorkingSubset}.<br/>
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
      *
-     * @param workingSubset
-     * @param plgBusinessId
      * @return {@link JobInfo} scheduled.
      */
     private JobInfo scheduleJob(FileStorageWorkingSubset workingSubset, String plgBusinessId, String storage) {
@@ -627,11 +685,11 @@ public class FileStorageRequestService {
      * @param fileMetaInfo        meta information of the file to store
      * @param originUrl           file origin location
      * @param storage             storage destination location
-     * @param storageSubDirectory Optional sub directory where to store file in the storage destination location
+     * @param storageSubDirectory Optional sub-directory where to store file in the storage destination location
      * @param groupId             Business identifier of the deletion request
-     * @param status
-     * @param sessionOwner
-     * @param session
+     * @param status              storage request status to be set during creation
+     * @param sessionOwner        session owner to which belongs created storage request
+     * @param session             session to which belongs created storage request
      */
     public FileStorageRequest createNewFileStorageRequest(Collection<String> owners,
                                                           FileReferenceMetaInfo fileMetaInfo,
@@ -682,7 +740,7 @@ public class FileStorageRequestService {
      * <li> the plugin configuration is disabled </li>
      * </ul>
      *
-     * @param fileStorageRequests
+     * @param fileStorageRequests storage request not available
      */
     private void handleStorageNotAvailable(Collection<FileStorageRequest> fileStorageRequests,
                                            Optional<String> errorCause) {
@@ -695,8 +753,6 @@ public class FileStorageRequestService {
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
-     *
-     * @param fileStorageRequest
      */
     private void handleStorageNotAvailable(FileStorageRequest fileStorageRequest, Optional<String> errorCause) {
         long start = System.currentTimeMillis();
@@ -852,7 +908,7 @@ public class FileStorageRequestService {
         long start = System.currentTimeMillis();
         FileReferenceMetaInfo newMetaInfo = request.buildMetaInfo();
         if (oDeletionRequest.isPresent()) {
-            // Deletion is running write now, so delay the new file reference creation with a FileReferenceRequest
+            // Deletion is running right now, so delay the new file reference creation with a FileReferenceRequest
             return RequestResult.build(createNewFileStorageRequest(Sets.newHashSet(request.getOwner()),
                                                                    newMetaInfo,
                                                                    request.getOriginUrl(),
@@ -894,8 +950,6 @@ public class FileStorageRequestService {
 
     /**
      * Delete all requests for the given storage identifier
-     *
-     * @param storageLocationId
      */
     public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
         if (status.isPresent()) {
@@ -905,10 +959,6 @@ public class FileStorageRequestService {
         }
     }
 
-    /**
-     * @param storageId
-     * @return
-     */
     public boolean isStorageRunning(String storageId) {
         return fileStorageRequestRepo.existsByStorageAndStatusIn(storageId,
                                                                  Sets.newHashSet(FileRequestStatus.TO_DO,
@@ -917,8 +967,6 @@ public class FileStorageRequestService {
 
     /**
      * Retrieve expiration date for deletion request
-     *
-     * @return
      */
     public OffsetDateTime getRequestExpirationDate() {
         if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {

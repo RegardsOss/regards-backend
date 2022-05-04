@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IFileCacheRequestRepository;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
@@ -91,9 +92,12 @@ public class FileCacheRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileCacheRequestService.class);
 
+    /**
+     * Static variable to avoid sending notification of cache full event after each request.
+     */
     private static boolean globalCacheLimitReached = false;
 
-    private final IFileCacheRequestRepository repository;
+    private final IFileCacheRequestRepository cacheRequestRepository;
 
     private final IPluginService pluginService;
 
@@ -128,7 +132,7 @@ public class FileCacheRequestService {
     @Value("${regards.storage.cache.requests.per.job:100}")
     private Integer nbRequestsPerJob;
 
-    public FileCacheRequestService(IFileCacheRequestRepository repository,
+    public FileCacheRequestService(IFileCacheRequestRepository cacheRequestRepository,
                                    IPluginService pluginService,
                                    IJobInfoService jobInfoService,
                                    IAuthenticationResolver authResolver,
@@ -144,7 +148,7 @@ public class FileCacheRequestService {
                                    INotificationClient notificationClient,
                                    ApplicationContext applicationContext,
                                    FileCacheRequestService fileCacheRequestService) {
-        this.repository = repository;
+        this.cacheRequestRepository = cacheRequestRepository;
         this.pluginService = pluginService;
         this.jobInfoService = jobInfoService;
         this.authResolver = authResolver;
@@ -163,26 +167,18 @@ public class FileCacheRequestService {
     }
 
     /**
-     * Static variable to avoid sending notification of cache full event after each request.
-     */
-
-    /**
      * Search for a {@link FileCacheRequest} on the file given checksum.
-     *
-     * @param checksum
-     * @return {@link FileCacheRequest}
      */
     @Transactional(readOnly = true)
-
     public Optional<FileCacheRequest> search(String checksum) {
-        return repository.findByChecksum(checksum);
+        return cacheRequestRepository.findByChecksum(checksum);
     }
 
     /**
      * Creates a new {@link FileCacheRequest} if does not exists already.
      *
-     * @param fileRefToRestore
-     * @param expirationDate
+     * @param fileRefToRestore File that we are asking to be put into the cache
+     * @param expirationDate   Date at which the cache request expires
      * @param groupId          Business identifier of the deletion request
      * @return {@link FileCacheRequest} created.
      */
@@ -190,28 +186,29 @@ public class FileCacheRequestService {
                                              OffsetDateTime expirationDate,
                                              String groupId) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
-        Optional<FileCacheRequest> oFcr = repository.findByChecksum(checksum);
-        FileCacheRequest request = null;
+        Optional<FileCacheRequest> oFcr = cacheRequestRepository.findByChecksum(checksum);
+        FileCacheRequest request;
         if (!oFcr.isPresent()) {
             request = new FileCacheRequest(fileRefToRestore,
                                            cacheService.getCacheDirectoryPath(checksum),
                                            expirationDate,
                                            groupId);
-            request = repository.save(request);
+            request = cacheRequestRepository.save(request);
             LOGGER.trace("File {} (checksum {}) is requested for cache.",
                          fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
         } else {
             request = oFcr.get();
+            request.setExpirationDate(expirationDate);
             if (request.getStatus() == FileRequestStatus.ERROR) {
                 request.setStatus(reqStatusService.getNewStatus(request));
-                request = repository.save(request);
             }
+            request = cacheRequestRepository.save(request);
             LOGGER.trace("File {} (checksum {}) is already requested for cache.",
                          fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
         }
-        return Optional.ofNullable(request);
+        return Optional.of(request);
     }
 
     public void makeAvailable(Collection<AvailabilityFlowItem> items) {
@@ -227,12 +224,11 @@ public class FileCacheRequestService {
     /**
      * Ensure availability of given files by their checksum for download.
      *
-     * @param checksums
-     * @param expirationDate availability expiration date.
-     * @param groupId
-     * @return Number of availability requests created.
+     * @param checksums      Checksums to be made available
+     * @param expirationDate Availability expiration date.
+     * @param groupId        Request group id
      */
-    public int makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate, String groupId) {
+    public void makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate, String groupId) {
 
         Set<FileReference> onlines = Sets.newHashSet();
         Set<FileReference> offlines = Sets.newHashSet();
@@ -299,16 +295,12 @@ public class FileCacheRequestService {
         }
         notifyUnknowns(unkownFiles, groupId);
         notifyAvailables(onlines, groupId);
-        // notifyNotAvailables(offlines, groupId);
+        // notifyNotAvailables(offlines, groupId); FIXME: @sbinda what should be done?
         // Handle off lines as near lines files to create new FileCacheRequests.
         nearlines.addAll(offlines);
-        int nbRequests = makeAvailable(nearlines, expirationDate, groupId);
-        return nbRequests;
+        makeAvailable(nearlines, expirationDate, groupId);
     }
 
-    /**
-     * @param unkownFiles
-     */
     private void notifyUnknowns(Set<String> unkownFiles, String requestGroupId) {
         for (String checksum : unkownFiles) {
             String message = String.format("file with checksum %s does not exists.", checksum);
@@ -331,24 +323,22 @@ public class FileCacheRequestService {
      * @param groupId request business identifier to retry
      */
     public void retryRequest(String groupId) {
-        for (FileCacheRequest request : repository.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR)) {
+        for (FileCacheRequest request : cacheRequestRepository.findByGroupIdAndStatus(groupId,
+                                                                                      FileRequestStatus.ERROR)) {
             request.setStatus(reqStatusService.getNewStatus(request));
             request.setErrorCause(null);
-            repository.save(request);
+            cacheRequestRepository.save(request);
         }
     }
 
     /**
      * Schedule all {@link FileCacheRequest}s with given status to be handled in {@link JobInfo}s
-     *
-     * @param status
-     * @return scheduled {@link JobInfo}s
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status) {
         LOGGER.trace("[CACHE REQUESTS] Scheduling Cache jobs ...");
         long start = System.currentTimeMillis();
         Collection<JobInfo> jobList = Lists.newArrayList();
-        Set<String> allStorages = repository.findStoragesByStatus(status);
+        Set<String> allStorages = cacheRequestRepository.findStoragesByStatus(status);
         for (String storage : allStorages) {
             Page<FileCacheRequest> filesPage;
             Long maxId = 0L;
@@ -356,9 +346,16 @@ public class FileCacheRequestService {
             // To do so, we order on id to ensure to not handle same requests multiple times.
             Pageable page = PageRequest.of(0, nbRequestsPerJob, Direction.ASC, "id");
             do {
-                filesPage = repository.findAllByStorageAndStatusAndIdGreaterThan(storage, status, maxId, page);
+                filesPage = cacheRequestRepository.findAllByStorageAndStatusAndIdGreaterThan(storage,
+                                                                                             status,
+                                                                                             maxId,
+                                                                                             page);
                 if (filesPage.hasContent()) {
-                    maxId = filesPage.stream().max(Comparator.comparing(FileCacheRequest::getId)).get().getId();
+                    maxId = filesPage.stream()
+                                     .max(Comparator.comparing(FileCacheRequest::getId))
+                                     .orElseThrow(() -> new RsRuntimeException(
+                                         "This should not happen as there is at least one file"))
+                                     .getId();
                     jobList.addAll(self.scheduleJobsByStorage(storage, filesPage.getContent()));
                 }
             } while (filesPage.hasContent());
@@ -373,17 +370,13 @@ public class FileCacheRequestService {
 
     /**
      * Schedule cache requests jobs for given storage using new transaction.
-     *
-     * @param jobList
-     * @param storage
-     * @param requests
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Collection<JobInfo> scheduleJobsByStorage(String storage, List<FileCacheRequest> requests) {
         if (storageHandler.isConfigured(storage)) {
             requests = calculateRestorables(requests);
             Collection<JobInfo> jobInfoList = Sets.newHashSet();
-            if ((requests != null) && !requests.isEmpty()) {
+            if (!requests.isEmpty()) {
                 try {
                     PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
                     IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
@@ -409,8 +402,8 @@ public class FileCacheRequestService {
     }
 
     public void delete(FileCacheRequest request) {
-        if (repository.existsById(request.getId())) {
-            repository.deleteById(request.getId());
+        if (cacheRequestRepository.existsById(request.getId())) {
+            cacheRequestRepository.deleteById(request.getId());
         } else {
             LOGGER.warn("Unable to delete file cache request {} cause it does not exists.", request.getId());
         }
@@ -421,10 +414,6 @@ public class FileCacheRequestService {
      * <li> Creates the new {@link CacheFile}</li>
      * <li> Deletes the {@link FileCacheRequest} handled.
      * </ul>
-     *
-     * @param fileReq
-     * @param cacheLocation
-     * @param realFileSize
      */
     public void handleSuccess(FileCacheRequest fileReq,
                               URL cacheLocation,
@@ -432,7 +421,7 @@ public class FileCacheRequestService {
                               Long realFileSize,
                               String successMessage) {
         LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", fileReq.getChecksum(), successMessage);
-        Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
+        Optional<FileCacheRequest> oRequest = cacheRequestRepository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             // Create the cache file associated
             cacheService.addFile(oRequest.get().getChecksum(),
@@ -464,23 +453,20 @@ public class FileCacheRequestService {
 
     /**
      * Handle a {@link FileCacheRequest} end with error.
-     *
-     * @param fileReq
-     * @param cause
      */
     public void handleError(FileCacheRequest fileReq, String cause) {
         FileReference fileRef = fileReq.getFileReference();
         LOGGER.error("[AVAILABILITY ERROR {}] - Restoration error for file {} from {}. Cause : {}",
                      fileRef.getMetaInfo().getChecksum(),
                      fileRef.getMetaInfo().getFileName(),
-                     fileRef.getLocation().toString(),
+                     fileRef.getLocation(),
                      cause);
-        Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
+        Optional<FileCacheRequest> oRequest = cacheRequestRepository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             FileCacheRequest request = oRequest.get();
             request.setStatus(FileRequestStatus.ERROR);
             request.setErrorCause(cause);
-            repository.save(request);
+            cacheRequestRepository.save(request);
         }
         publisher.notAvailable(fileReq.getChecksum(), fileReq.getStorage(), cause, fileReq.getGroupId());
         reqGrpService.requestError(fileReq.getGroupId(),
@@ -494,17 +480,14 @@ public class FileCacheRequestService {
 
     /**
      * Return all the request that can be restored in cache to not reach the cache size limit.
-     *
-     * @param requests
-     * @return available {@link FileCacheRequest} requests for restoration in cache
      */
     private List<FileCacheRequest> calculateRestorables(Collection<FileCacheRequest> requests) {
         List<FileCacheRequest> restorables = Lists.newArrayList();
         // Calculate cache size available by adding cache file sizes sum and already queued requests
         Long availableCacheSize = cacheService.getFreeSpaceInBytes();
         Long occupation = 100 - ((availableCacheSize / cacheService.getCacheSizeLimit()) * 100);
-        Long pendingSize = repository.getPendingFileSize();
-        Long availableSize = availableCacheSize - pendingSize;
+        Long pendingSize = cacheRequestRepository.getPendingFileSize();
+        long availableSize = availableCacheSize - pendingSize;
         Iterator<FileCacheRequest> it = requests.iterator();
         boolean cacheLimitReached = false;
         Long totalSize = 0L;
@@ -533,10 +516,6 @@ public class FileCacheRequestService {
     /**
      * Schedule a {@link JobInfo} for the given {@link  FileRestorationWorkingSubset}.<br/>
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
-     *
-     * @param workingSubset
-     * @param plgBusinessId
-     * @return {@link JobInfo} scheduled.
      */
     public JobInfo scheduleJob(FileRestorationWorkingSubset workingSubset, String plgBusinessId) {
         Set<JobParameter> parameters = Sets.newHashSet();
@@ -548,9 +527,9 @@ public class FileCacheRequestService {
                                                                     authResolver.getUser(),
                                                                     FileCacheRequestJob.class.getName()));
         workingSubset.getFileRestorationRequests()
-                     .forEach(r -> repository.updateStatusAndJobId(FileRequestStatus.PENDING,
-                                                                   jobInfo.getId().toString(),
-                                                                   r.getId()));
+                     .forEach(r -> cacheRequestRepository.updateStatusAndJobId(FileRequestStatus.PENDING,
+                                                                               jobInfo.getId().toString(),
+                                                                               r.getId()));
         em.flush();
         em.clear();
         return jobInfo;
@@ -560,12 +539,11 @@ public class FileCacheRequestService {
      * Creates {@link FileCacheRequest} for each nearline {@link FileReference} to be available for download.
      * After copy in cache, files will be available until the given expiration date.
      *
-     * @param fileReferences
-     * @param expirationDate
-     * @param groupId
-     * @return number of cache request created.
+     * @param fileReferences Files to put into the cache
+     * @param expirationDate Files expiration date in cache
+     * @param groupId        Request group id
      */
-    public int makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String groupId) {
+    public void makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String groupId) {
         // Check files already available in cache
         Set<FileReference> availables = cacheService.getFilesAvailableInCache(fileReferences, groupId);
         Set<FileReference> toRestore = fileReferences.stream()
@@ -577,7 +555,6 @@ public class FileCacheRequestService {
         for (FileReference f : toRestore) {
             create(f, expirationDate, groupId);
         }
-        return toRestore.size();
     }
 
     /**
@@ -586,12 +563,9 @@ public class FileCacheRequestService {
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
-     *
-     * @param fileRefRequests
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleStorageNotAvailable(Collection<FileCacheRequest> fileRefRequests) {
-        fileRefRequests.forEach((r) -> this.handleStorageNotAvailable(r, Optional.empty()));
+        fileRefRequests.forEach(request -> this.handleStorageNotAvailable(request, Optional.empty()));
     }
 
     /**
@@ -600,8 +574,6 @@ public class FileCacheRequestService {
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
-     *
-     * @param request
      */
     private void handleStorageNotAvailable(FileCacheRequest request, Optional<String> errorCause) {
         // The storage destination is unknown, we can already set the request in error status
@@ -611,7 +583,7 @@ public class FileCacheRequestService {
             request.getStorage()));
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(message);
-        repository.save(request);
+        cacheRequestRepository.save(request);
         LOGGER.error("[AVAILABILITY ERROR] File {} is not available. Cause : {}",
                      request.getFileReference().getMetaInfo().getChecksum(),
                      request.getErrorCause());
@@ -675,9 +647,6 @@ public class FileCacheRequestService {
 
     /**
      * Notify all files as AVAILABLE.
-     *
-     * @param availables
-     * @param groupId
      */
     private void notifyAlreadyAvailablesInCache(Set<FileReference> availables, String groupId) {
         for (FileReference fileRef : availables) {
@@ -712,21 +681,20 @@ public class FileCacheRequestService {
 
     /**
      * Delete all requests for the given storage identifier
-     *
-     * @param storageLocationId
      */
     public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
         if (status.isPresent()) {
-            repository.deleteByStorageAndStatus(storageLocationId, status.get());
+            cacheRequestRepository.deleteByStorageAndStatus(storageLocationId, status.get());
         } else {
-            repository.deleteByStorage(storageLocationId);
+            cacheRequestRepository.deleteByStorage(storageLocationId);
         }
     }
 
-    /**
-     * @param deletedFileRef
-     */
     public void delete(FileReference deletedFileRef) {
-        repository.deleteByfileReference(deletedFileRef);
+        cacheRequestRepository.deleteByfileReference(deletedFileRef);
+    }
+
+    public void cleanExpiredCacheRequests() {
+        cacheRequestRepository.deleteByExpirationDateBefore(OffsetDateTime.now());
     }
 }

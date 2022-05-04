@@ -18,48 +18,36 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.emailverification;
 
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.UUID;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotBlank;
-
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
  * Verification token for verifying the user's email process.
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- *
  */
 @Entity
 @Table(name = "t_email_verification_token",
-        uniqueConstraints = @UniqueConstraint(name = "uk_email_verification_token_project_user_id",
-                columnNames = { "project_user_id" }))
+    uniqueConstraints = @UniqueConstraint(name = "uk_email_verification_token_project_user_id",
+        columnNames = { "project_user_id" }))
 public class EmailVerificationToken {
 
     /**
-     * Expiration delay in minutes (=24 hours)
+     * Expiration delay in days
      */
-    private static final int EXPIRATION = 60 * 24;
+    private static final int EXPIRATION = 3;
 
     /**
      * Id
      */
     @Id
     @SequenceGenerator(name = "EmailVerificationTokenSequenceGenerator", initialValue = 1,
-            sequenceName = "seq_email_verification_token")
+        sequenceName = "seq_email_verification_token")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "EmailVerificationTokenSequenceGenerator")
     private Long id;
 
@@ -74,7 +62,7 @@ public class EmailVerificationToken {
      */
     @OneToOne(optional = false)
     @JoinColumn(updatable = false, name = "project_user_id",
-            foreignKey = @ForeignKey(name = "fk_email_verification_token"))
+        foreignKey = @ForeignKey(name = "fk_email_verification_token"))
     private ProjectUser projectUser;
 
     /**
@@ -111,33 +99,32 @@ public class EmailVerificationToken {
     }
 
     /**
-     *
-     * @param pProjectUser
-     *            The link back to the {@link ProjectUser}
-     * @param pOriginUrl
-     *            The origin url
-     * @param pRequestLink
-     *            The request link
+     * @param pProjectUser The link back to the {@link ProjectUser}
+     * @param pOriginUrl   The origin url
+     * @param pRequestLink The request link
      */
     public EmailVerificationToken(final ProjectUser pProjectUser, final String pOriginUrl, final String pRequestLink) {
         super();
-        token = UUID.randomUUID().toString();
+        this.generateToken();
+        this.updateExpiryDate();
         projectUser = pProjectUser;
         originUrl = pOriginUrl;
         requestLink = pRequestLink;
-        expiryDate = calculateExpiryDate(EXPIRATION);
         verified = false;
     }
 
     /**
-     * Calculate expiration date
-     *
-     * @param pExpiryTimeInMinutes
-     *            the expiration time in minutes
-     * @return the expiration date
+     * Generate a new random token
      */
-    private LocalDateTime calculateExpiryDate(final long pExpiryTimeInMinutes) {
-        return LocalDateTime.now().plusMinutes(pExpiryTimeInMinutes);
+    public void generateToken() {
+        token = UUID.randomUUID().toString();
+    }
+
+    /**
+     * Update the expiry date
+     */
+    public void updateExpiryDate() {
+        expiryDate = LocalDateTime.now().plusDays(EXPIRATION);
     }
 
     /**
@@ -148,8 +135,7 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pId
-     *            the id to set
+     * @param pId the id to set
      */
     public void setId(final Long pId) {
         id = pId;
@@ -163,8 +149,7 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pToken
-     *            the token to set
+     * @param pToken the token to set
      */
     public void setToken(final String pToken) {
         token = pToken;
@@ -178,8 +163,7 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pExpiryDate
-     *            the expiryDate to set
+     * @param pExpiryDate the expiryDate to set
      */
     public void setExpiryDate(final LocalDateTime pExpiryDate) {
         expiryDate = pExpiryDate;
@@ -193,8 +177,7 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pVerified
-     *            the verified to set
+     * @param pVerified the verified to set
      */
     public void setVerified(final boolean pVerified) {
         verified = pVerified;
@@ -205,6 +188,13 @@ public class EmailVerificationToken {
      */
     public String getOriginUrl() {
         return originUrl;
+    }
+
+    /**
+     * @param pOriginUrl the originUrl to set
+     */
+    public void setOriginUrl(final String pOriginUrl) {
+        originUrl = pOriginUrl;
     }
 
     /**
@@ -222,14 +212,6 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pOriginUrl
-     *            the originUrl to set
-     */
-    public void setOriginUrl(final String pOriginUrl) {
-        originUrl = pOriginUrl;
-    }
-
-    /**
      * @return the requestLink
      */
     public String getRequestLink() {
@@ -237,8 +219,7 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pRequestLink
-     *            the requestLink to set
+     * @param pRequestLink the requestLink to set
      */
     public void setRequestLink(final String pRequestLink) {
         requestLink = pRequestLink;

@@ -74,6 +74,7 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link ICatalogSearchService}
+ *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -111,16 +112,18 @@ public class CatalogSearchService implements ICatalogSearchService {
     private IAttributeFinder finder;
 
     /**
-     * @param searchService Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be
-     *            null.
+     * @param searchService     Service perfoming the ElasticSearch search from criterions. Autowired by Spring. Must not be
+     *                          null.
      * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by
-     *            Spring. Must not be null.
+     *                          Spring. Must not be null.
      * @param accessRightFilter Service handling the access groups in criterion. Autowired by Spring. Must not be null.
-     * @param facetConverter manage facet conversion
+     * @param facetConverter    manage facet conversion
      */
-    public CatalogSearchService(ISearchService searchService, IOpenSearchService openSearchService,
-            IAccessRightFilter accessRightFilter, IFacetConverter facetConverter,
-            IPageableConverter pageableConverter) {
+    public CatalogSearchService(ISearchService searchService,
+                                IOpenSearchService openSearchService,
+                                IAccessRightFilter accessRightFilter,
+                                IFacetConverter facetConverter,
+                                IPageableConverter pageableConverter) {
         this.searchService = searchService;
         this.openSearchService = openSearchService;
         this.accessRightFilter = accessRightFilter;
@@ -130,8 +133,11 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> inSearchKey,
-            List<String> facets, Pageable pageable) throws SearchException, OpenSearchUnknownParameter {
+    public <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion,
+                                                         SearchKey<S, R> inSearchKey,
+                                                         List<String> facets,
+                                                         Pageable pageable)
+        throws SearchException, OpenSearchUnknownParameter {
         try {
             SearchKey<?, ?> searchKey = inSearchKey;
 
@@ -145,7 +151,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             // datasets (ie SimpleSearchKey<DataSet>)
             // This is correct because all
             if ((criterion == null || criterion instanceof EmptyCriterion) && (searchKey instanceof JoinEntitySearchKey)
-                    && (searchKey.getResultClass() == Dataset.class)) {
+                && (searchKey.getResultClass() == Dataset.class)) {
                 searchKey = Searches.onSingleEntity(Searches.fromClass(searchKey.getResultClass()));
             }
 
@@ -157,11 +163,16 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Perform search
             FacetPage<R> facetPage;
             if (searchKey instanceof SimpleSearchKey) {
-                facetPage = searchService.search((SimpleSearchKey<R>) searchKey, convertedPageable, criterion,
+                facetPage = searchService.search((SimpleSearchKey<R>) searchKey,
+                                                 convertedPageable,
+                                                 criterion,
                                                  searchFacets);
             } else {
-                    facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
-                            criterion, accessRightFilter.addAccessRights(ICriterion.all()), searchFacets);
+                facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey,
+                                                 convertedPageable,
+                                                 criterion,
+                                                 accessRightFilter.addAccessRights(ICriterion.all()),
+                                                 searchFacets);
             }
 
             // Rebuilding facets
@@ -172,10 +183,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
 
             // Filter data file according to access rights when searching for data objects
-            if (((searchKey instanceof SimpleSearchKey)
-                    && searchKey.getSearchTypeMap().containsValue(DataObject.class))
-                    || ((searchKey.getResultClass() != null)
-                            && (searchKey.getResultClass() == DataObject.class))) {
+            if (((searchKey instanceof SimpleSearchKey) && searchKey.getSearchTypeMap().containsValue(DataObject.class))
+                || ((searchKey.getResultClass() != null) && (searchKey.getResultClass() == DataObject.class))) {
                 for (R entity : facetPage.getContent()) {
                     if (entity instanceof DataObject) {
                         filterDataFiles(accessGroups, ((DataObject) entity));
@@ -190,8 +199,11 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
-            Pageable pageable) throws SearchException, OpenSearchUnknownParameter {
+    public <R extends IIndexable> FacetPage<R> search(ICriterion criterion,
+                                                      SearchType searchType,
+                                                      List<String> facets,
+                                                      Pageable pageable)
+        throws SearchException, OpenSearchUnknownParameter {
         return search(criterion, getSearchKey(searchType), facets, pageable);
     }
 
@@ -206,8 +218,9 @@ public class CatalogSearchService implements ICatalogSearchService {
         // If user groups is null, it's an ADMIN request (Look at AccessRightFilter#getUserAccessGroups)
         // so do not filter data
         if (userGroups != null) {
-            if (userGroups.stream().noneMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
-                    && groupsAccessRightMap.get(userGroup)))) {
+            if (userGroups.stream()
+                          .noneMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
+                                                   && groupsAccessRightMap.get(userGroup)))) {
                 dataObject.getFiles().removeAll(DataType.RAWDATA);
             }
         }
@@ -215,7 +228,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public <E extends AbstractEntity<?>> E get(UniformResourceName urn)
-            throws EntityOperationForbiddenException, EntityNotFoundException {
+        throws EntityOperationForbiddenException, EntityNotFoundException {
         E entity = searchService.get(urn);
         if (entity == null) {
             throw new EntityNotFoundException(urn.toString(), AbstractEntity.class);
@@ -225,8 +238,10 @@ public class CatalogSearchService implements ICatalogSearchService {
             userGroups = accessRightFilter.getUserAccessGroups();
         } catch (AccessRightFilterException e) {
             LOGGER.error("Forbidden operation", e);
-            throw new EntityOperationForbiddenException(urn.toString(), entity.getClass(),
-                    "You do not have access to this " + entity.getClass().getSimpleName());
+            throw new EntityOperationForbiddenException(urn.toString(),
+                                                        entity.getClass(),
+                                                        "You do not have access to this " + entity.getClass()
+                                                                                                  .getSimpleName());
         }
         // Fill downloadable property if entity is a DataObject
         if (entity instanceof DataObject) {
@@ -241,19 +256,26 @@ public class CatalogSearchService implements ICatalogSearchService {
             // then we have access
             return entity;
         }
-        throw new EntityOperationForbiddenException(urn.toString(), entity.getClass(),
-                "You do not have access to this " + entity.getClass().getSimpleName());
+        throw new EntityOperationForbiddenException(urn.toString(),
+                                                    entity.getClass(),
+                                                    "You do not have access to this " + entity.getClass()
+                                                                                              .getSimpleName());
     }
 
     @Override
-    public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
-            UniformResourceName dataset, List<DataType> dataTypes) {
+    public DocFilesSummary computeDatasetsSummary(ICriterion criterion,
+                                                  SimpleSearchKey<DataObject> searchKey,
+                                                  UniformResourceName dataset,
+                                                  List<DataType> dataTypes) {
         try {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addDataAccessRights(criterion);
             // Perform compute
-            DocFilesSummary summary = searchService
-                    .computeDataFilesSummary(searchKey, criterion, "tags", Optional.of("URN:AIP:DATASET.*"), dataTypes);
+            DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey,
+                                                                            criterion,
+                                                                            "tags",
+                                                                            Optional.of("URN:AIP:DATASET.*"),
+                                                                            dataTypes);
             keepOnlyDatasetsWithGrantedAccess(searchKey, dataset, summary);
 
             return summary;
@@ -264,18 +286,21 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType,
-            UniformResourceName dataset, List<DataType> dataTypes) {
+    public DocFilesSummary computeDatasetsSummary(ICriterion criterion,
+                                                  SearchType searchType,
+                                                  UniformResourceName dataset,
+                                                  List<DataType> dataTypes) {
         Assert.isTrue(SearchType.DATAOBJECTS.equals(searchType), "Only dataobject target is supported.");
         return computeDatasetsSummary(criterion, getSimpleSearchKey(searchType), dataset, dataTypes);
     }
 
-    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset,
-            DocFilesSummary summary) throws AccessRightFilterException {
+    private void keepOnlyDatasetsWithGrantedAccess(SimpleSearchKey<DataObject> searchKey,
+                                                   UniformResourceName dataset,
+                                                   DocFilesSummary summary) throws AccessRightFilterException {
         // Be careful ! "tags" is used to discriminate docFiles summaries because dataset URN is set into it BUT
         // all tags are used.
         // So we must remove all summaries that are not from dataset
-        for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext();) {
+        for (Iterator<String> i = summary.getSubSummariesMap().keySet().iterator(); i.hasNext(); ) {
             String tag = i.next();
             if (!UniformResourceName.isValidUrn(tag)) {
                 i.remove();
@@ -296,13 +321,19 @@ public class CatalogSearchService implements ICatalogSearchService {
             // the user access rights group)
             // page size to max value because datasets count isn't too large...
             ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream()
-                    .map(group -> ICriterion.contains("groups", group, StringMatchType.KEYWORD))
-                    .collect(Collectors.toSet()));
+                                                                          .map(group -> ICriterion.contains("groups",
+                                                                                                            group,
+                                                                                                            StringMatchType.KEYWORD))
+                                                                          .collect(Collectors.toSet()));
             Page<Dataset> page = searchService.search(Searches.onSingleEntity(EntityType.DATASET),
-                                                      ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
+                                                      ISearchService.MAX_PAGE_SIZE,
+                                                      dataObjectsGrantedCrit);
 
-            Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId).map(UniformResourceName::toString)
-                    .collect(Collectors.toSet());
+            Set<String> datasetIpids = page.getContent()
+                                           .stream()
+                                           .map(Dataset::getIpId)
+                                           .map(UniformResourceName::toString)
+                                           .collect(Collectors.toSet());
             // If summary is restricted to a specified datasetIpId, it must be taken into account
             if (dataset != null) {
                 if (datasetIpids.contains(dataset.toString())) {
@@ -312,8 +343,9 @@ public class CatalogSearchService implements ICatalogSearchService {
                     summary.getSubSummariesMap().clear();
                 }
             }
-            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap().entrySet().iterator(); i
-                    .hasNext();) {
+            for (Iterator<Entry<String, DocFilesSubSummary>> i = summary.getSubSummariesMap()
+                                                                        .entrySet()
+                                                                        .iterator(); i.hasNext(); ) {
                 // Remove it if subSummary discriminant isn't a dataset or isn't a dataset on which data can be
                 // retrieved for current user
                 if (!datasetIpids.contains(i.next().getKey())) {
@@ -325,7 +357,10 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText) {
+                                                                                SearchKey<T, T> searchKey,
+                                                                                String propertyPath,
+                                                                                int maxCount,
+                                                                                String partialText) {
         AttributeModel attModel = null;
         String attributePath = propertyPath;
         try {
@@ -341,9 +376,13 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Add partialText contains criterion if not empty
             if (!Strings.isNullOrEmpty(partialText)) {
                 if (attModel != null) {
-                    criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText, StringMatchType.KEYWORD));
+                    criterion = ICriterion.and(criterion,
+                                               IFeatureCriterion.contains(attModel,
+                                                                          partialText,
+                                                                          StringMatchType.KEYWORD));
                 } else {
-                    criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText, StringMatchType.KEYWORD));
+                    criterion = ICriterion.and(criterion,
+                                               ICriterion.contains(propertyPath, partialText, StringMatchType.KEYWORD));
                 }
             }
             return searchService.searchUniqueTopValues(searchKey, criterion, attributePath, maxCount);
@@ -354,21 +393,27 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType,
-            String propertyPath, int maxCount, String partialText) {
-        return retrieveEnumeratedPropertyValues(criterion, getSimpleSearchKey(searchType), propertyPath, maxCount,
+    public List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
+                                                         SearchType searchType,
+                                                         String propertyPath,
+                                                         int maxCount,
+                                                         String partialText) {
+        return retrieveEnumeratedPropertyValues(criterion,
+                                                getSimpleSearchKey(searchType),
+                                                propertyPath,
+                                                maxCount,
                                                 partialText);
     }
 
     @Override
-    public List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
-            Collection<QueryableAttribute> attributes) {
+    public List<Aggregation> retrievePropertiesStats(ICriterion criterion,
+                                                     SearchType searchType,
+                                                     Collection<QueryableAttribute> attributes) {
         try {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addAccessRights(criterion);
             // Run search
-            return searchService
-                    .getAggregations(getSimpleSearchKey(searchType), criterion, attributes).asList();
+            return searchService.getAggregations(getSimpleSearchKey(searchType), criterion, attributes).asList();
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();
@@ -376,9 +421,10 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public CollectionWithStats getCollectionWithDataObjectsStats(UniformResourceName urn, SearchType searchType,
-                                                                 Collection<QueryableAttribute> attributes) throws
-        EntityOperationForbiddenException, EntityNotFoundException {
+    public CollectionWithStats getCollectionWithDataObjectsStats(UniformResourceName urn,
+                                                                 SearchType searchType,
+                                                                 Collection<QueryableAttribute> attributes)
+        throws EntityOperationForbiddenException, EntityNotFoundException {
 
         AbstractEntity<?> abstractEntity = get(urn);
         //We look for collection's dataobjects by urn in tags
@@ -423,16 +469,21 @@ public class CatalogSearchService implements ICatalogSearchService {
     }
 
     @Override
-    public List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion criterion,
-            SearchType type) {
+    public List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames,
+                                                           ICriterion criterion,
+                                                           SearchType type) {
         List<PropertyBound<?>> bounds = Lists.newArrayList();
         Map<AttributeModel, QueryableAttribute> qas = Maps.newHashMap();
         propertyNames.forEach(property -> {
             AttributeModel attr;
             try {
                 attr = finder.findByName(property);
-                qas.put(attr, new QueryableAttribute(StaticProperties.FEATURE_NS + attr.getJsonPath(), null,
-                        attr.isTextAttribute(), 0, attr.isBooleanAttribute()));
+                qas.put(attr,
+                        new QueryableAttribute(StaticProperties.FEATURE_NS + attr.getJsonPath(),
+                                               null,
+                                               attr.isTextAttribute(),
+                                               0,
+                                               attr.isBooleanAttribute()));
             } catch (OpenSearchUnknownParameter e) {
                 LOGGER.warn(e.getMessage(), e);
             }
@@ -493,15 +544,5 @@ public class CatalogSearchService implements ICatalogSearchService {
             }
         });
         return bounds;
-    }
-
-    @Override
-    public boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException {
-        try {
-            get(urn);
-            return true;
-        } catch (EntityOperationForbiddenException e) {
-            return false;
-        }
     }
 }

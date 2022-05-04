@@ -19,8 +19,11 @@
 package fr.cnes.regards.modules.accessrights.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 
 /**
@@ -41,6 +44,15 @@ public interface ILicenseClient {
      */
     String PATH_RESET = "/reset";
 
-    @PutMapping(path = ILicenseClient.PATH_LICENSE + PATH_RESET, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ILicenseClient.PATH_LICENSE, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<EntityModel<LicenseDTO>> retrieveLicense();
+
+    @PutMapping(path = ILicenseClient.PATH_LICENSE, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<EntityModel<LicenseDTO>> acceptLicense();
+
+    @PutMapping(path = ILicenseClient.PATH_LICENSE + PATH_RESET, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> resetLicense();
 }

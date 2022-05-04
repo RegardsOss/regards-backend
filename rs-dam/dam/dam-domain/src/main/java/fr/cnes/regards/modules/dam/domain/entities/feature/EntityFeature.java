@@ -134,7 +134,7 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
             // Virtual identifier
             staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_VIRTUAL_ID, virtualId.toString()));
             // Version
-            staticProperties.add(IProperty.buildInteger(StaticProperties.FEATURE_VERSION,version));
+            staticProperties.add(IProperty.buildInteger(StaticProperties.FEATURE_VERSION, version));
             // Is last version
             staticProperties.add(IProperty.buildBoolean(StaticProperties.FEATURE_IS_LAST_VERSION, last));
             // SIP identifier alias provider identifier

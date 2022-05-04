@@ -38,10 +38,6 @@ public class EngineConfiguration {
             defaultValue = "Created by RegardsOss framework (CNES)")
     private String attribution;
 
-    @PluginParameter(name = "entityLastUpdateDatePropertyPath",
-            label = "Path of the attribute in data model for the last update date", optional = true)
-    private String entityLastUpdateDatePropertyPath;
-
     public String getSearchTitle() {
         return searchTitle;
     }
@@ -104,14 +100,6 @@ public class EngineConfiguration {
 
     public void setAttribution(String attribution) {
         this.attribution = attribution;
-    }
-
-    public String getEntityLastUpdateDatePropertyPath() {
-        return entityLastUpdateDatePropertyPath;
-    }
-
-    public void setEntityLastUpdateDatePropertyPath(String entityLastUpdateDatePropertyPath) {
-        this.entityLastUpdateDatePropertyPath = entityLastUpdateDatePropertyPath;
     }
 
 }

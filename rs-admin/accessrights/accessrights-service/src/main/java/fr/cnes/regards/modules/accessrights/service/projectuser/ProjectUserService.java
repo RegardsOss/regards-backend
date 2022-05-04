@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationDto;
 import fr.cnes.regards.modules.accessrights.domain.projects.*;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserEvent;
@@ -36,6 +37,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.accessrights.service.config.AccessRightsTemplateConfiguration;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
@@ -68,6 +70,8 @@ import java.util.stream.Stream;
 @MultitenantTransactional
 public class ProjectUserService implements IProjectUserService {
 
+    public static final String PUBLIC_USER_EMAIL = "public@regards.com";
+
     /**
      * A filter on metadata to keep visible ones only
      */
@@ -96,6 +100,8 @@ public class ProjectUserService implements IProjectUserService {
 
     private final IPublisher publisher;
 
+    private final IEmailVerificationTokenService emailVerificationTokenService;
+
     /**
      * Configured instance administrator user email/login
      */
@@ -111,6 +117,7 @@ public class ProjectUserService implements IProjectUserService {
                               AccessRightsEmailService accessRightsEmailService,
                               ProjectUserGroupService projectUserGroupService,
                               QuotaHelperService quotaHelperService,
+                              IEmailVerificationTokenService emailVerificationTokenService,
                               IPublisher publisher) {
         this.authenticationResolver = authenticationResolver;
         this.projectUserRepository = projectUserRepository;
@@ -121,6 +128,7 @@ public class ProjectUserService implements IProjectUserService {
         this.accessRightsEmailService = accessRightsEmailService;
         this.projectUserGroupService = projectUserGroupService;
         this.quotaHelperService = quotaHelperService;
+        this.emailVerificationTokenService = emailVerificationTokenService;
         this.publisher = publisher;
     }
 
@@ -445,8 +453,16 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public void sendVerificationEmail(String email) throws EntityNotFoundException {
-        ProjectUser projectUser = retrieveOneByEmail(email);
+    public void sendVerificationEmail(EmailVerificationDto emailVerificationDto) throws EntityNotFoundException {
+        ProjectUser projectUser = retrieveOneByEmail(emailVerificationDto.getEmail());
+        // Create new email verification token
+        if (emailVerificationTokenService.projectUserTokenExists(projectUser)) {
+            emailVerificationTokenService.generateNewToken(projectUser);
+        } else {
+            emailVerificationTokenService.create(projectUser,
+                                                 emailVerificationDto.getOriginUrl(),
+                                                 emailVerificationDto.getRequestLink());
+        }
         if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(projectUser.getStatus())) {
             eventPublisher.publishEvent(new OnGrantAccessEvent(projectUser));
         }

@@ -27,8 +27,6 @@ import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import java.util.List;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -38,7 +36,8 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.List;
 
 /**
  * Search engine tests
@@ -71,7 +70,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     private void addCommontMatchers(RequestBuilderCustomizer customizer) {
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.links", Matchers.not(Matchers.emptyArray())));
+        customizer.expectIsNotEmpty("$.links");
     }
 
     @Test
@@ -93,7 +92,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchCollections() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.content.length()", 1);
         addCommontMatchers(customizer);
         addSearchTermQuery(customizer, STAR, SUN);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
@@ -103,7 +102,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchCollectionsWithRegexp() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.content.length()", 1);
         addCommontMatchers(customizer);
         addSearchTermQuery(customizer, STAR, "/S[^i]{2}/");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
@@ -113,7 +112,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void fullTextSearchCollections() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.content.length()", 1);
         addCommontMatchers(customizer);
         addFullTextSearchQuery(customizer, SUN);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
@@ -123,7 +122,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchCollectionsWithShortName() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.content.length()", 1);
         addCommontMatchers(customizer);
         customizer.addParameter(SEARCH_TERMS_QUERY, STAR + ":" + SUN);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
@@ -133,7 +132,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchCollectionsWithShortNameAndInFullTextSearch() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.content.length()", 1);
         addCommontMatchers(customizer);
         customizer.addParameter(SEARCH_TERMS_QUERY, fullTextMatching(STAR) + ":" + SUN.toLowerCase());
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
@@ -271,7 +270,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataobjectsAttributes() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(2)));
+        customizer.expectToHaveSize("$", 2);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_ATTRIBUTES,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -293,7 +292,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         customizer.addParameter("sort", "providerId" + ",ASC");
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(0)));
+        customizer.expectValue("$.content.length()", 0);
         addSearchTermQuery(customizer, "origine.name", "ESA");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -301,7 +300,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         customizer.addParameter("sort", "providerId" + ",ASC");
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(12)));
+        customizer.expectValue("$.content.length()", 12);
         addSearchTermQuery(customizer, "origine.name", "CNE*");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -346,7 +345,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataobjectsFilteredByDatasetModels() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.content.length()", 1);
         // Filter
         customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_NAMES + ":(planet)");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
@@ -354,7 +353,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
         // No match
         customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(0)));
+        customizer.expectValue("$.content.length()", 0);
         customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_NAMES + ":(exoplanet)");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -365,7 +364,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
         // Search the 9 planets
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(12)));
+        customizer.expectValue("$.length()", 12);
 
         customizer.addParameter("maxCount", "13");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTY_VALUES,
@@ -374,7 +373,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
         // Search only the 8 planets of the solar system
         customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(8)));
+        customizer.expectValue("$.length()", 8);
 
         // Retrieve dataset URN
         Dataset solarSystem = getAstroObject(SOLAR_SYSTEM);
@@ -390,7 +389,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataobjectPropertyValuesFilteredByDatasetModels() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.length()", 1);
 
         // Filter
         customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_NAMES + ":(planet)");
@@ -403,21 +402,20 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataobjectPropertyBounds() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(3)));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.diameter')]").exists());
-        customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.diameter')].lowerBound",
-                                                         Matchers.hasItem(1000)));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.diameter')].upperBound",
-                                                         Matchers.hasItem(8000000)));
+        customizer.expectValue("$.length()", 3);
+        customizer.expectIsNotEmpty("$..[?(@.propertyName=='properties.diameter')]");
+        customizer.expectValue("$..[?(@.propertyName=='properties.diameter')].lowerBound",
+                                                         1000);
+        customizer.expectValue("$..[?(@.propertyName=='properties.diameter')].upperBound",
+                                                         8000000);
 
-        customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.sun_distance')]").exists());
-        customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.sun_distance')].lowerBound",
-                                                         Matchers.hasItem(7000000)));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.sun_distance')].upperBound",
-                                                         Matchers.hasItem(4_489_435_980L)));
+        customizer.expectIsNotEmpty("$..[?(@.propertyName=='properties.sun_distance')]");
+        customizer.expectValue("$..[?(@.propertyName=='properties.sun_distance')].lowerBound",
+                                                         7000000);
+        customizer.expectValue("$..[?(@.propertyName=='properties.sun_distance')].upperBound",
+                                                         4_489_435_980L);
 
-        customizer.expect(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.TimePeriod.startDate')]")
-                .exists());
+        customizer.expectIsNotEmpty("$..[?(@.propertyName=='properties.TimePeriod.startDate')]");
 
         customizer.addParameter("properties", "diameter", "sun_distance", "TimePeriod.startDate", "unknown.attribute");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS,
@@ -430,7 +428,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         // Search dataset
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.content.length()", 1);
         addSearchTermQuery(customizer, STAR_SYSTEM, protect(SOLAR_SYSTEM));
         ResultActions result = performDefaultGet(SearchEngineMappings.TYPE_MAPPING
                 + SearchEngineMappings.SEARCH_DATASETS_MAPPING, customizer, "Search all error", ENGINE_TYPE);
@@ -439,8 +437,8 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
         customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.links.length()", Matchers.equalTo(1)));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content[0].links.length()", Matchers.equalTo(1)));
+        customizer.expectValue("$.links.length()", 1);
+        customizer.expectValue("$.content[0].links.length()", 1);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE, datasetUrn);
     }

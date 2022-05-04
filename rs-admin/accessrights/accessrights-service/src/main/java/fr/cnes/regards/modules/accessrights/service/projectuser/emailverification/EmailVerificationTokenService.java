@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.emailverification;
 
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.registration.IVerificationTokenRepository;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * {@link IEmailVerificationTokenService} implementation.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -54,14 +54,16 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     @Override
     public ProjectUser getProjectUserByToken(final String pVerificationToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pVerificationToken)
-                .orElseThrow(() -> new EntityNotFoundException(pVerificationToken, EmailVerificationToken.class))
-                .getProjectUser();
+                              .orElseThrow(() -> new EntityNotFoundException(pVerificationToken,
+                                                                             EmailVerificationToken.class))
+                              .getProjectUser();
     }
 
     /**
      * Create a {@link EmailVerificationToken} for the passed {@link ProjectUser}
+     *
      * @param pProjectUser the project user
-     * @param pOriginUrl the origin url
+     * @param pOriginUrl   the origin url
      * @param pRequestLink the request link
      */
     @Override
@@ -73,19 +75,35 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     @Override
     public EmailVerificationToken findByToken(final String pEmailVerificationToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pEmailVerificationToken)
-                .orElseThrow(() -> new EntityNotFoundException(pEmailVerificationToken, EmailVerificationToken.class));
+                              .orElseThrow(() -> new EntityNotFoundException(pEmailVerificationToken,
+                                                                             EmailVerificationToken.class));
     }
 
     @Override
     public EmailVerificationToken findByProjectUser(final ProjectUser pProjectUser) throws EntityNotFoundException {
         return tokenRepository.findByProjectUser(pProjectUser)
-                .orElseThrow(() -> new EntityNotFoundException(pProjectUser.getEmail(), EmailVerificationToken.class));
+                              .orElseThrow(() -> new EntityNotFoundException(pProjectUser.getEmail(),
+                                                                             EmailVerificationToken.class));
     }
 
     @Override
     public void deleteTokenForProjectUser(final ProjectUser pProjectUser) {
         Optional<EmailVerificationToken> token = tokenRepository.findByProjectUser(pProjectUser);
         token.ifPresent(tokenRepository::delete);
+    }
 
+    @Override
+    public boolean projectUserTokenExists(ProjectUser pProjectUser) {
+        return tokenRepository.findByProjectUser(pProjectUser).isPresent();
+    }
+
+    @Override
+    public void generateNewToken(ProjectUser pProjectUser) throws EntityNotFoundException {
+        EmailVerificationToken token = tokenRepository.findByProjectUser(pProjectUser)
+                                                      .orElseThrow(() -> new EntityNotFoundException(pProjectUser.getEmail(),
+                                                                                                     EmailVerificationToken.class));
+        token.generateToken();
+        token.updateExpiryDate();
+        tokenRepository.save(token);
     }
 }

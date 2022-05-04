@@ -61,6 +61,7 @@ import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.eo.EarthObservationExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
@@ -389,6 +390,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         regardsExt.setActivated(true);
         MediaExtension mediaExt = new MediaExtension();
         mediaExt.setActivated(true);
+        EarthObservationExtension eoExt = new EarthObservationExtension();
+        eoExt.setActivated(true);
 
         List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
         ParameterConfiguration planetParameter = new ParameterConfiguration();
@@ -401,14 +404,14 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         ParameterConfiguration startTimeParameter = new ParameterConfiguration();
         startTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.startDate");
         startTimeParameter.setAllias("debut");
-        startTimeParameter.setName("start");
-        startTimeParameter.setNamespace("time");
+        startTimeParameter.setName(GeoTimeExtension.TIME_START_PARAMETER);
+        startTimeParameter.setNamespace(GeoTimeExtension.TIME_NS);
         paramConfigurations.add(startTimeParameter);
         ParameterConfiguration endTimeParameter = new ParameterConfiguration();
         endTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.stopDate");
         endTimeParameter.setAllias("fin");
-        endTimeParameter.setName("end");
-        endTimeParameter.setNamespace("time");
+        endTimeParameter.setName(GeoTimeExtension.TIME_END_PARAMETER);
+        endTimeParameter.setNamespace(GeoTimeExtension.TIME_NS);
         paramConfigurations.add(endTimeParameter);
 
         EngineConfiguration engineConfiguration = new EngineConfiguration();
@@ -417,7 +420,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         engineConfiguration.setSearchTitle("search");
         engineConfiguration.setContact("regards@c-s.fr");
         engineConfiguration.setImage("http://plop/image.png");
-        engineConfiguration.setEntityLastUpdateDatePropertyPath("TimePeriod.startDate");
 
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER,
@@ -426,6 +428,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                         PluginParameterTransformer.toJson(regardsExt)),
                      IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER,
                                         PluginParameterTransformer.toJson(mediaExt)),
+                     IPluginParam.build(OpenSearchEngine.EARTH_OBSERVATION_EXTENSION_PARAMETER,
+                                        PluginParameterTransformer.toJson(eoExt)),
                      IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION,
                                         PluginParameterTransformer.toJson(paramConfigurations)),
                      IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,
@@ -548,35 +552,37 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         planet.setDatasetModelNames(Sets.newHashSet(planetModel.getName()));
 
-        DataFile quicklooksd = new DataFile();
-        quicklooksd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklooksd.setUri(URI.create("http://regards/le_quicklook_sd.jpg").toString());
-        quicklooksd.setReference(false);
-        quicklooksd.setImageWidth(100d);
-        quicklooksd.setImageHeight(100d);
-        planet.getFiles().put(DataType.QUICKLOOK_SD, quicklooksd);
-        DataFile quicklookmd = new DataFile();
-        quicklookmd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklookmd.setUri(URI.create("http://regards/le_quicklook_md.jpg").toString());
-        quicklookmd.setReference(false);
-        quicklookmd.setImageWidth(100d);
-        quicklookmd.setImageHeight(100d);
-        planet.getFiles().put(DataType.QUICKLOOK_MD, quicklookmd);
-        DataFile quicklookhd = new DataFile();
-        quicklookhd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklookhd.setUri(URI.create("http://regards/le_quicklook_hd.jpg").toString());
-        quicklookhd.setReference(false);
-        quicklookhd.setImageWidth(100d);
-        quicklookhd.setImageHeight(100d);
-        planet.getFiles().put(DataType.QUICKLOOK_HD, quicklookhd);
+        planet.getFiles()
+            .put(DataType.QUICKLOOK_SD,
+                 buildDataFile(DataType.QUICKLOOK_SD,
+                               "le_quicklook_sd.jpg",
+                               "http://regards/le_quicklook_sd.jpg",
+                               "application/jpg",
+                               100d));
 
-        DataFile thumbnail = new DataFile();
-        thumbnail.setMimeType(MimeType.valueOf("application/png"));
-        thumbnail.setUri(URI.create("http://regards/thumbnail.png").toString());
-        thumbnail.setImageWidth(250d);
-        thumbnail.setImageHeight(250d);
-        thumbnail.setReference(false);
-        planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
+        planet.getFiles()
+            .put(DataType.QUICKLOOK_MD,
+                 buildDataFile(DataType.QUICKLOOK_MD,
+                               "le_quicklook_md.jpg",
+                               "http://regards/le_quicklook_md.jpg",
+                               "application/jpg",
+                               100d));
+
+        planet.getFiles()
+            .put(DataType.QUICKLOOK_HD,
+                 buildDataFile(DataType.QUICKLOOK_HD,
+                               "le_quicklook_hd.jpg",
+                               "http://regards/le_quicklook_hd.jpg",
+                               "application/jpg",
+                               100d));
+
+        planet.getFiles()
+            .put(DataType.THUMBNAIL,
+                 buildDataFile(DataType.THUMBNAIL,
+                               "thumbnail.png",
+                               "http://regards/thumbnail.png",
+                               "application/png",
+                               250d));
 
         DataFile rawdata = DataFile.build(DataType.RAWDATA, "test.nc", "http://regards/test.nc",
                                           MediaType.APPLICATION_OCTET_STREAM, Boolean.TRUE, Boolean.FALSE);
@@ -595,6 +601,18 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return planet;
     }
 
+    private DataFile buildDataFile(DataType dataType, String fileName, String uri, String mimeType, double imageSize) {
+        DataFile quicklookmd = DataFile.build(dataType,
+                                              fileName,
+                                              URI.create(uri).toString(),
+                                              MimeType.valueOf(mimeType),
+                                              Boolean.TRUE,
+                                              Boolean.FALSE);
+        quicklookmd.setImageWidth(imageSize);
+        quicklookmd.setImageHeight(imageSize);
+        return quicklookmd;
+    }
+
     /**
      * Default implementation : no group on data object
      */
@@ -606,7 +624,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             Set<String> params) {
         DataObject planet = createEntity(planetModel, name);
         planet.setGroups(getAccessGroups());
-        planet.setCreationDate(OffsetDateTime.now());
         planet.addProperty(IProperty.buildString(PLANET, name));
         planet.addProperty(IProperty.buildString(PLANET_TYPE, type));
         planet.addProperty(IProperty.buildInteger(PLANET_DIAMETER, diameter));
@@ -653,6 +670,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             default:
                 throw new UnsupportedOperationException("Unknown entity type " + model.getType());
         }
+        entity.setCreationDate(OffsetDateTime.now());
+        entity.setLastUpdate(OffsetDateTime.now());
         if (astroObjects.containsKey(label)) {
             throw new UnsupportedOperationException("Label \"" + label
                     + "\" for astronomical object already exists! Please change it and relaunch test!");

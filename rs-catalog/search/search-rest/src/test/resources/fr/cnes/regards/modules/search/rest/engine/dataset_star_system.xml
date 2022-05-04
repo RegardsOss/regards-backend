@@ -19,7 +19,7 @@
 		<type>DOUBLE</type>
 	</attribute>
 	<attribute>
-		<label>Beggining of the study</label>
+		<label>Beginning of the study</label>
 		<name>studyDate</name>
 		<type>DATE_ISO8601</type>
 	</attribute>

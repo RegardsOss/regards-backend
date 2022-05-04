@@ -18,22 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
-import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 /**
  * Deletion of file references job. This jobs his scheduled to delete a bundle of file reference,
@@ -62,9 +58,6 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    protected FileReferenceEventPublisher publisher;
-
-    @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
@@ -75,8 +68,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
     private int nbRequestToHandle = 0;
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters) {
         this.parameters = parameters;
     }
 
@@ -85,7 +77,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         // Initiate the job progress manager
         FileDeletionJobProgressManager progressManager = new FileDeletionJobProgressManager(fileDeletionRequestService,
-                publisher, this);
+                                                                                            this);
         // lets instantiate the plugin to use
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();

@@ -33,7 +33,7 @@ public interface IEmailVerificationTokenService {
      * Create an email verification token with passed attributes
      *
      * @param pProjectUser the project user
-     * @param pOriginUrl Necessary to the frontend for redirecting the user after he clicked on the email validation link.
+     * @param pOriginUrl   Necessary to the frontend for redirecting the user after he clicked on the email validation link.
      * @param pRequestLink Also necessary to the frontend for redirecting the user after he clicked on the email validation link.
      */
     void create(final ProjectUser pProjectUser, final String pOriginUrl, final String pRequestLink);
@@ -68,9 +68,24 @@ public interface IEmailVerificationTokenService {
     /**
      * Delete a {@link EmailVerificationToken} for the passed {@link ProjectUser}
      *
-     * @param pProjectUser
-     *            the project user
+     * @param pProjectUser the project user
      */
     void deleteTokenForProjectUser(final ProjectUser pProjectUser);
+
+    /**
+     * Verify that a {@link EmailVerificationToken} exists for the passed {@link ProjectUser}
+     *
+     * @param pProjectUser the project user
+     * @return
+     */
+    boolean projectUserTokenExists(final ProjectUser pProjectUser);
+
+    /**
+     * Generate a new token for the given project user.
+     *
+     * @param pProjectUser the project user.
+     * @throws EntityNotFoundException if the token could not be found
+     */
+    void generateNewToken(final ProjectUser pProjectUser) throws EntityNotFoundException;
 
 }

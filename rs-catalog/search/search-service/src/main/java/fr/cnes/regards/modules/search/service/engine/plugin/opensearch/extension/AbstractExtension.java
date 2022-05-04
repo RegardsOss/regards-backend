@@ -18,15 +18,19 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.ExtensionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.ExtensionException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Abstract class for Opensearch parameters extensions.
@@ -35,6 +39,7 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception
  * <li>The activation of the extension</li>
  * <li>The support of search parameters for the extension.</li>
  * </ul>
+ *
  * @author Sébastien Binda
  */
 public abstract class AbstractExtension implements IOpenSearchExtension {
@@ -86,9 +91,9 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
     }
 
     /**
-     * Build a {@link ICriterion} for the given {@link attributeModel} and the given values.
-     * @param attributeModel {@link attributeModel}
-     * @param values {@link String}s
+     * Build a {@link ICriterion} for the given {@link SearchParameter} parameter.
+     *
+     * @param parameter {@link SearchParameter}
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
@@ -96,9 +101,24 @@ public abstract class AbstractExtension implements IOpenSearchExtension {
 
     /**
      * Does the current extension can handle search for the given configured parameter.
+     *
      * @param parameter {@link SearchParameter}
      * @return {@link boolean}
      */
     protected abstract boolean supportsSearchParameter(SearchParameter parameter);
+
+    /**
+     * Retrieve the property value, if existing, in the entity for a specific parameter configuration
+     */
+    protected Optional<Object> getEntityPropertyValue(EntityFeature entity,
+                                                      ParameterConfiguration parameterConfiguration) {
+        String jsonPath = parameterConfiguration.getAttributeModelJsonPath()
+                                                .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
+        IProperty<?> entityProperty = entity.getProperty(jsonPath);
+        if (entityProperty != null) {
+            return Optional.of(entityProperty.getValue());
+        }
+        return Optional.empty();
+    }
 
 }

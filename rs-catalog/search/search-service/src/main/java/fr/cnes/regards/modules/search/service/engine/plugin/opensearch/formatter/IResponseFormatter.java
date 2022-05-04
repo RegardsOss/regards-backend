@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.hateoas.Link;
-
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -32,36 +26,48 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.Configura
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.IOpenSearchExtension;
+import org.springframework.hateoas.Link;
+
+import java.util.List;
 
 /**
- * Interface to define OpenSearch response builders. Builders are made for a specific ouput format as ATOM or JSON.
- * @author Sébastien Binda
+ * Interface to define OpenSearch response formatters. Formatters are made for serialized Feature and descriptor in ATOM or JSON format.
  *
  * @param <R> Search Output result format.
+ * @author Sébastien Binda
+ * @author Léo Mieulet
  */
-public interface IResponseBuilder<R> {
+public interface IResponseFormatter<R> {
 
     /**
      * Add metadatas to the global search results collection.
-     * @param searchId {@link String}
-     * @param engineConf {@link EngineConfiguration}
+     *
+     * @param searchId                 {@link String}
+     * @param engineConf               {@link EngineConfiguration}
      * @param openSearchDescriptionUrl {@link String}
-     * @param context {@link SearchContext}
-     * @param page {@link FacetPage} results of the search
-     * @param links {@link Link}s of the entities collection
+     * @param context                  {@link SearchContext}
+     * @param page                     {@link FacetPage} results of the search
+     * @param links                    {@link Link}s of the entities collection
      */
-    void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl,
-            SearchContext context, Configuration configuration, FacetPage<EntityFeature> page, List<Link> links);
+    void addMetadata(String searchId,
+                     EngineConfiguration engineConf,
+                     String openSearchDescriptionUrl,
+                     SearchContext context,
+                     Configuration configuration,
+                     FacetPage<AbstractEntity<EntityFeature>> page,
+                     List<Link> links);
 
     /**
      * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
-     * @param entity {@link AbstractEntity}
-     * @param entityLastUpdate last update of the current entity to add
+     *
+     * @param entity              {@link AbstractEntity}
      * @param paramConfigurations {@link ParameterConfiguration}s
+     * @param entityLinks
      * @parma entityLinks {@link Link}s of the entity
      */
-    void addEntity(EntityFeature entity, Optional<OffsetDateTime> entityLastUpdate,
-            List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks);
+    void addEntity(AbstractEntity<EntityFeature> entity,
+                   List<ParameterConfiguration> paramConfigurations,
+                   List<Link> entityLinks);
 
     /**
      * Clear all added {@link AbstractEntity}s to the current builder.
@@ -70,12 +76,14 @@ public interface IResponseBuilder<R> {
 
     /**
      * Build the oupout search results collection.
+     *
      * @return Search Output result formatted
      */
     R build();
 
     /**
      * Add a new {@link IOpenSearchExtension} to the current builder.
+     *
      * @param extension {@link IOpenSearchExtension}
      */
     void addExtension(IOpenSearchExtension extension);

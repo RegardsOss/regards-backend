@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.urn.DataType;
@@ -42,10 +34,18 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
+import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Catalog search service interface. Service façade to DAM search module (directly included by catalog).
+ *
  * @author Xavier-Alexandre Brochard
  * @author oroussel
  */
@@ -53,101 +53,119 @@ public interface ICatalogSearchService {
 
     /**
      * Perform a business request on specified entity type
+     *
      * @param criterion business criterions
      * @param searchKey the search key containing the search type and the result type
-     * @param facets applicable facets, may be <code>null</code>
-     * @param pageable pagination properties
+     * @param facets    applicable facets, may be <code>null</code>
+     * @param pageable  pagination properties
      * @return the page of elements matching the criterions
      */
-    <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> searchKey, List<String> facets,
-            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
+    <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion,
+                                                  SearchKey<S, R> searchKey,
+                                                  List<String> facets,
+                                                  Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Same as below but using {@link SearchType}
      */
-    <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
-            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
+    <R extends IIndexable> FacetPage<R> search(ICriterion criterion,
+                                               SearchType searchType,
+                                               List<String> facets,
+                                               Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Compute summary for given request
+     *
      * @param criterion business criterions
      * @param searchKey search key
-     * @param dataset restriction to a specified dataset
+     * @param dataset   restriction to a specified dataset
      * @param dataTypes file types on which to compute summary
      * @return summary
      */
-    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
-            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException;
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion,
+                                           SimpleSearchKey<DataObject> searchKey,
+                                           UniformResourceName dataset,
+                                           List<DataType> dataTypes) throws SearchException;
 
     /**
      * Same as below but using {@link SearchType}
      */
-    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, UniformResourceName dataset,
-            List<DataType> dataTypes);
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion,
+                                           SearchType searchType,
+                                           UniformResourceName dataset,
+                                           List<DataType> dataTypes);
 
     /**
      * Retrieve entity
+     *
      * @param urn identifier of the entity we are looking for
      * @param <E> concrete type of AbstractEntity
      * @return the entity
      */
     <E extends AbstractEntity<?>> E get(UniformResourceName urn)
-            throws EntityOperationForbiddenException, EntityNotFoundException;
-    /**
-     * Retrieve property values for specified property name
-     * @param criterion business criterions
-     * @param searchKey the search key containing the search type and the result type
-     * @param propertyPath target propertu
-     * @param maxCount maximum result count
-     * @param partialText text that property should contains (can be null)
-     */
-    <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
-            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText);
+        throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
      * Retrieve property values for specified property name
-     * @param criterion business criterions
-     * @param searchType the search type containing the search type and the result type
+     *
+     * @param criterion    business criterions
+     * @param searchKey    the search key containing the search type and the result type
      * @param propertyPath target propertu
-     * @param maxCount maximum result count
-     * @param partialText text that property should contains (can be null)
+     * @param maxCount     maximum result count
+     * @param partialText  text that property should contains (can be null)
      */
-    List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType, String propertyPath,
-            int maxCount, String partialText) ;
+    <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
+                                                                         SearchKey<T, T> searchKey,
+                                                                         String propertyPath,
+                                                                         int maxCount,
+                                                                         String partialText);
+
+    /**
+     * Retrieve property values for specified property name
+     *
+     * @param criterion    business criterions
+     * @param searchType   the search type containing the search type and the result type
+     * @param propertyPath target propertu
+     * @param maxCount     maximum result count
+     * @param partialText  text that property should contains (can be null)
+     */
+    List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
+                                                  SearchType searchType,
+                                                  String propertyPath,
+                                                  int maxCount,
+                                                  String partialText);
 
     /**
      * Retrieve statistics for given attribute from a search context with search criterions and searcType.
-     * @param criterion {@link ICriterion}s for search context
+     *
+     * @param criterion  {@link ICriterion}s for search context
      * @param searchType {@link SearchType} for searc context
      * @param attributes {@link AttributeModel}s to retrieve statistics on.
      * @return {@link QueryableAttribute}s for each attribute
      */
-    List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
-            Collection<QueryableAttribute> attributes);
+    List<Aggregation> retrievePropertiesStats(ICriterion criterion,
+                                              SearchType searchType,
+                                              Collection<QueryableAttribute> attributes);
 
     /**
      * Get collection by urn and get its dataobjects statistics
-     * @param urn {@link UniformResourceName} If of the collection we want to get
+     *
+     * @param urn        {@link UniformResourceName} If of the collection we want to get
      * @param searchType {@link SearchType} for search context
      * @param attributes {@link AttributeModel} to retrieve statistics on
      * @return {@link CollectionWithStats}
      * @throws EntityOperationForbiddenException according to {@link #get(UniformResourceName)}
-     * @throws EntityNotFoundException according to {@link #get(UniformResourceName)}
+     * @throws EntityNotFoundException           according to {@link #get(UniformResourceName)}
      */
-    CollectionWithStats getCollectionWithDataObjectsStats(UniformResourceName urn, SearchType searchType,
-                                                          Collection<QueryableAttribute> attributes) throws SearchException, EntityOperationForbiddenException, EntityNotFoundException;
+    CollectionWithStats getCollectionWithDataObjectsStats(UniformResourceName urn,
+                                                          SearchType searchType,
+                                                          Collection<QueryableAttribute> attributes)
+        throws SearchException, EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
      * Retrieve {@link PropertyBound}s for each property given and {@link ICriterion} search.
+     *
      * @return @link PropertyBound}s
      */
     List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion parse, SearchType type);
-
-    /**
-     * Know if we have acces to file for the given urn
-     * @param urn {@link UniformResourceName} to access
-     * @return if we have access
-     * @throws EntityNotFoundException according to {@link #get(UniformResourceName)}
-     */
-    boolean hasAccess(UniformResourceName urn) throws EntityNotFoundException;
 }

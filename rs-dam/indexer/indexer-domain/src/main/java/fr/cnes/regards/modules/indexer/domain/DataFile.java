@@ -28,7 +28,7 @@ import java.net.URI;
 import java.util.Set;
 
 /**
- * This class manages data reference. Use {@link #build(DataType, String, String, MimeType, Boolean)} to instanciate it.
+ * This class manages data reference. Use {@link #build(DataType, String, String, MimeType, Boolean, Boolean)} to instanciate it.
  *
  * @author lmieulet
  * @author Marc Sordi
@@ -109,6 +109,65 @@ public class DataFile {
      */
     private String crc32;
 
+    /**
+     * Base builder with required properties.<br/>
+     * For image, size is required, use {@link #setImageWidth(Double)} and {@link #setImageHeight(Double)}.<br/>
+     * Additional file properties can be supplied using :
+     *
+     * <ul>
+     * <li>{@link #setFilesize(Long)}</li>
+     * <li>{@link #setChecksum(String)}</li>
+     * <li>{@link #setDigestAlgorithm(String)}</li>
+     * </ul>
+     *
+     * @param dataType  the file {@link DataType}
+     * @param filename  the original filename
+     * @param uri       the file uri as string
+     * @param online    true if file can be downloaded
+     * @param reference true if file is not managed by REGARDS storage process
+     */
+    public static DataFile build(DataType dataType,
+                                 String filename,
+                                 String uri,
+                                 MimeType mimeType,
+                                 Boolean online,
+                                 Boolean reference) {
+        DataFile datafile = new DataFile();
+        datafile.setDataType(dataType);
+        datafile.setFilename(filename);
+        datafile.setUri(uri);
+        datafile.setMimeType(mimeType);
+        datafile.setOnline(online);
+        datafile.setReference(reference);
+        return datafile;
+    }
+
+    /**
+     * Base builder with required properties.<br/>
+     * For image, size is required, use {@link #setImageWidth(Integer)} and {@link #setImageHeight(Integer)}.<br/>
+     * Additional file properties can be supplied using :
+     *
+     * <ul>
+     * <li>{@link #setFilesize(Long)}</li>
+     * <li>{@link #setChecksum(String)}</li>
+     * <li>{@link #setDigestAlgorithm(String)}</li>
+     * </ul>
+     *
+     * @param dataType  the file {@link DataType}
+     * @param filename  the original filename
+     * @param uri       the file uri
+     * @param online    true if file can be downloaded
+     * @param reference true if file is not managed by REGARDS storage process
+     */
+    public static DataFile build(DataType dataType,
+                                 String filename,
+                                 URI uri,
+                                 MimeType mimeType,
+                                 Boolean online,
+                                 Boolean reference) {
+        return DataFile.build(dataType, filename, uri.toString(), mimeType, online, reference);
+    }
+
     public DataType getDataType() {
         return dataType;
     }
@@ -129,12 +188,12 @@ public class DataFile {
         return uri;
     }
 
-    public URI asUri() {
-        return URI.create(uri);
-    }
-
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public URI asUri() {
+        return URI.create(uri);
     }
 
     public MimeType getMimeType() {
@@ -275,65 +334,8 @@ public class DataFile {
             return false;
         }
         if (uri == null) {
-            if (other.uri != null) {
-                return false;
-            }
-        } else if (!uri.equals(other.uri)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Base builder with required properties.<br/>
-     * For image, size is required, use {@link #setImageWidth(Double)} and {@link #setImageHeight(Double)}.<br/>
-     * Additional file properties can be supplied using :
-     *
-     * <ul>
-     * <li>{@link #setFilesize(Long)}</li>
-     * <li>{@link #setChecksum(String)}</li>
-     * <li>{@link #setDigestAlgorithm(String)}</li>
-     * </ul>
-     *
-     * @param dataType the file {@link DataType}
-     * @param filename the original filename
-     * @param uri the file uri as string
-     * @param online true if file can be downloaded
-     * @param reference true if file is not managed by REGARDS storage process
-     *
-     */
-    public static DataFile build(DataType dataType, String filename, String uri, MimeType mimeType, Boolean online,
-            Boolean reference) {
-        DataFile datafile = new DataFile();
-        datafile.setDataType(dataType);
-        datafile.setFilename(filename);
-        datafile.setUri(uri);
-        datafile.setMimeType(mimeType);
-        datafile.setOnline(online);
-        datafile.setReference(reference);
-        return datafile;
-    }
-
-    /**
-     * Base builder with required properties.<br/>
-     * For image, size is required, use {@link #setImageWidth(Integer)} and {@link #setImageHeight(Integer)}.<br/>
-     * Additional file properties can be supplied using :
-     *
-     * <ul>
-     * <li>{@link #setFilesize(Long)}</li>
-     * <li>{@link #setChecksum(String)}</li>
-     * <li>{@link #setDigestAlgorithm(String)}</li>
-     * </ul>
-     *
-     * @param dataType the file {@link DataType}
-     * @param filename the original filename
-     * @param uri the file uri
-     * @param online true if file can be downloaded
-     * @param reference true if file is not managed by REGARDS storage process
-     *
-     */
-    public static DataFile build(DataType dataType, String filename, URI uri, MimeType mimeType, Boolean online,
-            Boolean reference) {
-        return DataFile.build(dataType, filename, uri.toString(), mimeType, online, reference);
+            return other.uri == null;
+        } else
+            return uri.equals(other.uri);
     }
 }

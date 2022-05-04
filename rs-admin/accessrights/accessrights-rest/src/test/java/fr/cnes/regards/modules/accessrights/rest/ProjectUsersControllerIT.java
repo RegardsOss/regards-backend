@@ -55,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for ProjectUsers REST Controller.
+ *
  * @author svissier
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
@@ -91,29 +92,26 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     private QuotaHelperService quotaHelperService;
 
     private ProjectUser projectUser;
-    private ProjectUser otherUser;
 
-    private Role publicRole;
+    private ProjectUser otherUser;
 
     private Role roleTest;
 
     @Before
     public void setUp() {
-
         projectUserRepository.deleteAll();
 
-        publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
+        Role publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
 
-        HashSet<MetaData> metaData = new HashSet<>(Arrays.asList(
-                new MetaData("key1", "value1", UserVisibility.READABLE),
-                new MetaData("key2", "value2", UserVisibility.READABLE)));
-        projectUser = new ProjectUser(EMAIL, publicRole, new ArrayList<>(), metaData);
-        projectUser.setAccessGroups(new HashSet<>(Collections.singletonList("group1")));
-        projectUser = projectUserRepository.save(projectUser);
+        List<MetaData> metaData = Arrays.asList(new MetaData("key1", "value1", UserVisibility.READABLE),
+                                                new MetaData("key2", "value2", UserVisibility.READABLE));
 
-        otherUser = new ProjectUser("foo@bar.com", publicRole, new ArrayList<>(), new HashSet<>());
-        otherUser.setAccessGroups(new HashSet<>(Collections.singletonList("group2")));
-        otherUser = projectUserRepository.save(otherUser);
+        ProjectUserSetup userSetup = new ProjectUserSetup(projectUserRepository);
+        projectUser = userSetup.addUser(EMAIL, publicRole, metaData, Collections.singletonList("group1"));
+        otherUser = userSetup.addUser("foo@bar.com",
+                                      publicRole,
+                                      Collections.emptyList(),
+                                      Collections.singletonList("group2"));
 
         // Insert some authorizations
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACCEPT_ACCESS_RELATIVE_PATH,
@@ -213,6 +211,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Check that the system prevents a user to connect using a hierarchically superior role.
+     *
      * @throws EntityNotFoundException not found
      */
     @Test
@@ -261,7 +260,11 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultPut(apiUserId, projectUser, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
 
         // Wrong id
-        performDefaultPut(apiUserId, projectUser, customizer().expectStatusBadRequest(), ERROR_MESSAGE, otherUser.getId());
+        performDefaultPut(apiUserId,
+                          projectUser,
+                          customizer().expectStatusBadRequest(),
+                          ERROR_MESSAGE,
+                          otherUser.getId());
     }
 
     @Test
@@ -350,7 +353,6 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
                           ERROR_MESSAGE);
     }
 
-
     @Test
     public void testExport() throws UnsupportedEncodingException {
 
@@ -359,23 +361,22 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         testUser.setFirstName("John");
         testUser.setLastName("Doe");
         testUser.setAccessGroups(new HashSet<>(Arrays.asList("group1", "public")));
-        testUser.setMetadata(new HashSet<>(Arrays.asList(
-                new MetaData("visible1", "foo", UserVisibility.READABLE),
-                new MetaData("visible2", "bar", UserVisibility.READABLE),
-                new MetaData("hidden", "nope", UserVisibility.HIDDEN)
-        )));
+        testUser.setMetadata(new HashSet<>(Arrays.asList(new MetaData("visible1", "foo", UserVisibility.READABLE),
+                                                         new MetaData("visible2", "bar", UserVisibility.READABLE),
+                                                         new MetaData("hidden", "nope", UserVisibility.HIDDEN))));
 
         // When
         String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.EXPORT;
-        RequestBuilderCustomizer customizer = customizer()
-                .expectStatusOk()
-                .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
-                .addHeader(HttpConstants.ACCEPT, "text/csv");
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+            .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
+            .addHeader(HttpConstants.ACCEPT, "text/csv");
         ResultActions results = performDefaultGet(path, customizer, "error");
         String content = results.andReturn().getResponse().getContentAsString();
 
         //Then
-        assertTrue(content.startsWith((String) Objects.requireNonNull(ReflectionTestUtils.getField(ProjectUserExportService.class, "HEADER"))));
+        assertTrue(content.startsWith((String) Objects.requireNonNull(ReflectionTestUtils.getField(
+            ProjectUserExportService.class,
+            "HEADER"))));
         assertTrue(content.contains("John"));
         assertTrue(content.contains("Doe"));
         assertTrue(content.contains("visible"));
@@ -422,7 +423,6 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         assertTrue(content.contains(otherUser.getEmail()));
         assertFalse(content.contains(projectUser.getEmail()));
     }
-
 
     @Test
     public void testReadOneById() {

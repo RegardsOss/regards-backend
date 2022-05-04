@@ -51,7 +51,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
-import fr.cnes.regards.modules.model.service.FragmentService;
 import fr.cnes.regards.modules.model.service.IModelService;
 
 /**
@@ -86,7 +85,7 @@ public class ModelController implements IResourceController<Model> {
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(FragmentService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModelController.class);
 
     /**
      * Model attribute service

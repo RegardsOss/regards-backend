@@ -1,0 +1,184 @@
+{
+  "microservice": "rs-catalog",
+  "modules": [
+    {
+      "module": {
+        "id": "search",
+        "name": "Search Module",
+        "description": "Module handling anything to do with searching entities and rights",
+        "version": "3.0.0",
+        "author": "CSSI",
+        "legalOwner": "CNES",
+        "documentation": "https://github.com/RegardsOss"
+      },
+      "configuration": [
+        {
+          "key": "fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration",
+          "value": {
+            "label": "Open search protocol",
+            "configuration": {
+              "businessId": "opensearch-plugin",
+              "label": "Open search engine",
+              "active": true,
+              "pluginId": "opensearch",
+              "version": "1.0.0",
+              "priorityOrder": 1,
+              "parameters": [
+                {
+                  "type": "POJO",
+                  "name": "engineConfiguration",
+                  "value": {
+                    "searchTitle": "Open search",
+                    "searchDescription": "Open search",
+                    "contact": "regards@c-s.fr",
+                    "shortName": "Open search",
+                    "longName": "Open search"
+                  }
+                },
+                {
+                  "type": "POJO",
+                  "name": "timeExtension",
+                  "value": {
+                    "activated": true
+                  }
+                },
+                {
+                  "type": "POJO",
+                  "name": "regardsExtension",
+                  "value": {
+                    "activated": true
+                  }
+                },
+                {
+                  "type": "POJO",
+                  "name": "mediaExtension",
+                  "value": {
+                    "activated": true
+                  }
+                },
+                {
+                  "type": "POJO",
+                  "name": "earthObservationExtension",
+                  "value": {
+                    "activated": true
+                  }
+                },
+                {
+                  "type": "COLLECTION",
+                  "name": "parametersConfiguration",
+                  "value": [
+                    {
+                      "name": "start",
+                      "allias": "timeStart",
+                      "namespace": "time",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.DataDate"
+                    },
+                    {
+                      "name": "end",
+                      "allias": "timeEnd",
+                      "namespace": "time",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.DataDate"
+                    },
+                    {
+                      "name": "platform",
+                      "allias": "Platform",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.PlatformName"
+                    },
+                    {
+                      "name": "instrument",
+                      "allias": "Instrument",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.InstrumentName"
+                    },
+                    {
+                      "name": "sensorType",
+                      "allias": "SensorCode",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.SensorCode"
+                    },
+                    {
+                      "name": "processingLevel",
+                      "allias": "ProcessingLevel",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.ProcessingLevel"
+                    },
+                    {
+                      "name": "swathIdentifier",
+                      "allias": "SwathIdentifier",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.SwathMode"
+                    },
+                    {
+                      "name": "cloudCover",
+                      "allias": "CloudCover",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.CloudCover"
+                    },
+                    {
+                      "name": "processingDate",
+                      "allias": "ProcessingDate",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.ProductionDate"
+                    },
+                    {
+                      "name": "sensorMode",
+                      "allias": "SensorMode",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.SensorCode"
+                    },
+                    {
+                      "name": "acquisitionStation",
+                      "allias": "acquisitionStation",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.Station"
+                    },
+                    {
+                      "name": "illuminationAzimuthAngle",
+                      "allias": "illuminationAzimuthAngle",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.SunAzimuth"
+                    },
+                    {
+                      "name": "illuminationElevationAngle",
+                      "allias": "illuminationElevationAngle",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.SunElevation"
+                    },
+                    {
+                      "name": "minimumIncidenceAngle",
+                      "allias": "minimumIncidenceAngle",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.IncidenceAngle"
+                    },
+                    {
+                      "name": "maximumIncidenceAngle",
+                      "allias": "maximumIncidenceAngle",
+                      "namespace": "eo",
+                      "optionsEnabled": false,
+                      "attributeModelJsonPath": "properties.IncidenceAngle"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

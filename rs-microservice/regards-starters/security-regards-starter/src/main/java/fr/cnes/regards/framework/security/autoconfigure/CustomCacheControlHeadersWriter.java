@@ -27,6 +27,7 @@ import org.springframework.security.web.header.writers.StaticHeadersWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -52,6 +53,8 @@ public final class CustomCacheControlHeadersWriter implements HeaderWriter {
 
     public static final String CACHE_CONTROL = "Cache-Control";
 
+    private static final List<String> CACHE_CONTROL_HEADERS = Arrays.asList(CACHE_CONTROL, EXPIRES, PRAGMA);
+
     private final HeaderWriter delegateCache;
 
     private final HeaderWriter delegateNoCache;
@@ -76,6 +79,10 @@ public final class CustomCacheControlHeadersWriter implements HeaderWriter {
         List<Header> headers = new ArrayList<>(3);
         headers.add(new Header(CACHE_CONTROL, "public, max-age=15552000"));
         return headers;
+    }
+
+    public static boolean isCacheControlHeader(String headerKey) {
+        return CACHE_CONTROL_HEADERS.stream().map(String::toLowerCase).anyMatch(p -> p.equals(headerKey.toLowerCase()));
     }
 
     @Override
