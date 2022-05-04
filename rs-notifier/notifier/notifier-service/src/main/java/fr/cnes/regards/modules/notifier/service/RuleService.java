@@ -28,15 +28,12 @@ import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,20 +50,27 @@ public class RuleService implements IRuleService {
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(RuleService.class);
 
-    @Autowired
-    private INotificationRequestRepository notifRepo;
+    private final INotificationRequestRepository notifRepo;
 
-    @Autowired
-    private IRuleRepository ruleRepo;
+    private final IRuleRepository ruleRepo;
 
-    @Autowired
-    private IRecipientService recipientService;
+    private final IRecipientService recipientService;
 
-    @Autowired
-    private IPluginService pluginService;
+    private final IPluginService pluginService;
 
-    @Autowired
-    private RuleCache ruleCache;
+    private final RuleCache ruleCache;
+
+    public RuleService(INotificationRequestRepository notifRepo,
+                       IRuleRepository ruleRepo,
+                       IRecipientService recipientService,
+                       IPluginService pluginService,
+                       RuleCache ruleCache) {
+        this.notifRepo = notifRepo;
+        this.ruleRepo = ruleRepo;
+        this.recipientService = recipientService;
+        this.pluginService = pluginService;
+        this.ruleCache = ruleCache;
+    }
 
     @Override
     public Page<RuleDTO> getRules(Pageable page) {
@@ -75,53 +79,57 @@ public class RuleService implements IRuleService {
     }
 
     @Override
-    public Optional<RuleDTO> getRule(String businessId) {
-        Optional<Rule> rule = ruleRepo.findByRulePluginBusinessId(businessId);
-        if (rule.isPresent()) {
-            return Optional.of(this.toRuleDTO(rule.get()));
-        } else {
-            return Optional.empty();
-        }
+    public Optional<RuleDTO> getRule(String fromBusinessId) {
+        return ruleRepo.findByRulePluginBusinessId(fromBusinessId).map(this::toRuleDTO);
     }
 
     @Override
-    public RuleDTO createOrUpdateRule(@Valid RuleDTO dto) throws ModuleException {
-        Optional<Rule> oRule = ruleRepo.findByRulePluginBusinessId(dto.getId());
-        Set<PluginConfiguration> recipients = recipientService.getRecipients(dto.getRecipientsBusinessIds());
-        Rule toSave;
-        if (oRule.isPresent()) {
-            toSave = oRule.get();
-            toSave.setRulePlugin(pluginService.updatePluginConfiguration(dto.getRulePluginConfiguration()));
-            toSave.setRecipients(recipients);
-        } else {
-            PluginConfiguration pluginConf = pluginService.savePluginConfiguration(dto.getRulePluginConfiguration());
-            toSave = Rule.build(pluginConf, recipients);
-        }
-        // Clean cache
+    public RuleDTO createOrUpdate(@Valid RuleDTO newRule) throws ModuleException {
+        Optional<Rule> currentRule = ruleRepo.findByRulePluginBusinessId(newRule.getId());
+        return currentRule.isPresent() ? update(currentRule.get(), newRule) : create(newRule);
+    }
+
+    private RuleDTO create(RuleDTO newRule) throws ModuleException {
+        PluginConfiguration newPlugin = pluginService.savePluginConfiguration(newRule.getRulePluginConfiguration());
+        Set<PluginConfiguration> newRecipients = recipientService.getRecipients(newRule.getRecipientsBusinessIds());
+
+        Rule toSave = Rule.build(newPlugin, newRecipients);
+        return toRuleDTO(ruleRepo.save(toSave));
+    }
+
+    private RuleDTO update(Rule current, RuleDTO newRule) throws ModuleException {
+        PluginConfiguration newPlugin = pluginService.updatePluginConfiguration(newRule.getRulePluginConfiguration());
+        Set<PluginConfiguration> newRecipients = recipientService.getRecipients(newRule.getRecipientsBusinessIds());
+
         ruleCache.clear();
+
+        Rule toSave = Rule.build(newPlugin, newRecipients);
+        toSave.setId(current.getId());
         return toRuleDTO(ruleRepo.save(toSave));
     }
 
     @Override
-    public void deleteRule(String businessId) throws ModuleException {
-        ruleRepo.deleteByRulePluginBusinessId(businessId);
-        pluginService.deletePluginConfiguration(businessId);
+    public void delete(String fromId) throws ModuleException {
+        // TODO Should we remove notification for this Rule ?
+        // It is done in deleteAll
+        ruleRepo.deleteByRulePluginBusinessId(fromId);
+        pluginService.deletePluginConfiguration(fromId);
         ruleCache.clear();
     }
 
     @Override
-    public Set<String> deleteAll(Collection<String> deletionErrors) {
-        List<Rule> rules = ruleRepo.findAll();
-        Set<String> confToDelete = rules.stream()
-                                        .map(Rule::getRulePlugin)
-                                        .map(PluginConfiguration::getBusinessId)
-                                        .collect(Collectors.toSet());
-        // Delete  rule associations
+    public void deleteAll() throws ModuleException {
+        Set<String> businessIdToDelete = ruleRepo.findAll()
+                                                 .stream()
+                                                 .map(Rule::getRulePlugin)
+                                                 .map(PluginConfiguration::getBusinessId)
+                                                 .collect(Collectors.toSet());
         notifRepo.deleteAll();
         ruleRepo.deleteAll();
-
+        for (String businessId : businessIdToDelete) {
+            pluginService.deletePluginConfiguration(businessId);
+        }
         ruleCache.clear();
-        return confToDelete;
     }
 
     private RuleDTO toRuleDTO(Rule rule) {

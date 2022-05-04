@@ -30,7 +30,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 import static fr.cnes.regards.modules.notifier.service.PluginConfigurationTestBuilder.aPlugin;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,11 +83,11 @@ public class ImportConfigurationIT extends AbstractNotificationMultitenantServic
         pluginService.savePluginConfiguration(secondRecipient);
         List<String> recipients = Arrays.asList(RECIPIENT_1, RECIPIENT_2);
         RuleDTO ruleToCreate = RuleDTO.build(firstRule, new HashSet<>(recipients));
-        ruleService.createOrUpdateRule(ruleToCreate);
+        ruleService.createOrUpdate(ruleToCreate);
 
         ModuleConfiguration exportedConf = manager.exportConfiguration();
-        ruleService.deleteAll(Collections.emptyList());
-        recipientService.deleteAll(Collections.emptyList());
+        ruleService.deleteAll();
+        recipientService.deleteAll();
         manager.importConfigurationAndLog(exportedConf);
 
         assertThat(recipientService.getRecipients()).map(PluginConfiguration::getBusinessId)
@@ -100,16 +103,16 @@ public class ImportConfigurationIT extends AbstractNotificationMultitenantServic
         pluginService.savePluginConfiguration(secondRecipient);
         List<String> recipients = Arrays.asList(RECIPIENT_1, RECIPIENT_2);
         RuleDTO ruleToCreate = RuleDTO.build(firstRule, new HashSet<>(recipients));
-        ruleService.createOrUpdateRule(ruleToCreate);
+        ruleService.createOrUpdate(ruleToCreate);
         ModuleConfiguration exportedConf = manager.exportConfiguration();
         RuleDTO toUpdate = ruleService.getRule(RULE_1)
                                       .orElseThrow(() -> new AssertionError("rule is not found in repository"));
         toUpdate.getRecipientsBusinessIds().clear();
         toUpdate.getRecipientsBusinessIds().add(RECIPIENT_2);
-        ruleService.createOrUpdateRule(toUpdate);
+        ruleService.createOrUpdate(toUpdate);
         ModuleConfiguration exportedConf2 = manager.exportConfiguration();
-        ruleService.deleteAll(Collections.emptyList());
-        recipientService.deleteAll(Collections.emptyList());
+        ruleService.deleteAll();
+        recipientService.deleteAll();
 
         manager.importConfigurationAndLog(exportedConf);
         manager.importConfigurationAndLog(exportedConf2);

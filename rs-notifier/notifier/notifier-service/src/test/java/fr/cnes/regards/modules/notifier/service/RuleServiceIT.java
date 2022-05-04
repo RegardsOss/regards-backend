@@ -78,7 +78,7 @@ public class RuleServiceIT extends AbstractNotificationMultitenantServiceIT {
         pluginService.savePluginConfiguration(secondRecipient);
 
         RuleDTO ruleToCreate = RuleDTO.build(firstRule, Collections.singleton(RECIPIENT_1));
-        ruleService.createOrUpdateRule(ruleToCreate);
+        ruleService.createOrUpdate(ruleToCreate);
 
         Optional<RuleDTO> actualRule = ruleService.getRule(RULE_1);
         assertThat(actualRule).isPresent();
@@ -91,13 +91,13 @@ public class RuleServiceIT extends AbstractNotificationMultitenantServiceIT {
         pluginService.savePluginConfiguration(firstRecipient);
         pluginService.savePluginConfiguration(secondRecipient);
         RuleDTO ruleToCreate = RuleDTO.build(firstRule, Collections.singleton(RECIPIENT_1));
-        ruleService.createOrUpdateRule(ruleToCreate);
+        ruleService.createOrUpdate(ruleToCreate);
 
         RuleDTO toUpdate = ruleService.getRule(RULE_1)
                                       .orElseThrow(() -> new AssertionError("rule is not found in repository"));
         toUpdate.getRulePluginConfiguration().setLabel("newOne");
         toUpdate.getRecipientsBusinessIds().add(RECIPIENT_2);
-        ruleService.createOrUpdateRule(toUpdate);
+        ruleService.createOrUpdate(toUpdate);
 
         Optional<RuleDTO> actualRule = ruleService.getRule(RULE_1);
         assertThat(actualRule).isPresent();
@@ -111,12 +111,12 @@ public class RuleServiceIT extends AbstractNotificationMultitenantServiceIT {
         pluginService.savePluginConfiguration(secondRecipient);
         List<String> recipients = Arrays.asList(RECIPIENT_1, RECIPIENT_2);
         RuleDTO ruleToCreate = RuleDTO.build(firstRule, new HashSet<>(recipients));
-        ruleService.createOrUpdateRule(ruleToCreate);
+        ruleService.createOrUpdate(ruleToCreate);
 
         RuleDTO toUpdate = ruleService.getRule(RULE_1).get();
         toUpdate.getRecipientsBusinessIds().clear();
         toUpdate.getRecipientsBusinessIds().add(RECIPIENT_2);
-        ruleService.createOrUpdateRule(toUpdate);
+        ruleService.createOrUpdate(toUpdate);
 
         Optional<RuleDTO> actualRule = ruleService.getRule(RULE_1);
         assertThat(actualRule).isPresent();

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
@@ -25,8 +26,8 @@ import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
 import fr.cnes.regards.modules.notifier.mock.InMemoryPluginService;
 import fr.cnes.regards.modules.notifier.mock.InMemoryRuleRepoBuilder;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +36,8 @@ import java.util.Set;
 
 import static fr.cnes.regards.modules.notifier.service.PluginConfigurationTestBuilder.aPlugin;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class RecipientServiceTest {
 
@@ -60,57 +62,52 @@ public class RecipientServiceTest {
         recipientErrors = mock(IRecipientErrorRepository.class);
         pluginService = new InMemoryPluginService();
         ruleRepo = new InMemoryRuleRepoBuilder().get();
-        recipientService = recipientServiceUnderTest();
-    }
-
-    private IRecipientService recipientServiceUnderTest() {
-        RecipientService recipientService = new RecipientService();
-        ReflectionTestUtils.setField(recipientService, "pluginService", pluginService);
-        ReflectionTestUtils.setField(recipientService, "recipientErrorRepository", recipientErrors);
-        ReflectionTestUtils.setField(recipientService, "ruleRepository", ruleRepo);
-        ReflectionTestUtils.setField(recipientService, "ruleCache", ruleCache);
-        return recipientService;
+        recipientService = new RecipientService(pluginService, ruleRepo, recipientErrors, null, ruleCache);
     }
 
     @Test
     public void create_recipient_saves_its_plugin() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
 
-        recipientService.createOrUpdateRecipient(firstRecipient);
+        recipientService.createOrUpdate(firstRecipient);
 
         Set<PluginConfiguration> recipients = recipientService.getRecipients(Collections.singleton(RECIPIENT_1));
         assertThat(recipients).containsExactly(firstRecipient);
     }
 
     @Test
-    public void create_recipient_clear_rule_cache() throws Exception {
-        PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-
-        recipientService.createOrUpdateRecipient(firstRecipient);
-
-        verify(ruleCache).clear();
-    }
-
-    @Test
     public void update_recipient_updates_its_plugin() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-        recipientService.createOrUpdateRecipient(firstRecipient);
+        recipientService.createOrUpdate(firstRecipient);
 
         PluginConfiguration updatedRecipient = aRecipient(RECIPIENT_1);
         updatedRecipient.setId(1L);
         updatedRecipient.setVersion("2");
-        recipientService.createOrUpdateRecipient(updatedRecipient);
+        recipientService.createOrUpdate(updatedRecipient);
 
         Set<PluginConfiguration> recipients = recipientService.getRecipients(Collections.singleton(RECIPIENT_1));
         assertThat(recipients).hasSize(1).map(PluginConfiguration::getVersion).containsExactly("2");
     }
 
     @Test
+    public void update_recipient_clear_rule_cache() throws Exception {
+        PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
+        recipientService.createOrUpdate(firstRecipient);
+
+        PluginConfiguration updatedRecipient = aRecipient(RECIPIENT_1);
+        updatedRecipient.setId(1L);
+        updatedRecipient.setVersion("2");
+        recipientService.createOrUpdate(updatedRecipient);
+
+        verify(ruleCache).clear();
+    }
+
+    @Test
     public void getRecipients_returns_all_recipients() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
         PluginConfiguration secondRecipient = aRecipient(RECIPIENT_2);
-        recipientService.createOrUpdateRecipient(firstRecipient);
-        recipientService.createOrUpdateRecipient(secondRecipient);
+        recipientService.createOrUpdate(firstRecipient);
+        recipientService.createOrUpdate(secondRecipient);
 
         Set<PluginConfiguration> allRecipients = recipientService.getRecipients();
 
@@ -121,8 +118,8 @@ public class RecipientServiceTest {
     public void get_recipients_by_ids_ignore_unknown_ids() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
         PluginConfiguration secondRecipient = aRecipient(RECIPIENT_2);
-        recipientService.createOrUpdateRecipient(firstRecipient);
-        recipientService.createOrUpdateRecipient(secondRecipient);
+        recipientService.createOrUpdate(firstRecipient);
+        recipientService.createOrUpdate(secondRecipient);
 
         List<String> recipients = Arrays.asList(UNKNOWN_RECIPIENT, RECIPIENT_1, RECIPIENT_2);
         Set<PluginConfiguration> allRecipients = recipientService.getRecipients(recipients);
@@ -134,22 +131,26 @@ public class RecipientServiceTest {
     public void delete_all_recipients_returns_all_plugins_to_delete() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
         PluginConfiguration secondRecipient = aRecipient(RECIPIENT_2);
-        recipientService.createOrUpdateRecipient(firstRecipient);
-        recipientService.createOrUpdateRecipient(secondRecipient);
+        recipientService.createOrUpdate(firstRecipient);
+        recipientService.createOrUpdate(secondRecipient);
 
-        Set<String> recipientsToDelete = recipientService.deleteAll(null);
+        recipientService.deleteAll();
 
-        assertThat(recipientsToDelete).hasSize(2).contains(RECIPIENT_1, RECIPIENT_2);
+        Assertions.assertThatExceptionOfType(EntityNotFoundException.class)
+                  .isThrownBy(() -> pluginService.getPluginConfiguration(RECIPIENT_1));
+        Assertions.assertThatExceptionOfType(EntityNotFoundException.class)
+                  .isThrownBy(() -> pluginService.getPluginConfiguration(RECIPIENT_2));
+
     }
 
     @Test
     public void delete_all_recipients_clear_recipient_errors() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
         PluginConfiguration secondRecipient = aRecipient(RECIPIENT_2);
-        recipientService.createOrUpdateRecipient(firstRecipient);
-        recipientService.createOrUpdateRecipient(secondRecipient);
+        recipientService.createOrUpdate(firstRecipient);
+        recipientService.createOrUpdate(secondRecipient);
 
-        recipientService.deleteAll(null);
+        recipientService.deleteAll();
 
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_1);
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_2);
@@ -158,22 +159,21 @@ public class RecipientServiceTest {
     @Test
     public void delete_all_recipients_clear_rule_cache() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-        recipientService.createOrUpdateRecipient(firstRecipient);
+        recipientService.createOrUpdate(firstRecipient);
 
-        recipientService.deleteAll(null);
+        recipientService.deleteAll();
 
-        // once at creation and second at deletion
-        verify(ruleCache, times(2)).clear();
+        verify(ruleCache).clear();
     }
 
     @Test
     public void delete_recipient_removes_its_plugin() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
         PluginConfiguration secondRecipient = aRecipient(RECIPIENT_2);
-        recipientService.createOrUpdateRecipient(firstRecipient);
-        recipientService.createOrUpdateRecipient(secondRecipient);
+        recipientService.createOrUpdate(firstRecipient);
+        recipientService.createOrUpdate(secondRecipient);
 
-        recipientService.deleteRecipient(RECIPIENT_1);
+        recipientService.delete(RECIPIENT_1);
 
         Set<PluginConfiguration> recipients = recipientService.getRecipients();
         assertThat(recipients).hasSize(1).contains(secondRecipient);
@@ -182,9 +182,9 @@ public class RecipientServiceTest {
     @Test
     public void delete_recipient_remove_its_errors() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-        recipientService.createOrUpdateRecipient(firstRecipient);
+        recipientService.createOrUpdate(firstRecipient);
 
-        recipientService.deleteRecipient(RECIPIENT_1);
+        recipientService.delete(RECIPIENT_1);
 
         // Twice for creations and once for deletion
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_1);
@@ -193,12 +193,11 @@ public class RecipientServiceTest {
     @Test
     public void delete_recipient_clear_rule_cache() throws Exception {
         PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-        recipientService.createOrUpdateRecipient(firstRecipient);
+        recipientService.createOrUpdate(firstRecipient);
 
-        recipientService.deleteRecipient(RECIPIENT_1);
+        recipientService.delete(RECIPIENT_1);
 
-        // Once for creation, once for deletion
-        verify(ruleCache, times(2)).clear();
+        verify(ruleCache).clear();
     }
 
     @Test
@@ -207,10 +206,10 @@ public class RecipientServiceTest {
         PluginConfiguration secondRecipient = aRecipient(RECIPIENT_2);
         Rule aRule = aRule(Arrays.asList(firstRecipient, secondRecipient));
         ruleRepo.save(aRule);
-        recipientService.createOrUpdateRecipient(firstRecipient);
-        recipientService.createOrUpdateRecipient(secondRecipient);
+        recipientService.createOrUpdate(firstRecipient);
+        recipientService.createOrUpdate(secondRecipient);
 
-        recipientService.deleteRecipient(RECIPIENT_1);
+        recipientService.delete(RECIPIENT_1);
 
         assertThat(ruleRepo.findAll()).hasSize(1).flatExtracting("recipients").hasSize(1).contains(secondRecipient);
     }

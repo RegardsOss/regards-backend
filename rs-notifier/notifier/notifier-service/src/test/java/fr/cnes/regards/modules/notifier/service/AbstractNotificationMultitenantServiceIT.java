@@ -239,7 +239,7 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
                                                   .parameterized_by(IPluginParam.build("attributeToSeek", "nature"))
                                                   .parameterized_by(IPluginParam.build("attributeValueToSeek", "TM"))
                                                   .build();
-        ruleService.createOrUpdateRule(RuleDTO.build(rulePlugin, recipientIds));
+        ruleService.createOrUpdate(RuleDTO.build(rulePlugin, recipientIds));
     }
 
     /**

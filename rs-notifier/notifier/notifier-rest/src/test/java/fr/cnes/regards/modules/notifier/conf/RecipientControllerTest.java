@@ -85,7 +85,7 @@ public class RecipientControllerTest {
             allRecipients = new ArrayList<>();
 
             ArgumentCaptor<PluginConfiguration> recipient = ArgumentCaptor.forClass(PluginConfiguration.class);
-            when(recipientService.createOrUpdateRecipient(recipient.capture())).thenAnswer(i -> {
+            when(recipientService.createOrUpdate(recipient.capture())).thenAnswer(i -> {
                 PluginConfiguration newRecipient = recipient.getValue();
                 allRecipients.removeIf(r -> r.getBusinessId().equals(newRecipient.getBusinessId()));
                 allRecipients.add(newRecipient);
@@ -98,7 +98,7 @@ public class RecipientControllerTest {
             doAnswer(i -> {
                 allRecipients.removeIf(p -> p.getBusinessId().equals(businessId.getValue()));
                 return null;
-            }).when(recipientService).deleteRecipient(businessId.capture());
+            }).when(recipientService).delete(businessId.capture());
             return recipientService;
         } catch (ModuleException e) {
             throw new AssertionFailedError("Error while mocking Recipient Service : " + e.getMessage());
@@ -107,8 +107,8 @@ public class RecipientControllerTest {
 
     private void raiseException(IRecipientService recipientService) {
         try {
-            when(recipientService.createOrUpdateRecipient(any())).thenThrow(new ModuleException());
-            doThrow(new ModuleException()).when(recipientService).deleteRecipient(anyString());
+            when(recipientService.createOrUpdate(any())).thenThrow(new ModuleException());
+            doThrow(new ModuleException()).when(recipientService).delete(anyString());
         } catch (ModuleException e) {
             throw new AssertionFailedError("Error while mocking Recipient Service : " + e.getMessage());
         }

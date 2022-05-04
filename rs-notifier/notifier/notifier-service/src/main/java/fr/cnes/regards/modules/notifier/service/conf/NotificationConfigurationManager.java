@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.service.conf;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -68,20 +67,16 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
 
     @Override
     public Set<String> resetConfiguration() {
-        Set<String> errors = Sets.newHashSet();
-        Set<String> pluginToDelete = new HashSet<>();
-        pluginToDelete.addAll(recipientService.deleteAll(errors));
-        pluginToDelete.addAll(ruleService.deleteAll(errors));
-        for (String conf : pluginToDelete) {
-            try {
-                pluginService.deletePluginConfiguration(conf);
-            } catch (ModuleException e) {
-                errors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
-                LOGGER.error(e.getMessage(), e);
-            }
+        try {
+            ruleService.deleteAll();
+            recipientService.deleteAll();
+            return new HashSet<>();
+        } catch (ModuleException e) {
+            LOGGER.error(e.getMessage(), e);
+            return Collections.singleton(String.format(
+                "Error deleting rule configuration during configuration reset : %s",
+                e.getMessage()));
         }
-
-        return errors;
     }
 
     @Override
@@ -126,6 +121,7 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
         }
 
         // Export rule recipient associations
+        // TODO Page is way to big
         Page<RuleDTO> rules = ruleService.getRules(PageRequest.of(0, 100_000));
         configurations.addAll(rules.getContent()
                                    .stream()

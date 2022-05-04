@@ -94,7 +94,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
         @Parameter(description = "Recipient to create") @Valid @RequestBody PluginConfiguration toCreate) {
         Assert.isNull(toCreate.getId(), "Its a creation id must be null!");
         try {
-            return ResponseEntity.ok(toResource(recipientService.createOrUpdateRecipient(toCreate)));
+            return ResponseEntity.ok(toResource(recipientService.createOrUpdate(toCreate)));
         } catch (ModuleException e) {
             LOGGER.error("Impossible! how can it throwed for a creation", e);
             return null;
@@ -114,7 +114,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
         @Parameter(description = "Recipient to update") @Valid @RequestBody PluginConfiguration toUpdate)
         throws ModuleException {
         Assert.notNull(toUpdate.getId(), "Its a validation id must not be null!");
-        return ResponseEntity.ok(toResource(recipientService.createOrUpdateRecipient(toUpdate)));
+        return ResponseEntity.ok(toResource(recipientService.createOrUpdate(toUpdate)));
     }
 
     /**
@@ -127,13 +127,12 @@ public class RecipientController implements IResourceController<PluginConfigurat
     public ResponseEntity<Void> deleteRecipient(
         @Parameter(description = "Recipient to delete id") @PathVariable("businessId") String businessId)
         throws ModuleException {
-        recipientService.deleteRecipient(businessId);
+        recipientService.delete(businessId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Override
     public EntityModel<PluginConfiguration> toResource(PluginConfiguration element, Object... extras) {
-
         EntityModel<PluginConfiguration> resource = resourceService.toResource(element);
         resourceService.addLink(resource,
                                 this.getClass(),

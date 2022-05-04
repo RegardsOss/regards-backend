@@ -43,19 +43,19 @@ public interface IRecipientService {
      * @return recipient({ @ link PluginConfiguration }) from the created recipient({@link PluginConfiguration})
      * @throws ModuleException if during an update id is unknow
      */
-    PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration toCreate) throws ModuleException;
+    PluginConfiguration createOrUpdate(@Valid PluginConfiguration toCreate) throws ModuleException;
 
     /**
      * Delete a recipient({@link PluginConfiguration}) by its id
      */
-    void deleteRecipient(String id) throws ModuleException;
+    void delete(String id) throws ModuleException;
 
     /**
      * Delete all plugin configurations for {@link IRecipientNotifier} plugin type
      *
      * @return plugin businessIds to delete
      */
-    Set<String> deleteAll(Collection<String> deletionErrors);
+    void deleteAll() throws ModuleException;
 
     /**
      * schedule {@link fr.cnes.regards.modules.notifier.service.job.NotificationJob} for each recipient

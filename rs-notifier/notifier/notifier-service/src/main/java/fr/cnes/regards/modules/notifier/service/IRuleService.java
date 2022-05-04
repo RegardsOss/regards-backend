@@ -25,9 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import javax.validation.Valid;
-import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author kevin
@@ -43,7 +41,7 @@ public interface IRuleService {
      * @return {@link RuleDto} from the created {@link Rule}
      * @throws ModuleException if during an update id is unknow
      */
-    RuleDTO createOrUpdateRule(@Valid RuleDTO toCreate) throws ModuleException;
+    RuleDTO createOrUpdate(@Valid RuleDTO toCreate) throws ModuleException;
 
     /**
      * Delete a {@link Rule} by its id.  <br/>
@@ -51,7 +49,7 @@ public interface IRuleService {
      * @param id
      * @throws ModuleException
      */
-    void deleteRule(String id) throws ModuleException;
+    void delete(String id) throws ModuleException;
 
     /**
      * @param id
@@ -63,5 +61,5 @@ public interface IRuleService {
      *
      * @return plugin business ids to delete
      */
-    Set<String> deleteAll(Collection<String> deletionErrors);
+    void deleteAll() throws ModuleException;
 }

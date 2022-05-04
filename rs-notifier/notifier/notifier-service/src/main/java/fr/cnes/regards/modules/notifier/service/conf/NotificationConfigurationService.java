@@ -123,7 +123,7 @@ public class NotificationConfigurationService {
                 }
 
                 // Create or update association
-                ruleService.createOrUpdateRule(RuleDTO.build(ruleConf, asso.getRecipientIds()));
+                ruleService.createOrUpdate(RuleDTO.build(ruleConf, asso.getRecipientIds()));
             }
         }
     }

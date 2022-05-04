@@ -93,7 +93,7 @@ public class RuleController implements IResourceController<RuleDTO> {
         @Parameter(description = "Rule to create") @Valid @RequestBody RuleDTO toCreate) {
         Assert.isNull(toCreate.getId(), "Its a creation id must be null!");
         try {
-            return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toCreate)));
+            return ResponseEntity.ok(toResource(this.ruleService.createOrUpdate(toCreate)));
         } catch (ModuleException e) {
             LOGGER.error("Impossible! how can it throwed for a creation", e);
             return null;
@@ -113,7 +113,7 @@ public class RuleController implements IResourceController<RuleDTO> {
         @Parameter(description = "Rule to update") @Valid @RequestBody RuleDTO toUpdate) throws ModuleException {
         Assert.notNull(toUpdate.getId(), "Its a validation id must not be null!");
 
-        return ResponseEntity.ok(toResource(this.ruleService.createOrUpdateRule(toUpdate)));
+        return ResponseEntity.ok(toResource(this.ruleService.createOrUpdate(toUpdate)));
     }
 
     /**
@@ -124,7 +124,7 @@ public class RuleController implements IResourceController<RuleDTO> {
     @Operation(summary = "Delete a rule", description = "Delete a rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRule(@PathVariable("id") String id) throws ModuleException {
-        this.ruleService.deleteRule(id);
+        this.ruleService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

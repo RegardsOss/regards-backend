@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -30,7 +29,6 @@ import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,93 +51,112 @@ public class RecipientService implements IRecipientService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RecipientService.class);
 
-    @Autowired
-    private IPluginService pluginService;
+    private final IPluginService pluginService;
 
-    @Autowired
-    private IRuleRepository ruleRepository;
+    private final IRuleRepository ruleRepository;
 
-    @Autowired
-    private IRecipientErrorRepository recipientErrorRepository;
+    private final IRecipientErrorRepository recipientErrorRepository;
 
-    @Autowired
-    private NotificationProcessingService notificationProcessingService;
+    private final NotificationProcessingService notificationProcessingService;
 
-    @Autowired
-    private RuleCache ruleCache;
+    private final RuleCache ruleCache;
+
+    public RecipientService(IPluginService pluginService,
+                            IRuleRepository ruleRepository,
+                            IRecipientErrorRepository recipientErrorRepository,
+                            NotificationProcessingService notificationProcessingService,
+                            RuleCache ruleCache) {
+        this.pluginService = pluginService;
+        this.ruleRepository = ruleRepository;
+        this.recipientErrorRepository = recipientErrorRepository;
+        this.notificationProcessingService = notificationProcessingService;
+        this.ruleCache = ruleCache;
+    }
 
     @Override
     public Set<PluginConfiguration> getRecipients() {
-        return getRecipients(null);
+        return new HashSet<>(pluginService.getPluginConfigurationsByType(IRecipientNotifier.class));
     }
 
     @Override
     public Set<PluginConfiguration> getRecipients(Collection<String> businessIds) {
-        Set<PluginConfiguration> recipients = Sets.newHashSet();
-        if ((businessIds == null) || businessIds.isEmpty()) {
-            recipients.addAll(pluginService.getPluginConfigurationsByType(IRecipientNotifier.class));
-        } else {
-            recipients = businessIds.stream().map(id -> {
-                try {
-                    return pluginService.getPluginConfiguration(id);
-                } catch (EntityNotFoundException e) {
-                    LOGGER.debug("Configuration does not exist!", e);
-                    return null;
-                }
-            }).filter(Objects::nonNull).collect(Collectors.toSet());
+        if (businessIds == null || businessIds.isEmpty()) {
+            return getRecipients();
         }
-        return recipients;
+        // TODO use flatMap(Optional::stream) with upgraded jdk
+        return businessIds.stream()
+                          .map(this::retrievePluginConfiguration)
+                          .filter(Optional::isPresent)
+                          .map(Optional::get)
+                          .collect(Collectors.toSet());
+    }
+
+    private Optional<PluginConfiguration> retrievePluginConfiguration(String id) {
+        // TODO make PluginService return optional
+        //  rather than throwing an exception
+        try {
+            return Optional.of(pluginService.getPluginConfiguration(id));
+        } catch (EntityNotFoundException e) {
+            LOGGER.debug("Configuration does not exist!", e);
+            return Optional.empty();
+        }
     }
 
     @Override
-    public PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration recipientPluginConf)
-        throws ModuleException {
-        PluginConfiguration result;
-        if (recipientPluginConf.getId() == null) {
-            result = pluginService.savePluginConfiguration(recipientPluginConf);
-        } else {
-            result = pluginService.updatePluginConfiguration(recipientPluginConf);
-        }
-        // Clean cache
+    public PluginConfiguration createOrUpdate(@Valid PluginConfiguration newRecipient) throws ModuleException {
+        // TODO remove createOrUpdate and make create and update visible
+        return newRecipient.getId() == null ? create(newRecipient) : update(newRecipient);
+    }
+
+    private PluginConfiguration create(PluginConfiguration newRecipient) throws ModuleException {
+        return pluginService.savePluginConfiguration(newRecipient);
+    }
+
+    private PluginConfiguration update(PluginConfiguration newRecipient) throws ModuleException {
         ruleCache.clear();
-
-        return result;
-
+        return pluginService.updatePluginConfiguration(newRecipient);
     }
 
     @Override
-    public void deleteRecipient(String id) throws ModuleException {
-        // Check  if a rule is associated to the recipient first
-        for (Rule rule : ruleRepository.findByRecipientsBusinessId(id)) {
+    public void delete(String fromId) throws ModuleException {
+        for (Rule rule : ruleRepository.findByRecipientsBusinessId(fromId)) {
             // Remove  recipient to delete
             rule.setRecipients(rule.getRecipients()
                                    .stream()
-                                   .filter(c -> !c.getBusinessId().equals(id))
+                                   .filter(c -> !c.getBusinessId().equals(fromId))
                                    .collect(Collectors.toSet()));
         }
-        // Delete associated errors
-        recipientErrorRepository.deleteByRecipientBusinessId(id);
-        pluginService.deletePluginConfiguration(id);
-
-        // Clean cache
+        doDelete(fromId);
         ruleCache.clear();
     }
 
     @Override
-    public Set<String> deleteAll(Collection<String> deletionErrors) {
-        Set<String> pluginToDelete = new HashSet<>();
-        for (PluginConfiguration conf : pluginService.getPluginConfigurationsByType(IRecipientNotifier.class)) {
-            recipientErrorRepository.deleteByRecipientBusinessId(conf.getBusinessId());
-            pluginToDelete.add(conf.getBusinessId());
+    public void deleteAll() throws ModuleException {
+        // FIXME We don't update Rule when deleteAll Recipient
+        // In consequence, Rules are not consistent anymore
+        // Currently, it is not an issue because
+        // we delete all rules juste before this deletion
+        Set<String> pluginToDelete = pluginService.getPluginConfigurationsByType(IRecipientNotifier.class)
+                                                  .stream()
+                                                  .map(PluginConfiguration::getBusinessId)
+                                                  .collect(Collectors.toSet());
+        for (String businessId : pluginToDelete) {
+            doDelete(businessId);
         }
-        // Clean cache
         ruleCache.clear();
-        return pluginToDelete;
+    }
+
+    private void doDelete(String businessId) throws ModuleException {
+        recipientErrorRepository.deleteByRecipientBusinessId(businessId);
+        pluginService.deletePluginConfiguration(businessId);
     }
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public int scheduleNotificationJobs() {
+        // TODO Warning : bad responsibility separation
+        // Analyze more precisely to identify the good modification to make
+
         // Let's schedule a notification job per recipient. This ensures that each recipient will have to process an
         // optimum batch of requests at once. Moreover, it also ensures that there will be no influence between each recipient errors
         Set<PluginConfiguration> recipients = getRecipients();
