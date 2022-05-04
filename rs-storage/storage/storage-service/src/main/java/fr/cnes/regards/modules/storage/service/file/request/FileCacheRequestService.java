@@ -93,48 +93,56 @@ public class FileCacheRequestService {
 
     private static boolean globalCacheLimitReached = false;
 
-    @Value("${regards.storage.cache.requests.per.job:100}")
-    private Integer nbRequestsPerJob;
+    private final IFileCacheRequestRepository repository;
 
-    private IFileCacheRequestRepository repository;
-    
-    private IPluginService pluginService;
-    
-    private IJobInfoService jobInfoService;
+    private final IPluginService pluginService;
 
-    private IAuthenticationResolver authResolver;
-    
-    private CacheService cacheService;
-    
-    private StoragePluginConfigurationHandler storageHandler;
+    private final IJobInfoService jobInfoService;
 
-    private EntityManager em;
-    
-    private FileReferenceEventPublisher publisher;
+    private final IAuthenticationResolver authResolver;
 
-    private RequestsGroupService reqGrpService;
-    
-    private FileReferenceService fileRefService;
-    
-    private StorageLocationConfigurationService pStorageService;
-    
-    private DownloadTokenService downloadTokenService;
-    
-    private RequestStatusService reqStatusService;
+    private final CacheService cacheService;
 
-    private INotificationClient notificationClient;
+    private final StoragePluginConfigurationHandler storageHandler;
 
-    private ApplicationContext applicationContext;
+    private final EntityManager em;
+
+    private final FileReferenceEventPublisher publisher;
+
+    private final RequestsGroupService reqGrpService;
+
+    private final FileReferenceService fileRefService;
+
+    private final StorageLocationConfigurationService pStorageService;
+
+    private final DownloadTokenService downloadTokenService;
+
+    private final RequestStatusService reqStatusService;
+
+    private final INotificationClient notificationClient;
+
+    private final ApplicationContext applicationContext;
 
     protected FileCacheRequestService self;
 
-    public FileCacheRequestService(IFileCacheRequestRepository repository, IPluginService pluginService, 
-                                   IJobInfoService jobInfoService, IAuthenticationResolver authResolver, 
-                                   CacheService cacheService, StoragePluginConfigurationHandler storageHandler,
-                                   EntityManager em, FileReferenceEventPublisher publisher, RequestsGroupService reqGrpService, 
-                                   FileReferenceService fileRefService, StorageLocationConfigurationService pStorageService, 
-                                   DownloadTokenService downloadTokenService, RequestStatusService reqStatusService, 
-                                   INotificationClient notificationClient, ApplicationContext applicationContext, 
+    @Value("${regards.storage.cache.requests.per.job:100}")
+    private Integer nbRequestsPerJob;
+
+    public FileCacheRequestService(IFileCacheRequestRepository repository,
+                                   IPluginService pluginService,
+                                   IJobInfoService jobInfoService,
+                                   IAuthenticationResolver authResolver,
+                                   CacheService cacheService,
+                                   StoragePluginConfigurationHandler storageHandler,
+                                   EntityManager em,
+                                   FileReferenceEventPublisher publisher,
+                                   RequestsGroupService reqGrpService,
+                                   FileReferenceService fileRefService,
+                                   StorageLocationConfigurationService pStorageService,
+                                   DownloadTokenService downloadTokenService,
+                                   RequestStatusService reqStatusService,
+                                   INotificationClient notificationClient,
+                                   ApplicationContext applicationContext,
                                    FileCacheRequestService fileCacheRequestService) {
         this.repository = repository;
         this.pluginService = pluginService;
@@ -160,6 +168,7 @@ public class FileCacheRequestService {
 
     /**
      * Search for a {@link FileCacheRequest} on the file given checksum.
+     *
      * @param checksum
      * @return {@link FileCacheRequest}
      */
@@ -171,21 +180,26 @@ public class FileCacheRequestService {
 
     /**
      * Creates a new {@link FileCacheRequest} if does not exists already.
+     *
      * @param fileRefToRestore
      * @param expirationDate
-     * @param groupId Business identifier of the deletion request
+     * @param groupId          Business identifier of the deletion request
      * @return {@link FileCacheRequest} created.
      */
-    public Optional<FileCacheRequest> create(FileReference fileRefToRestore, OffsetDateTime expirationDate,
-            String groupId) {
+    public Optional<FileCacheRequest> create(FileReference fileRefToRestore,
+                                             OffsetDateTime expirationDate,
+                                             String groupId) {
         String checksum = fileRefToRestore.getMetaInfo().getChecksum();
         Optional<FileCacheRequest> oFcr = repository.findByChecksum(checksum);
         FileCacheRequest request = null;
         if (!oFcr.isPresent()) {
-            request = new FileCacheRequest(fileRefToRestore, cacheService.getCacheDirectoryPath(checksum),
-                    expirationDate, groupId);
+            request = new FileCacheRequest(fileRefToRestore,
+                                           cacheService.getCacheDirectoryPath(checksum),
+                                           expirationDate,
+                                           groupId);
             request = repository.save(request);
-            LOGGER.trace("File {} (checksum {}) is requested for cache.", fileRefToRestore.getMetaInfo().getFileName(),
+            LOGGER.trace("File {} (checksum {}) is requested for cache.",
+                         fileRefToRestore.getMetaInfo().getFileName(),
                          fileRefToRestore.getMetaInfo().getChecksum());
         } else {
             request = oFcr.get();
@@ -194,14 +208,17 @@ public class FileCacheRequestService {
                 request = repository.save(request);
             }
             LOGGER.trace("File {} (checksum {}) is already requested for cache.",
-                         fileRefToRestore.getMetaInfo().getFileName(), fileRefToRestore.getMetaInfo().getChecksum());
+                         fileRefToRestore.getMetaInfo().getFileName(),
+                         fileRefToRestore.getMetaInfo().getChecksum());
         }
         return Optional.ofNullable(request);
     }
 
     public void makeAvailable(Collection<AvailabilityFlowItem> items) {
         items.forEach(i -> {
-            reqGrpService.granted(i.getGroupId(), FileRequestType.AVAILABILITY, i.getChecksums().size(),
+            reqGrpService.granted(i.getGroupId(),
+                                  FileRequestType.AVAILABILITY,
+                                  i.getChecksums().size(),
                                   i.getExpirationDate());
             makeAvailable(i.getChecksums(), i.getExpirationDate(), i.getGroupId());
         });
@@ -209,6 +226,7 @@ public class FileCacheRequestService {
 
     /**
      * Ensure availability of given files by their checksum for download.
+     *
      * @param checksums
      * @param expirationDate availability expiration date.
      * @param groupId
@@ -224,8 +242,9 @@ public class FileCacheRequestService {
         Set<String> remainingChecksums = Sets.newHashSet(checksums);
 
         // Dispatch by storage
-        ImmutableListMultimap<String, FileReference> filesByStorage = Multimaps
-                .index(refs, f -> f.getLocation().getStorage());
+        ImmutableListMultimap<String, FileReference> filesByStorage = Multimaps.index(refs,
+                                                                                      f -> f.getLocation()
+                                                                                            .getStorage());
         Set<String> remainingStorages = Sets.newHashSet(filesByStorage.keySet());
 
         Optional<StorageLocationConfiguration> storage = pStorageService.searchActiveHigherPriority(remainingStorages);
@@ -237,8 +256,9 @@ public class FileCacheRequestService {
             ImmutableList<FileReference> storageFiles = filesByStorage.get(storageName);
             // Calculate remaining files to make available for the current storage
             Set<FileReference> files = storageFiles.stream()
-                    .filter(f -> remainingChecksums.contains(f.getMetaInfo().getChecksum()))
-                    .collect(Collectors.toSet());
+                                                   .filter(f -> remainingChecksums.contains(f.getMetaInfo()
+                                                                                             .getChecksum()))
+                                                   .collect(Collectors.toSet());
             switch (storage.get().getStorageType()) {
                 case NEARLINE:
                     nearlines.addAll(files);
@@ -253,8 +273,9 @@ public class FileCacheRequestService {
                     break;
             }
             // Remove handled checksum by the current storage
-            remainingChecksums.removeAll(storageFiles.stream().map(f -> f.getMetaInfo().getChecksum())
-                    .collect(Collectors.toSet()));
+            remainingChecksums.removeAll(storageFiles.stream()
+                                                     .map(f -> f.getMetaInfo().getChecksum())
+                                                     .collect(Collectors.toSet()));
             // Remove handled storage
             remainingStorages.remove(storageName);
             // Retrieve the new highest storage priority with the remaining ones
@@ -262,8 +283,9 @@ public class FileCacheRequestService {
         }
         if (!remainingChecksums.isEmpty()) {
             for (String cs : remainingChecksums) {
-                Optional<FileReference> oFileRef = refs.stream().filter(r -> r.getMetaInfo().getChecksum().equals(cs))
-                        .findFirst();
+                Optional<FileReference> oFileRef = refs.stream()
+                                                       .filter(r -> r.getMetaInfo().getChecksum().equals(cs))
+                                                       .findFirst();
                 if (oFileRef.isPresent()) {
                     offlines.add(oFileRef.get());
                 } else {
@@ -271,8 +293,9 @@ public class FileCacheRequestService {
                 }
             }
             // add unknown to offline files
-            offlines.addAll(refs.stream().filter(ref -> remainingChecksums.contains(ref.getMetaInfo().getChecksum()))
-                    .collect(Collectors.toSet()));
+            offlines.addAll(refs.stream()
+                                .filter(ref -> remainingChecksums.contains(ref.getMetaInfo().getChecksum()))
+                                .collect(Collectors.toSet()));
         }
         notifyUnknowns(unkownFiles, groupId);
         notifyAvailables(onlines, groupId);
@@ -291,7 +314,12 @@ public class FileCacheRequestService {
             String message = String.format("file with checksum %s does not exists.", checksum);
             LOGGER.error("[AVAILABILITY ERROR {}] - {}", checksum, message);
             publisher.notAvailable(checksum, null, message, requestGroupId);
-            reqGrpService.requestError(requestGroupId, FileRequestType.AVAILABILITY, checksum, null, null, null,
+            reqGrpService.requestError(requestGroupId,
+                                       FileRequestType.AVAILABILITY,
+                                       checksum,
+                                       null,
+                                       null,
+                                       null,
                                        message);
         }
 
@@ -299,6 +327,7 @@ public class FileCacheRequestService {
 
     /**
      * Update all {@link FileCacheRequest} in error status to change status to {@link FileRequestStatus#TO_DO}.
+     *
      * @param groupId request business identifier to retry
      */
     public void retryRequest(String groupId) {
@@ -311,6 +340,7 @@ public class FileCacheRequestService {
 
     /**
      * Schedule all {@link FileCacheRequest}s with given status to be handled in {@link JobInfo}s
+     *
      * @param status
      * @return scheduled {@link JobInfo}s
      */
@@ -334,7 +364,8 @@ public class FileCacheRequestService {
             } while (filesPage.hasContent());
         }
         if (!jobList.isEmpty()) {
-            LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+            LOGGER.debug("[CACHE REQUESTS] {} jobs scheduled in {} ms",
+                         jobList.size(),
                          System.currentTimeMillis() - start);
         }
         return jobList;
@@ -342,6 +373,7 @@ public class FileCacheRequestService {
 
     /**
      * Schedule cache requests jobs for given storage using new transaction.
+     *
      * @param jobList
      * @param storage
      * @param requests
@@ -355,8 +387,8 @@ public class FileCacheRequestService {
                 try {
                     PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
                     IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-                    PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> response = storagePlugin
-                            .prepareForRestoration(requests);
+                    PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> response = storagePlugin.prepareForRestoration(
+                        requests);
                     for (FileRestorationWorkingSubset ws : response.getWorkingSubsets()) {
                         jobInfoList.add(scheduleJob(ws, conf.getBusinessId()));
                     }
@@ -386,43 +418,63 @@ public class FileCacheRequestService {
 
     /**
      * Handle a {@link FileCacheRequest} end with success.<ul>
-     *  <li> Creates the new {@link CacheFile}</li>
-     *  <li> Deletes the {@link FileCacheRequest} handled.
-     *  </ul>
+     * <li> Creates the new {@link CacheFile}</li>
+     * <li> Deletes the {@link FileCacheRequest} handled.
+     * </ul>
+     *
      * @param fileReq
      * @param cacheLocation
      * @param realFileSize
      */
-    public void handleSuccess(FileCacheRequest fileReq, URL cacheLocation, Collection<String> owners, Long realFileSize,
-            String successMessage) {
+    public void handleSuccess(FileCacheRequest fileReq,
+                              URL cacheLocation,
+                              Collection<String> owners,
+                              Long realFileSize,
+                              String successMessage) {
         LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", fileReq.getChecksum(), successMessage);
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             // Create the cache file associated
-            cacheService.addFile(oRequest.get().getChecksum(), realFileSize,
+            cacheService.addFile(oRequest.get().getChecksum(),
+                                 realFileSize,
                                  oRequest.get().getFileReference().getMetaInfo().getFileName(),
                                  oRequest.get().getFileReference().getMetaInfo().getMimeType(),
-                                 oRequest.get().getFileReference().getMetaInfo().getType(), cacheLocation,
-                                 oRequest.get().getExpirationDate(), fileReq.getGroupId());
+                                 oRequest.get().getFileReference().getMetaInfo().getType(),
+                                 cacheLocation,
+                                 oRequest.get().getExpirationDate(),
+                                 fileReq.getGroupId());
             delete(oRequest.get());
         }
-        publisher.available(fileReq.getChecksum(), "cache", fileReq.getStorage(), cacheLocation, owners, successMessage,
+        publisher.available(fileReq.getChecksum(),
+                            "cache",
+                            fileReq.getStorage(),
+                            cacheLocation,
+                            owners,
+                            successMessage,
                             fileReq.getGroupId());
         // Inform group that a request is done
-        reqGrpService.requestSuccess(fileReq.getGroupId(), FileRequestType.AVAILABILITY, fileReq.getChecksum(), null,
-                                     null, owners, null);
+        reqGrpService.requestSuccess(fileReq.getGroupId(),
+                                     FileRequestType.AVAILABILITY,
+                                     fileReq.getChecksum(),
+                                     null,
+                                     null,
+                                     owners,
+                                     null);
     }
 
     /**
      * Handle a {@link FileCacheRequest} end with error.
+     *
      * @param fileReq
      * @param cause
      */
     public void handleError(FileCacheRequest fileReq, String cause) {
         FileReference fileRef = fileReq.getFileReference();
         LOGGER.error("[AVAILABILITY ERROR {}] - Restoration error for file {} from {}. Cause : {}",
-                     fileRef.getMetaInfo().getChecksum(), fileRef.getMetaInfo().getFileName(),
-                     fileRef.getLocation().toString(), cause);
+                     fileRef.getMetaInfo().getChecksum(),
+                     fileRef.getMetaInfo().getFileName(),
+                     fileRef.getLocation().toString(),
+                     cause);
         Optional<FileCacheRequest> oRequest = repository.findById(fileReq.getId());
         if (oRequest.isPresent()) {
             FileCacheRequest request = oRequest.get();
@@ -431,12 +483,18 @@ public class FileCacheRequestService {
             repository.save(request);
         }
         publisher.notAvailable(fileReq.getChecksum(), fileReq.getStorage(), cause, fileReq.getGroupId());
-        reqGrpService.requestError(fileReq.getGroupId(), FileRequestType.AVAILABILITY, fileReq.getChecksum(),
-                                   fileReq.getStorage(), null, Lists.newArrayList(), cause);
+        reqGrpService.requestError(fileReq.getGroupId(),
+                                   FileRequestType.AVAILABILITY,
+                                   fileReq.getChecksum(),
+                                   fileReq.getStorage(),
+                                   null,
+                                   Lists.newArrayList(),
+                                   cause);
     }
 
     /**
      * Return all the request that can be restored in cache to not reach the cache size limit.
+     *
      * @param requests
      * @return available {@link FileCacheRequest} requests for restoration in cache
      */
@@ -461,8 +519,8 @@ public class FileCacheRequestService {
         }
         if (cacheLimitReached) {
             if (!globalCacheLimitReached) {
-                String message = String
-                        .format("One or many files to restore has been locked cause cache is full (%s%%)", occupation);
+                String message = String.format("One or many files to restore has been locked cause cache is full (%s%%)",
+                                               occupation);
                 notificationClient.notify(message, "Cache is full", NotificationLevel.WARNING, DefaultRole.ADMIN);
                 globalCacheLimitReached = true;
             }
@@ -475,6 +533,7 @@ public class FileCacheRequestService {
     /**
      * Schedule a {@link JobInfo} for the given {@link  FileRestorationWorkingSubset}.<br/>
      * NOTE : A new transaction is created for each call at this method. It is mandatory to avoid having too long transactions.
+     *
      * @param workingSubset
      * @param plgBusinessId
      * @return {@link JobInfo} scheduled.
@@ -483,10 +542,15 @@ public class FileCacheRequestService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(FileCacheRequestJob.DATA_STORAGE_CONF_BUSINESS_ID, plgBusinessId));
         parameters.add(new JobParameter(FileCacheRequestJob.WORKING_SUB_SET, workingSubset));
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.FILE_CACHE_JOB,
-                                                                    parameters, authResolver.getUser(), FileCacheRequestJob.class.getName()));
-        workingSubset.getFileRestorationRequests().forEach(r -> repository
-                .updateStatusAndJobId(FileRequestStatus.PENDING, jobInfo.getId().toString(), r.getId()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false,
+                                                                    StorageJobsPriority.FILE_CACHE_JOB,
+                                                                    parameters,
+                                                                    authResolver.getUser(),
+                                                                    FileCacheRequestJob.class.getName()));
+        workingSubset.getFileRestorationRequests()
+                     .forEach(r -> repository.updateStatusAndJobId(FileRequestStatus.PENDING,
+                                                                   jobInfo.getId().toString(),
+                                                                   r.getId()));
         em.flush();
         em.clear();
         return jobInfo;
@@ -495,6 +559,7 @@ public class FileCacheRequestService {
     /**
      * Creates {@link FileCacheRequest} for each nearline {@link FileReference} to be available for download.
      * After copy in cache, files will be available until the given expiration date.
+     *
      * @param fileReferences
      * @param expirationDate
      * @param groupId
@@ -503,8 +568,9 @@ public class FileCacheRequestService {
     public int makeAvailable(Set<FileReference> fileReferences, OffsetDateTime expirationDate, String groupId) {
         // Check files already available in cache
         Set<FileReference> availables = cacheService.getFilesAvailableInCache(fileReferences, groupId);
-        Set<FileReference> toRestore = fileReferences.stream().filter(f -> !availables.contains(f))
-                .collect(Collectors.toSet());
+        Set<FileReference> toRestore = fileReferences.stream()
+                                                     .filter(f -> !availables.contains(f))
+                                                     .collect(Collectors.toSet());
         // Notify available
         notifyAlreadyAvailablesInCache(availables, groupId);
         // Create a restoration request for all to restore
@@ -520,6 +586,7 @@ public class FileCacheRequestService {
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
+     *
      * @param fileRefRequests
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -533,27 +600,38 @@ public class FileCacheRequestService {
      * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
+     *
      * @param request
      */
     private void handleStorageNotAvailable(FileCacheRequest request, Optional<String> errorCause) {
         // The storage destination is unknown, we can already set the request in error status
-        String message = errorCause.orElse(String
-                .format("File <%s> cannot be handle for restoration as origin storage <%s> is unknown or disabled.",
-                        request.getFileReference().getMetaInfo().getFileName(), request.getStorage()));
+        String message = errorCause.orElse(String.format(
+            "File <%s> cannot be handle for restoration as origin storage <%s> is unknown or disabled.",
+            request.getFileReference().getMetaInfo().getFileName(),
+            request.getStorage()));
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(message);
         repository.save(request);
         LOGGER.error("[AVAILABILITY ERROR] File {} is not available. Cause : {}",
-                     request.getFileReference().getMetaInfo().getChecksum(), request.getErrorCause());
-        publisher.notAvailable(request.getChecksum(), request.getStorage(), request.getErrorCause(),
+                     request.getFileReference().getMetaInfo().getChecksum(),
+                     request.getErrorCause());
+        publisher.notAvailable(request.getChecksum(),
+                               request.getStorage(),
+                               request.getErrorCause(),
                                request.getGroupId());
-        reqGrpService.requestError(request.getGroupId(), FileRequestType.AVAILABILITY, request.getChecksum(),
-                                   request.getStorage(), null, request.getFileReference().getLazzyOwners(), message);
+        reqGrpService.requestError(request.getGroupId(),
+                                   FileRequestType.AVAILABILITY,
+                                   request.getChecksum(),
+                                   request.getStorage(),
+                                   null,
+                                   request.getFileReference().getLazzyOwners(),
+                                   message);
     }
 
     /**
      * Send {@link FileReferenceEvent} for available given files.
-     * @param availables newly available files
+     *
+     * @param availables          newly available files
      * @param availabilityGroupId business request identifier of the availability request associated.
      */
     private void notifyAvailables(Set<FileReference> availables, String availabilityGroupId) {
@@ -561,26 +639,43 @@ public class FileCacheRequestService {
             String checksum = fileRef.getMetaInfo().getChecksum();
             String storage = fileRef.getLocation().getStorage();
             String message = String.format("file %s (checksum %s) is available for download.",
-                                           fileRef.getMetaInfo().getFileName(), checksum);
+                                           fileRef.getMetaInfo().getFileName(),
+                                           checksum);
             LOGGER.debug("[AVAILABILITY SUCCESS {}] - {}", checksum, message);
             try {
                 // For online files we have to generate access url though storage microservice
                 String url = downloadTokenService.generateDownloadUrl(checksum);
-                publisher.available(checksum, storage, storage, new URL(url), fileRef.getLazzyOwners(), message,
+                publisher.available(checksum,
+                                    storage,
+                                    storage,
+                                    new URL(url),
+                                    fileRef.getLazzyOwners(),
+                                    message,
                                     availabilityGroupId);
-                reqGrpService.requestSuccess(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
-                                             fileRef.getLazzyOwners(), fileRef);
+                reqGrpService.requestSuccess(availabilityGroupId,
+                                             FileRequestType.AVAILABILITY,
+                                             checksum,
+                                             storage,
+                                             null,
+                                             fileRef.getLazzyOwners(),
+                                             fileRef);
             } catch (ModuleException | MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
                 publisher.notAvailable(checksum, storage, e.getMessage(), availabilityGroupId);
-                reqGrpService.requestError(availabilityGroupId, FileRequestType.AVAILABILITY, checksum, storage, null,
-                                           fileRef.getLazzyOwners(), e.getMessage());
+                reqGrpService.requestError(availabilityGroupId,
+                                           FileRequestType.AVAILABILITY,
+                                           checksum,
+                                           storage,
+                                           null,
+                                           fileRef.getLazzyOwners(),
+                                           e.getMessage());
             }
         }
     }
 
     /**
      * Notify all files as AVAILABLE.
+     *
      * @param availables
      * @param groupId
      */
@@ -589,14 +684,25 @@ public class FileCacheRequestService {
             String checksum = fileRef.getMetaInfo().getChecksum();
             String storage = fileRef.getLocation().getStorage();
             String message = String.format("File %s (checksum %s) is available for download.",
-                                           fileRef.getMetaInfo().getFileName(), checksum);
+                                           fileRef.getMetaInfo().getFileName(),
+                                           checksum);
             URL availableUrl;
             try {
                 availableUrl = new URL("file", null, cacheService.getFilePath(checksum));
-                publisher.available(checksum, "cache", storage, availableUrl, fileRef.getLazzyOwners(), message,
+                publisher.available(checksum,
+                                    "cache",
+                                    storage,
+                                    availableUrl,
+                                    fileRef.getLazzyOwners(),
+                                    message,
                                     groupId);
-                reqGrpService.requestSuccess(groupId, FileRequestType.AVAILABILITY, checksum, storage, null,
-                                             Lists.newArrayList(), fileRef);
+                reqGrpService.requestSuccess(groupId,
+                                             FileRequestType.AVAILABILITY,
+                                             checksum,
+                                             storage,
+                                             null,
+                                             Lists.newArrayList(),
+                                             fileRef);
             } catch (MalformedURLException e) {
                 // Should not happen
                 LOGGER.error(e.getMessage(), e);
@@ -606,6 +712,7 @@ public class FileCacheRequestService {
 
     /**
      * Delete all requests for the given storage identifier
+     *
      * @param storageLocationId
      */
     public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {

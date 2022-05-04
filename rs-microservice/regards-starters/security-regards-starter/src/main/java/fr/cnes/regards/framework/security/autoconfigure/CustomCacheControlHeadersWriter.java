@@ -18,32 +18,31 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.web.header.Header;
 import org.springframework.security.web.header.HeaderWriter;
 import org.springframework.security.web.header.writers.CacheControlHeadersWriter;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *  Force cache control in response header. Using CacheControl method from spring builder is not possible due to webSecurityAutoConfiguration
- *  enable setShouldWriteHeadersEagerly to prevent issue from spring security with headers NPE.<br/>
- *  https://github.com/spring-projects/spring-security/issues/9175<br/>
- *  <br/>
- *  This writer disable cache control for endpoints : <ul>
- *  <li> /downloads/* : For file download from catalog microservice</li>
- *  </ul>
+ * Force cache control in response header. Using CacheControl method from spring builder is not possible due to webSecurityAutoConfiguration
+ * enable setShouldWriteHeadersEagerly to prevent issue from spring security with headers NPE.<br/>
+ * https://github.com/spring-projects/spring-security/issues/9175<br/>
+ * <br/>
+ * This writer disable cache control for endpoints : <ul>
+ * <li> /downloads/* : For file download from catalog microservice</li>
+ * </ul>
+ * <p>
+ * <p>
+ * <p>
+ * Overrides {@link CacheControlHeadersWriter} from spring security
  *
- *
- *
- *  Overrides {@link CacheControlHeadersWriter} from spring security
- *
- *  @author Sébastien Binda
+ * @author Sébastien Binda
  */
 public final class CustomCacheControlHeadersWriter implements HeaderWriter {
 
@@ -65,24 +64,6 @@ public final class CustomCacheControlHeadersWriter implements HeaderWriter {
         this.delegateCache = new StaticHeadersWriter(createCacheHeaders());
     }
 
-    @Override
-    public void writeHeaders(HttpServletRequest request, HttpServletResponse response) {
-        if (hasHeader(response, CACHE_CONTROL) || hasHeader(response, EXPIRES) || hasHeader(response, PRAGMA)
-                || (response.getStatus() == HttpStatus.NOT_MODIFIED.value())) {
-            return;
-        }
-        // Disable cache for catalog microservice download endpoint
-        if (request.getRequestURI().startsWith("/downloads/")) {
-            this.delegateCache.writeHeaders(request, response);
-        } else {
-            this.delegateNoCache.writeHeaders(request, response);
-        }
-    }
-
-    private boolean hasHeader(HttpServletResponse response, String headerName) {
-        return response.getHeader(headerName) != null;
-    }
-
     private static List<Header> createNoCacheHeaders() {
         List<Header> headers = new ArrayList<>(3);
         headers.add(new Header(CACHE_CONTROL, "no-cache, no-store, max-age=0, must-revalidate"));
@@ -95,5 +76,23 @@ public final class CustomCacheControlHeadersWriter implements HeaderWriter {
         List<Header> headers = new ArrayList<>(3);
         headers.add(new Header(CACHE_CONTROL, "public, max-age=15552000"));
         return headers;
+    }
+
+    @Override
+    public void writeHeaders(HttpServletRequest request, HttpServletResponse response) {
+        if (hasHeader(response, CACHE_CONTROL) || hasHeader(response, EXPIRES) || hasHeader(response, PRAGMA) || (
+            response.getStatus() == HttpStatus.NOT_MODIFIED.value())) {
+            return;
+        }
+        // Disable cache for catalog microservice download endpoint
+        if (request.getRequestURI().startsWith("/downloads/")) {
+            this.delegateCache.writeHeaders(request, response);
+        } else {
+            this.delegateNoCache.writeHeaders(request, response);
+        }
+    }
+
+    private boolean hasHeader(HttpServletResponse response, String headerName) {
+        return response.getHeader(headerName) != null;
     }
 }

@@ -52,7 +52,7 @@ public class SearchClientITConfiguration {
     public IAttributeModelClient attributeModelClient() {
         IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
         Mockito.when(attributeModelClient.getAttributes(Mockito.any(), Mockito.any()))
-                .thenReturn(SearchClientTestUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE);
+               .thenReturn(SearchClientTestUtils.ATTRIBUTE_MODEL_CLIENT_RESPONSE);
         return attributeModelClient;
     }
 
@@ -62,13 +62,13 @@ public class SearchClientITConfiguration {
 
         // Build accessGroupMock mock
         final PagedModel.PageMetadata md = new PagedModel.PageMetadata(0, 0, 0);
-        final PagedModel<EntityModel<AccessGroup>> pagedResources = PagedModel.of(new ArrayList<>(), md,
-                new ArrayList<>());
-        final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> pageResponseEntity = ResponseEntity
-                .ok(pagedResources);
-        Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(),
-                                                                Mockito.anyInt()))
-                .thenReturn(pageResponseEntity);
+        final PagedModel<EntityModel<AccessGroup>> pagedResources = PagedModel.of(new ArrayList<>(),
+                                                                                  md,
+                                                                                  new ArrayList<>());
+        final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> pageResponseEntity = ResponseEntity.ok(pagedResources);
+        Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(),
+                                                                Mockito.anyInt(),
+                                                                Mockito.anyInt())).thenReturn(pageResponseEntity);
         return accessGroupClient;
     }
 
@@ -86,9 +86,9 @@ public class SearchClientITConfiguration {
     public IProjectUsersClient projectUsersClient() {
         IProjectUsersClient projectUsersClient = Mockito.mock(IProjectUsersClient.class);
         Mockito.when(projectUsersClient.isAdmin(Mockito.anyString()))
-                .thenReturn(SearchClientTestUtils.PROJECT_USERS_CLIENT_RESPONSE);
+               .thenReturn(SearchClientTestUtils.PROJECT_USERS_CLIENT_RESPONSE);
         Mockito.when(projectUsersClient.isAdmin(Mockito.eq(SearchClientTestUtils.ADMIN_USER_EMAIL)))
-                .thenReturn(SearchClientTestUtils.PROJECT_USERS_CLIENT_RESPONSE_ADMIN);
+               .thenReturn(SearchClientTestUtils.PROJECT_USERS_CLIENT_RESPONSE_ADMIN);
         return projectUsersClient;
     }
 

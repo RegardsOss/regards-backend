@@ -72,7 +72,7 @@ public class ProjectUserService implements IProjectUserService {
      * A filter on metadata to keep visible ones only
      */
     public static final Predicate<? super MetaData> KEEP_VISIBLE_META_DATA = metaData -> !UserVisibility.HIDDEN.equals(
-            metaData.getVisibility());
+        metaData.getVisibility());
 
     private static final Logger LOG = LoggerFactory.getLogger(ProjectUserService.class);
 
@@ -103,11 +103,15 @@ public class ProjectUserService implements IProjectUserService {
     private String instanceAdminUserEmail;
 
     public ProjectUserService(IAuthenticationResolver authenticationResolver,
-            IProjectUserRepository projectUserRepository, IRoleService roleService,
-            ApplicationEventPublisher eventPublisher, AccessSettingsService accessSettingsService,
-            AccountUtilsService accountUtilsService, AccessRightsEmailService accessRightsEmailService,
-            ProjectUserGroupService projectUserGroupService, QuotaHelperService quotaHelperService,
-            IPublisher publisher) {
+                              IProjectUserRepository projectUserRepository,
+                              IRoleService roleService,
+                              ApplicationEventPublisher eventPublisher,
+                              AccessSettingsService accessSettingsService,
+                              AccountUtilsService accountUtilsService,
+                              AccessRightsEmailService accessRightsEmailService,
+                              ProjectUserGroupService projectUserGroupService,
+                              QuotaHelperService quotaHelperService,
+                              IPublisher publisher) {
         this.authenticationResolver = authenticationResolver;
         this.projectUserRepository = projectUserRepository;
         this.roleService = roleService;
@@ -141,8 +145,8 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser retrieveOneByEmail(String userEmail) throws EntityNotFoundException {
-        return retrieveOneOptionalByEmail(userEmail).orElseThrow(
-                () -> new EntityNotFoundException(userEmail, ProjectUser.class));
+        return retrieveOneOptionalByEmail(userEmail).orElseThrow(() -> new EntityNotFoundException(userEmail,
+                                                                                                   ProjectUser.class));
     }
 
     @Override
@@ -150,13 +154,16 @@ public class ProjectUserService implements IProjectUserService {
         Optional<ProjectUser> user;
         if (instanceAdminUserEmail.equals(userEmail)) {
             user = Optional.of(new ProjectUser().setEmail(userEmail)
-                                       .setRole(new Role(DefaultRole.INSTANCE_ADMIN.toString(), null)));
+                                                .setRole(new Role(DefaultRole.INSTANCE_ADMIN.toString(), null)));
         } else {
             user = projectUserRepository.findOneByEmail(userEmail);
             // Filter out hidden meta data
             if (user.isPresent()) {
-                Set<MetaData> visibleMetadata = user.get().getMetadata().stream().filter(KEEP_VISIBLE_META_DATA)
-                        .collect(Collectors.toSet());
+                Set<MetaData> visibleMetadata = user.get()
+                                                    .getMetadata()
+                                                    .stream()
+                                                    .filter(KEEP_VISIBLE_META_DATA)
+                                                    .collect(Collectors.toSet());
                 user.get().setMetadata(visibleMetadata);
             }
         }
@@ -167,7 +174,7 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUser retrieveCurrentUser() throws EntityNotFoundException {
         String email = authenticationResolver.getUser();
         return projectUserRepository.findOneByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
+                                    .orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
     }
 
     @Override
@@ -187,9 +194,9 @@ public class ProjectUserService implements IProjectUserService {
         if (CollectionUtils.isEmpty(updatedProjectUser.getAccessGroups())) {
             projectUserGroupService.validateAccessGroups(projectUser.getAccessGroups(), true);
         } else {
-            projectUserGroupService.validateAccessGroups(
-                    Sets.symmetricDifference(projectUser.getAccessGroups(), updatedProjectUser.getAccessGroups()),
-                    true);
+            projectUserGroupService.validateAccessGroups(Sets.symmetricDifference(projectUser.getAccessGroups(),
+                                                                                  updatedProjectUser.getAccessGroups()),
+                                                         true);
         }
 
         publisher.publish(new ProjectUserEvent(updatedProjectUser.getEmail(), ProjectUserAction.UPDATE));
@@ -225,8 +232,8 @@ public class ProjectUserService implements IProjectUserService {
         // Check that no public group is removed or added
         Set<String> accessGroups = updatedProjectUser.getAccessGroups();
         if (!CollectionUtils.isEmpty(accessGroups)) {
-            projectUserGroupService.validateAccessGroups(
-                    Sets.symmetricDifference(projectUser.getAccessGroups(), accessGroups), true);
+            projectUserGroupService.validateAccessGroups(Sets.symmetricDifference(projectUser.getAccessGroups(),
+                                                                                  accessGroups), true);
             projectUser.setAccessGroups(accessGroups);
         }
 
@@ -236,14 +243,15 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public void updateUserAccessRights(String login, List<ResourcesAccess> updatedUserAccessRights)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         ProjectUser user = projectUserRepository.findOneByEmail(login)
-                .orElseThrow(() -> new EntityNotFoundException(login, ProjectUser.class));
+                                                .orElseThrow(() -> new EntityNotFoundException(login,
+                                                                                               ProjectUser.class));
         try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
-                Stream<ResourcesAccess> updated = updatedUserAccessRights.stream();
-                Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
+            Stream<ResourcesAccess> updated = updatedUserAccessRights.stream();
+            Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
             user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(ResourcesAccess::getId))
-                                        .collect(Collectors.toList()));
+                                      .collect(Collectors.toList()));
         }
         save(user);
     }
@@ -251,7 +259,8 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public void removeUserAccessRights(String login) throws EntityNotFoundException {
         ProjectUser user = projectUserRepository.findOneByEmail(login)
-                .orElseThrow(() -> new EntityNotFoundException(login, ProjectUser.class));
+                                                .orElseThrow(() -> new EntityNotFoundException(login,
+                                                                                               ProjectUser.class));
         user.setPermissions(new ArrayList<>());
         save(user);
     }
@@ -264,7 +273,7 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public List<MetaData> updateUserMetaData(Long userId, List<MetaData> updatedUserMetaData)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         ProjectUser user = retrieveUser(userId);
         user.setMetadata(new HashSet<>(updatedUserMetaData));
         ProjectUser savedUser = save(user);
@@ -280,7 +289,7 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public List<ResourcesAccess> retrieveProjectUserAccessRights(String email, String borrowedRoleName)
-            throws EntityException {
+        throws EntityException {
 
         ProjectUser projectUser = retrieveOneByEmail(email);
         Role returnedRole = projectUser.getRole();
@@ -290,7 +299,8 @@ public class ProjectUserService implements IProjectUserService {
             if (roleService.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
             } else {
-                throw new EntityOperationForbiddenException(borrowedRoleName, Role.class,
+                throw new EntityOperationForbiddenException(borrowedRoleName,
+                                                            Role.class,
                                                             "Borrowed role must be hierachically inferior to the project user's role");
             }
         }
@@ -310,13 +320,15 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public ProjectUser createProjectUser(AccessRequestDto accessRequestDto) throws EntityException {
         boolean isExternal = StringUtils.isNotBlank(accessRequestDto.getOrigin()) && !ProjectUser.REGARDS_ORIGIN.equals(
-                accessRequestDto.getOrigin());
+            accessRequestDto.getOrigin());
         return create(accessRequestDto, isExternal, UserStatus.ACCESS_GRANTED, AccountStatus.ACTIVE);
     }
 
     @Override
-    public ProjectUser create(AccessRequestDto accessRequestDto, boolean isExternal, UserStatus userStatus,
-            AccountStatus accountStatus) throws EntityException {
+    public ProjectUser create(AccessRequestDto accessRequestDto,
+                              boolean isExternal,
+                              UserStatus userStatus,
+                              AccountStatus accountStatus) throws EntityException {
 
         String email = accessRequestDto.getEmail();
         if (projectUserRepository.findOneByEmail(email).isPresent()) {
@@ -352,11 +364,15 @@ public class ProjectUserService implements IProjectUserService {
         }
 
         Long maxQuota = accessRequestDto.getMaxQuota() != null ?
-                accessRequestDto.getMaxQuota() :
-                quotaHelperService.getDefaultQuota();
+            accessRequestDto.getMaxQuota() :
+            quotaHelperService.getDefaultQuota();
 
-        ProjectUser projectUser = new ProjectUser().setEmail(email).setLastName(account.getLastName())
-                .setFirstName(account.getFirstName()).setRole(role).setAccessGroups(accessGroups).setMaxQuota(maxQuota);
+        ProjectUser projectUser = new ProjectUser().setEmail(email)
+                                                   .setLastName(account.getLastName())
+                                                   .setFirstName(account.getFirstName())
+                                                   .setRole(role)
+                                                   .setAccessGroups(accessGroups)
+                                                   .setMaxQuota(maxQuota);
 
         if (accessRequestDto.getMetadata() != null) {
             projectUser.setMetadata(new HashSet<>(accessRequestDto.getMetadata()));
@@ -379,10 +395,14 @@ public class ProjectUserService implements IProjectUserService {
 
         if (!CollectionUtils.isEmpty(accessSettingsService.userCreationMailRecipients())) {
             AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper().setProjectUser(projectUser)
-                    .setSubject("[REGARDS] Project User created")
-                    .setTo(accessSettingsService.userCreationMailRecipients())
-                    .setTemplate(AccessRightsTemplateConfiguration.USER_CREATED_TEMPLATE_NAME)
-                    .setDefaultMessage("User account created : " + projectUser.getEmail());
+                                                                             .setSubject(
+                                                                                 "[REGARDS] Project User created")
+                                                                             .setTo(accessSettingsService.userCreationMailRecipients())
+                                                                             .setTemplate(
+                                                                                 AccessRightsTemplateConfiguration.USER_CREATED_TEMPLATE_NAME)
+                                                                             .setDefaultMessage(
+                                                                                 "User account created : "
+                                                                                     + projectUser.getEmail());
             accessRightsEmailService.sendEmail(wrapper);
         }
 
@@ -437,9 +457,13 @@ public class ProjectUserService implements IProjectUserService {
 
         AtomicInteger counter = new AtomicInteger();
         int pageSize = 100;
-        currentQuotaByEmail.keySet().stream().collect(Collectors.groupingBy(x -> counter.getAndIncrement() / pageSize))
-                .values().forEach(emailList -> projectUserRepository.findByEmailIn(emailList)
-                        .forEach(projectUser -> projectUser.setCurrentQuota(currentQuotaByEmail.get(projectUser.getEmail()))));
+        currentQuotaByEmail.keySet()
+                           .stream()
+                           .collect(Collectors.groupingBy(x -> counter.getAndIncrement() / pageSize))
+                           .values()
+                           .forEach(emailList -> projectUserRepository.findByEmailIn(emailList)
+                                                                      .forEach(projectUser -> projectUser.setCurrentQuota(
+                                                                          currentQuotaByEmail.get(projectUser.getEmail()))));
     }
 
     @Override
