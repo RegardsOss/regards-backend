@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.search.domain.download;
 
-import org.springframework.core.io.InputStreamResource;
+import feign.Response;
 
-import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * The DTO representing a successful download of a file from the catalog.
@@ -28,14 +28,14 @@ import java.io.InputStream;
  *
  * @author Thomas Fache
  **/
-public class ValidDownload extends InputStreamResource implements Download {
+public class ValidDownload extends InputStreamResourceConvertable implements Download {
 
     /**
      * Constructor of the successful download DTO
      *
-     * @param inputStream the stream of the downloaded file
+     * @param response the download file successful stream
      */
-    public ValidDownload(InputStream inputStream) {
-        super(inputStream);
+    public ValidDownload(Response response) throws IOException {
+        super(response);
     }
 }

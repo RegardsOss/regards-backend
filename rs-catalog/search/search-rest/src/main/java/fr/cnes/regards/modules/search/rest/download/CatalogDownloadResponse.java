@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.search.rest.download;
 
 import feign.Response;
-import fr.cnes.regards.framework.feign.ResponseStreamProxy;
 import fr.cnes.regards.modules.search.domain.download.Download;
 import fr.cnes.regards.modules.search.domain.download.FailedDownload;
 import fr.cnes.regards.modules.search.domain.download.MissingLicenseDownload;
@@ -39,6 +38,9 @@ public class CatalogDownloadResponse {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogDownloadResponse.class);
 
+    private CatalogDownloadResponse() {
+    }
+
     public static ResponseEntity<Download> unauthorizedAccess() {
         return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
@@ -50,14 +52,11 @@ public class CatalogDownloadResponse {
     }
 
     public static ResponseEntity<Download> successfulDownload(Response fromStorageResponse) throws IOException {
-        return ResponseEntity.status(fromStorageResponse.status())
-                             .body(new ValidDownload(new ResponseStreamProxy(fromStorageResponse)));
+        return ResponseEntity.status(fromStorageResponse.status()).body(new ValidDownload(fromStorageResponse));
     }
 
     public static ResponseEntity<Download> failedDownload(Response fromStorageResponse) throws IOException {
-        FailedDownload body = fromStorageResponse.body() != null ?
-            new FailedDownload(new ResponseStreamProxy(fromStorageResponse)) :
-            null;
+        FailedDownload body = fromStorageResponse.body() != null ? new FailedDownload(fromStorageResponse) : null;
         return ResponseEntity.status(fromStorageResponse.status()).body(body);
     }
 

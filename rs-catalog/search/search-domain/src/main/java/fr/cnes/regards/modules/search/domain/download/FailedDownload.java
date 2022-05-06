@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.search.domain.download;
 
-import org.springframework.core.io.InputStreamResource;
+import feign.Response;
 
-import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * DTO that represents the failure of the download of a file from the catalog.
@@ -28,14 +28,14 @@ import java.io.InputStream;
  *
  * @author Thomas Fache
  **/
-public class FailedDownload extends InputStreamResource implements Download {
+public class FailedDownload extends InputStreamResourceConvertable implements Download {
 
     /**
-     * Construtor of the download failure DTO
+     * Constructor of the download failure DTO
      *
-     * @param errorStream the error stream contained
+     * @param response the download file error stream
      */
-    public FailedDownload(InputStream errorStream) {
-        super(errorStream);
+    public FailedDownload(Response response) throws IOException {
+        super(response);
     }
 }
