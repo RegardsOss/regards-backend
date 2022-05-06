@@ -253,28 +253,25 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         // Session1 : 1filesAcquired + 1incomplete
         // ---> 2 steps
         waitStepRegistration(session1, 2);
-        // Session2 : 1requestRunning + 3filesAcquired+ 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
-        // ---> 8 steps
-        waitStepRegistration(session2, 8);
+        // Session2 : 1requestRunning + 2filesAcquired+ 1 productComplete + 1 productGenerated + (-) 1prodductComplete + (-) 1requestRunning
+        // ---> 7 steps
+        waitStepRegistration(session2, 7);
         // launch the generation of sessionStep from StepPropertyUpdateRequests
         this.agentService
                 .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
         // check result
         assertSessionStep(processingChain.getLabel(), session1, 1L, null, 1L, null);
-        assertSessionStep(processingChain.getLabel(), session2, 3L, 0L, null, 1L);
+        assertSessionStep(processingChain.getLabel(), session2, 2L, 0L, null, 1L);
     }
 
     private void waitStepRegistration(String session, int nbSteps) {
-        long init = 2L; // wait for creation of steps 2s
-        long timeout = 30L; // timeout 30s
-        long intervalBetweenDBQueries = 100L; // 100 ms
         AtomicInteger nbStepsCreated = new AtomicInteger();
         try {
             logger.info("Waiting for registration of {} StepPropertyUpdateRequests for session {}", nbSteps, session);
             Awaitility.await()
-                    .atMost(timeout, TimeUnit.SECONDS)
+                    .atMost(30, TimeUnit.SECONDS)
                     .with()
-                    .pollInterval(intervalBetweenDBQueries, TimeUnit.MILLISECONDS)
+                    .pollInterval(100, TimeUnit.MILLISECONDS)
                     .until(() -> {
                         runtimeTenantResolver.forceTenant(getDefaultTenant());
                         nbStepsCreated.set(this.stepRepo.findBySession(session).size());

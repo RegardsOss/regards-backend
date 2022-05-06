@@ -91,6 +91,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -116,6 +117,9 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
     protected String owner = "owner";
 
     protected String session = "session";
+
+    protected final String stepId = "feature";
+
 
     // Mock for test purpose
     @Autowired
@@ -701,31 +705,50 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
         OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(120);
         if (nbStepsRequired > 0) {
             try {
-                Awaitility.await().atMost(Durations.TEN_SECONDS).with().until(() -> this.expectSteps(nbStepsRequired));
+                Awaitility.await().atMost(Durations.ONE_MINUTE).with().until(() -> this.expectSteps(nbStepsRequired));
             } catch (ConditionTimeoutException e) {
                 Assert.assertEquals(nbStepsRequired, stepPropertyUpdateRequestRepository.findAll().size());
             }
         }
         agentSnapshotJobService.scheduleJob();
 
-        // Check that sessionStep is well generated
-        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
-            runtimeTenantResolver.forceTenant(getDefaultTenant());
-            boolean done = false;
-            SessionStep step = sessionStepRepository.findBySourceAndLastUpdateDateBefore(source, end,
-                                                                                         Pageable.unpaged())
-                    .getContent().stream().filter(sessionStep -> sessionStep.getSession().equals(session)).findFirst()
-                    .orElse(null);
-            if (step != null) {
-                List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findBySourceAndCreationDateGreaterThanAndCreationDateLessThan(
-                                source, step.getLastUpdateDate(), start, Pageable.unpaged()).getContent().stream()
-                        .filter(request -> request.getSession().equals(session)).collect(Collectors.toList());
-                if (requests.isEmpty()) {
-                    done = true;
-                }
-            }
-            return done;
-        });
+        // Check that sessionStep is correctly generated
+        try {
+            Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                return sessionStepRepository
+                        .findBySourceAndSessionAndStepId(source, session, stepId)
+                        .filter(sessionStep -> sessionStep.getLastUpdateDate().isBefore(end.truncatedTo(ChronoUnit.MICROS)))
+                        .map(sessionStep -> {
+                            LOGGER.info("""
+                                    1 session step found before {} from source "{}", session "{}", stepId "{}".
+                                    Searching if all corresponding step properties were processed.""", end, source, session, stepId);
+                            return findAllStepPropertiesBySourceSessionStepIdCreationDate(source, session, sessionStep.getLastUpdateDate(), start.truncatedTo(ChronoUnit.MICROS)).size() == 0;
+                        })
+                        .orElse(false);
+            });
+        } catch (ConditionTimeoutException e) {
+            Assert.fail("The step properties were not processed in the expected amount of time");
+        }
+
     }
 
+
+    private List<StepPropertyUpdateRequest> findAllStepPropertiesBySourceSessionStepIdCreationDate(String source, String session, OffsetDateTime creationDateBegin, OffsetDateTime creationDateEnd) {
+        List<StepPropertyUpdateRequest> stepProperties = stepPropertyUpdateRequestRepository
+                .findAll()
+                .stream()
+                .filter(stepProperty ->
+                        stepProperty.getSource().equals(source) &&
+                                stepProperty.getSession().equals(session) &&
+                                stepProperty.getStepId().equals(stepId) &&
+                                stepProperty.getCreationDate().isAfter(creationDateBegin) &&
+                                stepProperty.getCreationDate().isBefore(creationDateEnd)).toList();
+        LOGGER.info("""
+                Step properties found for source "{}", session "{}", stepId "{}", creationDate between "{}" and "{}" :
+                {}
+                """, source, session, stepId, creationDateBegin, creationDateEnd, stepProperties);
+        return stepProperties;
+
+    }
 }

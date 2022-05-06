@@ -33,7 +33,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Adapter to serialize/derialized set based on <a href="core/src/main/java/org/jclouds/json/internal/NullFilteringTypeAdapterFactories.java">org.jclouds.json.internal</a>
+ * Adapter to serialize/deserialize set based on project apache jclouds (json/internal/NullFilteringTypeAdapterFactories.java)
  *
  * @author Iliana Ghazali
  **/

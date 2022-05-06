@@ -87,6 +87,8 @@ public abstract class AbstractProcessingIT implements InitializingBean {
 
     protected static final String R2DBCDB_NAME = "r2dbcdb";
 
+    public static final String DEFAULT_PROJECT_TENANT = "project";
+
     public static final String TENANT_PROJECTA = "projecta";
 
     public static final String TENANT_PROJECTB = "projectb";
@@ -155,6 +157,12 @@ public abstract class AbstractProcessingIT implements InitializingBean {
         public void initialize(ConfigurableApplicationContext applicationContext) {
             if (onLocal) {
                 Try.run(() -> {
+                    LOGGER.info("################## Creating DB for tenant {}", DEFAULT_PROJECT_TENANT);
+                    Container.ExecResult result = postgreSQLContainer
+                            .execInContainer("createdb", "-U", PGSQL_USER, DEFAULT_PROJECT_TENANT);
+                    LOGGER.info("################## Created DB for tenant {}: {}\n{}\n{}", DEFAULT_PROJECT_TENANT,
+                            result.getExitCode(), result.getStdout(), result.getStderr());
+
                     LOGGER.info("################## Creating DB for tenant {}", TENANT_PROJECTA);
                     Container.ExecResult resultA = postgreSQLContainer
                             .execInContainer("createdb", "-U", PGSQL_USER, TENANT_PROJECTA);
@@ -181,7 +189,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                             PGSQL_USER, PGSQL_SECRET
                     );
 
-                    Stream.of(TENANT_PROJECTA, TENANT_PROJECTB, R2DBCDB_NAME)
+                    Stream.of(DEFAULT_PROJECT_TENANT, TENANT_PROJECTA, TENANT_PROJECTB, R2DBCDB_NAME)
                             .forEach(dbName -> {
                                 try {
                                     LOGGER.info("################## Creating DB {}", dbName);
@@ -232,24 +240,32 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                 "regards.cipher.keyLocation=" + keyPath.toFile().getAbsolutePath(),
                 "regards.cipher.iv=1234567812345678",
 
-                "regards.test.tenant=" + TENANT_PROJECTA,
+                "regards.tenant=" + DEFAULT_PROJECT_TENANT,
+                "regards.tenants=" + TENANT_PROJECTA + "," + TENANT_PROJECTB,
+                "regards.test.tenant=" + DEFAULT_PROJECT_TENANT,
+
                 "spring.jpa.properties.hibernate.default_schema=" + R2DBCDB_NAME,
 
-                "regards.tenants=" + TENANT_PROJECTA + "," + TENANT_PROJECTB,
-
                 "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://" + pgHost + ":" + pgPort
-                          + "/" + TENANT_PROJECTA,
-                "regards.jpa.multitenant.tenants[0].tenant=" + TENANT_PROJECTA,
+                        + "/" + DEFAULT_PROJECT_TENANT,
+                "regards.jpa.multitenant.tenants[0].tenant=" + DEFAULT_PROJECT_TENANT,
                 "regards.jpa.multitenant.tenants[0].driverClassName=org.postgresql.Driver",
                 "regards.jpa.multitenant.tenants[0].userName=" + PGSQL_USER,
                 "regards.jpa.multitenant.tenants[0].password=" + PGSQL_SECRET,
 
                 "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://" + pgHost + ":" + pgPort
-                          + "/" + TENANT_PROJECTB,
-                "regards.jpa.multitenant.tenants[1].tenant=" + TENANT_PROJECTB,
+                          + "/" + TENANT_PROJECTA,
+                "regards.jpa.multitenant.tenants[1].tenant=" + TENANT_PROJECTA,
                 "regards.jpa.multitenant.tenants[1].driverClassName=org.postgresql.Driver",
                 "regards.jpa.multitenant.tenants[1].userName=" + PGSQL_USER,
                 "regards.jpa.multitenant.tenants[1].password=" + PGSQL_SECRET,
+
+                "regards.jpa.multitenant.tenants[2].url=jdbc:postgresql://" + pgHost + ":" + pgPort
+                          + "/" + TENANT_PROJECTB,
+                "regards.jpa.multitenant.tenants[2].tenant=" + TENANT_PROJECTB,
+                "regards.jpa.multitenant.tenants[2].driverClassName=org.postgresql.Driver",
+                "regards.jpa.multitenant.tenants[2].userName=" + PGSQL_USER,
+                "regards.jpa.multitenant.tenants[2].password=" + PGSQL_SECRET,
 
                 "regards.processing.r2dbc.host=" + pgHost, "regards.processing.r2dbc.port=" + pgPort,
                 "regards.processing.r2dbc.username=" + PGSQL_USER,

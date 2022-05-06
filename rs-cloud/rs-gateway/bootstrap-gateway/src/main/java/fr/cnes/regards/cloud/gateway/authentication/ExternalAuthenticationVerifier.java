@@ -21,7 +21,6 @@ package fr.cnes.regards.cloud.gateway.authentication;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,7 +30,6 @@ import reactor.core.publisher.Mono;
 import static fr.cnes.regards.cloud.gateway.filters.FilterConstants.AUTHORIZATION;
 import static fr.cnes.regards.cloud.gateway.filters.FilterConstants.BEARER;
 
-@Slf4j
 public class ExternalAuthenticationVerifier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExternalAuthenticationVerifier.class);

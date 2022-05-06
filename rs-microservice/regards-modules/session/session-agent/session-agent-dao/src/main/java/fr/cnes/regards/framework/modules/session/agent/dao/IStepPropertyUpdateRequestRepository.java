@@ -56,8 +56,4 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
             + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
     int deleteUnusedProcess(OffsetDateTime limitDate);
 
-    // For tests
-    Page<StepPropertyUpdateRequest> findBySourceAndCreationDateGreaterThanAndCreationDateLessThan(String source,
-            OffsetDateTime lastUpdate, OffsetDateTime freezeDate, Pageable page);
-
 }

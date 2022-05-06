@@ -24,13 +24,14 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
-import java.util.List;
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author sbinda
@@ -63,12 +64,16 @@ public class SessionNotificationHandler
                     event.getStepProperty(), event.getType(), eventInfo.getValue());
     }
 
-    public long getPropertyCount(String step, String property, StepPropertyEventTypeEnum op) {
+    public long getPropertyCount(String source, String session, String step, String property, StepPropertyEventTypeEnum type) {
         return events.stream()
-                .filter(e -> (op == e.getType()) && e.getStepProperty().getStepId().equals(step) && e.getStepProperty()
-                        .getStepPropertyInfo().getProperty().equals(property))
-                .map(event -> Long.parseLong(event.getStepProperty().getStepPropertyInfo().getValue()))
-                .reduce(0L, Long::sum);
+                     .filter(e ->
+                                    e.getStepProperty().getSource().equals(source) &&
+                                    e.getStepProperty().getSession().equals(session) &&
+                                    e.getStepProperty().getStepId().equals(step) &&
+                                    e.getStepProperty().getStepPropertyInfo().getProperty().equals(property) &&
+                                    e.getType() == type)
+                     .map(event -> Long.parseLong(event.getStepProperty().getStepPropertyInfo().getValue()))
+                     .reduce(0L, Long::sum);
     }
 
     public void clear() {

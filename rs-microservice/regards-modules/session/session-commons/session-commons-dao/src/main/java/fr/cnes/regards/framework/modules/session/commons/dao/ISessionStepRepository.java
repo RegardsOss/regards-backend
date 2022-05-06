@@ -19,12 +19,13 @@
 package fr.cnes.regards.framework.modules.session.commons.dao;
 
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import java.time.OffsetDateTime;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.time.OffsetDateTime;
+import java.util.Optional;
 
 /**
  * JPA Repository for {@link SessionStep}
@@ -62,9 +63,5 @@ public interface ISessionStepRepository extends JpaRepository<SessionStep, Long>
      * Return all names of sources and sessions associated to SessionSteps
      */
     Page<ISessionStepLight> findBy(Pageable pageToRequest);
-
-    // For tests
-    Page<SessionStep> findBySourceAndLastUpdateDateBefore(String source, OffsetDateTime freezeDate,
-            Pageable page);
 
 }

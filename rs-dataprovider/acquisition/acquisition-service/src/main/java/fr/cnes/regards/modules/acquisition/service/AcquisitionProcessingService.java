@@ -75,6 +75,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -918,10 +919,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate) {
         OffsetDateTime lmd;
         try {
-            // If new file to register date is exactly the same as the last scanning date, check if file is not already acquired.
-            lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
-            if (scanningDate.isPresent() && lmd.equals(scanningDate.get())
-                && acqFileRepository.findOneByFilePathInAndFileInfo(filePath, info).isPresent()) {
+            // If new file to register date <= last scanning date, check if file is not already acquired.
+            // truncate to microseconds because postgres timestamp has a resolution of 1 microsecond
+            lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+            if (scanningDate.isPresent() && (lmd.isBefore(scanningDate.get()) || lmd.isEqual(scanningDate.get()))
+                    && acqFileRepository.existsByFilePathInAndFileInfo(filePath, info)) {
                 return false;
             } else {
                 // Initialize new file

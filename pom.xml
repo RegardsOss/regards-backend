@@ -185,6 +185,8 @@
 		<!-- Test properties -->
 		<regards.maven.test.env>-Duser.timezone=GMT0</regards.maven.test.env>
 		<regards.cots.properties>LT.properties</regards.cots.properties>
+		<!-- FIXME temporary JVM options because jdk internals are inaccessible by reflection during gson serialization. See if gson fix this problem in a later version-->
+		<jvm.opens.packages>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED</jvm.opens.packages>
 
 		<!-- Test dependency versions -->
 		<org.assertj.version>3.22.0</org.assertj.version>
@@ -2440,7 +2442,7 @@
 					<configuration>
 						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when integration tests are run. -->
-						<argLine>${jacoco.agent.it.arg}</argLine>
+						<argLine>${jacoco.agent.it.arg} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
 						<!-- <reuseForks>false</reuseForks> -->
 						<properties>
 							<property>
@@ -2460,8 +2462,7 @@
 							</goals>
 							<configuration>
 								<!-- Sets the VM argument line used when integration tests are run. -->
-								<argLine>${jacoco.agent.it.arg}</argLine>
-								<argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+								<argLine>${jacoco.agent.it.arg} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
 							</configuration>
 						</execution>
 					</executions>
@@ -2526,7 +2527,8 @@
 					<configuration>
 						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when unit tests are run. -->
-						<argLine>${jacoco.agent.ut.arg} ${regards.maven.test.env}</argLine>
+						<argLine>${jacoco.agent.ut.arg} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
+
 						<properties>
 							<property>
 								<name>listener</name>

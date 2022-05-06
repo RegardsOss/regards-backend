@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapter to serialize/derialized list based on <a href="core/src/main/java/org/jclouds/json/internal/NullFilteringTypeAdapterFactories.java">org.jclouds.json.internal</a>
+ * Adapter to serialize/deserialize list based on project apache jclouds (json/internal/NullFilteringTypeAdapterFactories.java)
  *
  * @author Iliana Ghazali
  **/

@@ -82,6 +82,10 @@ public class PMonitoringReactiveControllerIT extends AbstractProcessingIT {
     @Autowired private IPProcessRepository processRepository;
 
     @Test public void executions() {
+
+        // reset db
+        execRepo.deleteAll().block();
+
         // GIVEN
         UUID processId = UUID.randomUUID();
         PProcess mockProcess = mock(PProcess.class);

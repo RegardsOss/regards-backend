@@ -21,7 +21,6 @@
 package fr.cnes.regards.modules.ingest.service.dump;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
 import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -63,7 +62,9 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));
 
-    private Path tmpZipLocation;
+    private static final Path TMP_ZIP_LOCATION = Paths.get("target/tmpZipLocation");
+
+    private static final Path TARGET_ZIP_LOCATION = Paths.get("target/dump");
 
     @Value("${regards.aip.dump.zip-limit}")
     private int zipLimit;
@@ -72,19 +73,12 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
     private IAIPMetadataService metadataService;
 
     @Autowired
-    private DumpSettingsService dumpSettingsService;
-
-    @Autowired
     private StorageClientMock storageClient;
 
-    @Override
-    public void doInit() throws EntityException {
-        // init conf
-        this.tmpZipLocation = Paths.get("target/tmpZipLocation");
-        DumpParameters dumpParameters = new DumpParameters().setActiveModule(true).setCronTrigger("* * * 1-7 * SUN").setDumpLocation("target/dump");
-        dumpSettingsService.setDumpParameters(dumpParameters);
-    }
+    @Autowired
+    private DumpSettingsService dumpSettingsService;
 
+    
     @Test
     @Purpose("Test creation of multiple zips between lastDumpReqDate and reqDumpDate")
     public void writeZipsTest() {
@@ -99,14 +93,14 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
 
         // Create zips
         try {
-            metadataService.writeZips(createSaveMetadataRequest(), this.tmpZipLocation);
+            metadataService.writeZips(createSaveMetadataRequest(), TMP_ZIP_LOCATION);
         } catch (Exception | NothingToDoException e) {
             LOGGER.error("Error occurred while generating of zips", e);
         }
 
         // CHECK RESULTS
         // Number of zips created
-        File[] zipFolder = this.tmpZipLocation.toFile().listFiles();
+        File[] zipFolder = TMP_ZIP_LOCATION.toFile().listFiles();
         int nbZipCreated = zipFolder.length;
         Assert.assertEquals("Unexpected number of created zips", (int) Math.ceil((double) nbAIPToDump / zipLimit),
                             nbZipCreated);
@@ -140,16 +134,16 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
         // Create dump
         AIPSaveMetadataRequest metadataRequest = createSaveMetadataRequest();
         try {
-            metadataService.writeZips(metadataRequest, this.tmpZipLocation);
+            metadataService.writeZips(metadataRequest, TMP_ZIP_LOCATION);
             metadataService
-                    .writeDump(metadataRequest, Paths.get(metadataRequest.getDumpLocation()), this.tmpZipLocation);
+                    .writeDump(metadataRequest, Paths.get(metadataRequest.getDumpLocation()), TMP_ZIP_LOCATION);
         } catch (NothingToDoException | IOException e) {
             LOGGER.error("Error occurred while dumping aips", e);
         }
 
         // CHECK RESULTS
         // Number of dump created
-        File[] dumpFolder = Paths.get(dumpSettingsService.getDumpParameters().getDumpLocation()).toFile().listFiles();
+        File[] dumpFolder = TARGET_ZIP_LOCATION.toFile().listFiles();
         Assert.assertEquals("Only one dump was expected" , 1, dumpFolder.length);
 
         // Number of zips in dump
@@ -163,8 +157,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
      */
     private AIPSaveMetadataRequest createSaveMetadataRequest() {
         // Create request
-        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate,
-                                                                                   dumpSettingsService.getDumpParameters().getDumpLocation());
+        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate, TARGET_ZIP_LOCATION.toString());
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         return aipSaveMetadataRequest;
     }
@@ -210,8 +203,8 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
     @Override
     protected void doAfter() throws IOException, EntityException {
         //clear dump location
-        FileUtils.deleteDirectory(Paths.get(dumpSettingsService.getDumpParameters().getDumpLocation()).toFile());
-        FileUtils.deleteDirectory(this.tmpZipLocation.toFile());
+        FileUtils.deleteDirectory(TARGET_ZIP_LOCATION.toFile());
+        FileUtils.deleteDirectory(TMP_ZIP_LOCATION.toFile());
         dumpSettingsService.resetSettings();
     }
 }

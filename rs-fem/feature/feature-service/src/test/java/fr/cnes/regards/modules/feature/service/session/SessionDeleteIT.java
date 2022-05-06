@@ -1,7 +1,5 @@
 package fr.cnes.regards.modules.feature.service.session;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
@@ -12,15 +10,11 @@ import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @TestPropertySource(
@@ -29,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 @ActiveProfiles(value = {"testAmqp", "noscheduler"})
 public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
 
+    private static final String SESSION_STEP = "feature";
     private static final String SOURCE1 = "SOURCE 1";
     private static final String SOURCE2 = "SOURCE 2";
     private static final String SESSION1 = "SESSION 1";

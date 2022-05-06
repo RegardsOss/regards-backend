@@ -23,6 +23,7 @@ import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.adapters.ClassAdapter;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
 import fr.cnes.regards.framework.microservice.manager.MicroserviceConfiguration;
 import fr.cnes.regards.framework.module.manager.*;
@@ -465,10 +466,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.expectValue("$.features[0].properties.acquisitionInformation[0].instrument.instrumentShortName",
                                "HRVIR2");
         customizer.expectValue("$.features[0].properties.PlatformName", "SPOT4");
-        customizer.expectValue("$.features[0].properties.creationDate",
-                               CREATION_DATE.withOffsetSameInstant(ZoneOffset.UTC)
-                                            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        customizer.expectValue("$.features[0].properties.updated", lastUpdateSpot4.toString());
+        customizer.expectValue("$.features[0].properties.creationDate", OffsetDateTimeAdapter.format(CREATION_DATE));
+        customizer.expectValue("$.features[0].properties.updated", OffsetDateTimeAdapter.format(lastUpdateSpot4));
         String thumbnailURL = "https://regards.cnes.fr/api/v1/rs-catalog/downloads/URN:AIP:DATA:swh:a4456e48-3e24-3c32-baea-093b1f63e85d:V1/files/19273a25e605bf83658c27890576b041?scope=swh";
         customizer.expectValue("$.features[0].properties.thumbnail", thumbnailURL);
         // There is no quicklook inside this product, so quicklook value is also thumbnailURL
@@ -505,8 +504,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
 
     @Test
     public void searchDataobjectsWithUpdatedFilter() {
-        searchDataobjectWithUpdatedFilter(lastUpdateSpot5.toString(), 148);
-        searchDataobjectWithUpdatedFilter(lastUpdateSpot4.toString(), 400);
+        searchDataobjectWithUpdatedFilter(OffsetDateTimeAdapter.format(lastUpdateSpot5), 148);
+        searchDataobjectWithUpdatedFilter(OffsetDateTimeAdapter.format(lastUpdateSpot4), 400);
     }
 
     private void searchDataobjectWithUpdatedFilter(String updated, int totalResults) {

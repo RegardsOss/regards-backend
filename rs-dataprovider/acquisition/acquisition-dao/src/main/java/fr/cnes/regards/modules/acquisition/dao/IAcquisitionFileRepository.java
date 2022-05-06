@@ -18,12 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,10 +31,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * {@link AcquisitionFile} repository
@@ -85,7 +82,7 @@ public interface IAcquisitionFileRepository
      */
     void deleteByProduct(Product product);
 
-    Optional<Object> findOneByFilePathInAndFileInfo(Path filePath, AcquisitionFileInfo info);
+    boolean existsByFilePathInAndFileInfo(Path filePath, AcquisitionFileInfo info);
 
     void deleteByFileInfoAndStateIn(AcquisitionFileInfo afi, AcquisitionFileState... states);
 

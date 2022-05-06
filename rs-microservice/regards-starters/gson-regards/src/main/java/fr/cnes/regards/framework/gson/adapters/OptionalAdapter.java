@@ -25,6 +25,11 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
+/**
+ * Adapter to serialize/deserialize java optional
+ *
+ * @author Iliana Ghazali
+ **/
 public class OptionalAdapter<T> implements JsonSerializer<Optional<T>>, JsonDeserializer<Optional<T>> {
 
     @Override

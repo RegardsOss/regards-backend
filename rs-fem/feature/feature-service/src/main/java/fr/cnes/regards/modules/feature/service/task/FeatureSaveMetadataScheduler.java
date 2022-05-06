@@ -19,21 +19,20 @@
 
 package fr.cnes.regards.modules.feature.service.task;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.modules.dump.service.scheduler.AbstractDumpScheduler;
 import fr.cnes.regards.modules.feature.service.dump.FeatureSaveMetadataService;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Scheduler to handle feature dumps
  * @author Iliana Ghazali
  */
+// should not put profile @Profile("!noscheduler") because {@link DumpSettings} need access to {@link AbstractDumpScheduler}
 @Component
 public class FeatureSaveMetadataScheduler extends AbstractDumpScheduler {
 

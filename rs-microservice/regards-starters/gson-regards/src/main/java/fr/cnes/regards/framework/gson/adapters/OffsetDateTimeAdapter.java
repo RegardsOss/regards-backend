@@ -31,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 
 /**
@@ -56,7 +57,8 @@ public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
      */
     @Override
     public void write(JsonWriter out, OffsetDateTime date) throws IOException {
-        out.value(date.atZoneSameInstant(ZoneOffset.UTC).format(ISO_DATE_TIME_UTC));
+        // truncate to a resolution of 1 microsecond
+        out.value(date.atZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS).format(ISO_DATE_TIME_UTC));
     }
 
     @Override
@@ -81,7 +83,8 @@ public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
     public static String format(OffsetDateTime date) {
         String formattedDate = null;
         if (date != null) {
-            formattedDate = ISO_DATE_TIME_UTC.format(date.withOffsetSameInstant(ZoneOffset.UTC));
+            // truncate to a resolution of 1 microsecond
+            formattedDate = ISO_DATE_TIME_UTC.format(date.withOffsetSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS));
         }
         return formattedDate;
     }

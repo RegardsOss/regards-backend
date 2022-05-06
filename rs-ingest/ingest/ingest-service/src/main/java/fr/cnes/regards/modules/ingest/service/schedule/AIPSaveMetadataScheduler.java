@@ -20,9 +20,6 @@ package fr.cnes.regards.modules.ingest.service.schedule;
 
 import fr.cnes.regards.framework.modules.dump.service.scheduler.AbstractDumpScheduler;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
-import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.AIP_SAVE_METADATA_REQUESTS;
-import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.AIP_SAVE_METADATA_REQUEST_LOCK;
-import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.AIP_SAVE_METADATA_TITLE;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -30,11 +27,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
+
 /**
  * Scheduler to handle aip dumps
  * @author Iliana Ghazali
  */
-// should not put profile @Profile("!noscheduler") because scheduler is required in IngestConfigurationManager
+// should not put profile @Profile("!noscheduler") because {@link DumpSettings} need access to {@link AbstractDumpScheduler}
 @Component
 public class AIPSaveMetadataScheduler extends AbstractDumpScheduler {
 
