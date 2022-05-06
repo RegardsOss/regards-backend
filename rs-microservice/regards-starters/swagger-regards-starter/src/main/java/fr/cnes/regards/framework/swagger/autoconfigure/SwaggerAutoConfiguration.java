@@ -20,6 +20,9 @@ package fr.cnes.regards.framework.swagger.autoconfigure;
 
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
+import fr.cnes.regards.framework.swagger.autoconfigure.override.ModelResolverCustom;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -85,6 +88,7 @@ public class SwaggerAutoConfiguration {
 
     @Bean
     public OpenAPI customOpenAPI(@Value("${springdoc.version}") String appVersion) {
+        overrideSwaggerSchemaConverter();
         return new OpenAPI()
                 .components(new Components().addSecuritySchemes(AUTHENTICATION_KEY, new SecurityScheme()
                         .type(SecurityScheme.Type.OAUTH2)
@@ -95,6 +99,22 @@ public class SwaggerAutoConfiguration {
                 .info(new Info().title(properties.getApiTitle()).version(properties.getApiVersion())
                         .description(properties.getApiDescription())
                         .license(new License().name(properties.getApiLicense())));
+    }
+
+    /**
+     * Hack to change swagger schema model converter in order to avoid use of Jackson annotations.
+     * This hack is needed until REGARDS use jackson instead of Gson.<br/>
+     * <br/>
+     * This hack allows for example to ignore JsonUnwrapped jackson annotation in hateoas EntiytModel
+     * domain when creating open api schema. With the default ModelResolver of swagger lin the
+     * "content" section is not generated and content is unwrapped on the root object.
+     *
+     * @see <a href="https://stackoverflow.com/questions/72116316/openapi-scheme-generated-does-not-contains-content-of-entitymodel-spring-hateo">
+     *     swagger not compatible with gson
+     *     </a>
+     */
+    private void overrideSwaggerSchemaConverter() {
+        ModelConverters.getInstance().addConverter(new ModelResolverCustom(Json.mapper()) );
     }
 
     private Scopes getScopes() {

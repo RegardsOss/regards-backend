@@ -67,6 +67,7 @@
 		<!-- spring -->
 		<spring-cloud-dependencies.version>2021.0.1</spring-cloud-dependencies.version>
 		<springdoc-openapi.version>1.6.6</springdoc-openapi.version>
+		<org.springdoc.springdoc-openapi-hateoas.version>1.6.8</org.springdoc.springdoc-openapi-hateoas.version>
 		<com.icegreen.greenmail-spring.version>1.6.6</com.icegreen.greenmail-spring.version>
 		<!-- Take a version that retrieve a version of Hibernate that correctly
                 manage uk naming while inheriting classes with JOINED strategy -->
@@ -83,8 +84,8 @@
 		<org.hibernate.javax.persistence.version>1.0.2.Final</org.hibernate.javax.persistence.version>
 
 		<!-- Swagger -->
-		<org.springdoc.springdoc-openapi-ui.version>1.6.6</org.springdoc.springdoc-openapi-ui.version>
-		<io.swagger.core.v3.swagger-core.version>2.1.12</io.swagger.core.v3.swagger-core.version>
+		<org.springdoc.springdoc-openapi-ui.version>1.6.8</org.springdoc.springdoc-openapi-ui.version>
+		<io.swagger.core.v3.swagger-core.version>2.2.0</io.swagger.core.v3.swagger-core.version>
 
 		<!-- hsqldb is into spring-boot dependencies with version 2.4.1, but some dao use it without spring-boot -->
 		<hsqldb.hsqldb.version>2.4.1</hsqldb.hsqldb.version>
@@ -1805,6 +1806,11 @@
 				<groupId>org.springdoc</groupId>
 				<artifactId>springdoc-openapi-ui</artifactId>
 				<version>${org.springdoc.springdoc-openapi-ui.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-hateoas</artifactId>
+				<version>${org.springdoc.springdoc-openapi-hateoas.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.swagger.core.v3</groupId>
