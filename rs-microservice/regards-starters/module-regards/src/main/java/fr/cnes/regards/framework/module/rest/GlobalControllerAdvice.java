@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.WebUtils;
@@ -52,7 +54,7 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  *
  * Following generic exception can be used to manage business work flow. If no exception fits your need, create your own
  * extending {@link ModuleException} and add a {@link RestControllerAdvice} in your rest layer handling this specific
- * exception. Be careful to set an {@link Order} with highest precedence.<br/>
+ * exception. Be careful to set an {@link Order} with the highest precedence.<br/>
  *
  * <br/>
  * To handle {@link HttpStatus#BAD_REQUEST} (400), you may throw :
@@ -120,7 +122,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
         ServerErrorResponse responseBody = new ServerErrorResponse(ex.getMessage(), ex);
 
         if (HttpStatus.INTERNAL_SERVER_ERROR.equals(status)) {
-            request.setAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE, ex, WebRequest.SCOPE_REQUEST);
+            request.setAttribute(WebUtils.ERROR_EXCEPTION_ATTRIBUTE, ex, RequestAttributes.SCOPE_REQUEST);
         }
         return new ResponseEntity<>(responseBody, headers, status);
     }
@@ -270,6 +272,12 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<ServerErrorResponse> hibernateValidation(final ValidationException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(new ServerErrorResponse(exception.getMessage(), exception));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ServerErrorResponse> handleDataIntegrityViolation(final DataIntegrityViolationException exception) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                             .body(new ServerErrorResponse(exception.getCause().getCause().getMessage(), exception));
     }
 
     /**

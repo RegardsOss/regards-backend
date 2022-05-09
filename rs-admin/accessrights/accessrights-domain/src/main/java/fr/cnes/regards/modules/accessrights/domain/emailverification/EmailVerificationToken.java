@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.accessrights.domain.emailverification;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -69,14 +70,16 @@ public class EmailVerificationToken {
      * The origin url
      */
     @NotBlank
-    @Column(name = "origin_url", length = 255)
+    @Column(name = "origin_url")
+    @Type(type = "text")
     private String originUrl;
 
     /**
      * The request link
      */
     @NotBlank
-    @Column(name = "request_link", length = 255)
+    @Column(name = "request_link")
+    @Type(type = "text")
     private String requestLink;
 
     /**
