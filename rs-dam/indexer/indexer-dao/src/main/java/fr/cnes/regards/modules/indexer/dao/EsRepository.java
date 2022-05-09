@@ -92,6 +92,8 @@ import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
 import org.elasticsearch.client.RequestOptions.Builder;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
@@ -1416,10 +1418,10 @@ public class EsRepository implements IEsRepository {
     public <T extends IIndexable> Long count(SearchKey<?, T> searchKey, ICriterion criterion) {
         try {
             SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(criterion, searchKey.getSearchTypes()));
-            SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).source(builder);
+            CountRequest request = new CountRequest(searchKey.getSearchIndex()).source(builder);
             // Launch the request
-            SearchResponse response = getSearchResponse(request);
-            return response.getHits().getTotalHits().value;
+            CountResponse response = client.count(request, RequestOptions.DEFAULT);
+            return response.getCount();
         } catch (IOException e) {
             throw new RsRuntimeException(e);
         }
