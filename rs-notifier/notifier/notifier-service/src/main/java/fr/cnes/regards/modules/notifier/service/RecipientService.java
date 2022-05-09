@@ -24,8 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
-import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
-import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,24 +51,16 @@ public class RecipientService implements IRecipientService {
 
     private final IPluginService pluginService;
 
-    private final IRuleRepository ruleRepository;
-
     private final IRecipientErrorRepository recipientErrorRepository;
 
     private final NotificationProcessingService notificationProcessingService;
 
-    private final RuleCache ruleCache;
-
     public RecipientService(IPluginService pluginService,
-                            IRuleRepository ruleRepository,
                             IRecipientErrorRepository recipientErrorRepository,
-                            NotificationProcessingService notificationProcessingService,
-                            RuleCache ruleCache) {
+                            NotificationProcessingService notificationProcessingService) {
         this.pluginService = pluginService;
-        this.ruleRepository = ruleRepository;
         this.recipientErrorRepository = recipientErrorRepository;
         this.notificationProcessingService = notificationProcessingService;
-        this.ruleCache = ruleCache;
     }
 
     @Override
@@ -113,21 +103,12 @@ public class RecipientService implements IRecipientService {
     }
 
     private PluginConfiguration update(PluginConfiguration newRecipient) throws ModuleException {
-        ruleCache.clear();
         return pluginService.updatePluginConfiguration(newRecipient);
     }
 
     @Override
     public void delete(String fromId) throws ModuleException {
-        for (Rule rule : ruleRepository.findByRecipientsBusinessId(fromId)) {
-            // Remove  recipient to delete
-            rule.setRecipients(rule.getRecipients()
-                                   .stream()
-                                   .filter(c -> !c.getBusinessId().equals(fromId))
-                                   .collect(Collectors.toSet()));
-        }
         doDelete(fromId);
-        ruleCache.clear();
     }
 
     @Override
@@ -143,7 +124,6 @@ public class RecipientService implements IRecipientService {
         for (String businessId : pluginToDelete) {
             doDelete(businessId);
         }
-        ruleCache.clear();
     }
 
     private void doDelete(String businessId) throws ModuleException {

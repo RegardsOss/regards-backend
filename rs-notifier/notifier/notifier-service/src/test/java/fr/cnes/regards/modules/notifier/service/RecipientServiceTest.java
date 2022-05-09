@@ -21,11 +21,8 @@ package fr.cnes.regards.modules.notifier.service;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
-import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
-import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
 import fr.cnes.regards.modules.notifier.mock.InMemoryPluginService;
-import fr.cnes.regards.modules.notifier.mock.InMemoryRuleRepoBuilder;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
@@ -51,18 +48,12 @@ public class RecipientServiceTest {
 
     private final IRecipientErrorRepository recipientErrors;
 
-    private final IRuleRepository ruleRepo;
-
-    private final RuleCache ruleCache;
-
     private final IRecipientService recipientService;
 
     public RecipientServiceTest() {
-        ruleCache = mock(RuleCache.class);
         recipientErrors = mock(IRecipientErrorRepository.class);
         pluginService = new InMemoryPluginService();
-        ruleRepo = new InMemoryRuleRepoBuilder().get();
-        recipientService = new RecipientService(pluginService, ruleRepo, recipientErrors, null, ruleCache);
+        recipientService = new RecipientService(pluginService, recipientErrors, null);
     }
 
     @Test
@@ -87,19 +78,6 @@ public class RecipientServiceTest {
 
         Set<PluginConfiguration> recipients = recipientService.getRecipients(Collections.singleton(RECIPIENT_1));
         assertThat(recipients).hasSize(1).map(PluginConfiguration::getVersion).containsExactly("2");
-    }
-
-    @Test
-    public void update_recipient_clear_rule_cache() throws Exception {
-        PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-        recipientService.createOrUpdate(firstRecipient);
-
-        PluginConfiguration updatedRecipient = aRecipient(RECIPIENT_1);
-        updatedRecipient.setId(1L);
-        updatedRecipient.setVersion("2");
-        recipientService.createOrUpdate(updatedRecipient);
-
-        verify(ruleCache).clear();
     }
 
     @Test
@@ -140,7 +118,6 @@ public class RecipientServiceTest {
                   .isThrownBy(() -> pluginService.getPluginConfiguration(RECIPIENT_1));
         Assertions.assertThatExceptionOfType(EntityNotFoundException.class)
                   .isThrownBy(() -> pluginService.getPluginConfiguration(RECIPIENT_2));
-
     }
 
     @Test
@@ -154,16 +131,6 @@ public class RecipientServiceTest {
 
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_1);
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_2);
-    }
-
-    @Test
-    public void delete_all_recipients_clear_rule_cache() throws Exception {
-        PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-        recipientService.createOrUpdate(firstRecipient);
-
-        recipientService.deleteAll();
-
-        verify(ruleCache).clear();
     }
 
     @Test
@@ -190,40 +157,7 @@ public class RecipientServiceTest {
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_1);
     }
 
-    @Test
-    public void delete_recipient_clear_rule_cache() throws Exception {
-        PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-        recipientService.createOrUpdate(firstRecipient);
-
-        recipientService.delete(RECIPIENT_1);
-
-        verify(ruleCache).clear();
-    }
-
-    @Test
-    public void delete_recipient_remove_recipient_from_rules() throws Exception {
-        PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
-        PluginConfiguration secondRecipient = aRecipient(RECIPIENT_2);
-        Rule aRule = aRule(Arrays.asList(firstRecipient, secondRecipient));
-        ruleRepo.save(aRule);
-        recipientService.createOrUpdate(firstRecipient);
-        recipientService.createOrUpdate(secondRecipient);
-
-        recipientService.delete(RECIPIENT_1);
-
-        assertThat(ruleRepo.findAll()).hasSize(1).flatExtracting("recipients").hasSize(1).contains(secondRecipient);
-    }
-
     private PluginConfiguration aRecipient(String withName) {
         return aPlugin().identified(withName).named(withName).withPluginId(RecipientSender3.PLUGIN_ID).build();
     }
-
-    private Rule aRule(List<PluginConfiguration> withRecipients) {
-        PluginConfiguration ruleConf = aPlugin().identified("rule1")
-                                                .named("rule1")
-                                                .withPluginId("DefaultRuleMatcher")
-                                                .build();
-        return Rule.build(ruleConf, withRecipients);
-    }
-
 }

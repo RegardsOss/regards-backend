@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
+import fr.cnes.regards.modules.notifier.service.IRuleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -65,6 +66,9 @@ public class RecipientController implements IResourceController<PluginConfigurat
 
     @Autowired
     private IResourceService resourceService;
+
+    @Autowired
+    private IRuleService ruleService;
 
     /**
      * Get all {@link PluginConfiguration}(recipient) from database the result will be paginated
@@ -114,7 +118,9 @@ public class RecipientController implements IResourceController<PluginConfigurat
         @Parameter(description = "Recipient to update") @Valid @RequestBody PluginConfiguration toUpdate)
         throws ModuleException {
         Assert.notNull(toUpdate.getId(), "Its a validation id must not be null!");
-        return ResponseEntity.ok(toResource(recipientService.createOrUpdate(toUpdate)));
+        PluginConfiguration updatedRecipient = recipientService.createOrUpdate(toUpdate);
+        ruleService.recipientUpdated(updatedRecipient.getBusinessId());
+        return ResponseEntity.ok(toResource(updatedRecipient));
     }
 
     /**
@@ -127,6 +133,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
     public ResponseEntity<Void> deleteRecipient(
         @Parameter(description = "Recipient to delete id") @PathVariable("businessId") String businessId)
         throws ModuleException {
+        ruleService.recipientDeleted(businessId);
         recipientService.delete(businessId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

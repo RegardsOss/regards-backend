@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.rest.RecipientController;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
+import fr.cnes.regards.modules.notifier.service.IRuleService;
 import junit.framework.AssertionFailedError;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -53,6 +54,8 @@ public class RecipientControllerTest {
 
     private final RecipientController recipientController;
 
+    private final IRuleService ruleService;
+
     private List<PluginConfiguration> allRecipients;
 
     private ResponseEntity<EntityModel<PluginConfiguration>> creationResponse;
@@ -66,10 +69,12 @@ public class RecipientControllerTest {
     public RecipientControllerTest() {
         resourceService = mockResourceService();
         recipientService = mockRecipientService();
+        ruleService = mock(IRuleService.class);
 
         recipientController = new RecipientController();
         ReflectionTestUtils.setField(recipientController, "resourceService", resourceService);
         ReflectionTestUtils.setField(recipientController, "recipientService", recipientService);
+        ReflectionTestUtils.setField(recipientController, "ruleService", ruleService);
     }
 
     private IResourceService mockResourceService() {
@@ -215,6 +220,16 @@ public class RecipientControllerTest {
     }
 
     @Test
+    public void update_ask_for_rule_update() throws Exception {
+        PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
+        firstRecipient.setId(1L);
+
+        recipientController.updateRecipient(firstRecipient);
+
+        verify(ruleService).recipientUpdated(RECIPIENT_1);
+    }
+
+    @Test
     public void delete_fails_if_deletion_fails() throws Exception {
         raiseException(recipientService);
 
@@ -237,6 +252,16 @@ public class RecipientControllerTest {
         recipientController.deleteRecipient(RECIPIENT_1);
 
         assertThat(recipientController.getRecipients(null, null).getBody()).isEmpty();
+    }
+
+    @Test
+    public void delete_ask_for_rule_update() throws Exception {
+        PluginConfiguration firstRecipient = aRecipient(RECIPIENT_1);
+        recipientController.createRecipient(firstRecipient);
+
+        recipientController.deleteRecipient(RECIPIENT_1);
+
+        verify(ruleService).recipientDeleted(RECIPIENT_1);
     }
 
     private PluginConfiguration aRecipient(String withName) {

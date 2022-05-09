@@ -62,4 +62,20 @@ public interface IRuleService {
      * @return plugin business ids to delete
      */
     void deleteAll() throws ModuleException;
+
+    /**
+     * A recipient has just been updated.
+     * Update cache in consequence.
+     *
+     * @param recipientId business id of the delete recipent.
+     */
+    void recipientUpdated(String recipientId);
+
+    /**
+     * A recipient has just been deleted.
+     * Remove it from rules.
+     *
+     * @param recipientId business id of the delete recipent.
+     */
+    void recipientDeleted(String recipientId);
 }

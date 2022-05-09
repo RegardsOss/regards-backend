@@ -101,11 +101,26 @@ public class RuleService implements IRuleService {
         PluginConfiguration newPlugin = pluginService.updatePluginConfiguration(newRule.getRulePluginConfiguration());
         Set<PluginConfiguration> newRecipients = recipientService.getRecipients(newRule.getRecipientsBusinessIds());
 
-        ruleCache.clear();
+        clearCache();
 
         Rule toSave = Rule.build(newPlugin, newRecipients);
         toSave.setId(current.getId());
         return toRuleDTO(ruleRepo.save(toSave));
+    }
+
+    @Override
+    public void recipientUpdated(String recipientId) {
+        clearCache();
+    }
+
+    @Override
+    public void recipientDeleted(String recipientId) {
+        for (Rule rule : ruleRepo.findByRecipientsBusinessId(recipientId)) {
+            //TODO maybe better to use update method
+            rule.getRecipients().removeIf(c -> c.getBusinessId().equals(recipientId));
+            ruleRepo.save(rule);
+        }
+        clearCache();
     }
 
     @Override
@@ -114,7 +129,7 @@ public class RuleService implements IRuleService {
         // It is done in deleteAll
         ruleRepo.deleteByRulePluginBusinessId(fromId);
         pluginService.deletePluginConfiguration(fromId);
-        ruleCache.clear();
+        clearCache();
     }
 
     @Override
@@ -129,6 +144,10 @@ public class RuleService implements IRuleService {
         for (String businessId : businessIdToDelete) {
             pluginService.deletePluginConfiguration(businessId);
         }
+        clearCache();
+    }
+
+    private void clearCache() {
         ruleCache.clear();
     }
 

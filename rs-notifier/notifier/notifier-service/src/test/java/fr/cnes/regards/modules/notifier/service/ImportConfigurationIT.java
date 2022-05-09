@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=rules", "regards.amqp.enabled=false",
     "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" })
-public class ImportConfigurationIT extends AbstractNotificationMultitenantServiceTest {
+public class ImportConfigurationIT extends AbstractNotificationMultitenantServiceIT {
 
     public static final String RECIPIENT_1 = "recipient1";
 

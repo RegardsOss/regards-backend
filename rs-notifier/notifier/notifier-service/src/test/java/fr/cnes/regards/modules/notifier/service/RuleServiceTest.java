@@ -272,6 +272,47 @@ public class RuleServiceTest {
         verify(ruleCache).clear();
     }
 
+    @Test
+    public void recipientDeleted_remove_recipient_from_rules() throws Exception {
+        PluginConfiguration firstRule = aRule(RULE_1);
+        List<String> firstRecipients = Arrays.asList(RECIPIENT_1, RECIPIENT_2);
+        ruleService.createOrUpdate(RuleDTO.build(firstRule, firstRecipients));
+        PluginConfiguration secondRule = aRule(RULE_2);
+        List<String> secondRecipients = Collections.singletonList(RECIPIENT_1);
+        ruleService.createOrUpdate(RuleDTO.build(secondRule, secondRecipients));
+
+        ruleService.recipientDeleted(RECIPIENT_1);
+
+        Optional<RuleDTO> actualRule1 = ruleService.getRule(RULE_1);
+        assertThat(actualRule1).isPresent();
+        assertThat(actualRule1.get().getRecipientsBusinessIds()).hasSize(1).contains(RECIPIENT_2);
+        Optional<RuleDTO> actualRule2 = ruleService.getRule(RULE_2);
+        assertThat(actualRule2).isPresent();
+        assertThat(actualRule2.get().getRecipientsBusinessIds()).isEmpty();
+    }
+
+    @Test
+    public void recipientDeleted_clear_rule_cache() throws Exception {
+        PluginConfiguration firstRule = aRule(RULE_1);
+        List<String> firstRecipients = Arrays.asList(RECIPIENT_1, RECIPIENT_2);
+        ruleService.createOrUpdate(RuleDTO.build(firstRule, firstRecipients));
+
+        ruleService.recipientDeleted(RECIPIENT_1);
+
+        verify(ruleCache).clear();
+    }
+
+    @Test
+    public void recipientUpdated_clear_cache() throws Exception {
+        PluginConfiguration firstRule = aRule(RULE_1);
+        List<String> firstRecipients = Arrays.asList(RECIPIENT_1, RECIPIENT_2);
+        ruleService.createOrUpdate(RuleDTO.build(firstRule, firstRecipients));
+
+        ruleService.recipientDeleted(RECIPIENT_1);
+
+        verify(ruleCache).clear();
+    }
+
     private PluginConfiguration aRule(String withName) {
         return aPlugin().identified(withName)
                         .named(withName)
