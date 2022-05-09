@@ -57,7 +57,11 @@
 			<groupId>fr.cnes.regards.modules.model</groupId>
 			<artifactId>model-domain</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>notification-regards-starter</artifactId>
+		</dependency>
+
 		<dependency>
 			<scope>test</scope>
 	   		<groupId>commons-io</groupId>
@@ -68,5 +72,5 @@
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>
