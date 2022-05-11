@@ -6,7 +6,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import org.awaitility.Awaitility;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
         properties = {"spring.jpa.properties.hibernate.default_schema=feature_session_delete", "regards.amqp.enabled=true"},
         locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
 @ActiveProfiles(value = {"testAmqp", "noscheduler"})
-public class SessionDeleteIT extends AbstractFeatureMultitenantServiceTest {
+public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
 
     private static final String SOURCE1 = "SOURCE 1";
     private static final String SOURCE2 = "SOURCE 2";

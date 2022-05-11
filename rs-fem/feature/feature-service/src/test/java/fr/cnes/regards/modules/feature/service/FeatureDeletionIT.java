@@ -74,7 +74,7 @@ import static org.junit.Assert.*;
         locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties",})
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;

@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.modules.session.manager.domain.AggregationState
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
-import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
+import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsIT;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanService;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -51,7 +51,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
         "regards.session.manager.clean.session.limit.store=30" })
 @ActiveProfiles({ "noscheduler" })
-public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsTest {
+public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
     
     private static OffsetDateTime UPDATE_DATE;
     

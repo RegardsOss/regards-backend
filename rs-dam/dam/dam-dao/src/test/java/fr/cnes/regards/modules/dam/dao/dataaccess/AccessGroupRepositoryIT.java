@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.dao.dataaccess;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,7 +31,7 @@ import org.springframework.test.context.TestPropertySource;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_dao" })
-public class AccessGroupRepositoryIT extends AbstractDaoTransactionalTest {
+public class AccessGroupRepositoryIT extends AbstractDaoTransactionalIT {
 
     private static final String AG1_NAME = "AG1";
 

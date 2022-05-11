@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 
 /**
@@ -76,7 +76,7 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
         "spring.jpa.show-sql=false",
         "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp" , "noscheduler"})
-public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
+public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 

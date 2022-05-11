@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.apache.commons.io.FileUtils;
@@ -58,7 +58,7 @@ import java.util.concurrent.ExecutionException;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_savemetadata_job_it",
         "regards.amqp.enabled=true" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
-public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
+public class AIPSaveMetadataJobIT extends IngestMultitenantServiceIT {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 

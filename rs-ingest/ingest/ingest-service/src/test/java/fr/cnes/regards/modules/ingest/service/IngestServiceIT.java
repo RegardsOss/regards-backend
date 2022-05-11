@@ -70,7 +70,7 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest",
         "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
-public class IngestServiceIT extends IngestMultitenantServiceTest {
+public class IngestServiceIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceIT.class);

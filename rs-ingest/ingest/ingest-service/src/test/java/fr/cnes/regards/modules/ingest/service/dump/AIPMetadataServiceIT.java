@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -59,7 +59,7 @@ import java.util.zip.ZipFile;
         "regards.amqp.enabled=true", "regards.aip.dump.zip-limit = 3" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
-public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
+public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));
 

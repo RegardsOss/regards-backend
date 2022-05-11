@@ -56,7 +56,7 @@ import java.util.UUID;
 @ActiveProfiles(value = { "testAmqp" })
 // Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureGeodeIT.class);
 

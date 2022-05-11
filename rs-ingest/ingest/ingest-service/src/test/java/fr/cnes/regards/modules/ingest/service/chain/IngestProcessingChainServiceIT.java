@@ -33,14 +33,14 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=ingestchain", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
-public class IngestProcessingChainServiceIT extends IngestMultitenantServiceTest {
+public class IngestProcessingChainServiceIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private IIngestProcessingChainService ingestProcessingService;

@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.workermanager.service.requests;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
+import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
+import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
+import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsIT;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -32,12 +35,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
-import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
-import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
-import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsTest;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * @author Théo Lasserre
@@ -45,7 +44,7 @@ import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManager
 @ContextConfiguration(classes = { RequestServiceIT.Config.class })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=request_service_it" })
-public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsTest {
+public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
     @Configuration
     public static class Config {

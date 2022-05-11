@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
+import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsIT;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanJob;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanScheduler;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotJob;
@@ -52,7 +52,7 @@ import org.springframework.test.context.TestPropertySource;
         "regards.session.manager.clean.session.limit.store=30", "regards.session.management.snapshot.process"
         + ".scheduler.bulk.initial.delay=10000000" })
 @ActiveProfiles({ "testAMQP" })
-public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsTest {
+public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsIT {
 
     /**
      * Reference date for tests

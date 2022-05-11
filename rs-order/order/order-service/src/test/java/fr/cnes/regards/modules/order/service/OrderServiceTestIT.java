@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -76,7 +76,7 @@ import static org.mockito.ArgumentMatchers.any;
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true"})
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
+public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
 

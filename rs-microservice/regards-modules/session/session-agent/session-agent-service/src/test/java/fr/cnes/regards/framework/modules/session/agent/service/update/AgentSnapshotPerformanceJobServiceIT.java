@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
+import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsIT;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -46,7 +46,7 @@ import org.springframework.test.context.TestPropertySource;
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_performance_it" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
-public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUtilsTest {
+public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUtilsIT {
 
     /**
      * Tested service

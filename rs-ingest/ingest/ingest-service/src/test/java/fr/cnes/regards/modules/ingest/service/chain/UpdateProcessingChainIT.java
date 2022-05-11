@@ -36,7 +36,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
                 "regards.workspace=target/workspace", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
 @ContextConfiguration(classes = { UpdateProcessingChainIT.IngestConfiguration.class })
-public class UpdateProcessingChainIT extends AbstractDaoTest {
+public class UpdateProcessingChainIT extends AbstractDaoIT {
 
     private static final String CHAIN_NAME = "ipst_Chain1";
 

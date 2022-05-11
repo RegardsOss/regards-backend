@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.storage.client.RequestInfo;
                 "regards.amqp.enabled=true" },
         locations = { "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
-public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
+public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(DuplicatedFeatureIT.class);

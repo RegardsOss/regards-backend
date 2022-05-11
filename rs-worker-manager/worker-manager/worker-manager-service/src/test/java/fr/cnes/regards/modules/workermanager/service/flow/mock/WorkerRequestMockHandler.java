@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.workermanager.service.flow.mock;
 
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
-import fr.cnes.regards.modules.workermanager.service.flow.AbstractWorkerManagerTest;
+import fr.cnes.regards.modules.workermanager.service.flow.AbstractWorkerManagerIT;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -29,7 +29,7 @@ import java.util.Optional;
 @Component
 public class WorkerRequestMockHandler extends AbstractEventMockHandler<WorkerRequestEvent> {
 
-    public static final String WORKER_TYPE = AbstractWorkerManagerTest.DEFAULT_WORKER;
+    public static final String WORKER_TYPE = AbstractWorkerManagerIT.DEFAULT_WORKER;
 
     protected WorkerRequestMockHandler(RequestService requestService) {
         super(WorkerRequestEvent.class, WORKER_TYPE, requestService);

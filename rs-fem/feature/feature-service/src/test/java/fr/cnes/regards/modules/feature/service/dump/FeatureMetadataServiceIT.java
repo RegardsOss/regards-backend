@@ -53,7 +53,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 
 /**
  * Test for {@link FeatureMetadataService}
@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantService
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_metadata_service_it",
         "regards.amqp.enabled=true", "regards.feature.dump.zip-limit = 3" })
 @ActiveProfiles(value = { "noFemHandler", "noscheduler" })
-public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceIT {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));
 

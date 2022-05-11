@@ -32,7 +32,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.notification.domain.NotificationStatus;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:notif_dao" })
 @ContextConfiguration(classes = { NotificationDaoTestConfig.class })
-public class NotificationDaoIT extends AbstractDaoTransactionalTest {
+public class NotificationDaoIT extends AbstractDaoTransactionalIT {
 
     @Autowired
     private INotificationRepository notificationRepository;

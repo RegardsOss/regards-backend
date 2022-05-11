@@ -87,7 +87,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 "regards.notifier.max.bulk.size=20"
         })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
-public class NotificationServiceIT extends AbstractNotificationMultitenantServiceTest {
+public class NotificationServiceIT extends AbstractNotificationMultitenantServiceIT {
 
     private static final String RECIPIENT_R1_1_LABEL = "recipientR1_1";
 

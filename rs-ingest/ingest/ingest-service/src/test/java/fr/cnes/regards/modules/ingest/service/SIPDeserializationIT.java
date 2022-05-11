@@ -39,7 +39,7 @@
  */
 
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.io.IOException;
@@ -61,7 +61,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=sip_deserialization_it", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
-public class SIPDeserializationIT extends AbstractMultitenantServiceTest {
+public class SIPDeserializationIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     private Gson gson;

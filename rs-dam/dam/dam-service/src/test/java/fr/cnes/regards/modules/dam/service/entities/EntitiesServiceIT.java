@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.model.service.IModelService;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=entities",
         "regards.dam.post.aip.entities.to.storage=false" }, locations = "classpath:es.properties")
 @MultitenantTransactional
-public class EntitiesServiceIT extends AbstractMultitenantServiceTest {
+public class EntitiesServiceIT extends AbstractMultitenantServiceIT {
 
     private static final String datasetModelFileName = "datasetModel.xml";
 

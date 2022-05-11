@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
-import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
+import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -46,7 +46,7 @@ import org.springframework.test.context.TestPropertySource;
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_performance_it"})
 @ActiveProfiles({ "testAmqp", "noscheduler" })
-public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServiceUtilsTest {
+public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServiceUtilsIT {
 
     /**
      * Tested service

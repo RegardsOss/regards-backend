@@ -83,7 +83,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
                 "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private IFeatureUpdateService featureUpdateService;

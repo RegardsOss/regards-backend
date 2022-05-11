@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
-import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsTest;
+import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsIT;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ import java.util.Set;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_config_service" })
-public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsTest {
+public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
     @Autowired
     private WorkerConfigService workerConfigService;

@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @Ignore("Perf test in local")
-public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTest {
+public class NotificationPerfIT extends AbstractNotificationMultitenantServiceIT {
 
     @Test
     public void testRegistrationAndProcessing()

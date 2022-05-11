@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.notification.service;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDTO;
@@ -52,7 +52,7 @@ import java.util.List;
 @ActiveProfiles({ "test", "nomail" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notif_tests",
         "regards.accounts.root.user.login:test@test.fr", "purge.cron.expression=0 0 5 * * ?" })
-public class NotificationServiceIT extends AbstractMultitenantServiceTest {
+public class NotificationServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     private NotificationService notificationService;

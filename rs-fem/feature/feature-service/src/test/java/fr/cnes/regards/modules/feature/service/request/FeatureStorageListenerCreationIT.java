@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
@@ -70,7 +70,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp" })
-public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private IFeatureCreationRequestRepository fcrRepo;

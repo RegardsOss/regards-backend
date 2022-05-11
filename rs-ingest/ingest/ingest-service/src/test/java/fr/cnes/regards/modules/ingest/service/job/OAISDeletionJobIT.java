@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
@@ -66,9 +66,9 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
         "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
-public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
+public class OAISDeletionJobIT extends IngestMultitenantServiceIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestMultitenantServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestMultitenantServiceIT.class);
 
     @Autowired
     private StorageClientMock storageClient;

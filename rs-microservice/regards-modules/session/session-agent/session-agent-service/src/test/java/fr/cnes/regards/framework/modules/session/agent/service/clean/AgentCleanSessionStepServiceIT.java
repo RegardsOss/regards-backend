@@ -22,20 +22,21 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
-import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
+import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsIT;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepService;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test for {@link AgentCleanSessionStepService}
@@ -45,7 +46,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_service_it",
         "regards.session-agent.limit.store.session-steps=30"})
 @ActiveProfiles({ "noscheduler" })
-public class AgentCleanSessionStepServiceIT extends AbstractAgentServiceUtilsTest {
+public class AgentCleanSessionStepServiceIT extends AbstractAgentServiceUtilsIT {
 
     private static OffsetDateTime CREATION_DATE;
 

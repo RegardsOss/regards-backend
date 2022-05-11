@@ -84,7 +84,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false",
                        "regards.ingest.aip.delete.bulk.delay=100" })
-public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
+public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestProcessingJobIT.class);

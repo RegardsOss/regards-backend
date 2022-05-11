@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.FeatureDeletionService;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
         "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
         "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "noscheduler", "noFemHandler" })
-public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private FeatureRequestService requestService;

@@ -75,7 +75,7 @@ import static org.junit.Assert.assertEquals;
                 "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private IFeatureNotificationService notificationService;

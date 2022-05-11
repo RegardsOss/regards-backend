@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,7 +50,7 @@ import org.springframework.test.context.TestPropertySource;
         "regards.amqp.enabled=true", "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
-public class SessionDeleteIT extends IngestMultitenantServiceTest {
+public class SessionDeleteIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private IPublisher publisher;

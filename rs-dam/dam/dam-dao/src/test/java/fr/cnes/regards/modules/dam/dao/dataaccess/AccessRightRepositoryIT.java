@@ -29,7 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.model.domain.Model;
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_ar_dao" })
-public class AccessRightRepositoryIT extends AbstractDaoTransactionalTest {
+public class AccessRightRepositoryIT extends AbstractDaoTransactionalIT {
 
     @Autowired
     private IAccessRightRepository repo;

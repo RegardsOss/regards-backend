@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
 import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,7 +48,7 @@ import java.util.concurrent.ScheduledFuture;
         properties = { "spring.jpa.properties.hibernate.default_schema=dump_manager_it" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = {"noscheduler"})
-public class AIPDumpSchedulerIT extends IngestMultitenantServiceTest {
+public class AIPDumpSchedulerIT extends IngestMultitenantServiceIT {
 
     private String tenant;
 

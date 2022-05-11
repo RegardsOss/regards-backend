@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
@@ -49,7 +49,7 @@ import java.util.HashMap;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=entities",
     "regards.dam.post.aip.entities.to.storage=false" }, locations = "classpath:es.properties")
 @MultitenantTransactional
-public class DamModelLinkServiceIT extends AbstractMultitenantServiceTest {
+public class DamModelLinkServiceIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DamModelLinkServiceIT.class);
 

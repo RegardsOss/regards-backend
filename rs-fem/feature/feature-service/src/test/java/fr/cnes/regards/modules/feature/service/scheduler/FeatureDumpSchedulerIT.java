@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
 import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataScheduler;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,7 +48,7 @@ import java.util.concurrent.ScheduledFuture;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_savemetadata_job_it",
         "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
-public class FeatureDumpSchedulerIT extends AbstractFeatureMultitenantServiceTest  {
+public class FeatureDumpSchedulerIT extends AbstractFeatureMultitenantServiceIT  {
 
     private String tenant;
 

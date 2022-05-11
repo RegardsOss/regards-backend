@@ -39,7 +39,7 @@ public class RequestHandlerConfiguration {
         WorkerCacheService localMockWorkerCacheService = Mockito.mock(WorkerCacheService.class);
         Mockito.when(localMockWorkerCacheService.getWorkerTypeByContentType(anyString())).then(invocation -> {
             if (AVAILABLE_CONTENT_TYPE.equals(invocation.getArguments()[0]) ) {
-                return Optional.of(AbstractWorkerManagerTest.DEFAULT_WORKER);
+                return Optional.of(AbstractWorkerManagerIT.DEFAULT_WORKER);
             }
             return Optional.empty();
         });

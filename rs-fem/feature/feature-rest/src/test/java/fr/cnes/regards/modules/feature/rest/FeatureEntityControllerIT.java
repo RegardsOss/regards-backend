@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.feature.rest;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -53,7 +53,7 @@ import java.util.Optional;
         "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
         "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
-@ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
+@ContextConfiguration(classes = { AbstractMultitenantServiceIT.ScanningConfiguration.class })
 public class FeatureEntityControllerIT extends AbstractFeatureIT {
 
     @Autowired

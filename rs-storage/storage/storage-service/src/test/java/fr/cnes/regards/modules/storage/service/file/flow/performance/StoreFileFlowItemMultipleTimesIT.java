@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
-import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
@@ -58,9 +58,9 @@ import java.util.concurrent.TimeUnit;
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp" })
 @Ignore("Performances tests")
-public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageTest {
+public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlowPerformanceIT.class);
 
     private static final String FILE_REF_OWNER = "owner";
 

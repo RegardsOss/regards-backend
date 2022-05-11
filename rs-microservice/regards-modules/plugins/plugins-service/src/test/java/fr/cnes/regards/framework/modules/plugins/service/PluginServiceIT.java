@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
  */
 @MultitenantTransactional
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=plugin_test_db")
-public class PluginServiceIT extends AbstractMultitenantServiceTest {
+public class PluginServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     private IPluginService pluginService;

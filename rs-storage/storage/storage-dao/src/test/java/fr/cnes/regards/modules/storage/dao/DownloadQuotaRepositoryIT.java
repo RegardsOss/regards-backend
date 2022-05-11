@@ -18,8 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultDaoTestConfiguration;
 import fr.cnes.regards.modules.storage.dao.config.StorageDaoConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
@@ -46,7 +45,7 @@ import static org.junit.Assert.assertEquals;
     }
 )
 @ContextConfiguration(classes = { DefaultDaoTestConfiguration.class, StorageDaoConfiguration.class })
-public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceTest {
+public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     private IDownloadQuotaRepository repo;

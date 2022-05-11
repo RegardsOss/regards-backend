@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
         "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false",
         "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
-public class AIPServiceIT extends IngestMultitenantServiceTest {
+public class AIPServiceIT extends IngestMultitenantServiceIT {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 

@@ -20,7 +20,7 @@
 
 package fr.cnes.regards.modules.ingest.service.settings;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_settings_service_it" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = {"noscheduler"})
-public class AIPNotificationSettingsServiceIT extends AbstractMultitenantServiceTest {
+public class AIPNotificationSettingsServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     AIPNotificationSettingsService notificationSettingsService;

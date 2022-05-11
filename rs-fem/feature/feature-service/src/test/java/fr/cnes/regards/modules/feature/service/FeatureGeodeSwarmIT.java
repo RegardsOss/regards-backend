@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
                 "regards.amqp.enabled=true", "regards.tenant=project1" },
         locations = { "classpath:regards_geode.properties", "classpath:batch.properties" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
-public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureGeodeSwarmIT.class);
 

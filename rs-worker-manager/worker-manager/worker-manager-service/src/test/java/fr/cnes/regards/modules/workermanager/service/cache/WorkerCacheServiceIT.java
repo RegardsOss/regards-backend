@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_cache_it" })
 @ActiveProfiles({ "noscheduler" })
-public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsTest {
+public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
     private final String workerType1 = "workerType1";
 

@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import fr.cnes.regards.modules.test.IngestServiceTest;
+import fr.cnes.regards.modules.test.IngestServiceIT;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -116,7 +116,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IngestServiceTest ingestServiceTest;
+    private IngestServiceIT ingestServiceTest;
 
     @Before
     public void init() throws Exception {

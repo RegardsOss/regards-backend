@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.dam.service.entities;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -66,7 +66,7 @@ import static org.junit.Assert.assertNotEquals;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cdgroups" }, locations = "classpath:es.properties")
 @MultitenantTransactional
-public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceTest {
+public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
 
     @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(CollectionDatasetGroupsIT.class);

@@ -77,7 +77,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
-import static fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest.TENANT_PROJECTA;
+import static fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingIT.TENANT_PROJECTA;
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.ACQUIRE_RETRY;
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
 import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;

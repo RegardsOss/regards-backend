@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
+import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsIT;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
@@ -43,7 +43,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
         "regards.session.manager.clean.snapshot.process.limit.store=30" })
 @ActiveProfiles({ "noscheduler" })
-public class ManagerCleanSnapshotProcessServiceIT extends AbstractManagerServiceUtilsTest {
+public class ManagerCleanSnapshotProcessServiceIT extends AbstractManagerServiceUtilsIT {
 
     private static OffsetDateTime UPDATE_DATE;
 

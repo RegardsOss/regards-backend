@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
-import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
+import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsIT;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
@@ -45,7 +45,7 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_snapshot_service_it",
         "regards.session.agent.step.requests.page.size=2" })
 @ActiveProfiles({ "noscheduler" })
-public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsTest {
+public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
 
     private static final OffsetDateTime CREATION_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30);
 

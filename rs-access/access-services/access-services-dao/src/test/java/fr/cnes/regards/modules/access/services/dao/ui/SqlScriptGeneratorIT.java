@@ -1,10 +1,10 @@
 package fr.cnes.regards.modules.access.services.dao.ui;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class SqlScriptGeneratorIT extends AbstractScriptGeneratorTest {
+public class SqlScriptGeneratorIT extends AbstractScriptGeneratorIT {
 
 }

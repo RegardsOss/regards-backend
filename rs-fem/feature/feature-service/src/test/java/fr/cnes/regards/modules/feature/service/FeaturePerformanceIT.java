@@ -67,7 +67,7 @@ import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @Ignore("warning this test might not pass according to your setup for better perf test see FeatureGeodeIT")
 @ContextConfiguration(classes = { FeaturePerformanceITConfig.class })
-public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest {
+public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturePerformanceIT.class);
 

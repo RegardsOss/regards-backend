@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.dump.FeatureSaveMetadataService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -60,7 +60,7 @@ import java.util.concurrent.ExecutionException;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_savemetadata_job_it",
         "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
-public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceIT {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 

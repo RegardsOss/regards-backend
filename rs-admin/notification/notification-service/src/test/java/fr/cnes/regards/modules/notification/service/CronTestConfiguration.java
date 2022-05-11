@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 
 /**
- * Configuration class for {@link CronTest}.
+ * Configuration class for {@link CronIT}.
  *
  * @author xbrochar
  */
@@ -36,8 +36,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 public class CronTestConfiguration {
 
     @Bean
-    public CronTest cronTest() {
-        return new CronTest();
+    public CronIT CronIT() {
+        return new CronIT();
     }
 
     @Bean

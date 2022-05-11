@@ -18,6 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,25 +46,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-
 /**
  *
  * Test storage event handling
@@ -55,10 +53,10 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  * @author Marc SORDI
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storeresponse",
-        "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "eureka.client.enabled=false" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_store_flow_handler_it",
+    "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "eureka.client.enabled=false" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
-public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
+public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageResponseFlowHandlerIT.class);
 

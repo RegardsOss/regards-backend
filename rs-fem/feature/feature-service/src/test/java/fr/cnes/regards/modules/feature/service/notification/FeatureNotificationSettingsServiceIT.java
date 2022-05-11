@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.settings.FeatureNotificationSettingsService;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_notification_settings_service_it",
                 "regards.amqp.enabled=true"})
 @ActiveProfiles(value = {"testAmqp", "noFemHandler", "noscheduler"})
-public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     FeatureNotificationSettingsService notificationSettingsService;

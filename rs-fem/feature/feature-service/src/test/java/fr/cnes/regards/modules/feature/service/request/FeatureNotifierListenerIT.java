@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureUpdateDisseminationRequestRep
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler", "noFemHandler" })
-public class FeatureNotifierListenerIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureNotifierListenerIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private IFeatureCreationRequestRepository fcrRepo;

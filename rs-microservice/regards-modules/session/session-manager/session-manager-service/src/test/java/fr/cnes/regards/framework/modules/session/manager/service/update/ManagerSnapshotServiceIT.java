@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepos
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
-import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsTest;
+import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -50,7 +50,7 @@ import org.springframework.test.context.TestPropertySource;
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_snapshot_service_it" })
 @ActiveProfiles(value = { "noscheduler" })
-public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsTest {
+public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
 
     private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC);
 

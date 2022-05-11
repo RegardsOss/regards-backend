@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -72,7 +72,7 @@ import static org.junit.Assert.*;
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler", "noFemHandler" })
-public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultitenantServiceIT {
 
     private final String recipientLabelRequired = "recipientLabelRequired";
 

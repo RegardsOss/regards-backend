@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessFailTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -51,7 +51,7 @@ import org.springframework.test.context.TestPropertySource;
         properties = { "spring.jpa.properties.hibernate.default_schema=post_process_job_it", "regards.amqp.enabled=true" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
-public class IngestPostProcessingJobIT extends IngestMultitenantServiceTest {
+public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
 

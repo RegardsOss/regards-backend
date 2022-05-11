@@ -22,7 +22,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
-import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsTest;
+import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsIT;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import java.util.Set;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_conf_manager" })
-public class ConfigManagerIT extends AbstractWorkerManagerServiceUtilsTest {
+public class ConfigManagerIT extends AbstractWorkerManagerServiceUtilsIT {
 
     @Autowired
     private ConfigManager configManager;

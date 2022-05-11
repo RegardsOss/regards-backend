@@ -73,7 +73,7 @@ import static org.junit.Assert.assertEquals;
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
-public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;

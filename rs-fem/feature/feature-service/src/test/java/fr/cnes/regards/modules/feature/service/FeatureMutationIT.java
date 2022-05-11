@@ -54,7 +54,7 @@ import java.util.List;
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler", "noFemHandler" })
-public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureMutationIT extends AbstractFeatureMultitenantServiceIT {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureMutationIT.class);

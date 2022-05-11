@@ -53,7 +53,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
@@ -73,7 +73,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
                 "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
-public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceTest {
+public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
 

@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import java.time.OffsetDateTime;
@@ -63,7 +63,7 @@ import org.springframework.test.context.TestPropertySource;
                 "eureka.client.enabled=false", "regards.ingest.request.schedule.delay=100000000" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
-public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
+public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateRunnerJobIT.class);

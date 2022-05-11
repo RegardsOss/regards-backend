@@ -18,9 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import java.nio.file.Paths;
-import java.util.UUID;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingChainService;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import fr.cnes.regards.modules.test.IngestServiceIT;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,21 +47,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.chain.IngestProcessingChainService;
-import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import fr.cnes.regards.modules.test.IngestServiceTest;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 /**
  * Test asychronous ingestion client
@@ -80,7 +77,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
     private StorageClientMock storageClientMock;
 
     @Autowired
-    private IngestServiceTest ingestServiceTest;
+    private IngestServiceIT ingestServiceTest;
 
     @Autowired
     private IngestProcessingChainService procCahinService;
