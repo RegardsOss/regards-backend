@@ -16,14 +16,8 @@ public class OrderInputFileMetadataMapperTest {
     OrderInputFileMetadataMapper mapper = new OrderInputFileMetadataMapper();
 
     @Test
-    public void testFromMapIdempotence() {
-        UniformResourceName urn = UniformResourceName.build("theidentifier",
-                                                            EntityType.DATA,
-                                                            "theTenant",
-                                                            UUID.randomUUID(),
-                                                            5,
-                                                            5L,
-                                                            "test");
+    public void testFromTo() {
+        UniformResourceName urn = getSomeUrn();
         OrderInputFileMetadata oifmdTrue = new OrderInputFileMetadata(true, urn, null);
         OrderInputFileMetadata oifmdFalse = new OrderInputFileMetadata(false, urn, null);
         OrderInputFileMetadata oifmdTrueWithStorePath = new OrderInputFileMetadata(true, urn, "toto");
@@ -38,14 +32,17 @@ public class OrderInputFileMetadataMapperTest {
     }
 
     @Test
+    public void test_valid_order_input_file_metadata_when_stored_path_not_present() {
+        Map<String, String> someMap = HashMap.of(Constants.INTERNAL,
+                                                 "true",
+                                                 Constants.FEATURE_ID,
+                                                 getSomeUrn().toString());
+        assertThat(mapper.fromMap(someMap).isDefined()).isTrue();
+    }
+
+    @Test
     public void testFromMapWithGsonDeserializedObj() {
-        UniformResourceName urn = UniformResourceName.build("theidentifier",
-                                                            EntityType.DATA,
-                                                            "theTenant",
-                                                            UUID.randomUUID(),
-                                                            5,
-                                                            5L,
-                                                            "test");
+        UniformResourceName urn = getSomeUrn();
 
         Map<String, String> oifmdTrueAsMap = HashMap.of(Constants.INTERNAL,
                                                         "true",
@@ -79,4 +76,15 @@ public class OrderInputFileMetadataMapperTest {
         OrderInputFileMetadata oifmdFalseWithStorePath = new OrderInputFileMetadata(false, urn, "toto");
         assertThat(mapper.fromMap(oifmdFalseWithStorePathAsMap)).contains(oifmdFalseWithStorePath);
     }
+
+    private UniformResourceName getSomeUrn() {
+        return UniformResourceName.build("theidentifier",
+                                         EntityType.DATA,
+                                         "theTenant",
+                                         UUID.randomUUID(),
+                                         5,
+                                         5L,
+                                         "test");
+    }
+
 }

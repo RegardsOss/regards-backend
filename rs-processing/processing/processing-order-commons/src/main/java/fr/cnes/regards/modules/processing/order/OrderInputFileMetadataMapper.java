@@ -44,11 +44,10 @@ public class OrderInputFileMetadataMapper extends AbstractMapper<OrderInputFileM
 
     @Override
     public Option<OrderInputFileMetadata> fromMap(Map<String, String> map) {
-        return parseBoolean(map, INTERNAL).flatMap(internal -> parseUrn(map,
-                                                                        FEATURE_ID).map(urn -> new OrderInputFileMetadata(
-            internal,
-            urn,
-            parseString(map, STORED_PATH).getOrNull())));
+        return parseBoolean(map, INTERNAL)
+            .flatMap(internal -> parseUrn(map, FEATURE_ID)
+            .flatMap(urn -> parseString(map, STORED_PATH).orElse(Option.some(null))
+            .map(storedPath -> new OrderInputFileMetadata(internal, urn, storedPath))));
     }
 
 }
