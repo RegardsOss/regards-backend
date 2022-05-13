@@ -1411,6 +1411,7 @@ public class EsRepository implements IEsRepository {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(critBuilder);
         searchSourceBuilder.from(from);
         searchSourceBuilder.size(size);
+        searchSourceBuilder.trackTotalHits(true);
         return searchSourceBuilder;
     }
 
