@@ -39,6 +39,7 @@ pipeline {
         REGARDS_HOME="${WORKSPACE}"
         MVN_IMAGE="172.26.46.158/regards-maven-jdk"
         BRANCH_NAME_VERSION="${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
+        IGNORE_HASH=""
     }
     agent { label 'unix-integration' }
     stages {
@@ -257,7 +258,6 @@ def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst
                         -e BRANCH_NAME_VERSION="${BRANCH_NAME_VERSION}"                                        \
                         -e WORKSPACE="${WORKSPACE}"                                                            \
                         -e IGNORE_HASH="${IGNORE_HASH}"                                                        \
-                        -e CI_DIR="regards-ci/docker"                                                          \
                         -e MODE="' + mode + '"                                                                 \
                         -e REGARDS_HOME="${REGARDS_HOME}"                                                      \
                         -e REGARDS_MS="' + regardsMs + '"                                                      '
