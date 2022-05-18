@@ -38,6 +38,7 @@ pipeline {
         PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
         REGARDS_HOME="${WORKSPACE}"
         MVN_IMAGE="172.26.46.158/regards-maven-jdk"
+        JAVA_IMAGE="172.26.46.158/regards-java-alpine:17"
         BRANCH_NAME="develop"
         IGNORE_HASH="true"
     }
@@ -49,7 +50,7 @@ pipeline {
                 echo "Current workspace = ${env.WORKSPACE}"
 
                 sh label: "Pull docker images", script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml pull \
-                    && docker pull ' + MVN_IMAGE
+                    && docker pull ' + MVN_IMAGE + ' && docker pull ' + JAVA_IMAGE
             }
         }
         stage("Tests Preparation") {
