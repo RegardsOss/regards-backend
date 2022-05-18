@@ -46,7 +46,6 @@ import fr.cnes.regards.modules.indexer.service.MappingService;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.domain.Model;
-import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
@@ -634,6 +633,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         }
         planet.addProperty(IProperty.buildObject("TimePeriod", IProperty.buildDate(START_DATE, startDateValue),
                                                  IProperty.buildDate(STOP_DATE, stopDateValue)));
+        DataFile file = DataFile.build(DataType.RAWDATA, name+".txt","http://toto/toto.txt", MediaType.APPLICATION_OCTET_STREAM, true, false);
+        planet.getFeature().getFiles().put(DataType.RAWDATA, file);
         return planet;
     }
 

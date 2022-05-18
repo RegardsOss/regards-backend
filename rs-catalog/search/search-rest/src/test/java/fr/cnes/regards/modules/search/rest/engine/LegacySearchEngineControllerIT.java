@@ -167,7 +167,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     @Test
     @Purpose("Test if the sorting is properly done on datasets returned by the ES search when there is no search "
             + "criteria")
-    public void searchDataobjectsReturnDatasetsWithoutSearchCriterion() {
+    public void searchDataObjectsReturnDatasetsWithoutSearchCriterion() {
         // Sort on STRING
         RequestBuilderCustomizer customizerOnString1 = customizer().expectStatusOk();
         customizerOnString1.addParameter("page", "0");
@@ -191,7 +191,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
     @Test
     @Purpose("Test if the sorting is properly done on datasets returned by the ES search when there is search criteria")
-    public void searchDataobjectsReturnDatasetsWithSearchCriterion() {
+    public void searchDataObjectsReturnDatasetsWithSearchCriterion() {
        // Sort on DATE
         RequestBuilderCustomizer customizerOnDate = customizer().expectStatusOk();
         customizerOnDate.addParameter(SEARCH_TERMS_QUERY, String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)));
@@ -260,7 +260,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjects() {
+    public void searchDataObjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
@@ -268,7 +268,31 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjectsAttributes() {
+    public void searchDataObjectsByRawdata() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.metadata.totalElements", 1);
+        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.FEATURE_FILE_RAWDATA_FILENAME + ":(Mercury.txt)");
+        addCommontMatchers(customizer);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                customizer, "Search all error", ENGINE_TYPE);
+
+        customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.metadata.totalElements", 12);
+        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.FEATURE_FILE_RAWDATA_FILENAME + ":(*.txt)");
+        addCommontMatchers(customizer);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                customizer, "Search all error", ENGINE_TYPE);
+
+        customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.metadata.totalElements", 0);
+        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.FEATURE_FILE_RAWDATA_FILENAME + ":(Mercury.unknown)");
+        addCommontMatchers(customizer);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchDataObjectsAttributes() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expectToHaveSize("$", 2);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_ATTRIBUTES,
@@ -276,7 +300,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void fullTextSearchDataobjects() {
+    public void fullTextSearchDataOjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         customizer.addParameter("sort", "providerId" + ",ASC");
@@ -288,7 +312,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjectsOnJsonAttribute() {
+    public void searchDataObjectsOnJsonAttribute() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         customizer.addParameter("sort", "providerId" + ",ASC");
@@ -307,7 +331,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void fullTextSearchDataobjectsWithWildcards() {
+    public void fullTextSearchDataObjectsWithWildcards() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         customizer.addParameter("sort", "providerId" + ",ASC");
@@ -319,7 +343,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void fullTextSearchDataobjectsIntoStringArray() {
+    public void fullTextSearchDataObjectsIntoStringArray() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         customizer.expectValue("$.content[0].content.providerId", JUPITER);
@@ -329,7 +353,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjectsWithFacets() {
+    public void searchDataObjectsWithFacets() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         // Sort
@@ -343,7 +367,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjectsFilteredByDatasetModels() {
+    public void searchDataObjectsFilteredByDatasetModels() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expectValue("$.content.length()", 1);
         // Filter
@@ -360,7 +384,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjectPropertyValues() {
+    public void searchDataObjectPropertyValues() {
 
         // Search the 9 planets
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
@@ -387,7 +411,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjectPropertyValuesFilteredByDatasetModels() {
+    public void searchDataObjectPropertyValuesFilteredByDatasetModels() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expectValue("$.length()", 1);
 
@@ -400,7 +424,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjectPropertyBounds() {
+    public void searchDataObjectPropertyBounds() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expectValue("$.length()", 3);
         customizer.expectIsNotEmpty("$..[?(@.propertyName=='properties.diameter')]");
@@ -423,7 +447,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    public void searchDataobjectsInDataset() {
+    public void searchDataObjectsInDataset() {
 
         // Search dataset
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();

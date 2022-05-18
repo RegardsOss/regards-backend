@@ -96,6 +96,12 @@ public final class StaticProperties {
     // String list
     public static final String FEATURE_TAGS = "tags";
 
+    // Rawdata file name search attribute name
+    public static final String FEATURE_FILE_RAWDATA_FILENAME = "rawdata";
+
+    // Rawdata file name search attribute path
+    public static final String FEATURE_FILE_RAWDATA_FILENAME_PROPERTY_PATH = FEATURE_FILES + ".RAWDATA.filename";
+
     public static final String FEATURE_TAGS_PATH = FEATURE_NS + FEATURE_TAGS;
 
     // VirtualId
@@ -119,7 +125,7 @@ public final class StaticProperties {
 
     public static final String FEATURE_GEOMETRY_PATH = FEATURE_NS + FEATURE_GEOMETRY;
 
-    // Wrappped dynamic properties
+    // Wrapped dynamic properties
     public static final String FEATURE_PROPERTIES = "properties";
 
     public static final String FEATURE_PROPERTIES_PATH = FEATURE_NS + FEATURE_PROPERTIES;
