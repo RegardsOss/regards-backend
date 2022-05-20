@@ -103,9 +103,10 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
      */
     private boolean instanceIdGenerated = false;
 
-    public RegardsAmqpAdmin(String namespace, String microserviceTypeId) {
+    public RegardsAmqpAdmin(String namespace, String microserviceTypeId, String microserviceInstanceId) {
         this.namespace = namespace;
         this.microserviceTypeId = microserviceTypeId;
+        this.microserviceInstanceId = microserviceInstanceId;
     }
 
     @Override

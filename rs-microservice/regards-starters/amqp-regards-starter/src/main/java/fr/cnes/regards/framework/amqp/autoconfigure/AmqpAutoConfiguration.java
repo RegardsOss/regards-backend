@@ -116,7 +116,8 @@ public class AmqpAutoConfiguration {
     @Bean
     public IAmqpAdmin regardsAmqpAdmin() {
         return new RegardsAmqpAdmin(amqpManagmentProperties.getNamespace(),
-                                    amqpMicroserviceProperties.getTypeIdentifier());
+                                    amqpMicroserviceProperties.getTypeIdentifier(),
+                                    amqpMicroserviceProperties.getInstanceIdentifier());
     }
 
     @Bean

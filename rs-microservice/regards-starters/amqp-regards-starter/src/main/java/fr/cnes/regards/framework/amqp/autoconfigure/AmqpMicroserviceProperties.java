@@ -37,6 +37,11 @@ public class AmqpMicroserviceProperties {
     private String typeIdentifier;
 
     /**
+     * Identifier unique to each microservice instance
+     */
+    private String instanceIdentifier;
+
+    /**
      * @return the microservice type identifier
      */
     public String getTypeIdentifier() {
@@ -48,5 +53,19 @@ public class AmqpMicroserviceProperties {
      */
     public void setTypeIdentifier(String pTypeIdentifier) {
         typeIdentifier = pTypeIdentifier;
+    }
+
+    /**
+     * @return the microservice instance identifier
+     */
+    public String getInstanceIdentifier() {
+        return instanceIdentifier;
+    }
+
+    /**
+     * Set the microservice instance identifier
+     */
+    public void setInstanceIdentifier(String instanceIdentifier) {
+        this.instanceIdentifier = instanceIdentifier;
     }
 }
